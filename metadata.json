@@ -1,0 +1,6 @@
+{
+  "name": "Glamzo",
+  "description": "Glamzo SaaS - Plataforma Profissional para Salões de Beleza. Fundação de Autenticação, Perfis de Usuários, e Integração em Tempo Real com Supabase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

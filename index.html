@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glamzo | Plataforma & Agendamentos de Beleza Premium</title>
+    <!-- Dynamic high-fidelity SVG favicon of Glamzo Logo -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2050/svg' viewBox='0 0 100 100' width='32' height='32'%3E%3Crect width='100' height='100' rx='22' fill='%23120a21'/%3E%3Cpath d='M 50 18 C 30 18 18 31 18 51 C 18 71 31 84 51 84 C 64 84 73 77 78 67 L 66 61 C 62 67 57 71 51 71 C 41 71 32 62 32 51 C 32 40 41 31 51 31 C 59 31 65 35 68 41 L 53 41 L 53 51 L 81 51 C 82 48 82 44 82 41 C 82 26 70 18 50 18 Z' fill='%23A855F7'/%3E%3Cpath d='M 74 14 Q 74 23 83 23 Q 74 23 74 32 Q 74 23 65 23 Q 74 23 74 14 Z' fill='%23FBBF24'/%3E%3C/svg%3E" />
+    
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW Registered:', reg.scope))
+            .catch(err => console.log('SW failed:', err));
+        });
+      }
+    </script>
+  </body>
+</html>
+
