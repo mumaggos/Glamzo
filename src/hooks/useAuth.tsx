@@ -39,7 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let currentProfile = data as UserProfile | null;
 
       // Force-sync DB profile role if they registered locally with a custom role but DB was defaulted by trigger
-      const storedRole = localStorage.getItem(`local_role_${userId}`) as UserRole | null;
+      let storedRole = localStorage.getItem(`local_role_${userId}`) as UserRole | null;
+      const pendingRole = localStorage.getItem('pending_signup_role') as UserRole | null;
+      if (pendingRole) {
+        storedRole = pendingRole;
+        localStorage.setItem(`local_role_${userId}`, pendingRole);
+        localStorage.removeItem('pending_signup_role');
+      }
+
       if (currentProfile && storedRole && currentProfile.role !== storedRole) {
         if (currentProfile.role === 'customer' && (storedRole === 'business' || storedRole === 'admin')) {
           try {
@@ -285,6 +292,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase is not configured yet.');
     }
+
+    // Fix race condition by anticipating the role in case of fast triggers
+    localStorage.setItem('pending_signup_role', role);
 
     const { data, error: suError } = await supabase.auth.signUp({
       email,

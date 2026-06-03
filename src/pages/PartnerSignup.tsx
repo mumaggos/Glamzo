@@ -39,6 +39,7 @@ export default function PartnerSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isSignUpProcessActive, setIsSignUpProcessActive] = useState(false);
 
   const categories = [
     'Cabelo & Barbearia',
@@ -82,6 +83,7 @@ export default function PartnerSignup() {
     }
 
     setLoading(true);
+    setIsSignUpProcessActive(true);
 
     try {
       // 1. Create authentication credential & profile with role 'business'
@@ -182,6 +184,7 @@ export default function PartnerSignup() {
       }, 2000);
 
     } catch (err: any) {
+      setIsSignUpProcessActive(false);
       console.error('Partner Registration error:', err);
       let userFriendlyMessage = err.message || 'Ocorreu um erro ao criar a conta de parceiro. Verifique os dados.';
       if (err.message?.includes('already registered') || err.message?.includes('already exists') || err.message?.toLowerCase().includes('already')) {
@@ -247,7 +250,7 @@ export default function PartnerSignup() {
           )}
 
           {/* Active Session Detection Bypass */}
-          {user ? (
+          {user && !isSignUpProcessActive ? (
             <div className="space-y-6 text-center py-4 animate-fade-in">
               <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
                 <p className="text-sm font-bold text-white mb-2">Já está autenticado!</p>
