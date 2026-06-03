@@ -471,10 +471,24 @@ export default function BookingModal({
           const checkoutData = await res.json();
           if (checkoutData?.url) {
             // Real Redirect to Stripe Checkout (breakout of standard iframe sandbox if necessary)
-            if (checkoutData.url.startsWith('http') || window.self !== window.top) {
-              window.open(checkoutData.url, '_blank');
-            } else {
-              window.location.href = checkoutData.url;
+            try {
+              if (window.self !== window.top) {
+                const opened = window.open(checkoutData.url, '_blank');
+                if (!opened) {
+                  window.location.href = checkoutData.url;
+                }
+              } else {
+                window.location.href = checkoutData.url;
+              }
+            } catch (redirErr) {
+              console.warn('Direct window.open checkout failed, falling back to window.location.href:', redirErr);
+              try {
+                window.location.href = checkoutData.url;
+              } catch (innerErr) {
+                try {
+                  window.parent.location.href = checkoutData.url;
+                } catch (_) {}
+              }
             }
             return;
           } else {
