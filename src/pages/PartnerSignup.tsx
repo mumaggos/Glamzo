@@ -157,27 +157,17 @@ export default function PartnerSignup() {
         throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
       }
 
-      setSuccessMsg('Registo concluído com sucesso! Ativámos uma avaliação gratuita PRO de 14 dias para que possa começar a utilizar o seu painel de imediato.');
+      setSuccessMsg('Registo concluído com sucesso! Redirecionando para o seu terminal para ativar o seu período experimental...');
 
-      // Update database with active trial
+      // Update database with default inactive state - requires card trial registration to unlock
       await supabase
         .from('businesses')
         .update({
-          subscription_status: 'trialing',
-          subscription_active: true,
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          subscription_status: 'inactive',
+          subscription_active: false,
+          trial_ends_at: null
         })
         .eq('id', businessId);
-
-      // Record subscription entry to satisfy checks
-      await supabase
-        .from('subscriptions')
-        .insert({
-          business_id: businessId,
-          status: 'trialing',
-          plan_name: 'PRO',
-          current_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-        });
 
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
@@ -252,30 +242,37 @@ export default function PartnerSignup() {
           {/* Active Session Detection Bypass */}
           {user && !isSignUpProcessActive ? (
             <div className="space-y-6 text-center py-4 animate-fade-in">
-              <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-                <p className="text-sm font-bold text-white mb-2">Já está autenticado!</p>
+              <div className="p-4 bg-purple-950/25 border border-purple-900/50 rounded-2xl">
+                <p className="text-sm font-bold text-white mb-2">Sessão Ativa Detetada!</p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Está atualmente ligado como <span className="font-semibold text-rose-450 text-rose-400">{profile?.full_name || user.email}</span>.
-                  Pode utilizar a sua conta atual para configurar as informações do seu negócio.
+                  Está atualmente ligado como <span className="font-semibold text-purple-400">{profile?.full_name || user.email}</span> ({profile?.role === 'customer' ? 'Conta de Cliente' : 'Conta de Parceiro'}).
                 </p>
               </div>
-              <button
-                onClick={() => navigate('/onboarding')}
-                className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-md text-xs uppercase tracking-wider cursor-pointer"
-              >
-                <span>Avançar para Configuração do Salão</span>
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await signOut();
-                    window.location.reload();
-                  } catch (e) {}
-                }}
-                className="text-xs text-slate-400 hover:text-rose-400 hover:underline transition-all block mx-auto cursor-pointer"
-              >
-                Pretendo Criar Uma Nova Conta com um E-mail Diferente
-              </button>
+              {profile?.role === 'customer' ? (
+                <div className="space-y-3">
+                  <p className="text-[11px] text-amber-400 font-medium leading-relaxed">
+                    As contas de Cliente e de Parceiro/Loja são totalmente independentes de modo a garantir a separação de dashboards. Por favor, termine a sessão da sua conta de cliente para poder criar o registo comercial do seu salão.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await signOut();
+                        window.location.reload();
+                      } catch (e) {}
+                    }}
+                    className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-md text-xs uppercase tracking-wider cursor-pointer"
+                  >
+                    <span>Terminar Sessão de Cliente</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full flex items-center justify-center gap-2 bg-purple-650 hover:bg-purple-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-md text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  <span>Ir para o Painel do Salão</span>
+                </button>
+              )}
             </div>
           ) : step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-4">

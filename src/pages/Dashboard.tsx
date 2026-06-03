@@ -1543,24 +1543,24 @@ export default function Dashboard() {
               {subBlockReason === 'active_trial_requires_card' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-white flex items-center justify-center gap-2">
-                      <Lock className="w-5 h-5 text-rose-500 animate-pulse" />
-                      <span>Falta Associar Cartão</span>
+                    <h2 className="text-xl font-black text-white flex flex-col items-center justify-center gap-2">
+                      <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
+                      <span>Ativar Período Experimental Glamzo PRO</span>
                     </h2>
-                    <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                      O seu período de teste PRO de 14 dias está ativo! No entanto, para usar o painel e fazer com que a sua loja apareça no Marketplace público da Glamzo, precisa de associar um cartão de pagamento seguro via Stripe.
+                    <p className="text-sm text-slate-300 leading-relaxed font-sans px-2">
+                      Para colocar a sua loja online é necessário ativar o período experimental Glamzo PRO.
                     </p>
                   </div>
 
                   <div className="text-[11px] text-left space-y-2.5 bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
                     <p className="text-slate-400 font-medium flex items-center gap-2">
-                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Nenhuma cobrança efetuada nos primeiros 14 dias
+                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> 14 dias gratuitos de avaliação completa
                     </p>
                     <p className="text-slate-400 font-medium flex items-center gap-2">
-                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
+                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
                     </p>
                     <p className="text-slate-400 font-medium flex items-center gap-2">
-                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
+                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
                     </p>
                   </div>
                 </div>
@@ -1644,7 +1644,7 @@ export default function Dashboard() {
                   <CreditCard className="w-4 h-4" />
                   <span>
                     {subBlockReason === 'active_trial_requires_card'
-                      ? 'Associar Cartão Seguro (Iniciar Teste)'
+                      ? 'COMEÇAR TESTE GRATUITO'
                       : subBlockReason === 'onboarding'
                       ? 'Continuar para Stripe'
                       : 'Ativar Plano PRO (Stripe Checkout)'}
@@ -2001,6 +2001,35 @@ export default function Dashboard() {
                 className="p-2.5 px-3.5 bg-rose-600 hover:bg-rose-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto"
               >
                 Regularizar Faturação
+              </button>
+            </div>
+          )}
+
+          {/* Stripe Connect Pending Alert Banner */}
+          {!isBillingBlocked && (!business?.stripe_account_id || !stripeStatus?.charges_enabled || !stripeStatus?.payouts_enabled) && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/40 to-yellow-950/40 border border-amber-500/20 text-amber-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/15 animate-fade-in text-left">
+              <div className="flex items-center gap-3">
+                <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/25 shrink-0">
+                  <Landmark className="w-4.5 h-4.5" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-white leading-normal">Ative os pagamentos para receber reservas online.</p>
+                  <p className="text-[11px] text-amber-450 leading-normal">Configure a sua conta Stripe Express (IBAN e verificação) para receber pagamentos de marcações diretamente na sua conta bancária de forma segura pelas marcações online.</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleConnectStripe}
+                disabled={connectingStripe}
+                className="p-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-[10px] text-slate-950 font-black uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto flex items-center gap-1.5"
+              >
+                {connectingStripe ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>A Processar...</span>
+                  </>
+                ) : (
+                  <span>ATIVAR PAGAMENTOS</span>
+                )}
               </button>
             </div>
           )}

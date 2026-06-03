@@ -990,7 +990,7 @@ export default function Explore() {
                     Resetar Filtros
                   </button>
                   <Link
-                    to="/onboarding"
+                    to="/partner/signup"
                     className="flex-1 flex items-center justify-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-sm"
                   >
                     <span>Registar meu salão</span>
