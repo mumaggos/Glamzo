@@ -1,11 +1,23 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { 
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, ArrowRight 
 } from 'lucide-react';
 
 export default function Partner() {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && profile?.role === 'business') {
+      navigate('/dashboard', { replace: true });
+    } else if (user && profile?.role === 'admin') {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, profile, navigate]);
+
   return (
     <div id="partner-landing-view" className="min-h-[calc(100vh-64px)] bg-slate-950 text-slate-100 font-sans selection:bg-rose-500/20 selection:text-white">
       

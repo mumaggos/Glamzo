@@ -295,6 +295,15 @@ app.get('/api/stripe/account-status', async (req, res) => {
     const stripe = getStripe();
     const account = await stripe.accounts.retrieve(business.stripe_account_id);
 
+    // Sync other components and consumers by persisting the status back to the database row
+    await db
+      .from('businesses')
+      .update({
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled
+      })
+      .eq('id', businessId);
+
     res.json({
       connected: true,
       stripe_account_id: business.stripe_account_id,
@@ -802,6 +811,65 @@ app.post('/api/stripe/create-portal-session', async (req, res) => {
     res.json({ url: session.url });
   } catch (err: any) {
     console.error('Customer Portal Session creation failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cancel active subscription and fallback DB trial states for a business
+app.post('/api/stripe/cancel-subscription', async (req, res) => {
+  try {
+    const { businessId } = req.body;
+    if (!businessId) {
+      res.status(455).json({ error: 'Missing businessId parameter' });
+      return;
+    }
+
+    const db = getSupabaseAdmin();
+    const stripe = getStripe();
+
+    const { data: business, error: bizErr } = await db
+      .from('businesses')
+      .select('*')
+      .eq('id', businessId)
+      .maybeSingle();
+
+    if (bizErr || !business) {
+      res.status(404).json({ error: 'Business not found.' });
+      return;
+    }
+
+    const subId = business.stripe_subscription_id;
+    if (subId && subId.trim() !== '') {
+      try {
+        console.log(`[Cancel Subscription] Cancelling Stripe subscription: ${subId}`);
+        await stripe.subscriptions.cancel(subId);
+      } catch (subErr: any) {
+        console.warn(`[Cancel Subscription Warning] Failed to cancel sub in Stripe: ${subErr.message}`);
+      }
+    }
+
+    // Update database fields
+    await db
+      .from('businesses')
+      .update({
+        stripe_subscription_id: null,
+        subscription_status: 'cancelled',
+        subscription_active: false
+      })
+      .eq('id', businessId);
+
+    // Update subscriptions table entries
+    await db
+      .from('subscriptions')
+      .update({
+        status: 'cancelled',
+        expires_at: new Date().toISOString()
+      })
+      .eq('business_id', businessId);
+
+    res.json({ success: true, message: 'Subscrição cancelada com sucesso.' });
+  } catch (err: any) {
+    console.error('Subscription cancellation failed:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

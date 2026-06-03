@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isVerifyingSub, setIsVerifyingSub] = useState(false);
   const [verifyingText, setVerifyingText] = useState('');
+  const [cancelingSubscription, setCancelingSubscription] = useState(false);
 
   // State variables for manually connecting an existing/pre-built Stripe Connect / Merchant Account ID
   const [manualStripeId, setManualStripeId] = useState('');
@@ -670,10 +671,14 @@ export default function Dashboard() {
     if (status === 'connect_success' && stripeAcct && user) {
       const syncStripeConnection = async () => {
         try {
-          // 1. Update Stripe account id in database
+          // 1. Update Stripe account id in database with active flags
           const { error } = await supabase
             .from('businesses')
-            .update({ stripe_account_id: stripeAcct })
+            .update({ 
+              stripe_account_id: stripeAcct,
+              charges_enabled: true,
+              payouts_enabled: true
+            })
             .eq('owner_id', user.id);
 
           if (error) throw error;
@@ -1045,6 +1050,56 @@ export default function Dashboard() {
     }
   };
 
+  // Cancel active recurring subscription and block panel
+  const handleCancelSubscription = async () => {
+    if (!business) return;
+    const confirmCancel = window.confirm(
+      "Tem a certeza absoluta de que deseja cancelar o seu plano Glamzo PRO?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão."
+    );
+    if (!confirmCancel) return;
+
+    try {
+      setCancelingSubscription(true);
+      notifyTerminal("🚫 Cancelar Subscrição", "A comunicar desativação e paragem ao Stripe...");
+      
+      const response = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ businessId: business.id })
+      });
+
+      const resData = await response.json();
+      console.log("Stripe cancel response in Dashboard:", resData);
+
+      if (response.ok && resData?.success) {
+        notifyTerminal("✔ Desativado", "A sua subscrição foi desativada com sucesso.");
+        setGlobalSuccess("A subscrição Glamzo PRO foi desativada. O seu salão foi ocultado do público.");
+        
+        // Instantly force local lock screen by updating state
+        setBusiness(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            stripe_subscription_id: '',
+            subscription_status: 'cancelled',
+            subscription_active: false
+          };
+        });
+        setSubscriptions([]);
+      } else {
+        const errorMsg = resData?.error || "Ocorreu um erro ao cancelar no servidor.";
+        alert(`Não foi possível processar o cancelamento: ${errorMsg}`);
+      }
+    } catch (err: any) {
+      console.error('Falha ao desativar subscrição:', err);
+      alert(`Erro na ligação ao processar o cancelamento: ${err.message}`);
+    } finally {
+      setCancelingSubscription(false);
+    }
+  };
+
   // Update status of actual customer booking
   const handleUpdateBookingStatus = async (id: string, newStatus: BookingStatus) => {
     try {
@@ -1361,15 +1416,21 @@ export default function Dashboard() {
   // Financial statistics (FASE 10 Glamzo Financial Architecture)
   const totalVolumeBruto = ledgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
   const totalComissoesRetidas = ledgers.reduce((sum, item) => {
-    // Glamzo commission represents the charge taken by Glamzo. 
-    // In scenarios where discounts are processed, Glamzo fee might be reduced or negative to absorb losses.
-    // The partner's invoice only counts positive commissions taken.
+    // Glamzo commission is only taken on online transactions
+    if (item.payment_method !== 'stripe') return sum;
     return sum + Math.max(0, Number(item.glamzo_fee || 0));
   }, 0);
-  // Real Net earnings representing partner's profit (Lucro Líquido)
+  // Real Net earnings representing partner's profit (Lucro Líquido Global - Cash and Online combined)
   const totalReceivedVolume = ledgers.reduce((sum, item) => sum + Number(item.business_amount || item.amount_total || item.amount || 0), 0);
-  const totalPayoutsTransferred = payouts.filter(p => p.status === 'completed').reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const balanceAvailable = Math.max(0, totalReceivedVolume - totalPayoutsTransferred);
+  
+  // Real-time digital received volume that accumulated online via Stripe and can be withdrawn online
+  const totalReceivedVolumeOnline = ledgers
+    .filter(item => item.payment_method === 'stripe')
+    .reduce((sum, item) => sum + Number(item.business_amount || item.amount_total || item.amount || 0), 0);
+
+  const totalPayoutTransferred = payouts.filter(p => p.status === 'completed').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  // Only online-received funds can be digitally withdrawn (local cash was already pocketed by merchant)
+  const balanceAvailable = Math.max(0, totalReceivedVolumeOnline - totalPayoutTransferred);
 
   // Subscription calculation and Lock logic
   const activeSubscription = subscriptions && subscriptions.length > 0 ? subscriptions[0] : null;
@@ -1413,8 +1474,16 @@ export default function Dashboard() {
     return false;
   })();
 
-  // Block dashboard if no active/trialing subscription
+  // Block dashboard if no active/trialing subscription, or if card (stripe_subscription_id) has not been linked yet (required for marketplace & panel use)
   const isBillingBlocked = (() => {
+    const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
+    if (isDemo) return false;
+
+    // Must have a credit card linked/subscription configured in stripe to use the dashboard!
+    if (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '') {
+      return true;
+    }
+
     if (resolvedSubscriptionStatus === 'active' || resolvedSubscriptionStatus === 'trialing') {
       const expiresAt = trialEndsAt ? new Date(trialEndsAt).getTime() : null;
       if (expiresAt && expiresAt <= Date.now() && resolvedSubscriptionStatus !== 'active') {
@@ -1426,6 +1495,10 @@ export default function Dashboard() {
   })();
 
   const subBlockReason = (() => {
+    const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
+    if (!isDemo && (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '')) {
+      return 'active_trial_requires_card';
+    }
     if (!activeSubscription && !resolvedSubscriptionStatus) return 'onboarding';
     if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid') return 'past_due';
     return 'expired';
@@ -1467,7 +1540,31 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {subBlockReason === 'onboarding' ? (
+              {subBlockReason === 'active_trial_requires_card' ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-black text-white flex items-center justify-center gap-2">
+                      <Lock className="w-5 h-5 text-rose-500 animate-pulse" />
+                      <span>Falta Associar Cartão</span>
+                    </h2>
+                    <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                      O seu período de teste PRO de 14 dias está ativo! No entanto, para usar o painel e fazer com que a sua loja apareça no Marketplace público da Glamzo, precisa de associar um cartão de pagamento seguro via Stripe.
+                    </p>
+                  </div>
+
+                  <div className="text-[11px] text-left space-y-2.5 bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
+                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Nenhuma cobrança efetuada nos primeiros 14 dias
+                    </p>
+                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
+                    </p>
+                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                      <span className="text-indigo-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
+                    </p>
+                  </div>
+                </div>
+              ) : subBlockReason === 'onboarding' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h2 className="text-xl font-black text-white">Ativar Glamzo PRO</h2>
@@ -1545,7 +1642,13 @@ export default function Dashboard() {
                   className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-white rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span>{subBlockReason === 'onboarding' ? 'Continuar para Stripe' : 'Ativar Plano PRO (Stripe Checkout)'}</span>
+                  <span>
+                    {subBlockReason === 'active_trial_requires_card'
+                      ? 'Associar Cartão Seguro (Iniciar Teste)'
+                      : subBlockReason === 'onboarding'
+                      ? 'Continuar para Stripe'
+                      : 'Ativar Plano PRO (Stripe Checkout)'}
+                  </span>
                 </button>
 
                 {business?.stripe_customer_id && (
@@ -1839,8 +1942,29 @@ export default function Dashboard() {
         {/* Dynamic tabs render Workspace container with generous bottom spacing so layouts are never covered on mobile */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-8 pb-36 scrollbar-thin scrollbar-thumb-slate-900" style={{ WebkitOverflowScrolling: 'touch' }}>
           
-          {/* Active Trial State Reminder Header Banner */}
-          {resolvedSubscriptionStatus === 'trialing' && (
+          {/* Simulated trial / No Card Warning Banner */}
+          {resolvedSubscriptionActive && (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '') && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/45 to-yellow-950/45 border border-amber-500/20 text-amber-350 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/25 shrink-0">
+                  <AlertCircle className="w-4 h-4 animate-bounce" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-white leading-normal">⚠️ O seu salão está ocultado do Marketplace Glamzo!</p>
+                  <p className="text-[11px] text-amber-450 leading-normal">O seu período de teste PRO de 14 dias está ativo, mas para que a sua loja apareça nos resultados de pesquisa e na página de início, precisa de adicionar um cartão de pagamento seguro. O Stripe só efetuará cobranças automáticas no fim do teste.</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleSubscribePro}
+                className="p-2.5 px-4 bg-amber-500 hover:bg-amber-650 text-[10px] text-slate-950 font-black uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto"
+              >
+                Associar Cartão Agora
+              </button>
+            </div>
+          )}
+
+          {/* Active Trial State Reminder Header Banner (Only when card/subscription is real) */}
+          {resolvedSubscriptionStatus === 'trialing' && business?.stripe_subscription_id && business.stripe_subscription_id.trim() !== '' && (
             <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 text-purple-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center border border-purple-500/25 shrink-0">
@@ -3146,6 +3270,83 @@ export default function Dashboard() {
                     <div className="bg-slate-900 border border-slate-850 rounded-2xl p-4 text-left border-l-2 border-l-amber-500 bg-amber-950/10">
                       <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Saldo p/ Levantamento</span>
                       <span className="text-base sm:text-lg font-black text-amber-400 mt-1.5 block font-mono">{balanceAvailable.toFixed(2)} €</span>
+                    </div>
+                  </div>
+
+                  {/* Gestão da Subscrição Glamzo PRO (Plan Cancellation & Info Box) */}
+                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left">
+                    <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-extrabold text-sm text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-purple-400" />
+                          <span>Subscrição & Plano Atual (Glamzo PRO)</span>
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-0.5 leading-normal font-sans">
+                          Acompanhe o estado da sua assinatura de software e canais de promoção ativa.
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
+                        {business?.subscription_status || 'Trialing'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/40 p-4 rounded-2xl border border-slate-850 text-xs">
+                      <div className="space-y-1">
+                        <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
+                        <span className="text-white font-extrabold text-sm leading-none block">Glamzo PRO</span>
+                        <span className="text-[10px] text-slate-500 block">Acesso ilimitado à plataforma, agenda e comissões integradas.</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
+                        <span className="text-purple-400 font-extrabold text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-400 font-medium">/ mês</span></span>
+                        <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Stripe.</span>
+                      </div>
+                    </div>
+
+                    {/* Subscriptions Info Details */}
+                    <div className="text-xs text-slate-350 leading-relaxed space-y-2">
+                      <p>
+                        O plano <span className="font-bold text-white">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será faturada ao seu cartão bancário.
+                      </p>
+                      {trialEndsAt && (
+                        <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
+                          ⏳ Fim do período/Renovação Stripe: {new Date(trialEndsAt).toLocaleDateString('pt-PT')} ({trialDaysRemaining} dias restantes)
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      {business?.stripe_subscription_id && business.stripe_subscription_id.trim() !== '' ? (
+                        <>
+                          <button
+                            onClick={handleOpenBillingPortal}
+                            className="bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span>Stripe Customer Portal (Faturas)</span>
+                          </button>
+                          <button
+                            onClick={handleCancelSubscription}
+                            disabled={cancelingSubscription}
+                            className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer border border-rose-500/20 disabled:opacity-45"
+                          >
+                            {cancelingSubscription ? 'A Processar...' : 'Cancelar Subscrição (Desativar PRO)'}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="space-y-3 w-full">
+                          <p className="text-[11px] text-amber-400 leading-normal bg-amber-950/10 border border-amber-500/20 p-3.5 rounded-xl">
+                            ⚠️ Atualmente, a sua parceria está ativa apenas em simulação local ou conta sem cartão de crédito registado no Stripe. Para garantir a visibilidade do salão no Marketplace, associe o seu cartão abaixo:
+                          </p>
+                          <button
+                            onClick={handleSubscribePro}
+                            className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-white text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
+                          >
+                            <CreditCard className="w-4.5 h-4.5" />
+                            <span>Regularizar Cartão Glamzo PRO (Stripe Checkout)</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 

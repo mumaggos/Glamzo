@@ -42,6 +42,11 @@ export default function Home() {
             if (b.subscription_status === 'suspended') {
               return false;
             }
+            // Enforce card added for real shops to appear in the public list
+            const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
+            if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
+              return false;
+            }
             const isPromoted = !!b.is_promoted;
             const endsAt = b.promotion_ends_at;
             if (isPromoted && endsAt && new Date(endsAt).getTime() < now) {
@@ -90,13 +95,21 @@ export default function Home() {
   // Memoize rendered categories so that input keystrokes do not trigger complete mapping loops
   const renderedCategories = useMemo(() => {
     if (dynamicCards.length > 0) {
-      return dynamicCards.map(c => ({
-        id: c.id,
-        name: c.title,
-        description: c.subtitle,
-        imageUrl: c.image_url,
-        emoji: c.emoji || '✨'
-      }));
+      return dynamicCards.map(c => {
+        // Resolve a beautiful Unsplash fallback if the database image is local/broken/placeholder
+        let imgUrl = c.image_url;
+        if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/')) {
+          const match = MAIN_CATEGORIES.find(m => m.name.toLowerCase().trim() === c.title.toLowerCase().trim());
+          imgUrl = match ? match.imageUrl : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+        }
+        return {
+          id: c.id,
+          name: c.title,
+          description: c.subtitle,
+          imageUrl: imgUrl,
+          emoji: c.emoji || '✨'
+        };
+      });
     }
     return MAIN_CATEGORIES;
   }, [dynamicCards]);

@@ -211,6 +211,8 @@ export default function Onboarding() {
 
       if (roleUpError) {
         console.warn('Silent issue attempting to update role:', roleUpError);
+      } else {
+        localStorage.setItem(`local_role_${user.id}`, 'business');
       }
 
       // 5. Force session and profile parameters reload

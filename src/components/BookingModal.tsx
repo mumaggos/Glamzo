@@ -387,9 +387,9 @@ export default function BookingModal({
       const finalPriceToPay = Math.max(0, Number((basePrice + stripeTax - discount).toFixed(2)));
       
       // Calculate original commission and protect partner business earnings (Rule #4)
-      const originalCommission = Number((basePrice * feeRate).toFixed(2));
-      const businessAmount = Number((basePrice - originalCommission).toFixed(2)); // Store receives full base rate minus commission, discount absorbed by Glamzo!
-      const glamzoFee = Number((finalPriceToPay - businessAmount).toFixed(2)); // Glamzo absorbs the discount, resulting in a reduced/negative net fee representing the discount coverage
+      const originalCommission = paymentMethod === 'stripe' ? Number((basePrice * feeRate).toFixed(2)) : 0;
+      const businessAmount = paymentMethod === 'stripe' ? Number((basePrice - originalCommission).toFixed(2)) : finalPriceToPay; // Store receives full base rate minus commission for stripe, or 100% of final price for local cash!
+      const glamzoFee = paymentMethod === 'stripe' ? Number((finalPriceToPay - businessAmount).toFixed(2)) : 0; // Glamzo absorbs the discount, resulting in a reduced/negative net fee representing the discount coverage on online, local is 0 fee!
 
       // Initially set booking's payment_status to 'unpaid'
       const { data, error } = await supabase

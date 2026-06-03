@@ -155,41 +155,31 @@ export default function PartnerSignup() {
         throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
       }
 
-      setSuccessMsg('Registo efetuado com sucesso! A preparar o Checkout da sua subscrição Stripe PRO...');
+      setSuccessMsg('Registo concluído com sucesso! Ativámos uma avaliação gratuita PRO de 14 dias para que possa começar a utilizar o seu painel de imediato.');
 
-      // Chamada fetch para o endpoint auditado /api/stripe/create-subscription
-      const subCheckoutRes = await fetch('/api/stripe/create-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          businessId,
-          planName: 'PRO'
+      // Update database with active trial
+      await supabase
+        .from('businesses')
+        .update({
+          subscription_status: 'trialing',
+          subscription_active: true,
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         })
-      });
+        .eq('id', businessId);
 
-      let resJson: any;
-      try {
-        resJson = await subCheckoutRes.json();
-      } catch (jsonErr) {
-        throw new Error('Falha ao ler a resposta do servidor Stripe (Formato inválido).');
-      }
+      // Record subscription entry to satisfy checks
+      await supabase
+        .from('subscriptions')
+        .insert({
+          business_id: businessId,
+          status: 'trialing',
+          plan_name: 'PRO',
+          current_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        });
 
-      // Adicionar logs obrigatórios
-      console.log("Stripe response:", resJson);
-
-      if (!subCheckoutRes.ok || !resJson?.success || !resJson?.url) {
-        const messagePrefix = 'A criação do checkout de subscrição Stripe falhou: ';
-        const detailedError = resJson?.error || 'Não foi possível gerar a URL de redirecionamento.';
-        throw new Error(messagePrefix + detailedError);
-      }
-
-      // Redirecionamento seguro para o Stripe Checkout (operacional e obrigatório)
-      setSuccessMsg('Redirecionando para as páginas seguras do Stripe Checkout para validação do cartão...');
       setTimeout(() => {
-        window.location.href = resJson.url;
-      }, 1500);
+        navigate('/dashboard', { replace: true });
+      }, 2000);
 
     } catch (err: any) {
       console.error('Partner Registration error:', err);

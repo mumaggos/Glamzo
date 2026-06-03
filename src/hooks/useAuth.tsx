@@ -41,11 +41,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Force-sync DB profile role if they registered locally with a custom role but DB was defaulted by trigger
       const storedRole = localStorage.getItem(`local_role_${userId}`) as UserRole | null;
       if (currentProfile && storedRole && currentProfile.role !== storedRole) {
-        try {
-          await supabase.from('profiles').update({ role: storedRole }).eq('id', userId);
-          currentProfile.role = storedRole;
-        } catch (roleSyncErr) {
-          console.warn('Silent role sync mismatch correction bypassed:', roleSyncErr);
+        if (currentProfile.role === 'customer' && (storedRole === 'business' || storedRole === 'admin')) {
+          try {
+            await supabase.from('profiles').update({ role: storedRole }).eq('id', userId);
+            currentProfile.role = storedRole;
+          } catch (roleSyncErr) {
+            console.warn('Silent role sync mismatch correction bypassed:', roleSyncErr);
+          }
+        } else {
+          // Keep database role and update localStorage to match the database truth!
+          localStorage.setItem(`local_role_${userId}`, currentProfile.role);
         }
       }
 
