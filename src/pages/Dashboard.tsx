@@ -922,7 +922,7 @@ export default function Dashboard() {
   // Helper to open Stripe/Redirect URLs safely out of sandboxed iframe previews
   const safeStripeRedirect = (url: string) => {
     if (!url) return;
-    if (url.startsWith('http') || window.self !== window.top) {
+    if (window.self !== window.top) {
       window.open(url, '_blank');
     } else {
       window.location.href = url;
