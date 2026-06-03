@@ -922,30 +922,10 @@ export default function Dashboard() {
   // Helper to open Stripe/Redirect URLs safely out of sandboxed iframe previews
   const safeStripeRedirect = (url: string) => {
     if (!url) return;
-    try {
-      if (window.self !== window.top) {
-        const opened = window.open(url, '_blank');
-        if (!opened) {
-          // If popup is blocked or returned null (safari / pop-up issues)
-          console.warn("Popup blocked or not opened. Navigating directly inside top frame.");
-          window.location.href = url;
-        }
-      } else {
-        window.location.href = url;
-      }
-    } catch (e) {
-      console.warn("Popup/window.open failed with error, falling back to window.location.href:", e);
-      try {
-        window.location.href = url;
-      } catch (errInner) {
-        console.error("Critical redirect fallback crash:", errInner);
-        try {
-          // Last resort fallback
-          window.parent.location.href = url;
-        } catch (errTop) {
-          console.error("Top frame redirect also failed:", errTop);
-        }
-      }
+    if (url.startsWith('http') || window.self !== window.top) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
     }
   };
 
