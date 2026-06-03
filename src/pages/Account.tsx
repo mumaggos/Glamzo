@@ -177,10 +177,8 @@ export default function Account() {
         service_name: reviewBooking.service?.name || 'Serviço'
       });
       
-      // Update global points via financeService (+50 PTS)
-      financeService.addCustomerPoints(user.id, 50);
-      
-      setRedeemSuccess("Obrigado pelo seu comentário! Ganhou +50 Pontos de Fidelidade pelo seu agendamento.");
+      // No longer giving points on comment submission
+      setRedeemSuccess("Obrigado pelo seu comentário! A sua avaliação foi guardada com sucesso.");
       setReviewModalOpen(false);
       setReviewComment('');
       setReviewRating(5);
@@ -192,12 +190,6 @@ export default function Account() {
     } finally {
       setSubmittingReview(false);
     }
-  };
-
-  const handleSimulateReview = () => {
-    if (!user) return;
-    financeService.addCustomerPoints(user.id, 50);
-    setRedeemSuccess("Comentário avaliado pela IA Glamzo! Ganhou +50 Pontos de Fidelidade.");
   };
 
   // Status states
@@ -684,7 +676,7 @@ export default function Account() {
               <span>Glamzo VIP Loyalty Club</span>
             </div>
             <h3 className="text-xl font-black text-slate-800">Clube de Fidelidade & Recompensa</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Acumule pontos em cada marcação concluída ou no envio de comentários e converta-os em vouchers!</p>
+            <p className="text-xs text-slate-400 mt-0.5">Acumule pontos em cada reserva paga online diretamente na aplicação e converta-os em vouchers de desconto!</p>
           </div>
           
           <div className="bg-slate-900 text-white rounded-2xl px-5 py-4 flex items-center gap-4 shrink-0 shadow">
@@ -737,18 +729,12 @@ export default function Account() {
               </button>
             </div>
 
-            {/* Simulated reviewer to easily test or add points for verification */}
-            <div className="border-t border-slate-200 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div>
-                <span className="block text-[9px] font-medium text-slate-400 uppercase tracking-widest leading-none">Acumular Pontos Extra</span>
-                <p className="text-[10px] text-slate-500 font-sans mt-0.5">Avalie ou comente serviços para ganhar +50 pontos.</p>
-              </div>
-              <button
-                onClick={handleSimulateReview}
-                className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-[10px] font-bold cursor-pointer transition-all shrink-0"
-              >
-                ✍ Simular Avaliação
-              </button>
+            {/* Informação sobre como obter pontos de fidelidade reais */}
+            <div className="border-t border-slate-200 pt-4">
+              <span className="block text-[9px] font-semibold text-slate-400 uppercase tracking-widest leading-none">Como Ganhar Pontos</span>
+              <p className="text-[10px] text-slate-500 font-sans mt-1.5 leading-relaxed">
+                Ganhe <strong className="text-slate-700">1 ponto por cada 1€ gasto</strong> em reservas pagas online diretamente na aplicação. Pagamentos efetuados nas lojas parceiras não acumulam pontos.
+              </p>
             </div>
           </div>
 

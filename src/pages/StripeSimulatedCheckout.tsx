@@ -78,8 +78,11 @@ export default function StripeSimulatedCheckout() {
           try { customerId = JSON.parse(localAuth).id; } catch(_) {}
         }
         
-        // Reward client 100 points per agenda booking
-        financeService.addCustomerPoints(customerId, 100);
+        // Reward client 1 point per 1 Euro spent (Math.floor(amount))
+        const pointsEarned = Math.floor(amount);
+        if (pointsEarned > 0) {
+          financeService.addCustomerPoints(customerId, pointsEarned);
+        }
 
         // Adjust Partner balance (Loja receives booking base value MENOS Glamzo commission)
         // Check if business has subscription to assign rate

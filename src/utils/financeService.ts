@@ -309,8 +309,8 @@ export const financeService = {
     const pointsStr = localStorage.getItem(`glamzo_cust_points_${customerId}`);
     if (pointsStr === null) {
       // Seed initial points for onboarding customer
-      localStorage.setItem(`glamzo_cust_points_${customerId}`, '600');
-      return 600;
+      localStorage.setItem(`glamzo_cust_points_${customerId}`, '0');
+      return 0;
     }
     return Number(pointsStr);
   },
