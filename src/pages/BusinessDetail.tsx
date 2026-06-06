@@ -509,6 +509,10 @@ export default function BusinessDetail() {
           width="800"
           height="320"
           referrerPolicy="no-referrer"
+          onError={(e) => {
+            console.warn("Business detail cover image failed to load, using placeholder.");
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=75';
+          }}
           className="w-full h-full object-cover opacity-80 group-hover:scale-102 transition-transform duration-700"
         />
         
@@ -568,6 +572,10 @@ export default function BusinessDetail() {
                   width="96"
                   height="96"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    console.warn("Business detail logo image failed to load, using placeholder.");
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70';
+                  }}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -681,6 +689,10 @@ export default function BusinessDetail() {
                             width="64"
                             height="64"
                             referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              console.warn("Business detail service image failed to load, using placeholder.");
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70';
+                            }}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>

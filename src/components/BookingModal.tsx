@@ -1104,10 +1104,6 @@ export default function BookingModal({
                       setErrorMsg('Por favor selecione um horário vago na nossa marcação.');
                       return;
                     }
-                    if (step === 5 && paymentMethod === 'stripe' && (!cardExpiry || !cardNumber || !cardCVC)) {
-                      setErrorMsg('Selecione "Pagar no Local" ou complete os campos do Cartão de Crédito para avançar.');
-                      return;
-                    }
                     setErrorMsg(null);
                     setStep(step + 1);
                   }}

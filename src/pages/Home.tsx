@@ -322,13 +322,17 @@ export default function Home() {
                 <div>
                   <div className="h-44 relative overflow-hidden">
                     <img 
-                      src={b.cover_url || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="176" viewBox="0 0 400 176"><rect width="400" height="176" fill="%23f8fafc"/><text x="50%" y="54%" font-family="system-ui, sans-serif" font-size="10" font-weight="950" fill="%237c3aed" opacity="0.3" letter-spacing="3" text-anchor="middle">GLAMZO PARTNER</text></svg>'} 
+                      src={b.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70'} 
                       alt={b.name}
                       loading="lazy"
                       decoding="async"
                       width="400"
                       height="176"
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        console.warn("Home cover image failed to load, using placeholder.");
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70';
+                      }}
                       className="w-full h-full object-cover group-hover:scale-101 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />

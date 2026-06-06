@@ -792,6 +792,10 @@ export default function Explore() {
                             width="400"
                             height="208"
                             referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              console.warn("Cover image failed to load, using placeholder.");
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70';
+                            }}
                             className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
@@ -854,6 +858,10 @@ export default function Explore() {
                               width="56"
                               height="56"
                               referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                console.warn("Logo image failed to load, using placeholder.");
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=64&q=70';
+                              }}
                               className="w-full h-full object-cover"
                             />
                           </div>

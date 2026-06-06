@@ -457,6 +457,44 @@ create policy "Allow owners to insert reward_coupons"
 create policy "Allow owners to update reward_coupons"
   on public.reward_coupons for update
   using (auth.uid() = customer_id);
+
+-- =========================================================================
+-- 10. CONFIGURAÇÃO DE BUCKETS DE STORAGE & RLS POLICIES (IMAGENS & AVATARES)
+-- =========================================================================
+
+-- Criar o bucket público "avatars" caso ele não exista
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+-- Remover políticas duplicadas se já existirem
+drop policy if exists "Permitir leitura pública de arquivos do storage" on storage.objects;
+drop policy if exists "Permitir upload para usuários autenticados" on storage.objects;
+drop policy if exists "Permitir atualização de fotos por usuários autenticados" on storage.objects;
+drop policy if exists "Permitir deleção de fotos por usuários autenticados" on storage.objects;
+
+-- 1. Permitir leitura pública (SELECT) de arquivos para todo o mundo (anônimos e autenticados)
+create policy "Permitir leitura pública de arquivos do storage"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+-- 2. Permitir que usuários autenticados façam upload (INSERT) para o bucket
+create policy "Permitir upload para usuários autenticados"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'avatars');
+
+-- 3. Permitir atualização (UPDATE) de arquivos por usuários autenticados
+create policy "Permitir atualização de fotos por usuários autenticados"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'avatars');
+
+-- 4. Permitir deleção (DELETE) de arquivos por usuários autenticados
+create policy "Permitir deleção de fotos por usuários autenticados"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'avatars');
 `;
 
   const handleCopy = () => {

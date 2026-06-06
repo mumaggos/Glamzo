@@ -530,6 +530,23 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     const calculatedSuccessUrl = getRealRedirectUrl(req, successUrl, `/dashboard?status=success_pro&biz_id=${businessId}`);
     const calculatedCancelUrl = getRealRedirectUrl(req, cancelUrl, `/dashboard?status=cancelled_pro&biz_id=${businessId}`);
 
+    // Verify if first time subscribing / trial eligibility
+    const hasTrial = !!(business.trial_started_at || business.trial_ends_at);
+    if (!hasTrial) {
+      console.log(`[Stripe Checkout] Business ${businessId} has no record of a prior trial. Initiating 14-days free trial and logging trial_started_at.`);
+      await db
+        .from('businesses')
+        .update({ trial_started_at: new Date().toISOString() })
+        .eq('id', businessId);
+    } else {
+      console.log(`[Stripe Checkout] Business ${businessId} has already experienced a trial. Generating full checkout session without trial.`);
+    }
+
+    const subscriptionData: any = {};
+    if (!hasTrial) {
+      subscriptionData.trial_period_days = 14;
+    }
+
     console.log("Initiating stripe.checkout.sessions.create...");
     let session: Stripe.Checkout.Session;
     try {
@@ -547,9 +564,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             quantity: 1,
           },
         ],
-        subscription_data: {
-          trial_period_days: 14,
-        },
+        ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
         metadata: {
           business_id: businessId,
           businessId: businessId,
@@ -581,9 +596,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
                 quantity: 1,
               },
             ],
-            subscription_data: {
-              trial_period_days: 14,
-            },
+            ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
             metadata: {
               business_id: businessId,
               businessId: businessId,
