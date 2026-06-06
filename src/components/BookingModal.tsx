@@ -465,7 +465,13 @@ export default function BookingModal({
           });
 
           if (!res.ok) {
-            throw new Error('Falha na resposta do servidor');
+            const errorText = await res.text();
+            let parsedErr = 'Falha na resposta do servidor';
+            try {
+              const bodyJ = JSON.parse(errorText);
+              parsedErr = bodyJ.error || parsedErr;
+            } catch (_) {}
+            throw new Error(parsedErr);
           }
 
           const checkoutData = await res.json();
@@ -479,6 +485,7 @@ export default function BookingModal({
                 }
               } else {
                 window.location.href = checkoutData.url;
+                return;
               }
             } catch (redirErr) {
               console.warn('Direct window.open checkout failed, falling back to window.location.href:', redirErr);
@@ -494,9 +501,9 @@ export default function BookingModal({
           } else {
             throw new Error('Nenhum link de checkout foi retornado');
           }
-        } catch (stripeErr) {
+        } catch (stripeErr: any) {
           console.error('Stripe redirect exception:', stripeErr);
-          throw new Error('Serviço Stripe indisponível no momento. Por favor tente agendar selecionando "Pagar diretamente no local".');
+          throw new Error(stripeErr.message || 'Serviço Stripe indisponível no momento. Por favor tente agendar selecionando "Pagar diretamente no local".');
         }
       }
 
@@ -1118,8 +1125,8 @@ export default function BookingModal({
                       setErrorMsg('Por favor selecione um horário vago na nossa marcação.');
                       return;
                     }
-                    if (step === 5 && paymentMethod === 'stripe' && (!cardExpiry || !cardNumber || !cardCVC)) {
-                      setErrorMsg('Selecione "Pagar no Local" ou complete os campos do Cartão de Crédito para avançar.');
+                    if (step === 5 && !paymentMethod) {
+                      setErrorMsg('Selecione um método de pagamento para avançar.');
                       return;
                     }
                     setErrorMsg(null);

@@ -323,13 +323,20 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const { bookingId, amount, stripeAccountId, customerEmail, serviceName, businessName, successUrl, cancelUrl } = req.body;
 
     if (!bookingId || !amount) {
-      res.status(400).json({ error: 'Missing bookingId or amount parameters' });
+      res.status(400).json({ error: 'Falta o parâmetro bookingId ou o valor total do agendamento' });
       return;
     }
 
     const db = getSupabaseAdmin();
     const stripe = getStripe();
     const amountCents = Math.round(Number(amount) * 100);
+
+    // Safeguard: Stripe payments require at least 50 cents (0.50 EUR)
+    if (amountCents < 50) {
+      res.status(400).json({ error: 'O valor mínimo para pagamentos online via Stripe é de 0,50 €. Por favor, selecione "Pagar diretamente no local" ou adicione mais serviços.' });
+      return;
+    }
+
     const appFeeCents = Math.round(amountCents * 0.05); // 5% platform commission as requested
 
     // Safe DB Lookup backup: resolve Stripe Connected Account ID from the corresponding business directly
@@ -359,8 +366,10 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const calculatedSuccessUrl = getRealRedirectUrl(req, successUrl, `/account?status=success&booking_id=${bookingId}`);
     const calculatedCancelUrl = getRealRedirectUrl(req, cancelUrl, '/account?status=cancelled');
 
-    const checkoutConfig: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ['card', 'mb_way'],
+    const checkoutConfig: any = {
+      automatic_payment_methods: {
+        enabled: true,
+      },
       customer_email: customerEmail || undefined,
       line_items: [
         {
@@ -397,8 +406,25 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const session = await stripe.checkout.sessions.create(checkoutConfig);
     res.json({ id: session.id, url: session.url });
   } catch (err: any) {
-    console.error('Stripe Checkout Session construction fail:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Stripe Checkout Session construction fail:', err);
+    let portugueseError = 'Falha ao processar o agendamento no Stripe. Por favor verifique as configurações da conta.';
+    
+    if (err.message) {
+      if (err.message.includes('You cannot transfer funds to your own account')) {
+        portugueseError = 'Não é possível transferir fundos para a sua própria conta (a conta de destino coincide com a conta principal da plataforma). Use uma conta Connect secundária ou mude para "Pagar no Local".';
+      } else if (err.message.includes('must be at least')) {
+        portugueseError = 'O valor do serviço é demasiado baixo. O Stripe requer um valor mínimo de 0.50 € para pagamentos online.';
+      } else if (err.message.includes('payouts have been disabled') || err.message.includes('restricted') || err.message.includes('capabilities') || err.message.includes('requirements.past_due')) {
+        portugueseError = 'Este estúdio ainda não concluiu a verificação de segurança no painel Stripe Connect ou tem os pagamentos inativos. Por favor, escolha "Pagar diretamente no local" ou contacte o suporte do salão.';
+      } else if (err.message.includes('API key')) {
+        portugueseError = 'A chave da API Stripe não está configurada corretamente no servidor ou está em falta no ficheiro .env.';
+      } else if (err.message.includes('No such destination')) {
+        portugueseError = 'A conta Connect deste estúdio (Destination Account) não foi encontrada ou está incorreta no Stripe. Selecione "Pagar diretamente no local".';
+      } else {
+        portugueseError = `Erro na Stripe: ${err.message}`;
+      }
+    }
+    res.status(500).json({ error: portugueseError });
   }
 });
 
