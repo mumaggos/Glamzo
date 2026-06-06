@@ -127,6 +127,12 @@ export default function BookingModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successBooking, setSuccessBooking] = useState<any | null>(null);
 
+  // Credit Card mock inputs for Stripe payment option
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCVC, setCardCVC] = useState('');
+
   // Set initial selected service if supplied
   useEffect(() => {
     if (initialSelectedService) {
@@ -371,18 +377,19 @@ export default function BookingModal({
       const initialPaymentStatus = 'unpaid';
 
       // 2. Perform Insert in real public.bookings table combining FASE 10 financial rules
-      const feeRate = 0.05; // 5% comissão Glamzo
+      const isPro = businessSubscription?.plan_name === 'PRO';
+      const feeRate = isPro ? 0.05 : 0.15;
       
       const basePrice = Number(selectedService.price);
       const discount = Number(couponDiscount || 0);
-      const stripeTax = 0.00; // Taxas adicionais ao cliente totalmente removidas
+      const stripeTax = paymentMethod === 'stripe' ? 1.50 : 0.00; // Taxas
       
-      const finalPriceToPay = Math.max(0, Number((basePrice - discount).toFixed(2)));
+      const finalPriceToPay = Math.max(0, Number((basePrice + stripeTax - discount).toFixed(2)));
       
-      // Calculate commission (5%) on the amount paid, protecting customer and partner business splits
-      const commissionAmount = paymentMethod === 'stripe' ? Number((finalPriceToPay * feeRate).toFixed(2)) : 0;
-      const businessAmount = paymentMethod === 'stripe' ? Number((finalPriceToPay - commissionAmount).toFixed(2)) : finalPriceToPay; // Store receives 95% for online, or 100% of final price for local cash!
-      const glamzoFee = commissionAmount;
+      // Calculate original commission and protect partner business earnings (Rule #4)
+      const originalCommission = paymentMethod === 'stripe' ? Number((basePrice * feeRate).toFixed(2)) : 0;
+      const businessAmount = paymentMethod === 'stripe' ? Number((basePrice - originalCommission).toFixed(2)) : finalPriceToPay; // Store receives full base rate minus commission for stripe, or 100% of final price for local cash!
+      const glamzoFee = paymentMethod === 'stripe' ? Number((finalPriceToPay - businessAmount).toFixed(2)) : 0; // Glamzo absorbs the discount, resulting in a reduced/negative net fee representing the discount coverage on online, local is 0 fee!
 
       // Initially set booking's payment_status to 'unpaid'
       const { data, error } = await supabase
@@ -464,10 +471,24 @@ export default function BookingModal({
           const checkoutData = await res.json();
           if (checkoutData?.url) {
             // Real Redirect to Stripe Checkout (breakout of standard iframe sandbox if necessary)
-            if (checkoutData.url.startsWith('http') || window.self !== window.top) {
-              window.open(checkoutData.url, '_blank');
-            } else {
-              window.location.href = checkoutData.url;
+            try {
+              if (window.self !== window.top) {
+                const opened = window.open(checkoutData.url, '_blank');
+                if (!opened) {
+                  window.location.href = checkoutData.url;
+                }
+              } else {
+                window.location.href = checkoutData.url;
+              }
+            } catch (redirErr) {
+              console.warn('Direct window.open checkout failed, falling back to window.location.href:', redirErr);
+              try {
+                window.location.href = checkoutData.url;
+              } catch (innerErr) {
+                try {
+                  window.parent.location.href = checkoutData.url;
+                } catch (_) {}
+              }
             }
             return;
           } else {
@@ -856,46 +877,56 @@ export default function BookingModal({
                     </div>
 
                     {/* Pay with Stripe REAL */}
-                    <div 
-                      onClick={() => setPaymentMethod('stripe')}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-4 ${
-                        paymentMethod === 'stripe'
-                          ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-semibold ring-2 ring-rose-500/10'
-                          : 'border-slate-100 hover:bg-slate-50 bg-slate-50/20'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-3.5 items-center">
-                          <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
-                            <CreditCard className="w-5 h-5" />
+                    {business?.charges_enabled && business?.payouts_enabled ? (
+                      <div 
+                        onClick={() => setPaymentMethod('stripe')}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-4 ${
+                          paymentMethod === 'stripe'
+                            ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-semibold ring-2 ring-rose-500/10'
+                            : 'border-slate-100 hover:bg-slate-50 bg-slate-50/20'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-3.5 items-center">
+                            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                              <CreditCard className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-black text-slate-800">Pagar Online Seguro (Stripe)</h4>
+                              <p className="text-[10px] text-slate-400 mt-0.5">Pagamento online imediato e seguro processado pela Stripe.</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-xs font-black text-slate-800">Pagar Online Seguro (Stripe / Cartão)</h4>
-                            <p className="text-[10px] text-slate-400 mt-0.5">
-                              {!business?.charges_enabled || !business?.payouts_enabled 
-                                ? 'Pagamento online de teste/plataforma ativo para verificação rápida.'
-                                : 'Pagamento online imediato e seguro processado pela Stripe.'}
+                          
+                          <div className="shrink-0 h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center">
+                            {paymentMethod === 'stripe' && <div className="h-3 w-3 rounded-full bg-rose-600" />}
+                          </div>
+                        </div>
+
+                        {paymentMethod === 'stripe' && (
+                          <div className="p-3 bg-white/70 backdrop-blur-xs border border-rose-100 rounded-xl space-y-2 mt-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                              <span>Stripe Checkout Ativo</span>
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-normal">
+                              Será redirecionado de forma 100% segura para efetuar o pagamento. São suportados cartões, <strong>MBWay</strong>, <strong>Apple Pay</strong> e <strong>Google Pay</strong>.
                             </p>
                           </div>
-                        </div>
-                        
-                        <div className="shrink-0 h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center">
-                          {paymentMethod === 'stripe' && <div className="h-3 w-3 rounded-full bg-rose-600" />}
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 text-slate-400 cursor-not-allowed flex items-center justify-between">
+                        <div className="flex gap-3.5 items-center">
+                          <div className="p-2.5 bg-slate-100 text-slate-400 rounded-xl">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <h4 className="text-xs font-black text-slate-500">Pagar Online Seguro (Indisponível)</h4>
+                            <p className="text-[10px] text-rose-650 text-rose-450 mt-0.5 font-sans">Este espaço ainda não completou a verificação operacional da sua conta Stripe Connect.</p>
+                          </div>
                         </div>
                       </div>
-
-                      {paymentMethod === 'stripe' && (
-                        <div className="p-3 bg-white/70 backdrop-blur-xs border border-rose-100 rounded-xl space-y-2 mt-1">
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span>Stripe Checkout Ativo</span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 leading-normal">
-                            Será redirecionado de forma 100% segura para efetuar o pagamento. São suportados cartões, <strong>MBWay</strong>, <strong>Apple Pay</strong> e <strong>Google Pay</strong>.
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                   </div>
                 </div>
@@ -971,6 +1002,12 @@ export default function BookingModal({
                           <span>Preço Base do Serviço</span>
                           <span className="font-mono">{Number(selectedService.price).toFixed(2)} €</span>
                         </div>
+                        {paymentMethod === 'stripe' && (
+                          <div className="flex justify-between items-center text-slate-500">
+                            <span>Taxa de Processamento Online</span>
+                            <span className="font-mono">+1.50 €</span>
+                          </div>
+                        )}
                         {couponDiscount > 0 && (
                           <div className="flex justify-between items-center text-emerald-600 font-bold">
                             <span>Desconto Aplicado</span>
@@ -982,7 +1019,7 @@ export default function BookingModal({
                       <div className="flex justify-between items-center border-t border-slate-150 pt-3">
                         <span className="text-slate-500 font-black uppercase text-[10px]">Preço Total a Pagar</span>
                         <span className="text-base font-black text-rose-700 font-mono">
-                          {Math.max(0, Number(selectedService.price) - couponDiscount).toFixed(2)} €
+                          {Math.max(0, Number(selectedService.price) + (paymentMethod === 'stripe' ? 1.50 : 0.00) - couponDiscount).toFixed(2)} €
                         </span>
                       </div>
                     </div>
@@ -1079,6 +1116,10 @@ export default function BookingModal({
                     }
                     if (step === 4 && !selectedTime) {
                       setErrorMsg('Por favor selecione um horário vago na nossa marcação.');
+                      return;
+                    }
+                    if (step === 5 && paymentMethod === 'stripe' && (!cardExpiry || !cardNumber || !cardCVC)) {
+                      setErrorMsg('Selecione "Pagar no Local" ou complete os campos do Cartão de Crédito para avançar.');
                       return;
                     }
                     setErrorMsg(null);

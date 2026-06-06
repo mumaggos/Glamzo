@@ -922,10 +922,30 @@ export default function Dashboard() {
   // Helper to open Stripe/Redirect URLs safely out of sandboxed iframe previews
   const safeStripeRedirect = (url: string) => {
     if (!url) return;
-    if (url.startsWith('http') || window.self !== window.top) {
-      window.open(url, '_blank');
-    } else {
-      window.location.href = url;
+    try {
+      if (window.self !== window.top) {
+        const opened = window.open(url, '_blank');
+        if (!opened) {
+          // If popup is blocked or returned null (safari / pop-up issues)
+          console.warn("Popup blocked or not opened. Navigating directly inside top frame.");
+          window.location.href = url;
+        }
+      } else {
+        window.location.href = url;
+      }
+    } catch (e) {
+      console.warn("Popup/window.open failed with error, falling back to window.location.href:", e);
+      try {
+        window.location.href = url;
+      } catch (errInner) {
+        console.error("Critical redirect fallback crash:", errInner);
+        try {
+          // Last resort fallback
+          window.parent.location.href = url;
+        } catch (errTop) {
+          console.error("Top frame redirect also failed:", errTop);
+        }
+      }
     }
   };
 
@@ -1433,10 +1453,14 @@ export default function Dashboard() {
   const balanceAvailable = Math.max(0, totalReceivedVolumeOnline - totalPayoutTransferred);
 
   // Subscription calculation and Lock logic
-  // Unificada única fonte de verdade: Tabela businesses
-  const resolvedSubscriptionStatus = business?.subscription_status || null;
-  const resolvedSubscriptionActive = !!business?.subscription_active;
-  const trialEndsAt = business?.trial_ends_at || null;
+  const activeSubscription = subscriptions && subscriptions.length > 0 ? subscriptions[0] : null;
+
+  // Real-time status resolved safely from both DB models (resilient fallback)
+  // Prioritize active or trialing status from subscriptions table over general business subscription_status
+  const isSubTableActiveVal = activeSubscription && (activeSubscription.status === 'active' || activeSubscription.status === 'trialing');
+  const resolvedSubscriptionStatus = isSubTableActiveVal ? activeSubscription.status : (business?.subscription_status || null);
+  const resolvedSubscriptionActive = business?.subscription_active || isSubTableActiveVal;
+  const trialEndsAt = business?.trial_ends_at || activeSubscription?.expires_at || null;
 
   const trialDaysRemaining = (() => {
     const trialEndStr = trialEndsAt;
@@ -1452,7 +1476,7 @@ export default function Dashboard() {
       if (expiresAt && expiresAt <= Date.now()) return true;
       return false;
     }
-    if (!resolvedSubscriptionStatus) {
+    if (!activeSubscription && !resolvedSubscriptionStatus) {
       if (!business) return false;
       const createdAt = new Date(business.created_at).getTime();
       return (Date.now() - createdAt) > 14 * 24 * 60 * 60 * 1000;
@@ -1470,16 +1494,10 @@ export default function Dashboard() {
     return false;
   })();
 
-  // Block dashboard if no active/trialing subscription, or if card (stripe_subscription_id) has not been linked yet (required for marketplace & panel use, exceptions made for valid free trial periods)
+  // Block dashboard if no active/trialing subscription, or if card (stripe_subscription_id) has not been linked yet (required for marketplace & panel use)
   const isBillingBlocked = (() => {
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
     if (isDemo) return false;
-
-    // If they are on a valid free trial (not expired), do NOT block them yet!
-    const isOnValidTrial = !isTrialExpired;
-    if (isOnValidTrial) {
-      return false;
-    }
 
     // Must have a credit card linked/subscription configured in stripe to use the dashboard!
     if (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '') {
@@ -1499,15 +1517,9 @@ export default function Dashboard() {
   const subBlockReason = (() => {
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
     if (!isDemo && (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '')) {
-      // If trial has expired, they are blocked because they need a card to activate/continue
-      if (isTrialExpired) {
-        return 'active_trial_requires_card';
-      }
+      return 'active_trial_requires_card';
     }
-    if (!resolvedSubscriptionStatus) {
-      if (isTrialExpired) return 'expired';
-      return 'onboarding';
-    }
+    if (!activeSubscription && !resolvedSubscriptionStatus) return 'onboarding';
     if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid') return 'past_due';
     return 'expired';
   })();
@@ -2014,7 +2026,7 @@ export default function Dashboard() {
           )}
 
           {/* Stripe Connect Pending Alert Banner */}
-          {!isBillingBlocked && (!business?.stripe_account_id || !(stripeStatus ? stripeStatus.charges_enabled : business?.charges_enabled) || !(stripeStatus ? stripeStatus.payouts_enabled : business?.payouts_enabled)) && (
+          {!isBillingBlocked && (!business?.stripe_account_id || !stripeStatus?.charges_enabled || !stripeStatus?.payouts_enabled) && (
             <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/40 to-yellow-950/40 border border-amber-500/20 text-amber-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/15 animate-fade-in text-left">
               <div className="flex items-center gap-3">
                 <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/25 shrink-0">
@@ -2334,21 +2346,7 @@ export default function Dashboard() {
                                   <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
                                     <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-slate-400 overflow-hidden text-[9px]">
                                       {st.avatar_url ? (
-                                        <img 
-                                          src={st.avatar_url} 
-                                          alt={st.full_name} 
-                                          onError={(e) => {
-                                            console.warn("Staff listing avatar failed to load.");
-                                            e.currentTarget.style.display = 'none';
-                                            // Fallback to text initials
-                                            const container = e.currentTarget.parentElement;
-                                            if (container) {
-                                              const initials = document.createTextNode(st.full_name.substring(0, 2).toUpperCase());
-                                              container.appendChild(initials);
-                                            }
-                                          }}
-                                          className="w-full h-full object-cover" 
-                                        />
+                                        <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
                                       ) : (
                                         st.full_name.substring(0, 2).toUpperCase()
                                       )}
@@ -2796,20 +2794,7 @@ export default function Dashboard() {
                       <div key={st.id} className="bg-slate-900 border border-slate-900 rounded-3xl p-5 hover:border-slate-805 text-center flex flex-col items-center gap-3">
                         <div className="w-16 h-16 rounded-full bg-slate-855 bg-slate-950/80 border border-slate-800 text-slate-300 font-bold flex items-center justify-center font-mono text-xl overflow-hidden">
                           {st.avatar_url ? (
-                            <img 
-                              src={st.avatar_url} 
-                              alt={st.full_name} 
-                              onError={(e) => {
-                                console.warn("Staff grid avatar failed to load.");
-                                e.currentTarget.style.display = 'none';
-                                const container = e.currentTarget.parentElement;
-                                if (container) {
-                                  const initials = document.createTextNode(st.full_name.substring(0, 2).toUpperCase());
-                                  container.appendChild(initials);
-                                }
-                              }}
-                              className="w-full h-full object-cover" 
-                            />
+                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
                           ) : (
                             st.full_name.substring(0, 2).toUpperCase()
                           )}

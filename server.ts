@@ -65,7 +65,9 @@ function getSupabaseAdmin(): any {
 app.use((req, res, next) => {
   if (
     req.originalUrl === '/api/webhooks/stripe' ||
-    req.originalUrl.startsWith('/api/webhooks/')
+    req.originalUrl === '/api/stripe/webhook' ||
+    req.originalUrl.startsWith('/api/webhooks/') ||
+    req.originalUrl.startsWith('/api/stripe/webhook')
   ) {
     next();
   } else {
@@ -528,23 +530,6 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     const calculatedSuccessUrl = getRealRedirectUrl(req, successUrl, `/dashboard?status=success_pro&biz_id=${businessId}`);
     const calculatedCancelUrl = getRealRedirectUrl(req, cancelUrl, `/dashboard?status=cancelled_pro&biz_id=${businessId}`);
 
-    // Verify if first time subscribing / trial eligibility
-    const hasTrial = !!(business.trial_started_at || business.trial_ends_at);
-    if (!hasTrial) {
-      console.log(`[Stripe Checkout] Business ${businessId} has no record of a prior trial. Initiating 14-days free trial and logging trial_started_at.`);
-      await db
-        .from('businesses')
-        .update({ trial_started_at: new Date().toISOString() })
-        .eq('id', businessId);
-    } else {
-      console.log(`[Stripe Checkout] Business ${businessId} has already experienced a trial. Generating full checkout session without trial.`);
-    }
-
-    const subscriptionData: any = {};
-    if (!hasTrial) {
-      subscriptionData.trial_period_days = 14;
-    }
-
     console.log("Initiating stripe.checkout.sessions.create...");
     let session: Stripe.Checkout.Session;
     try {
@@ -562,7 +547,9 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             quantity: 1,
           },
         ],
-        ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
+        subscription_data: {
+          trial_period_days: 14,
+        },
         metadata: {
           business_id: businessId,
           businessId: businessId,
@@ -594,7 +581,9 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
                 quantity: 1,
               },
             ],
-            ...(Object.keys(subscriptionData).length > 0 ? { subscription_data: subscriptionData } : {}),
+            subscription_data: {
+              trial_period_days: 14,
+            },
             metadata: {
               business_id: businessId,
               businessId: businessId,
@@ -776,6 +765,7 @@ app.post('/api/stripe/verify-subscription', async (req, res) => {
 });
 
 app.post('/api/stripe/create-subscription', handleCreateSubscriptionCheckout);
+app.post('/api/create-subscription-checkout', handleCreateSubscriptionCheckout);
 
 // Create Customer Billing Portal session for active partner salons
 app.post('/api/stripe/create-portal-session', async (req, res) => {
@@ -882,6 +872,11 @@ app.post('/api/stripe/cancel-subscription', async (req, res) => {
     console.error('Subscription cancellation failed:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Friendly aliases to satisfy various client route patterns
+app.post('/api/stripe/create-checkout', (req, res) => {
+  res.redirect(307, '/api/create-checkout-session');
 });
 
 // Unified Webhook for both Corporate SaaS (Subscriptions) and Connect Platform accounts (splits, payouts, verification state)
@@ -1295,6 +1290,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
 // Register webhook endpoints on both paths to support dynamic setup patterns
 app.post('/api/webhooks/stripe', express.raw({ type: '*/*' }), handleStripeWebhook);
+app.post('/api/stripe/webhook', express.raw({ type: '*/*' }), handleStripeWebhook);
 
 // Initialize Express + Vite server middlewares
 async function startServer() {
@@ -1341,4 +1337,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
