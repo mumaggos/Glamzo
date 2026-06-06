@@ -98,7 +98,33 @@ export default function Home() {
       return dynamicCards.map(c => {
         // Resolve a beautiful Unsplash fallback if the database image is local/broken/placeholder
         let imgUrl = c.image_url;
-        if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/')) {
+        const lowerTitle = (c.title || '').toLowerCase().trim();
+        if (lowerTitle.includes('noiva') || lowerTitle.includes('event')) {
+          imgUrl = 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+        }
+        const parseFallback = () => {
+          if (lowerTitle.includes('noiva') || lowerTitle.includes('event') || lowerTitle.includes('casam') || lowerTitle.includes('brid')) {
+            return 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+          }
+          if (lowerTitle.includes('cabel') || lowerTitle.includes('barb')) {
+            return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
+          }
+          if (lowerTitle.includes('nail') || lowerTitle.includes('unh') || lowerTitle.includes('pest') || lowerTitle.includes('sobr')) {
+            return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600';
+          }
+          if (lowerTitle.includes('estét') || lowerTitle.includes('pele') || lowerTitle.includes('corpo')) {
+            return 'https://images.unsplash.com/photo-1522335789253-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600';
+          }
+          if (lowerTitle.includes('well') || lowerTitle.includes('mass') || lowerTitle.includes('spa')) {
+            return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600';
+          }
+          if (lowerTitle.includes('domicíl') || lowerTitle.includes('casa')) {
+            return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+          }
+          return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+        };
+
+        if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/') || imgUrl === 'null' || imgUrl === 'undefined') {
           const normalizeStr = (s: string) => {
             return s.toLowerCase()
               .trim()
@@ -106,7 +132,7 @@ export default function Home() {
               .replace(/[\s\-_]+/g, ' ');
           };
           const match = MAIN_CATEGORIES.find(m => normalizeStr(m.name) === normalizeStr(c.title));
-          imgUrl = match ? match.imageUrl : 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+          imgUrl = match ? match.imageUrl : parseFallback();
         }
         return {
           id: c.id,
@@ -264,6 +290,17 @@ export default function Home() {
                   width="400"
                   height="192"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null; // Prevent infinite loop
+                    const lower = (cat.name || '').toLowerCase();
+                    if (lower.includes('noiva') || lower.includes('event') || lower.includes('casam') || lower.includes('brid')) {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+                    } else if (lower.includes('cabel') || lower.includes('barb')) {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
+                    } else {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+                    }
+                  }}
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 grayscale-[10%] group-hover:grayscale-0"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">

@@ -103,3 +103,211 @@ img, button, a {
   transform: translate3d(0, 0, 0);
 }
 
+/* ==================================================== */
+/* HIGH-FASHION LIGHT THEME FOR THE PARTNER DASHBOARD */
+/* ==================================================== */
+#partner-terminal-layout {
+  background-color: #f8fafc !important; /* Elegant slate off-white client-side background */
+  color: #1e293b !important; /* Premium charcoal text */
+}
+
+/* Sidebar Overrides */
+#partner-terminal-layout aside {
+  background-color: #ffffff !important; /* Crisp white sidebar */
+  border-right: 1px solid #e2e8f0 !important; /* Faint border */
+}
+
+#partner-terminal-layout aside .border-white\/5,
+#partner-terminal-layout aside .border-r {
+  border-color: #e2e8f0 !important;
+}
+
+#partner-terminal-layout aside h4, 
+#partner-terminal-layout aside span, 
+#partner-terminal-layout aside h3 {
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout aside nav button {
+  color: #475569 !important; /* Clean slate links */
+}
+
+#partner-terminal-layout aside nav button:hover {
+  background-color: #f1f5f9 !important; /* Light slate hover */
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout aside nav button.bg-purple-650 {
+  background: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%) !important; /* Glamzo classic purple-to-rose client gradient! */
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2) !important;
+}
+
+/* Header & Tab Area Overrides */
+#partner-terminal-layout main {
+  background-color: #f8fafc !important;
+}
+
+#partner-terminal-layout h1, 
+#partner-terminal-layout h2, 
+#partner-terminal-layout h3, 
+#partner-terminal-layout h4, 
+#partner-terminal-layout h5, 
+#partner-terminal-layout h6 {
+  color: #0f172a !important; /* High contrast headings */
+  font-family: var(--font-display) !important;
+}
+
+/* Subtitle and helper paragraphs */
+#partner-terminal-layout p, 
+#partner-terminal-layout p.text-slate-400, 
+#partner-terminal-layout span.text-slate-400 {
+  color: #475569 !important; /* Visible slate subheaders */
+}
+
+/* Base Cards & Blocks to Luxury Client Cards */
+#partner-terminal-layout .bg-slate-900, 
+#partner-terminal-layout .bg-slate-900\/50,
+#partner-terminal-layout .bg-slate-900\/70,
+#partner-terminal-layout .bg-slate-950\/40,
+#partner-terminal-layout .bg-slate-950\/30 {
+  background-color: #ffffff !important; /* Solid luxury white card background */
+  border-color: #e2e8f0 !important; /* Soft borders */
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(15,23,42,0.015) !important;
+}
+
+#partner-terminal-layout .border-slate-900, 
+#partner-terminal-layout .border-slate-800,
+#partner-terminal-layout .border-slate-950,
+#partner-terminal-layout .border-slate-950\/40,
+#partner-terminal-layout .border-b.border-slate-900 {
+  border-color: #f1f5f9 !important;
+}
+
+/* Timeline background & text adjustments */
+#partner-terminal-layout .divide-slate-900\/40 {
+  border-color: #f1f5f9 !important;
+}
+
+#partner-terminal-layout .bg-slate-950 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout input, 
+#partner-terminal-layout select, 
+#partner-terminal-layout textarea {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout input:focus, 
+#partner-terminal-layout select:focus, 
+#partner-terminal-layout textarea:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* Booking Cards (confirmed / pending) */
+#partner-terminal-layout .bg-rose-950\/20 {
+  background-color: #fff1f2 !important; /* Premium rose block */
+  border-color: #fca5a5 !important;
+  color: #9f1239 !important;
+}
+
+#partner-terminal-layout .bg-rose-950\/20 .text-white {
+  color: #881337 !important;
+}
+
+#partner-terminal-layout .bg-amber-950\/25 {
+  background-color: #fef3c7 !important; /* Premium amber block */
+  border-color: #fde047 !important;
+  color: #92400e !important;
+}
+
+#partner-terminal-layout .bg-amber-950\/25 .text-white {
+  color: #78350f !important;
+}
+
+/* Close/Action buttons in dashboard tabs */
+#partner-terminal-layout .border-thin {
+  border-color: #e2e8f0 !important;
+}
+
+/* Modal and Interactives Adjustments */
+#partner-terminal-layout .fixed.inset-0 {
+  background-color: rgba(15, 23, 42, 0.5) !important; /* Elegant dark backdrop overlay */
+  backdrop-filter: blur(8px) !important;
+}
+
+#partner-terminal-layout .fixed.inset-0 .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout .fixed.inset-0 h3,
+#partner-terminal-layout .fixed.inset-0 h4,
+#partner-terminal-layout .fixed.inset-0 label {
+  color: #0f172a !important;
+}
+
+#partner-terminal-layout .fixed.inset-0 input,
+#partner-terminal-layout .fixed.inset-0 select,
+#partner-terminal-layout .fixed.inset-0 textarea {
+  color: #0f172a !important;
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+#partner-terminal-layout .fixed.inset-0 input:focus,
+#partner-terminal-layout .fixed.inset-0 select:focus,
+#partner-terminal-layout .fixed.inset-0 textarea:focus {
+  border-color: #7c3aed !important;
+}
+
+/* Tables and active tabs custom light adjustments */
+#partner-terminal-layout table {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+}
+
+#partner-terminal-layout table th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+#partner-terminal-layout table td {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* Analytics Graph Text styling to avoid invisible black labels */
+#partner-terminal-layout .recharts-text {
+  fill: #475569 !important;
+}
+
+/* Custom stats pill highlights in sub-rails and buttons */
+#partner-terminal-layout .bg-rose-600 {
+  background-color: #f43f5e !important;
+}
+
+#partner-terminal-layout .bg-rose-600:hover {
+  background-color: #e11d48 !important;
+}
+
+#partner-terminal-layout .border-rose-500\/30 {
+  border-color: #fda4af !important;
+}
+
+#partner-terminal-layout .text-rose-300 {
+  color: #be123c !important;
+}
+
+#partner-terminal-layout .text-slate-450 {
+  color: #475569 !important;
+}
+

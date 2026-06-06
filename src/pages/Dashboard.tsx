@@ -77,6 +77,136 @@ export default function Dashboard() {
   const [toastNotification, setToastNotification] = useState<{ visible: boolean; title: string; desc: string } | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // States for Manual Booking / Blocking Times
+  const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [manualBookingType, setManualBookingType] = useState<'booking' | 'block'>('booking');
+  const [manualClientName, setManualClientName] = useState('');
+  const [manualReason, setManualReason] = useState('');
+  const [manualServiceId, setManualServiceId] = useState('');
+  const [manualStaffId, setManualStaffId] = useState('');
+  const [manualDate, setManualDate] = useState(new Date().toISOString().split('T')[0]);
+  const [manualStartTime, setManualStartTime] = useState('09:00');
+  const [manualNotes, setManualNotes] = useState('');
+  const [isSavingManual, setIsSavingManual] = useState(false);
+
+  // Helper to extract clean manual names or block labels for bookings
+  const getBookingDisplayName = (bk: any) => {
+    if (bk.notes) {
+      if (bk.notes.startsWith('Reserva Manual:')) {
+        return bk.notes.substring('Reserva Manual:'.length).trim();
+      }
+      if (bk.notes.startsWith('Bloqueio Agenda:')) {
+        return bk.notes.trim();
+      }
+    }
+    return bk.customer?.full_name || bk.customer_profile?.full_name || 'Cliente Particular';
+  };
+
+  const handleSaveManualBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !business) {
+      alert("Sessão ou loja não inicializada.");
+      return;
+    }
+    
+    // Validate inputs
+    if (manualBookingType === 'booking' && !manualClientName.trim()) {
+      alert("Por favor, introduza o nome do cliente.");
+      return;
+    }
+    if (manualBookingType === 'block' && !manualReason.trim()) {
+      alert("Por favor, introduza o motivo do bloqueio.");
+      return;
+    }
+    
+    setIsSavingManual(true);
+    try {
+      // Find selected service for duration and price
+      const selectedSvc = services.find(s => s.id === manualServiceId);
+      const svcPrice = selectedSvc ? Number(selectedSvc.price) : 0;
+      
+      // Calculate end time
+      const [startH, startM] = manualStartTime.split(':').map(Number);
+      const duration = selectedSvc ? Number(selectedSvc.duration_minutes) : 30;
+      const totalMinutes = startH * 60 + startM + duration;
+      const endH = Math.floor(totalMinutes / 60) % 24;
+      const endM = totalMinutes % 60;
+      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+      
+      const payloadNotes = manualBookingType === 'block' 
+        ? `Bloqueio Agenda: ${manualReason}`
+        : `Reserva Manual: ${manualClientName}${manualNotes ? ' - ' + manualNotes : ''}`;
+
+      // If no services were selected, use the first available service
+      let finalServiceId = manualServiceId;
+      if (!finalServiceId && services.length > 0) {
+        finalServiceId = services[0].id;
+      }
+      
+      if (!finalServiceId) {
+        throw new Error("Por favor, crie pelo menos um serviço no separador 'Serviços' antes de agendar manualmente.");
+      }
+
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert({
+          customer_id: user.id, // the owner is the customer for manual bookings/blocks
+          business_id: business.id,
+          service_id: finalServiceId,
+          staff_id: manualStaffId || null,
+          booking_date: manualDate,
+          start_time: manualStartTime,
+          end_time: endTimeStr,
+          total_price: manualBookingType === 'block' ? 0 : svcPrice,
+          payment_method: 'local',
+          payment_status: manualBookingType === 'block' ? 'paid' : 'unpaid',
+          booking_status: 'confirmed', // confirmed immediately
+          notes: payloadNotes
+        })
+        .select(`
+          *,
+          service:services(name, price, duration_minutes),
+          staff:staff(full_name)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      // Create simulated payment for accounting compliance rules
+      await supabase
+        .from('payments')
+        .insert({
+          booking_id: data.id,
+          customer_id: user.id,
+          business_id: business.id,
+          amount_total: manualBookingType === 'block' ? 0 : svcPrice,
+          glamzo_fee: 0,
+          business_amount: manualBookingType === 'block' ? 0 : svcPrice,
+          payment_method: 'local',
+          payment_status: manualBookingType === 'block' ? 'paid' : 'unpaid',
+          stripe_payment_intent: null
+        });
+
+      notifyTerminal(
+        manualBookingType === 'block' ? "🛑 Horário Bloqueado" : "📅 Marcação Reservada",
+        manualBookingType === 'block' ? `Bloqueio registado: ${manualReason}` : `Reserva de ${manualClientName} foi criada com sucesso na agenda!`
+      );
+      
+      setIsManualBookingOpen(false);
+      // Reset values
+      setManualClientName('');
+      setManualReason('');
+      setManualNotes('');
+      // Reload list
+      loadTerminalData();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Erro de base de dados ao guardar a marcação manual.");
+    } finally {
+      setIsSavingManual(false);
+    }
+  };
+
   // Dynamic real-time partner dashboard charts (Phase 12 validation)
   const getDynamicPartnerVolumeData = () => {
     // If no bookings have been generated yet, supply realistic initial values based on actual pricing or seed bookings
@@ -2086,25 +2216,45 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'agenda' && (
                 <div id="view-agenda" className="space-y-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-5">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-900 pb-5">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-white">Quadro da Agenda</h3>
                       <p className="text-xs text-slate-400 mt-0.5">Visor diário premium estilo Apple/Google Calendar integrado com o terminal.</p>
                     </div>
 
-                    {/* Mode Navigation selector */}
-                    <div className="bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex items-center gap-0.5 font-mono text-[10px] font-bold">
-                      {(['today', 'week', 'month', 'by_staff'] as const).map(mode => (
-                        <button
-                          key={mode}
-                          onClick={() => setAgendaMode(mode)}
-                          className={`px-3 py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
-                            agendaMode === mode ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          {mode === 'today' ? 'Hoje' : mode === 'week' ? 'Semanal' : mode === 'month' ? 'Mensal' : 'Por Profissional'}
-                        </button>
-                      ))}
+                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                      {/* Button to Trigger Manual Booking / Blocking */}
+                      <button
+                        onClick={() => {
+                          setManualBookingType('booking');
+                          setIsManualBookingOpen(true);
+                          if (services.length > 0) {
+                            setManualServiceId(services[0].id);
+                          }
+                          if (staff.length > 0) {
+                            setManualStaffId(staff[0].id);
+                          }
+                        }}
+                        className="bg-gradient-to-r from-purple-600 via-violet-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white font-extrabold px-4.5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-purple-950/50 transition-all hover:scale-[1.01]"
+                      >
+                        <Calendar className="w-4 h-4 text-white" />
+                        <span>Agendar / Bloquear Horário</span>
+                      </button>
+
+                      {/* Mode Navigation selector */}
+                      <div className="bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex items-center gap-0.5 font-mono text-[10px] font-bold">
+                        {(['today', 'week', 'month', 'by_staff'] as const).map(mode => (
+                          <button
+                            key={mode}
+                            onClick={() => setAgendaMode(mode)}
+                            className={`px-3 py-1.5 rounded-lg transition-all capitalize cursor-pointer ${
+                              agendaMode === mode ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {mode === 'today' ? 'Hoje' : mode === 'week' ? 'Semanal' : mode === 'month' ? 'Mensal' : 'Por Profissional'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -2136,7 +2286,9 @@ export default function Dashboard() {
                                         <div 
                                           key={bk.id} 
                                           className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs transition-colors shadow-sm ${
-                                            bk.booking_status === 'confirmed'
+                                            bk.notes?.startsWith('Bloqueio Agenda:')
+                                              ? 'bg-slate-900 border-slate-700 text-slate-400'
+                                              : bk.booking_status === 'confirmed'
                                               ? 'bg-rose-950/20 border-rose-500/30 text-rose-300'
                                               : bk.booking_status === 'completed'
                                               ? 'bg-slate-900 border-slate-800 text-slate-400'
@@ -2145,21 +2297,29 @@ export default function Dashboard() {
                                         >
                                           <div>
                                             <div className="font-extrabold text-white text-xs sm:text-sm">
-                                              {bk.customer?.full_name || bk.customer_profile?.full_name || 'Cliente Particular'}
+                                              {getBookingDisplayName(bk)}
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] font-medium text-slate-450 text-slate-350">
-                                              <span>💈 {bk.service?.name || 'Serviço Premium'}</span>
-                                              <span>•</span>
-                                              <span>👥 {bk.staff?.full_name || 'Profissional Automático'}</span>
-                                              <span>•</span>
-                                              <span>⏱ {bk.service?.duration_minutes || '0'} min</span>
-                                              <span>•</span>
-                                              <span className="font-bold underline text-white">{bk.total_price}€</span>
-                                              <span>•</span>
-                                              <span className="text-[10px] font-mono px-1 py-0.5 bg-slate-950/40 rounded text-slate-405">
-                                                💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
-                                              </span>
-                                            </div>
+                                            {!bk.notes?.startsWith('Bloqueio Agenda:') ? (
+                                              <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] font-medium text-slate-350">
+                                                <span>💈 {bk.service?.name || 'Serviço Premium'}</span>
+                                                <span>•</span>
+                                                <span>👥 {bk.staff?.full_name || 'Profissional Automático'}</span>
+                                                <span>•</span>
+                                                <span>⏱ {bk.service?.duration_minutes || '0'} min</span>
+                                                <span>•</span>
+                                                <span className="font-bold underline text-white">{bk.total_price}€</span>
+                                                <span>•</span>
+                                                <span className="text-[10px] font-mono px-1 py-0.5 bg-slate-950/40 rounded text-slate-400">
+                                                  💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
+                                                </span>
+                                              </div>
+                                            ) : (
+                                              <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] font-medium text-amber-400/90 font-mono">
+                                                <span>🛑 Horário Indisponível / Reservado pelo Proprietário</span>
+                                                <span>•</span>
+                                                <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
+                                              </div>
+                                            )}
                                           </div>
 
                                           <div className="flex items-center gap-1.5 self-end sm:self-auto">
@@ -4232,6 +4392,198 @@ export default function Dashboard() {
               </div>
             );
           })()}
+
+      {/* ==================================================== */}
+      {/* MODAL: REGISTAR MARCAÇÃO MANUAL / BLOQUEIO DE HORÁRIO */}
+      {/* ==================================================== */}
+      {isManualBookingOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-slate-100 max-h-[90vh]">
+            
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+              <div>
+                <h3 className="font-extrabold text-lg text-white font-sans">Gestão Manual de Agenda</h3>
+                <p className="text-xs text-slate-400 mt-0.5 font-sans">Reserve um horário para clientes habituais ou bloqueie indisponibilidades.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsManualBookingOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveManualBooking} className="flex-1 overflow-y-auto p-6 space-y-5">
+              
+              {/* Selector: Booking vs Block */}
+              <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setManualBookingType('booking')}
+                  className={`py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer font-sans ${
+                    manualBookingType === 'booking' 
+                      ? 'bg-rose-600 text-white shadow' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📅 Reserva Manual
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setManualBookingType('block')}
+                  className={`py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer font-sans ${
+                    manualBookingType === 'block' 
+                      ? 'bg-slate-800 text-amber-400 border border-slate-700 shadow' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  🛑 Bloquear Horário
+                </button>
+              </div>
+
+              {/* Booking Fields */}
+              {manualBookingType === 'booking' ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Nome do Cliente</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Ex: Maria Silva (Telefone / Habitual)" 
+                      value={manualClientName}
+                      onChange={(e) => setManualClientName(e.target.value)}
+                      className="w-full bg-slate-955 bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Escolher Serviço</label>
+                      <select
+                        value={manualServiceId}
+                        onChange={(e) => setManualServiceId(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                      >
+                        {services.map(s => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} ({s.price}€ - {s.duration_minutes} min)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Profissional (Staff)</label>
+                      <select
+                        value={manualStaffId}
+                        onChange={(e) => setManualStaffId(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                      >
+                        <option value="">Selecione Profissional...</option>
+                        {staff.map(st => (
+                          <option key={st.id} value={st.id}>
+                            {st.full_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Block Fields */
+                <>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Motivo do Bloqueio</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Ex: Almoço, Reunião de Equipa, Folga ou Formação" 
+                      value={manualReason}
+                      onChange={(e) => setManualReason(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Duração Estimada</label>
+                    <select
+                      value={manualServiceId}
+                      onChange={(e) => setManualServiceId(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                    >
+                      {services.map(s => (
+                        <option key={s.id} value={s.id}>
+                          Bloquear por {s.duration_minutes} min ({s.name})
+                        </option>
+                      ))}
+                      <option value="">Bloqueio Curto (30 minutos)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Shared Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Data do Evento</label>
+                  <input 
+                    type="date"
+                    required
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-white cursor-pointer animate-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Hora de Início</label>
+                  <select
+                    value={manualStartTime}
+                    onChange={(e) => setManualStartTime(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer text-left"
+                  >
+                    {['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {manualBookingType === 'booking' && (
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Observações / Notas Extras</label>
+                  <textarea 
+                    placeholder="Ex: Corte habitual degrade com caracol, trouxe cupão de papel..." 
+                    value={manualNotes}
+                    onChange={(e) => setManualNotes(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white h-20"
+                  />
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-slate-800 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsManualBookingOpen(false)}
+                  className="flex-1 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingManual}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white text-xs font-black uppercase tracking-wider py-3 px-4 rounded-xl cursor-pointer text-center transition shadow-lg shadow-purple-900/30 disabled:opacity-50"
+                >
+                  {isSavingManual ? 'A guardar...' : 'Confirmar & Guardar'}
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
 
         </div>
       </main>
