@@ -367,9 +367,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const calculatedCancelUrl = getRealRedirectUrl(req, cancelUrl, '/account?status=cancelled');
 
     const checkoutConfig: any = {
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      payment_method_types: ['card', 'mb_way'],
       customer_email: customerEmail || undefined,
       line_items: [
         {
