@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from '@google/genai';
 
 // Configuration helper
-const PORT = process.env.PORT || 3000;;
+const PORT = 3000;
 const app = express();
 
 // Apply compression middleware to drastically shrink transfer size
