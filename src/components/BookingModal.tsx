@@ -863,56 +863,46 @@ export default function BookingModal({
                     </div>
 
                     {/* Pay with Stripe REAL */}
-                    {business?.charges_enabled && business?.payouts_enabled ? (
-                      <div 
-                        onClick={() => setPaymentMethod('stripe')}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-4 ${
-                          paymentMethod === 'stripe'
-                            ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-semibold ring-2 ring-rose-500/10'
-                            : 'border-slate-100 hover:bg-slate-50 bg-slate-50/20'
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex gap-3.5 items-center">
-                            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
-                              <CreditCard className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-black text-slate-800">Pagar Online Seguro (Stripe)</h4>
-                              <p className="text-[10px] text-slate-400 mt-0.5">Pagamento online imediato e seguro processado pela Stripe.</p>
-                            </div>
-                          </div>
-                          
-                          <div className="shrink-0 h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center">
-                            {paymentMethod === 'stripe' && <div className="h-3 w-3 rounded-full bg-rose-600" />}
-                          </div>
-                        </div>
-
-                        {paymentMethod === 'stripe' && (
-                          <div className="p-3 bg-white/70 backdrop-blur-xs border border-rose-100 rounded-xl space-y-2 mt-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                              <span>Stripe Checkout Ativo</span>
-                            </div>
-                            <p className="text-[10px] text-slate-500 leading-normal">
-                              Será redirecionado de forma 100% segura para efetuar o pagamento. São suportados cartões, <strong>MBWay</strong>, <strong>Apple Pay</strong> e <strong>Google Pay</strong>.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 text-slate-400 cursor-not-allowed flex items-center justify-between">
+                    <div 
+                      onClick={() => setPaymentMethod('stripe')}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-4 ${
+                        paymentMethod === 'stripe'
+                          ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-semibold ring-2 ring-rose-500/10'
+                          : 'border-slate-100 hover:bg-slate-50 bg-slate-50/20'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
                         <div className="flex gap-3.5 items-center">
-                          <div className="p-2.5 bg-slate-100 text-slate-400 rounded-xl">
+                          <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
                             <CreditCard className="w-5 h-5" />
                           </div>
-                          <div className="text-left">
-                            <h4 className="text-xs font-black text-slate-500">Pagar Online Seguro (Indisponível)</h4>
-                            <p className="text-[10px] text-rose-650 text-rose-450 mt-0.5 font-sans">Este espaço ainda não completou a verificação operacional da sua conta Stripe Connect.</p>
+                          <div>
+                            <h4 className="text-xs font-black text-slate-800">Pagar Online Seguro (Stripe / Cartão)</h4>
+                            <p className="text-[10px] text-slate-400 mt-0.5">
+                              {!business?.charges_enabled || !business?.payouts_enabled 
+                                ? 'Pagamento online de teste/plataforma ativo para verificação rápida.'
+                                : 'Pagamento online imediato e seguro processado pela Stripe.'}
+                            </p>
                           </div>
                         </div>
+                        
+                        <div className="shrink-0 h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center">
+                          {paymentMethod === 'stripe' && <div className="h-3 w-3 rounded-full bg-rose-600" />}
+                        </div>
                       </div>
-                    )}
+
+                      {paymentMethod === 'stripe' && (
+                        <div className="p-3 bg-white/70 backdrop-blur-xs border border-rose-100 rounded-xl space-y-2 mt-1">
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            <span>Stripe Checkout Ativo</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-normal">
+                            Será redirecionado de forma 100% segura para efetuar o pagamento. São suportados cartões, <strong>MBWay</strong>, <strong>Apple Pay</strong> e <strong>Google Pay</strong>.
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                   </div>
                 </div>

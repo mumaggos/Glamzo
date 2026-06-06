@@ -2326,7 +2326,21 @@ export default function Dashboard() {
                                   <div className="flex items-center gap-2 border-b border-slate-900 pb-2">
                                     <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-slate-400 overflow-hidden text-[9px]">
                                       {st.avatar_url ? (
-                                        <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
+                                        <img 
+                                          src={st.avatar_url} 
+                                          alt={st.full_name} 
+                                          onError={(e) => {
+                                            console.warn("Staff listing avatar failed to load.");
+                                            e.currentTarget.style.display = 'none';
+                                            // Fallback to text initials
+                                            const container = e.currentTarget.parentElement;
+                                            if (container) {
+                                              const initials = document.createTextNode(st.full_name.substring(0, 2).toUpperCase());
+                                              container.appendChild(initials);
+                                            }
+                                          }}
+                                          className="w-full h-full object-cover" 
+                                        />
                                       ) : (
                                         st.full_name.substring(0, 2).toUpperCase()
                                       )}
@@ -2774,7 +2788,20 @@ export default function Dashboard() {
                       <div key={st.id} className="bg-slate-900 border border-slate-900 rounded-3xl p-5 hover:border-slate-805 text-center flex flex-col items-center gap-3">
                         <div className="w-16 h-16 rounded-full bg-slate-855 bg-slate-950/80 border border-slate-800 text-slate-300 font-bold flex items-center justify-center font-mono text-xl overflow-hidden">
                           {st.avatar_url ? (
-                            <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
+                            <img 
+                              src={st.avatar_url} 
+                              alt={st.full_name} 
+                              onError={(e) => {
+                                console.warn("Staff grid avatar failed to load.");
+                                e.currentTarget.style.display = 'none';
+                                const container = e.currentTarget.parentElement;
+                                if (container) {
+                                  const initials = document.createTextNode(st.full_name.substring(0, 2).toUpperCase());
+                                  container.appendChild(initials);
+                                }
+                              }}
+                              className="w-full h-full object-cover" 
+                            />
                           ) : (
                             st.full_name.substring(0, 2).toUpperCase()
                           )}

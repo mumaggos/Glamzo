@@ -89,11 +89,19 @@ export default function Navbar() {
                         src={profile.avatar_url}
                         alt={profile.full_name || 'User'}
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          // If image fails, replace with a dummy empty source or hide it to trigger the fallback representation
+                          e.currentTarget.style.display = 'none';
+                          const fallbackSibling = e.currentTarget.nextElementSibling;
+                          if (fallbackSibling) {
+                            fallbackSibling.classList.remove('hidden');
+                          }
+                        }}
                         className="w-5 h-5 rounded-full object-cover border border-slate-100"
                       />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center"><User className="w-3 h-3 text-slate-500" /></div>
-                    )}
+                    ) : null}
+                    {/* Fallback container shown on missing or broken URL */}
+                    <div className={`w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center ${profile?.avatar_url ? 'hidden' : ''}`}><User className="w-3 h-3 text-slate-500" /></div>
                     <span className="max-w-[90px] truncate font-medium">
                       {profile?.full_name || user.email?.split('@')[0]}
                     </span>
