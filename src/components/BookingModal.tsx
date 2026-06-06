@@ -382,7 +382,7 @@ export default function BookingModal({
       
       const basePrice = Number(selectedService.price);
       const discount = Number(couponDiscount || 0);
-      const stripeTax = paymentMethod === 'stripe' ? 1.50 : 0.00; // Taxas
+      const stripeTax = 0.00; // No extra fees charged to the customer
       
       const finalPriceToPay = Math.max(0, Number((basePrice + stripeTax - discount).toFixed(2)));
       
@@ -1009,12 +1009,6 @@ export default function BookingModal({
                           <span>Preço Base do Serviço</span>
                           <span className="font-mono">{Number(selectedService.price).toFixed(2)} €</span>
                         </div>
-                        {paymentMethod === 'stripe' && (
-                          <div className="flex justify-between items-center text-slate-500">
-                            <span>Taxa de Processamento Online</span>
-                            <span className="font-mono">+1.50 €</span>
-                          </div>
-                        )}
                         {couponDiscount > 0 && (
                           <div className="flex justify-between items-center text-emerald-600 font-bold">
                             <span>Desconto Aplicado</span>
@@ -1026,7 +1020,7 @@ export default function BookingModal({
                       <div className="flex justify-between items-center border-t border-slate-150 pt-3">
                         <span className="text-slate-500 font-black uppercase text-[10px]">Preço Total a Pagar</span>
                         <span className="text-base font-black text-rose-700 font-mono">
-                          {Math.max(0, Number(selectedService.price) + (paymentMethod === 'stripe' ? 1.50 : 0.00) - couponDiscount).toFixed(2)} €
+                          {Math.max(0, Number(selectedService.price) - couponDiscount).toFixed(2)} €
                         </span>
                       </div>
                     </div>

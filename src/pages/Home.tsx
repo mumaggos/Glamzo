@@ -99,8 +99,14 @@ export default function Home() {
         // Resolve a beautiful Unsplash fallback if the database image is local/broken/placeholder
         let imgUrl = c.image_url;
         if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/')) {
-          const match = MAIN_CATEGORIES.find(m => m.name.toLowerCase().trim() === c.title.toLowerCase().trim());
-          imgUrl = match ? match.imageUrl : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+          const normalizeStr = (s: string) => {
+            return s.toLowerCase()
+              .trim()
+              .replace(/&/g, 'e')
+              .replace(/[\s\-_]+/g, ' ');
+          };
+          const match = MAIN_CATEGORIES.find(m => normalizeStr(m.name) === normalizeStr(c.title));
+          imgUrl = match ? match.imageUrl : 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
         }
         return {
           id: c.id,
