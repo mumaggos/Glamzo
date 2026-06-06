@@ -1433,14 +1433,10 @@ export default function Dashboard() {
   const balanceAvailable = Math.max(0, totalReceivedVolumeOnline - totalPayoutTransferred);
 
   // Subscription calculation and Lock logic
-  const activeSubscription = subscriptions && subscriptions.length > 0 ? subscriptions[0] : null;
-
-  // Real-time status resolved safely from both DB models (resilient fallback)
-  // Prioritize active or trialing status from subscriptions table over general business subscription_status
-  const isSubTableActiveVal = activeSubscription && (activeSubscription.status === 'active' || activeSubscription.status === 'trialing');
-  const resolvedSubscriptionStatus = isSubTableActiveVal ? activeSubscription.status : (business?.subscription_status || null);
-  const resolvedSubscriptionActive = business?.subscription_active || isSubTableActiveVal;
-  const trialEndsAt = business?.trial_ends_at || activeSubscription?.expires_at || null;
+  // Unificada única fonte de verdade: Tabela businesses
+  const resolvedSubscriptionStatus = business?.subscription_status || null;
+  const resolvedSubscriptionActive = !!business?.subscription_active;
+  const trialEndsAt = business?.trial_ends_at || null;
 
   const trialDaysRemaining = (() => {
     const trialEndStr = trialEndsAt;
@@ -1456,7 +1452,7 @@ export default function Dashboard() {
       if (expiresAt && expiresAt <= Date.now()) return true;
       return false;
     }
-    if (!activeSubscription && !resolvedSubscriptionStatus) {
+    if (!resolvedSubscriptionStatus) {
       if (!business) return false;
       const createdAt = new Date(business.created_at).getTime();
       return (Date.now() - createdAt) > 14 * 24 * 60 * 60 * 1000;
@@ -1508,7 +1504,7 @@ export default function Dashboard() {
         return 'active_trial_requires_card';
       }
     }
-    if (!activeSubscription && !resolvedSubscriptionStatus) {
+    if (!resolvedSubscriptionStatus) {
       if (isTrialExpired) return 'expired';
       return 'onboarding';
     }
@@ -2018,7 +2014,7 @@ export default function Dashboard() {
           )}
 
           {/* Stripe Connect Pending Alert Banner */}
-          {!isBillingBlocked && (!business?.stripe_account_id || !stripeStatus?.charges_enabled || !stripeStatus?.payouts_enabled) && (
+          {!isBillingBlocked && (!business?.stripe_account_id || !(stripeStatus ? stripeStatus.charges_enabled : business?.charges_enabled) || !(stripeStatus ? stripeStatus.payouts_enabled : business?.payouts_enabled)) && (
             <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/40 to-yellow-950/40 border border-amber-500/20 text-amber-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/15 animate-fade-in text-left">
               <div className="flex items-center gap-3">
                 <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/25 shrink-0">

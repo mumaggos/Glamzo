@@ -127,12 +127,6 @@ export default function BookingModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successBooking, setSuccessBooking] = useState<any | null>(null);
 
-  // Credit Card mock inputs for Stripe payment option
-  const [cardName, setCardName] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCVC, setCardCVC] = useState('');
-
   // Set initial selected service if supplied
   useEffect(() => {
     if (initialSelectedService) {
@@ -377,19 +371,18 @@ export default function BookingModal({
       const initialPaymentStatus = 'unpaid';
 
       // 2. Perform Insert in real public.bookings table combining FASE 10 financial rules
-      const isPro = businessSubscription?.plan_name === 'PRO';
-      const feeRate = isPro ? 0.05 : 0.15;
+      const feeRate = 0.05; // 5% comissão Glamzo
       
       const basePrice = Number(selectedService.price);
       const discount = Number(couponDiscount || 0);
-      const stripeTax = paymentMethod === 'stripe' ? 1.50 : 0.00; // Taxas
+      const stripeTax = 0.00; // Taxas adicionais ao cliente totalmente removidas
       
-      const finalPriceToPay = Math.max(0, Number((basePrice + stripeTax - discount).toFixed(2)));
+      const finalPriceToPay = Math.max(0, Number((basePrice - discount).toFixed(2)));
       
-      // Calculate original commission and protect partner business earnings (Rule #4)
-      const originalCommission = paymentMethod === 'stripe' ? Number((basePrice * feeRate).toFixed(2)) : 0;
-      const businessAmount = paymentMethod === 'stripe' ? Number((basePrice - originalCommission).toFixed(2)) : finalPriceToPay; // Store receives full base rate minus commission for stripe, or 100% of final price for local cash!
-      const glamzoFee = paymentMethod === 'stripe' ? Number((finalPriceToPay - businessAmount).toFixed(2)) : 0; // Glamzo absorbs the discount, resulting in a reduced/negative net fee representing the discount coverage on online, local is 0 fee!
+      // Calculate commission (5%) on the amount paid, protecting customer and partner business splits
+      const commissionAmount = paymentMethod === 'stripe' ? Number((finalPriceToPay * feeRate).toFixed(2)) : 0;
+      const businessAmount = paymentMethod === 'stripe' ? Number((finalPriceToPay - commissionAmount).toFixed(2)) : finalPriceToPay; // Store receives 95% for online, or 100% of final price for local cash!
+      const glamzoFee = commissionAmount;
 
       // Initially set booking's payment_status to 'unpaid'
       const { data, error } = await supabase
@@ -978,12 +971,6 @@ export default function BookingModal({
                           <span>Preço Base do Serviço</span>
                           <span className="font-mono">{Number(selectedService.price).toFixed(2)} €</span>
                         </div>
-                        {paymentMethod === 'stripe' && (
-                          <div className="flex justify-between items-center text-slate-500">
-                            <span>Taxa de Processamento Online</span>
-                            <span className="font-mono">+1.50 €</span>
-                          </div>
-                        )}
                         {couponDiscount > 0 && (
                           <div className="flex justify-between items-center text-emerald-600 font-bold">
                             <span>Desconto Aplicado</span>
@@ -995,7 +982,7 @@ export default function BookingModal({
                       <div className="flex justify-between items-center border-t border-slate-150 pt-3">
                         <span className="text-slate-500 font-black uppercase text-[10px]">Preço Total a Pagar</span>
                         <span className="text-base font-black text-rose-700 font-mono">
-                          {Math.max(0, Number(selectedService.price) + (paymentMethod === 'stripe' ? 1.50 : 0.00) - couponDiscount).toFixed(2)} €
+                          {Math.max(0, Number(selectedService.price) - couponDiscount).toFixed(2)} €
                         </span>
                       </div>
                     </div>

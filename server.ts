@@ -65,9 +65,7 @@ function getSupabaseAdmin(): any {
 app.use((req, res, next) => {
   if (
     req.originalUrl === '/api/webhooks/stripe' ||
-    req.originalUrl === '/api/stripe/webhook' ||
-    req.originalUrl.startsWith('/api/webhooks/') ||
-    req.originalUrl.startsWith('/api/stripe/webhook')
+    req.originalUrl.startsWith('/api/webhooks/')
   ) {
     next();
   } else {
@@ -778,7 +776,6 @@ app.post('/api/stripe/verify-subscription', async (req, res) => {
 });
 
 app.post('/api/stripe/create-subscription', handleCreateSubscriptionCheckout);
-app.post('/api/create-subscription-checkout', handleCreateSubscriptionCheckout);
 
 // Create Customer Billing Portal session for active partner salons
 app.post('/api/stripe/create-portal-session', async (req, res) => {
@@ -885,11 +882,6 @@ app.post('/api/stripe/cancel-subscription', async (req, res) => {
     console.error('Subscription cancellation failed:', err.message);
     res.status(500).json({ error: err.message });
   }
-});
-
-// Friendly aliases to satisfy various client route patterns
-app.post('/api/stripe/create-checkout', (req, res) => {
-  res.redirect(307, '/api/create-checkout-session');
 });
 
 // Unified Webhook for both Corporate SaaS (Subscriptions) and Connect Platform accounts (splits, payouts, verification state)
@@ -1303,7 +1295,6 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
 // Register webhook endpoints on both paths to support dynamic setup patterns
 app.post('/api/webhooks/stripe', express.raw({ type: '*/*' }), handleStripeWebhook);
-app.post('/api/stripe/webhook', express.raw({ type: '*/*' }), handleStripeWebhook);
 
 // Initialize Express + Vite server middlewares
 async function startServer() {
