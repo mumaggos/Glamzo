@@ -301,9 +301,11 @@ export default function Explore() {
     // Exclude partners manually suspended by administration
     if (b.subscription_status === 'suspended') return false;
 
-    // Enforce Stripe card subscription added to show on public marketplace list (demo seeds bypass this)
+    // Enforce Stripe card subscription added to show on public marketplace list (demo seeds, trials, or owned shops bypass this)
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
-    if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
+    const isOwner = user && b.owner_id === user.id;
+    const hasTrial = !!(b.trial_started_at || b.trial_ends_at);
+    if (!isDemo && !isOwner && !hasTrial && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
       return false;
     }
 

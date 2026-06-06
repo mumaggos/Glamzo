@@ -42,9 +42,11 @@ export default function Home() {
             if (b.subscription_status === 'suspended') {
               return false;
             }
-            // Enforce card added for real shops to appear in the public list
+            // Enforce card added for real shops to appear in the public list (demo, owned, or trial shops bypass this)
             const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
-            if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
+            const isOwner = user && b.owner_id === user.id;
+            const hasTrial = !!(b.trial_started_at || b.trial_ends_at);
+            if (!isDemo && !isOwner && !hasTrial && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
               return false;
             }
             const isPromoted = !!b.is_promoted;
