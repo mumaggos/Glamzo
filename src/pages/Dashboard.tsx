@@ -21,6 +21,7 @@ import {
 import { realtimeService } from '../utils/realtimeService';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { slugify, validateSlugUniqueness } from '../utils/slugify';
+import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 
 export default function Dashboard() {
   const { user, profile, signOut, loading: authLoading, refreshProfile } = useAuth();
@@ -47,6 +48,22 @@ export default function Dashboard() {
   // State variables for manually connecting an existing/pre-built Stripe Connect / Merchant Account ID
   const [manualStripeId, setManualStripeId] = useState('');
   const [savingManualStripe, setSavingManualStripe] = useState(false);
+
+  // Real database coupons state
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [showAddCouponModal, setShowAddCouponModal] = useState(false);
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    discount_percent: '',
+    discount_value: '',
+    valid_until: '',
+    is_active: true
+  });
+
+  // Real Image Uploading states
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   // Website & QR Code States
   const [editSlugValue, setEditSlugValue] = useState('');
@@ -446,6 +463,22 @@ export default function Dashboard() {
       setLedgers(pyData || []);
       setPayouts(poData || []);
       setSubscriptions(subData || []);
+
+      // Real coupons fetching
+      let cpData: any[] = [];
+      try {
+        const { data: resCoupons, error: cpErr } = await supabase
+          .from('business_coupons')
+          .select('*')
+          .eq('business_id', bData.id)
+          .order('created_at', { ascending: false });
+        if (!cpErr && resCoupons) {
+          cpData = resCoupons;
+        }
+      } catch (err) {
+        console.warn("Table business_coupons probably does not exist yet.", err);
+      }
+      setCoupons(cpData);
 
     } catch (err: any) {
       console.error("Failed to load terminal datasets:", err);
@@ -1483,6 +1516,199 @@ export default function Dashboard() {
     }
   };
 
+  // Replicate operational hours of a specific weekday to all other weekdays
+  const handleCopyHoursToAll = async (sourceWeekday: number) => {
+    if (!business) return;
+    const sourceDay = hours.find(h => h.weekday === sourceWeekday);
+    const openTime = sourceDay ? sourceDay.open_time : '09:00';
+    const closeTime = sourceDay ? sourceDay.close_time : '19:00';
+    const isClosed = sourceDay ? sourceDay.is_closed : false;
+
+    try {
+      const promises = Array.from({ length: 7 }, async (_, idx) => {
+        if (idx === sourceWeekday) return;
+        const targetDay = hours.find(h => h.weekday === idx);
+        if (!targetDay) {
+          return supabase.from('business_hours').insert({
+            business_id: business.id,
+            weekday: idx,
+            open_time: openTime,
+            close_time: closeTime,
+            is_closed: isClosed
+          });
+        } else {
+          return supabase.from('business_hours').update({
+            open_time: openTime,
+            close_time: closeTime,
+            is_closed: isClosed
+          }).eq('id', targetDay.id);
+        }
+      });
+
+      await Promise.all(promises);
+      setGlobalSuccess("Horário replicado com sucesso para todos os dias!");
+      await loadTerminalData();
+    } catch (err: any) {
+      console.error("Error copy hours:", err);
+      setGlobalError("Não foi possível copiar o horário para os restantes dias.");
+    }
+  };
+
+  // Real Database Coupons Handlers
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!business) return;
+    try {
+      const pct = couponForm.discount_percent ? parseFloat(couponForm.discount_percent) : null;
+      const val = couponForm.discount_value ? parseFloat(couponForm.discount_value) : null;
+      
+      if (!pct && !val) {
+        setGlobalError("Forneça pelo menos uma percentagem (%) ou valor fixo (€) de desconto.");
+        return;
+      }
+
+      setLoadingCoupons(true);
+      const { error } = await supabase
+        .from('business_coupons')
+        .insert({
+          business_id: business.id,
+          code: couponForm.code.toUpperCase().trim(),
+          discount_percent: pct,
+          discount_value: val,
+          valid_until: couponForm.valid_until ? new Date(couponForm.valid_until).toISOString() : null,
+          is_active: couponForm.is_active
+        });
+
+      if (error) throw error;
+      setGlobalSuccess("Cupão criado e ativo com sucesso!");
+      setShowAddCouponModal(false);
+      setCouponForm({ code: '', discount_percent: '', discount_value: '', valid_until: '', is_active: true });
+      await loadTerminalData();
+    } catch (err: any) {
+      console.error(err);
+      setGlobalError(`Erro ao registar o cupão: ${err.message}`);
+    } finally {
+      setLoadingCoupons(false);
+    }
+  };
+
+  const handleToggleCoupon = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('business_coupons')
+        .update({ is_active: !currentStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+      setGlobalSuccess("Estado do cupão alterado.");
+      await loadTerminalData();
+    } catch (err: any) {
+      console.error(err);
+      setGlobalError(`Falha ao alterar estado do cupão: ${err.message}`);
+    }
+  };
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!window.confirm("Pretende apagar definitivamente este cupão?")) return;
+    try {
+      const { error } = await supabase
+        .from('business_coupons')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setGlobalSuccess("Cupão removido com sucesso.");
+      await loadTerminalData();
+    } catch (err: any) {
+      console.error(err);
+      setGlobalError(`Falha ao eliminar cupão: ${err.message}`);
+    }
+  };
+
+  // Real Direct Logo Upload To Storage
+  const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !business) return;
+    setUploadingLogo(true);
+    setGlobalError(null);
+    try {
+      const optimized = await optimizeImageBeforeUpload(file);
+      const filePath = `businesses/${business.id}/logo-${Date.now()}.webp`;
+      const { error: uploadErr } = await supabase.storage
+        .from('business-images')
+        .upload(filePath, optimized.blob, {
+          cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
+          contentType: 'image/webp',
+          upsert: true
+        });
+
+      if (uploadErr) {
+        // If fail because bucket is missing, use 'avatars' as fallback
+        const { error: altErr } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, optimized.blob, {
+            cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
+            contentType: 'image/webp',
+            upsert: true
+          });
+        if (altErr) throw altErr;
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        setBusiness(prev => prev ? ({ ...prev, logo_url: publicUrl }) : null);
+      } else {
+        const { data: { publicUrl } } = supabase.storage.from('business-images').getPublicUrl(filePath);
+        setBusiness(prev => prev ? ({ ...prev, logo_url: publicUrl }) : null);
+      }
+      setGlobalSuccess("Logótipo carregado com sucesso!");
+    } catch (err: any) {
+      console.error("Logo upload failed:", err);
+      setGlobalError(`Erro no upload da imagem: ${err.message}. Verifique as políticas de storage no seu dashboard Supabase.`);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  // Real Direct Cover Image Upload To Storage
+  const handleUploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !business) return;
+    setUploadingCover(true);
+    setGlobalError(null);
+    try {
+      const optimized = await optimizeImageBeforeUpload(file);
+      const filePath = `businesses/${business.id}/cover-${Date.now()}.webp`;
+      const { error: uploadErr } = await supabase.storage
+        .from('business-images')
+        .upload(filePath, optimized.blob, {
+          cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
+          contentType: 'image/webp',
+          upsert: true
+        });
+
+      if (uploadErr) {
+        // Fullback to avatars bucket
+        const { error: altErr } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, optimized.blob, {
+            cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
+            contentType: 'image/webp',
+            upsert: true
+          });
+        if (altErr) throw altErr;
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        setBusiness(prev => prev ? ({ ...prev, cover_url: publicUrl }) : null);
+      } else {
+        const { data: { publicUrl } } = supabase.storage.from('business-images').getPublicUrl(filePath);
+        setBusiness(prev => prev ? ({ ...prev, cover_url: publicUrl }) : null);
+      }
+      setGlobalSuccess("Foto de capa carregada com sucesso!");
+    } catch (err: any) {
+      console.error("Cover upload failed:", err);
+      setGlobalError(`Erro no upload da imagem de capa: ${err.message}. Verifique as políticas de storage no seu dashboard Supabase.`);
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   // Direct edit physical details of the salon business profile
   const handleUpdateConfiguracoes = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1501,7 +1727,11 @@ export default function Dashboard() {
           logo_url: business.logo_url,
           cover_url: business.cover_url,
           website: business.website,
-          phone_whatsapp: (business as any).phone_whatsapp || business.phone // safe check
+          email: business.email,
+          instagram: business.instagram,
+          facebook: (business as any).facebook || null,
+          tiktok: (business as any).tiktok || null,
+          phone_whatsapp: (business as any).phone_whatsapp || business.phone
         } as any)
         .eq('id', business.id);
 
@@ -3106,60 +3336,113 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {/* VIEW 5: HORAS DE SERVIÇO (BUSINESS HOURS)            */}
               {/* ==================================================== */}
-              {activeTab === 'horarios' && (
-                <div id="view-horarios" className="space-y-6">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Horário de Funcionamento</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Defina os dias de encerramento do salão e os intervalos de abertura e fecho de caixas.</p>
-                  </div>
+              {activeTab === 'horarios' && (() => {
+                const timeList = Array.from({ length: 34 }, (_, i) => {
+                  const h = Math.floor(6 + i / 2);
+                  const m = i % 2 === 0 ? '00' : '30';
+                  return `${String(h).padStart(2, '0')}:${m}`;
+                });
 
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 max-w-2xl">
-                    <div className="space-y-4">
-                      {['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'].map((dayName, idx) => {
-                        const match = hours.find(h => h.weekday === idx);
-                        const isClosed = match ? match.is_closed : true;
+                const weekdaysOrdered = [
+                  { name: 'Segunda-feira', idx: 1 },
+                  { name: 'Terça-feira', idx: 2 },
+                  { name: 'Quarta-feira', idx: 3 },
+                  { name: 'Quinta-feira', idx: 4 },
+                  { name: 'Sexta-feira', idx: 5 },
+                  { name: 'Sábado', idx: 6 },
+                  { name: 'Domingo', idx: 0 },
+                ];
 
-                        return (
-                          <div key={dayName} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4.5 bg-slate-950 rounded-2xl border border-slate-900">
-                            <span className="font-bold text-sm text-white w-28 shrink-0">{dayName}</span>
-                            
-                            <div className="flex items-center gap-3">
-                              <select
-                                disabled={isClosed}
-                                value={match ? match.open_time : '09:00'}
-                                onChange={e => handleUpdateHours(idx, 'open_time', e.target.value)}
-                                className="bg-slate-900 border border-slate-800/80 p-2 pr-7 rounded-xl text-white text-xs font-mono outline-none disabled:opacity-40 appearance-none"
-                              >
-                                {['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '13:00'].map(t => <option key={t} value={t}>{t}</option>)}
-                              </select>
-                              <span className="text-slate-500 font-bold font-mono">até</span>
-                              <select
-                                disabled={isClosed}
-                                value={match ? match.close_time : '19:00'}
-                                onChange={e => handleUpdateHours(idx, 'close_time', e.target.value)}
-                                className="bg-slate-900 border border-slate-800/80 p-2 pr-7 rounded-xl text-white text-xs font-mono outline-none disabled:opacity-40 appearance-none"
-                              >
-                                {['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '22:00'].map(t => <option key={t} value={t}>{t}</option>)}
-                              </select>
+                return (
+                  <div id="view-horarios" className="space-y-6 animate-fade-in max-w-3xl">
+                    <div className="border-b border-slate-900 pb-5 text-left">
+                      <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-purple-400" />
+                        <span>Horário de Funcionamento Oficial</span>
+                      </h3>
+                      <p className="text-xs text-slate-450 text-slate-400 mt-1 leading-normal">
+                        Defina de forma simples as horas de funcionamento reais e dias de encerramento do salão. A sua agenda online atualizará instantaneamente no marketplace da Glamzo.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-7 space-y-4">
+                      <div className="space-y-3.5">
+                        {weekdaysOrdered.map(({ name, idx }) => {
+                          const match = hours.find(h => h.weekday === idx);
+                          const isClosed = match ? match.is_closed : true;
+                          const currentOpen = match ? match.open_time : '09:00';
+                          const currentClose = match ? match.close_time : '19:00';
+
+                          return (
+                            <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-950 rounded-2xl border border-slate-900/80 hover:border-slate-800 transition-all text-left">
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={`w-2.5 h-2.5 rounded-full ${isClosed ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`} />
+                                <span className="font-extrabold text-sm text-white w-28 uppercase tracking-wide font-mono">{name}</span>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-3">
+                                {/* Aperture Select */}
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[10px] text-slate-400 uppercase font-bold font-mono">Abertura</label>
+                                  <select
+                                    disabled={isClosed}
+                                    value={currentOpen}
+                                    onChange={e => handleUpdateHours(idx, 'open_time', e.target.value)}
+                                    className="bg-slate-900 border border-slate-800 p-2 px-3 rounded-xl text-white text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
+                                  >
+                                    {timeList.map(t => <option key={t} value={t}>{t}</option>)}
+                                  </select>
+                                </div>
+
+                                <span className="text-slate-600 font-extrabold text-[10px] font-mono uppercase">até</span>
+
+                                {/* Closing Select */}
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[10px] text-slate-400 uppercase font-bold font-mono">Fecho</label>
+                                  <select
+                                    disabled={isClosed}
+                                    value={currentClose}
+                                    onChange={e => handleUpdateHours(idx, 'close_time', e.target.value)}
+                                    className="bg-slate-900 border border-slate-800 p-2 px-3 rounded-xl text-white text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
+                                  >
+                                    {timeList.map(t => <option key={t} value={t}>{t}</option>)}
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 justify-end">
+                                {/* Copy hours to all buttons */}
+                                {!isClosed && (
+                                  <button
+                                    onClick={() => handleCopyHoursToAll(idx)}
+                                    className="p-1 px-2.5 bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-900/60 transition-all rounded-lg text-[10px] uppercase font-black tracking-wider font-mono cursor-pointer flex items-center gap-1"
+                                    title="Replica este mesmo horário de abertura/fecho para todos os dias úteis."
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                    <span>Copiar para todos</span>
+                                  </button>
+                                )}
+
+                                {/* Closed Button Toggle */}
+                                <button
+                                  onClick={() => handleUpdateHours(idx, 'is_closed', !isClosed)}
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase font-black tracking-wider transition-all cursor-pointer border ${
+                                    isClosed 
+                                      ? 'bg-rose-950/60 text-rose-450 border-rose-900 h-8 flex items-center justify-center' 
+                                      : 'bg-slate-900 text-slate-400 hover:text-white border-slate-805 hover:bg-slate-850 h-8 flex items-center justify-center'
+                                  }`}
+                                >
+                                  {isClosed ? 'Encerrado' : 'Aberto'}
+                                </button>
+                              </div>
                             </div>
-
-                            <button
-                              onClick={() => handleUpdateHours(idx, 'is_closed', !isClosed)}
-                              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase font-bold tracking-tight transition-all cursor-pointer border ${
-                                isClosed 
-                                  ? 'bg-rose-950/65 text-rose-400 border-rose-905' 
-                                  : 'bg-emerald-950/45 text-emerald-400 border-emerald-900'
-                              }`}
-                            >
-                              {isClosed ? 'Fechado' : 'Aberto'}
-                            </button>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* ==================================================== */}
               {/* VIEW 6: REGISTO DE CLIENTES (SPENDINGS + POINTS)      */}
@@ -3449,40 +3732,32 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* ==================================================== */}
-              {/* VIEW 9: FINANCEIRO (PAYOUTS + LEDGERS + STRIPE CACHE) */}
-              {/* ==================================================== */}
               {activeTab === 'financeiro' && (
                 <div id="view-financeiro" className="space-y-6 max-w-3xl animate-fade-in">
                   <div className="border-b border-slate-900 pb-5 text-left">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Faturamento, Comissões e Faturação</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Visão analítica real do seu negócio parceiro, comissões retidas e emissão direta de faturas fidedignas.</p>
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Subscrição e Faturamento</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Stripe Connect.</p>
                   </div>
 
-                  {/* Complete Phase 10 Metrics Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-4 text-left border-l-2 border-l-rose-500">
+                  {/* Operational Metrics Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-purple-500">
                       <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturamento Bruto</span>
                       <span className="text-base sm:text-lg font-black text-white mt-1.5 block font-mono">{totalVolumeBruto.toFixed(2)} €</span>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-4 text-left border-l-2 border-l-orange-500">
+                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-orange-500">
                       <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Comissões Glamzo</span>
                       <span className="text-base sm:text-lg font-black text-rose-350 mt-1.5 block font-mono">-{totalComissoesRetidas.toFixed(2)} €</span>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-4 text-left border-l-2 border-l-emerald-500">
+                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-emerald-500">
                       <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturamento Líquido</span>
                       <span className="text-base sm:text-lg font-black text-emerald-400 mt-1.5 block font-mono">{totalReceivedVolume.toFixed(2)} €</span>
                     </div>
-
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-4 text-left border-l-2 border-l-amber-500 bg-amber-950/10">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Saldo p/ Levantamento</span>
-                      <span className="text-base sm:text-lg font-black text-amber-400 mt-1.5 block font-mono">{balanceAvailable.toFixed(2)} €</span>
-                    </div>
                   </div>
 
-                  {/* Gestão da Subscrição Glamzo PRO (Plan Cancellation & Info Box) */}
+                  {/* Gestão da Subscrição Glamzo PRO */}
                   <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left">
                     <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
                       <div>
@@ -3491,7 +3766,7 @@ export default function Dashboard() {
                           <span>Subscrição & Plano Atual (Glamzo PRO)</span>
                         </h4>
                         <p className="text-[10px] text-slate-400 mt-0.5 leading-normal font-sans">
-                          Acompanhe o estado da sua assinatura de software e canais de promoção ativa.
+                          Acompanhe o estado da sua assinatura de software e os seus dias de teste ativo.
                         </p>
                       </div>
                       <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
@@ -3502,12 +3777,12 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/40 p-4 rounded-2xl border border-slate-850 text-xs">
                       <div className="space-y-1">
                         <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
-                        <span className="text-white font-extrabold text-sm leading-none block">Glamzo PRO</span>
+                        <span className="text-white font-extrabold text-xs sm:text-sm leading-none block">Glamzo PRO</span>
                         <span className="text-[10px] text-slate-500 block">Acesso ilimitado à plataforma, agenda e comissões integradas.</span>
                       </div>
                       <div className="space-y-1">
                         <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
-                        <span className="text-purple-400 font-extrabold text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-400 font-medium">/ mês</span></span>
+                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-400 font-medium font-sans">/ mês</span></span>
                         <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Stripe.</span>
                       </div>
                     </div>
@@ -3515,7 +3790,7 @@ export default function Dashboard() {
                     {/* Subscriptions Info Details */}
                     <div className="text-xs text-slate-350 leading-relaxed space-y-2">
                       <p>
-                        O plano <span className="font-bold text-white">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será faturada ao seu cartão bancário.
+                        O plano <span className="font-extrabold text-white">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
                       </p>
                       {trialEndsAt && (
                         <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
@@ -3532,27 +3807,27 @@ export default function Dashboard() {
                             className="bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                           >
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                            <span>Stripe Customer Portal (Faturas)</span>
+                            <span>Gerir faturas no portal Stripe</span>
                           </button>
                           <button
                             onClick={handleCancelSubscription}
                             disabled={cancelingSubscription}
                             className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer border border-rose-500/20 disabled:opacity-45"
                           >
-                            {cancelingSubscription ? 'A Processar...' : 'Cancelar Subscrição (Desativar PRO)'}
+                            {cancelingSubscription ? 'A Processar...' : 'Cancelar Subscrição'}
                           </button>
                         </>
                       ) : (
                         <div className="space-y-3 w-full">
                           <p className="text-[11px] text-amber-400 leading-normal bg-amber-950/10 border border-amber-500/20 p-3.5 rounded-xl">
-                            ⚠️ Atualmente, a sua parceria está ativa apenas em simulação local ou conta sem cartão de crédito registado no Stripe. Para garantir a visibilidade do salão no Marketplace, associe o seu cartão abaixo:
+                            ⚠️ Atualmente, a sua parceria está ativa apenas em teste local ou sem cartão registado no Stripe. Para garantir a visibilidade do estabelecimento no Marketplace, ative a sua assinatura abaixo:
                           </p>
                           <button
                             onClick={handleSubscribePro}
                             className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-white text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />
-                            <span>Regularizar Cartão Glamzo PRO (Stripe Checkout)</span>
+                            <span>Ativar Glamzo PRO (Stripe Checkout)</span>
                           </button>
                         </div>
                       )}
@@ -3560,8 +3835,8 @@ export default function Dashboard() {
                   </div>
 
                   {/* Dynamic Stripe Express Connect Manager */}
-                  <div className="space-y-4">
-                    <div className="border-b border-slate-800 pb-2">
+                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-slate-800 pb-2 text-left">
                       <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">Definições de Recebimentos (Stripe Connect)</h4>
                       <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
                         Configure a sua conta Stripe Express obrigatória para receber pagamentos de marcações diretamente na sua conta bancária.
@@ -3581,14 +3856,14 @@ export default function Dashboard() {
                                 <div className="space-y-1 grow">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS ATIVA</h4>
-                                    <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PRONTO A RECEBER</span>
+                                    <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PRONTO</span>
                                   </div>
                                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
                                     A sua conta está totalmente verificada e operacional com o ID <span className="text-white font-bold font-mono text-[10px] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">{business.stripe_account_id}</span>.
                                   </p>
                                   <div className="bg-slate-950/40 rounded-xl p-3 border border-slate-900 text-[10px] space-y-1 mt-2">
                                     <p className="text-emerald-400 font-bold">✓ Split de Fundos Ativo: Loja recebe 95% do valor; Plataforma retém comissão de 5%.</p>
-                                    <p className="text-slate-400">✓ Transferências (Payouts): Configurado para transferência semanal automática às segundas-feiras.</p>
+                                    <p className="text-slate-450 text-slate-400 font-sans">✓ Transferências Automáticas: Processadas pelo Stripe diretamente para o seu IBAN associado de acordo com a sua calendarização no parceiro de pagamentos.</p>
                                   </div>
                                 </div>
                               </div>
@@ -3645,7 +3920,7 @@ export default function Dashboard() {
                             <div className="space-y-0.5 grow">
                               <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS REQUERIDA</h4>
                               <p className="text-[11px] text-slate-400 leading-normal font-sans">
-                                É necessário interligar uma conta Stripe Express para que possa receber pagamentos online de marcações. O valor pago pelo cliente será dividido automaticamente (95% para si / 5% comissão Glamzo) e transferido para o seu banco a cada Segunda-Feira.
+                                É necessário interligar uma conta Stripe Express para receber pagamentos online. O valor pago pelo cliente será dividido automaticamente (95% para si / 5% comissão Glamzo) e transferido para o seu banco conforme o calendário de transferências configurado no Stripe.
                               </p>
                             </div>
                           </div>
@@ -3669,11 +3944,11 @@ export default function Dashboard() {
                         </div>
 
                         {/* Direct manual key-in box for testing if needed */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-left space-y-3">
+                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-left space-y-3">
                           <div className="space-y-1">
-                            <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Ou Associe ID Connect Existente</h4>
-                            <p className="text-[10px] text-slate-400 leading-normal font-sans">
-                              Se já possui uma conta Connect Express configurada (ex: <span className="text-white font-mono font-bold">acct_...</span>), indique o ID abaixo:
+                            <h4 className="font-bold text-xs text-white uppercase tracking-wide">Ou Associe ID Connect Existente</h4>
+                            <p className="text-[10px] text-slate-400 leading-normal font-sans font-medium">
+                              Se já possui uma conta Connect Express configurada, introduza o seu ID abaixo:
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -3682,12 +3957,12 @@ export default function Dashboard() {
                               value={manualStripeId}
                               onChange={(e) => setManualStripeId(e.target.value)}
                               placeholder="acct_1OuX..."
-                              className="grow bg-slate-950 text-slate-100 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-amber-500 transition"
+                              className="grow bg-slate-950 text-white border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-amber-500 transition"
                             />
                             <button
                               onClick={handleSaveManualStripe}
                               disabled={savingManualStripe || !manualStripeId.trim()}
-                              className="text-xs font-bold bg-slate-850 hover:bg-slate-750 text-slate-100 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+                              className="text-xs font-bold bg-slate-850 hover:bg-slate-750 text-slate-100 border border-slate-805 hover:border-slate-700 px-4 py-2 rounded-xl transition shrink-0 disabled:opacity-50"
                             >
                               {savingManualStripe ? 'A Guardar...' : 'Salvar ID'}
                             </button>
@@ -3697,75 +3972,26 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    {/* Submit Payouts Form */}
-                    <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-xs font-semibold text-left">
-                      <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
-                        <Landmark className="w-5 h-5 text-rose-500" />
-                        <span>Solicitar Levantamento Imediato</span>
-                      </h4>
-                      <p className="text-[10px] text-slate-400 leading-normal font-sans">
-                        Transfira o seu lucro líquido real acumulado. Os fundos serão depositados na conta bancária (IBAN) vinculada no prazo técnico de 24h.
-                      </p>
-
-                      {payoutSuccess && <div className="p-3 bg-emerald-950/45 border border-emerald-920 text-emerald-400 rounded-xl leading-normal text-[11px] font-bold">{payoutSuccess}</div>}
-
-                      <form onSubmit={handleSubmitPayoutRequest} className="space-y-4">
-                        <div>
-                          <label className="block text-[9px] font-mono uppercase text-slate-450 mb-1.5">Quantia Real a Mudar (€)</label>
-                          <input 
-                            type="number" required min={10} max={balanceAvailable > 10 ? balanceAvailable : 1000}
-                            value={payoutAmount}
-                            onChange={e => setPayoutAmount(Number(e.target.value))}
-                            className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
-                          />
-                        </div>
-
-                        <button 
-                          type="submit"
-                          disabled={balanceAvailable < 10}
-                          className="bg-rose-600 hover:bg-rose-700 disabled:opacity-45 w-full py-2.5 rounded-xl font-bold uppercase tracking-wide text-white cursor-pointer transition-colors"
-                        >
-                          Efetuar Ordem de Levantamento
-                        </button>
-                      </form>
-                    </div>
-
-                    {/* Pedidos de Levantamentos List */}
-                    <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 space-y-4 text-left">
-                      <h4 className="font-bold text-xs text-white uppercase tracking-wider">Histórico de Pedidos de Levantamento</h4>
-                      <div className="space-y-3.5 max-h-[190px] overflow-y-auto scrollbar-thin">
-                        {payouts.map((po, idx) => (
-                          <div key={idx} className="flex justify-between items-center bg-slate-950 p-3 rounded-2xl border border-slate-900 text-xs text-slate-350">
-                            <div>
-                              <span className="block font-bold font-mono text-white">{po.amount.toFixed(2)} €</span>
-                              <span className="text-[10px] text-slate-500 font-sans mt-0.5 block">{new Date(po.created_at).toLocaleDateString('pt-PT')}</span>
-                            </div>
-                            <span className={`px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase ${
-                              po.status === 'completed' ? 'bg-emerald-950 text-emerald-400 border-emerald-900/60' : 'bg-amber-950/45 text-amber-400 border-amber-900'
-                            }`}>
-                              {po.status === 'completed' ? 'Paga (Transferida)' : 'Pendente'}
-                            </span>
-                          </div>
-                        ))}
-
-                        {payouts.length === 0 && (
-                          <p className="text-[11px] text-slate-500 font-mono text-center py-6">Nenhum pedido de levantamento registado.</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Transaction Ledger List with Real Invoicing Buttons */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left">
+                  {/* Transaction Ledger List with Automated Receipts Explanation */}
+                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left font-sans">
                     <div className="flex justify-between items-center pb-2 border-b border-slate-850">
                       <div>
-                        <h4 className="font-extrabold text-sm text-white">Transações e Emissão de Faturas de Clientes</h4>
-                        <p className="text-[10px] text-slate-400">Emita recibos eletrónicos correspondentes a cada atendimento cobrado.</p>
+                        <h4 className="font-extrabold text-sm text-white">Transações & Faturação de Clientes</h4>
+                        <p className="text-[10px] text-slate-450 text-slate-400 mt-0.5 font-medium">Histórico de liquidações e processos de faturação automática integrada via Stripe.</p>
                       </div>
                     </div>
 
-                    <div className="space-y-3.5 max-h-[350px] overflow-y-auto scrollbar-thin">
+                    <div className="bg-slate-950/40 p-4 border border-slate-850 rounded-2xl text-[11px] leading-relaxed text-slate-400 space-y-2">
+                      <p className="text-white font-extrabold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-indigo-400" /> Faturação 100% Automatizada e Integrada</p>
+                      <p>
+                        No ambiente de produção da Glamzo, <span className="text-slate-200 font-bold">não necessita de preencher SAF-T manuais nem de emitir PDFs temporários</span>. 
+                      </p>
+                      <p>
+                        No exato momento em que um cliente final efetua o pagamento de uma marcação via Stripe Checkout, o <span className="text-white">Stripe emite e envia automaticamente o recibo oficial e termo de faturação correspondente</span> diretamente para o email do cliente. O histórico fiscal fica arquivado na sua conta bancária Stripe Connect e no e-mail do cliente, cumprindo todas as diretrizes regulatórias e fiscais aplicáveis.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 max-h-[350px] overflow-y-auto scrollbar-thin">
                       {ledgers.map((item, idx) => {
                         const originalPrice = Number(item.amount_total || item.amount || 0);
                         const platformFee = Number(item.glamzo_fee || 0);
@@ -3775,36 +4001,33 @@ export default function Dashboard() {
                         return (
                           <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-900 gap-3 text-xs">
                             <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-slate-200 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-[10px]">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-mono text-slate-200 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-[9px]">
                                   TX-{String(item.id).substring(0,8).toUpperCase()}
                                 </span>
                                 <span className="text-[10px] text-slate-400">{txDate}</span>
+                                <span className="px-1.5 py-0.2 bg-emerald-950/50 text-emerald-400 border border-emerald-900/35 rounded text-[8px] font-mono tracking-wider uppercase font-black">
+                                  Faturado por Stripe
+                                </span>
                               </div>
-                              <div className="text-slate-400 text-[11px] font-medium leading-normal">
-                                Total Pago: <span className="text-white font-mono font-bold">{originalPrice.toFixed(2)}€</span> • 
-                                Comissão Retida: <span className="text-rose-400 font-mono font-bold">{platformFee.toFixed(2)}€</span>
+                              <div className="text-slate-400 text-[11px] font-medium leading-normal font-mono">
+                                Total Pago: <span className="text-white font-bold">{originalPrice.toFixed(2)}€</span> • 
+                                Comissão Glamzo (5%): <span className="text-rose-450 font-bold">-{platformFee.toFixed(2)}€</span>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 justify-between sm:justify-end">
-                              <div className="text-right">
-                                <span className="text-[9px] uppercase font-mono text-slate-450 block">Teu Lucro Líquido</span>
-                                <span className="text-xs font-black text-emerald-450 font-mono text-emerald-400">{merchantProfit.toFixed(2)} €</span>
+                            <div className="flex items-center gap-3 justify-between sm:justify-end text-right">
+                              <div>
+                                <span className="text-[9px] uppercase font-mono text-slate-400 block font-bold">Teu Lucro Líquido</span>
+                                <span className="text-[11px] font-black text-emerald-400 font-mono">{merchantProfit.toFixed(2)} €</span>
                               </div>
-                              <button
-                                onClick={() => setSelectedInvoice(item)}
-                                className="px-3 py-1.5 bg-rose-600/10 hover:bg-rose-600/20 text-rose-450 text-[11px] font-bold rounded-lg cursor-pointer transition-colors border border-rose-500/20"
-                              >
-                                Emitir Fatura
-                              </button>
                             </div>
                           </div>
                         );
                       })}
 
                       {ledgers.length === 0 && (
-                        <p className="text-xs text-slate-500 font-mono text-center py-10">Não há transações concluídas ou faturas elegíveis disponíveis.</p>
+                        <p className="text-xs text-slate-500 font-mono text-center py-10">Não há transações concluídas de momento.</p>
                       )}
                     </div>
                   </div>
@@ -3821,30 +4044,141 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-400 mt-0.5">Promova promoções, atraia clientes em dias de menor afluência e defina cupões promocionais reais.</p>
                   </div>
 
-                  {/* Coupon List */}
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                      <Tag className="w-4.5 h-4.5 text-rose-500" />
-                      <span>Cupões de Desconto Ativos no Checkout</span>
-                    </h4>
+                  {/* Coupon Creator & List */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start text-left">
+                    
+                    {/* LEFT CONTAINER: List of active coupons */}
+                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                        <Tag className="w-4.5 h-4.5 text-rose-500" />
+                        <span>Cupões no Checkout Real</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-400 leading-normal">
+                        Os clientes introduzem estes códigos dinamicamente no checkout da Glamzo para aplicar descontos reais.
+                      </p>
 
-                    <div className="space-y-3">
-                      {[
-                        { code: 'BEMVINDO10', desc: '10% de Desconto para a primeira reserva do cliente.', active: true },
-                        { code: 'ESTETICA20', desc: '20% de Desconto focado em estética corporal e spas.', active: true },
-                        { code: 'GLAMZOLOCAL', desc: 'Desconto flat de 5€ elegível para pagamentos em salão.', active: true }
-                      ].map((cp, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 bg-slate-950 rounded-2xl border border-slate-905 border-slate-900/60 text-xs">
-                          <div>
-                            <span className="font-mono bg-rose-950 border border-rose-900/50 px-2.5 py-1 rounded text-rose-405 text-rose-400 font-extrabold select-all leading-none inline-block mb-1.5">
-                              {cp.code}
-                            </span>
-                            <p className="text-[11px] text-slate-400 font-medium">{cp.desc}</p>
+                      <div className="space-y-3.5 max-h-[380px] overflow-y-auto scrollbar-thin">
+                        {coupons.map((cp, idx) => {
+                          const hasPct = cp.discount_percent !== null && cp.discount_percent !== undefined;
+                          const hasVal = cp.discount_value !== null && cp.discount_value !== undefined;
+                          const discountStr = hasPct 
+                            ? `${cp.discount_percent}% de Desconto` 
+                            : hasVal 
+                              ? `${cp.discount_value}€ de Desconto (Fixo)` 
+                              : 'Sem Desconto';
+
+                          const expiryStr = cp.valid_until 
+                            ? `Expira em: ${new Date(cp.valid_until).toLocaleDateString('pt-PT')}`
+                            : 'Sem expiração';
+
+                          return (
+                            <div key={cp.id || idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-950 rounded-2xl border border-slate-900 gap-3 text-xs">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-mono bg-rose-950/60 border border-rose-900/40 px-2.5 py-0.5 rounded text-rose-400 font-extrabold select-all uppercase text-[10px] tracking-wide">
+                                    {cp.code}
+                                  </span>
+                                  <button
+                                    onClick={() => handleToggleCoupon(cp.id, cp.is_active)}
+                                    className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase transition-all cursor-pointer ${
+                                      cp.is_active 
+                                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/40' 
+                                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                                    }`}
+                                  >
+                                    {cp.is_active ? 'Ativo' : 'Inativo'}
+                                  </button>
+                                </div>
+                                <p className="text-[11px] font-bold text-white leading-normal">{discountStr}</p>
+                                <p className="text-[10px] text-slate-550 text-slate-500 leading-normal font-medium">{expiryStr}</p>
+                              </div>
+
+                              <button
+                                onClick={() => handleDeleteCoupon(cp.id)}
+                                className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-950/25 border border-transparent hover:border-rose-900/40 rounded-xl transition cursor-pointer self-end sm:self-center"
+                                title="Eliminar Cupão"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+
+                        {coupons.length === 0 && (
+                          <div className="text-center py-10 border border-dashed border-slate-850 rounded-2xl">
+                            <p className="text-xs text-slate-500 font-mono">Não possui cupões promocionais ativos.</p>
                           </div>
-                          <span className="text-[9px] font-mono font-bold bg-slate-900 text-emerald-400 border border-emerald-950/60 uppercase px-2 py-0.5 rounded-full">Ativo</span>
-                        </div>
-                      ))}
+                        )}
+                      </div>
                     </div>
+
+                    {/* RIGHT CONTAINER: Creator card */}
+                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                        <Plus className="w-4.5 h-4.5 text-purple-400" />
+                        <span>Criar Código Promocional</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-400 leading-normal">
+                        Configure um novo código promocional específico para atrair e fidelizar a sua clientela.
+                      </p>
+
+                      <form onSubmit={handleCreateCoupon} className="space-y-4 text-xs font-semibold">
+                        <div>
+                          <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Código Único (Letras/Números)</label>
+                          <input 
+                            type="text" required 
+                            value={couponForm.code}
+                            onChange={e => setCouponForm(prev => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s+/g, '') }))}
+                            placeholder="EX: GLAMZO10"
+                            className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Desconto Percentual (%)</label>
+                            <input 
+                              type="number" min={1} max={100}
+                              value={couponForm.discount_percent}
+                              onChange={e => setCouponForm(prev => ({ ...prev, discount_percent: e.target.value, discount_value: '' }))}
+                              placeholder="Ex: 15"
+                              disabled={!!couponForm.discount_value}
+                              className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Desconto Fixo (€)</label>
+                            <input 
+                              type="number" min={1} max={500}
+                              value={couponForm.discount_value}
+                              onChange={e => setCouponForm(prev => ({ ...prev, discount_value: e.target.value, discount_percent: '' }))}
+                              placeholder="Ex: 5"
+                              disabled={!!couponForm.discount_percent}
+                              className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Data de Validade (Opcional)</label>
+                          <input 
+                            type="date"
+                            value={couponForm.valid_until}
+                            onChange={e => setCouponForm(prev => ({ ...prev, valid_until: e.target.value }))}
+                            className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
+                          />
+                        </div>
+
+                        <button 
+                          type="submit"
+                          disabled={loadingCoupons}
+                          className="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-45 py-3 rounded-xl font-bold uppercase tracking-wide text-white cursor-pointer transition-colors text-center text-xs leading-none h-11"
+                        >
+                          {loadingCoupons ? 'A Criar...' : 'Ativar Código de Desconto'}
+                        </button>
+                      </form>
+                    </div>
+
                   </div>
 
                   {/* Growth campaign simulation triggers */}
