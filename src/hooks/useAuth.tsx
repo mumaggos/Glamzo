@@ -12,7 +12,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  updateProfile: (fullName: string | null, avatarUrl: string | null) => Promise<any>;
+  updateProfile: (fullName: string | null, avatarUrl: string | null, phone?: string | null, email?: string | null) => Promise<any>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -405,7 +405,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Update profile in SQL
-  const updateProfile = async (fullName: string | null, avatarUrl: string | null) => {
+  const updateProfile = async (fullName: string | null, avatarUrl: string | null, phone?: string | null, email?: string | null) => {
     setError(null);
     if (!user) throw new Error('Not authenticated');
     if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
@@ -413,6 +413,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updatePayload: any = {};
     if (fullName !== undefined) updatePayload.full_name = fullName;
     if (avatarUrl !== undefined) updatePayload.avatar_url = avatarUrl;
+    if (phone !== undefined) updatePayload.phone = phone;
+    if (email !== undefined) updatePayload.email = email;
 
     const { data, error: upErr } = await supabase
       .from('profiles')

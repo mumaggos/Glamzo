@@ -5,6 +5,7 @@ export interface UserProfile {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
+  phone?: string | null;
   role: UserRole;
   reputation?: number; // Reputation score (e.g., 0 - 100) or dynamic reputation level
   created_at: string;
