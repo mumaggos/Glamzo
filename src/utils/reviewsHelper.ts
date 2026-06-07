@@ -128,3 +128,31 @@ function saveLocalFallbackReview(review: Review) {
     localStorage.setItem(LOCAL_REVIEWS_KEY, JSON.stringify(updated));
   } catch (_) {}
 }
+
+// Delete a review by ID securely from both Supabase and local storage fallbacks
+export async function deleteReview(reviewId: string): Promise<boolean> {
+  let success = false;
+  try {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId);
+
+    if (!error) {
+      success = true;
+    }
+  } catch (err) {
+    console.warn('Failed to delete in Supabase reviews table. Removing from local store.', err);
+  }
+
+  // Always keep local persistent store aligned
+  try {
+    const list = getLocalFallbackReviews();
+    const updated = list.filter(r => r.id !== reviewId);
+    localStorage.setItem(LOCAL_REVIEWS_KEY, JSON.stringify(updated));
+    success = true;
+  } catch (_) {}
+
+  return success;
+}
+

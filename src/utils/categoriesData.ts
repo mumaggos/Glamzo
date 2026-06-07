@@ -47,7 +47,7 @@ export const MAIN_CATEGORIES: CategoryDefinition[] = [
     name: 'Noivas & Eventos',
     emoji: '👰',
     description: 'Serviços completos e rituais de beleza personalizados para casamentos, convidados e eventos formais.',
-    imageUrl: 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600'
+    imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600'
   }
 ];
 

@@ -119,7 +119,7 @@ export default function Home() {
   const getBestUnsplashCategoryFallback = (title: string): string => {
     const t = (title || '').toLowerCase().trim();
     if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
-      return 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+      return 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('cabel') || t.includes('barb') || t.includes('pente') || t.includes('hair') || t.includes('cut')) {
       return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
@@ -145,7 +145,7 @@ export default function Home() {
       return dynamicCards.map(c => {
         let imgUrl = c.image_url;
         // Verify if image URL is local/placeholder/broken or empty, and inject fallback
-        if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/') || imgUrl === 'null' || imgUrl === 'undefined') {
+        if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/') || imgUrl === 'null' || imgUrl === 'undefined' || imgUrl.includes('photo-1594744803329-e58b31de215f')) {
           imgUrl = getBestUnsplashCategoryFallback(c.title);
         }
         return {
@@ -308,7 +308,7 @@ export default function Home() {
                     e.currentTarget.onerror = null; // Prevent infinite loop
                     const lower = (cat.name || '').toLowerCase();
                     if (lower.includes('noiva') || lower.includes('event') || lower.includes('casam') || lower.includes('brid')) {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600';
                     } else if (lower.includes('cabel') || lower.includes('barb')) {
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
                     } else {

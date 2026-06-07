@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { Review } from '../types';
-import { fetchReviewsByCustomer, submitReview } from '../utils/reviewsHelper';
+import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
 import { User, Mail, Calendar, Upload, Loader2, Link, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2 } from 'lucide-react';
@@ -191,6 +191,27 @@ export default function Account() {
       console.error('Error submitting review:', err);
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm('Tem a certeza que deseja eliminar esta avaliação de forma permanente?')) {
+      return;
+    }
+    setLoadingReviews(true);
+    try {
+      const success = await deleteReview(reviewId);
+      if (success) {
+        setRedeemSuccess('Avaliação eliminada com sucesso!');
+        await loadUserReviews();
+      } else {
+        setRedeemError('Não foi possível eliminar a avaliação.');
+      }
+    } catch (err: any) {
+      console.error('Error deleting review:', err);
+      setRedeemError('Ocorreu um erro ao eliminar a avaliação.');
+    } finally {
+      setLoadingReviews(false);
     }
   };
 
@@ -878,17 +899,29 @@ export default function Account() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-0.5 shrink-0">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-3.5 h-3.5 ${
-                        star <= rev.rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-slate-205 text-slate-200'
-                      }`}
-                    />
-                  ))}
+                <div className="flex items-center gap-4 shrink-0 justify-end">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-3.5 h-3.5 ${
+                          star <= rev.rating
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-205 text-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => handleDeleteReview(rev.id)}
+                    className="p-1.5 px-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-100 hover:border-rose-200 text-rose-600 rounded-xl transition-all flex items-center gap-1 cursor-pointer font-semibold hover:scale-[1.02]"
+                    title="Apagar Avaliação"
+                    aria-label="Apagar Avaliação"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden xs:inline text-[10px]">Apagar</span>
+                  </button>
                 </div>
               </div>
             ))
