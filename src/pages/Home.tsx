@@ -92,47 +92,61 @@ export default function Home() {
     loadDynamicCards();
   }, []);
 
+  // Unified helper to map card title keywords into standard primary category filters
+  const getMatchingCategoryName = (title: string): string => {
+    const t = (title || '').toLowerCase().trim();
+    if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
+      return 'Noivas & Eventos';
+    }
+    if (t.includes('cabel') || t.includes('barb') || t.includes('pente') || t.includes('hair') || t.includes('cut')) {
+      return 'Cabelo & Barbearia';
+    }
+    if (t.includes('nail') || t.includes('unh') || t.includes('pest') || t.includes('sobr') || t.includes('maqu') || t.includes('beauty') || t.includes('make')) {
+      return 'Nails & Beauty';
+    }
+    if (t.includes('estét') || t.includes('pele') || t.includes('corpo') || t.includes('laser') || t.includes('depil') || t.includes('skin')) {
+      return 'Estética';
+    }
+    if (t.includes('well') || t.includes('mass') || t.includes('spa') || t.includes('reik') || t.includes('terap') || t.includes('relax')) {
+      return 'Wellness';
+    }
+    if (t.includes('domicíl') || t.includes('casa') || t.includes('home')) {
+      return 'Ao domicílio';
+    }
+    return title;
+  };
+
+  const getBestUnsplashCategoryFallback = (title: string): string => {
+    const t = (title || '').toLowerCase().trim();
+    if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
+      return 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
+    }
+    if (t.includes('cabel') || t.includes('barb') || t.includes('pente') || t.includes('hair') || t.includes('cut')) {
+      return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
+    }
+    if (t.includes('nail') || t.includes('unh') || t.includes('pest') || t.includes('sobr') || t.includes('maqu') || t.includes('beauty') || t.includes('make')) {
+      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600';
+    }
+    if (t.includes('estét') || t.includes('pele') || t.includes('corpo') || t.includes('laser') || t.includes('depil') || t.includes('skin')) {
+      return 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600';
+    }
+    if (t.includes('well') || t.includes('mass') || t.includes('spa') || t.includes('reik') || t.includes('terap') || t.includes('relax')) {
+      return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600';
+    }
+    if (t.includes('domicíl') || t.includes('casa') || t.includes('home')) {
+      return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+    }
+    return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+  };
+
   // Memoize rendered categories so that input keystrokes do not trigger complete mapping loops
   const renderedCategories = useMemo(() => {
     if (dynamicCards.length > 0) {
       return dynamicCards.map(c => {
-        // Resolve a beautiful Unsplash fallback if the database image is local/broken/placeholder
         let imgUrl = c.image_url;
-        const lowerTitle = (c.title || '').toLowerCase().trim();
-        if (lowerTitle.includes('noiva') || lowerTitle.includes('event')) {
-          imgUrl = 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
-        }
-        const parseFallback = () => {
-          if (lowerTitle.includes('noiva') || lowerTitle.includes('event') || lowerTitle.includes('casam') || lowerTitle.includes('brid')) {
-            return 'https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&q=80&w=600';
-          }
-          if (lowerTitle.includes('cabel') || lowerTitle.includes('barb')) {
-            return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
-          }
-          if (lowerTitle.includes('nail') || lowerTitle.includes('unh') || lowerTitle.includes('pest') || lowerTitle.includes('sobr')) {
-            return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600';
-          }
-          if (lowerTitle.includes('estét') || lowerTitle.includes('pele') || lowerTitle.includes('corpo')) {
-            return 'https://images.unsplash.com/photo-1522335789253-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600';
-          }
-          if (lowerTitle.includes('well') || lowerTitle.includes('mass') || lowerTitle.includes('spa')) {
-            return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600';
-          }
-          if (lowerTitle.includes('domicíl') || lowerTitle.includes('casa')) {
-            return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
-          }
-          return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
-        };
-
+        // Verify if image URL is local/placeholder/broken or empty, and inject fallback
         if (!imgUrl || imgUrl.startsWith('/assets/') || imgUrl.includes('localhost') || imgUrl.startsWith('/') || imgUrl === 'null' || imgUrl === 'undefined') {
-          const normalizeStr = (s: string) => {
-            return s.toLowerCase()
-              .trim()
-              .replace(/&/g, 'e')
-              .replace(/[\s\-_]+/g, ' ');
-          };
-          const match = MAIN_CATEGORIES.find(m => normalizeStr(m.name) === normalizeStr(c.title));
-          imgUrl = match ? match.imageUrl : parseFallback();
+          imgUrl = getBestUnsplashCategoryFallback(c.title);
         }
         return {
           id: c.id,
@@ -278,7 +292,7 @@ export default function Home() {
           {renderedCategories.map((cat) => (
             <Link 
               key={cat.id || cat.name}
-              to={`/explore?category=${encodeURIComponent(cat.name)}`}
+              to={`/explore?category=${encodeURIComponent(getMatchingCategoryName(cat.name))}`}
               className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:border-purple-300 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_rgba(15,23,42,0.04)] -translate-y-0 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
             >
               <div className="h-48 overflow-hidden relative">

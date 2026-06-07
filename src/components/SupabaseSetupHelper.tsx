@@ -457,6 +457,45 @@ create policy "Allow owners to insert reward_coupons"
 create policy "Allow owners to update reward_coupons"
   on public.reward_coupons for update
   using (auth.uid() = customer_id);
+
+-- ==========================================
+-- 17. CREATE STORAGE BUCKET 'avatars' & POLICIES
+-- ==========================================
+-- Create the public "avatars" bucket if it doesn't exist
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  5242880, -- 5MB limit
+  array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+)
+on conflict (id) do nothing;
+
+-- Ensure RLS is active on storage.objects if not already
+alter table storage.objects enable row level security;
+
+-- Policies for public reading and authenticated uploading/updating/deleting of avatars
+drop policy if exists "Permitir leitura publica de avatars" on storage.objects;
+drop policy if exists "Permitir uploads para avatars" on storage.objects;
+drop policy if exists "Permitir updates em avatars" on storage.objects;
+drop policy if exists "Permitir delete em avatars" on storage.objects;
+
+create policy "Permitir leitura publica de avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+create policy "Permitir uploads para avatars"
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and auth.role() = 'authenticated');
+
+create policy "Permitir updates em avatars"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and auth.role() = 'authenticated');
+
+create policy "Permitir delete em avatars"
+  on storage.objects for delete
+  using (bucket_id = 'avatars' and auth.role() = 'authenticated');
 `;
 
   const handleCopy = () => {

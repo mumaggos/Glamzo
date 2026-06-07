@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { UserProfile, UserRole, Business } from '../types';
+import { MAIN_CATEGORIES } from '../utils/categoriesData';
 import { financeService } from '../utils/financeService';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { 
@@ -1989,6 +1990,54 @@ export default function Admin() {
                     </button>
                   </div>
 
+                  {/* Proactive Storage and avatars creation SQL query notice */}
+                  <div className="p-5 bg-[#0a0515]/30 border border-slate-850 rounded-3xl space-y-3">
+                    <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs uppercase tracking-wider font-mono">
+                      <span>🗄️ Query SQL para criar o Bucket "avatars" no Supabase Storage:</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Se você presenciar falhas de upload ou erros de "bucket não encontrado" ao definir fotos de equipe, imagens do CMS, ou avatares de perfis, copie o script abaixo e execute-o no seu painel <strong>SQL Editor</strong> do Supabase. Ele cria o bucket <code>avatars</code> e define as regras RLS corretas:
+                    </p>
+                    <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed scrollbar-thin">
+{`-- 1. Criar o bucket publico "avatars" se nao existir
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  5242880, -- Limite de 5MB
+  array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+)
+on conflict (id) do nothing;
+
+-- 2. Ativar RLS em storage.objects se nao estiver ativa
+alter table storage.objects enable row level security;
+
+-- 3. Limpar politicas anteriores para evitar colisao
+drop policy if exists "Permitir leitura publica de avatars" on storage.objects;
+drop policy if exists "Permitir uploads para avatars" on storage.objects;
+drop policy if exists "Permitir updates em avatars" on storage.objects;
+drop policy if exists "Permitir delete em avatars" on storage.objects;
+
+-- 4. Criar politicas para leitura publica e operacoes de upload autenticado
+create policy "Permitir leitura publica de avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+create policy "Permitir uploads para avatars"
+  on storage.objects for insert
+  with check (bucket_id = 'avatars' and auth.role() = 'authenticated');
+
+create policy "Permitir updates em avatars"
+  on storage.objects for update
+  using (bucket_id = 'avatars' and auth.role() = 'authenticated');
+
+create policy "Permitir delete em avatars"
+  on storage.objects for delete
+  using (bucket_id = 'avatars' and auth.role() = 'authenticated');`}
+                    </pre>
+                  </div>
+
                   {cmsError && (
                     <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
                       <div className="flex items-center gap-2 text-purple-400 font-bold">
@@ -2042,15 +2091,26 @@ create policy "Allow admins full operations on homepage_cards"
                       </h4>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Título do Cartão</label>
-                        <input
-                          type="text"
+                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Categoria Alvo / Título do Cartão</label>
+                        <select
                           required
                           value={cmsTitle}
-                          onChange={(e) => setCmsTitle(e.target.value)}
-                          placeholder="Ex: Cabelos Premium, Massagens Luxo..."
-                          className="w-full bg-[#0a0515] border border-slate-800 px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500 font-medium placeholder-slate-600"
-                        />
+                          onChange={(e) => {
+                            setCmsTitle(e.target.value);
+                            const matched = MAIN_CATEGORIES.find(m => m.name === e.target.value);
+                            if (matched && (!cmsEmoji || cmsEmoji === '✨' || cmsEmoji === '')) {
+                              setCmsEmoji(matched.emoji);
+                            }
+                          }}
+                          className="w-full bg-[#0a0515] text-slate-200 border border-slate-800 px-3 py-3 rounded-xl text-xs focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                        >
+                          <option value="" className="text-slate-650">-- Selecione uma Categoria Alvo --</option>
+                          {MAIN_CATEGORIES.map((cat) => (
+                            <option key={cat.name} value={cat.name} className="bg-slate-900 text-slate-150">
+                              {cat.emoji} {cat.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
