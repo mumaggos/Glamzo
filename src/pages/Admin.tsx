@@ -890,12 +890,7 @@ export default function Admin() {
 
   const getDynamicChartData = () => {
     if (!paymentsList || paymentsList.length === 0) {
-      return [
-        { name: 'Dias 1-7', total: 0 },
-        { name: 'Dias 8-14', total: 0 },
-        { name: 'Dias 15-21', total: 0 },
-        { name: 'Dias 22+', total: 0 }
-      ];
+      return [];
     }
     
     // Process real database payments list
@@ -1953,18 +1948,26 @@ export default function Admin() {
                     </div>
 
                     {/* Aggregate Platform Billing line diagram */}
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
                       <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RLineChart data={getDynamicChartData()}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
-                            <YAxis stroke="#64748b" fontSize={11} unit="€" />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
-                            <Line type="monotone" dataKey="total" stroke="#9333ea" name="Volume" strokeWidth={2.5} />
-                          </RLineChart>
-                        </ResponsiveContainer>
+                      <div className="h-64 flex items-center justify-center">
+                        {getDynamicChartData().length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RLineChart data={getDynamicChartData()}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+                              <YAxis stroke="#64748b" fontSize={11} unit="€" />
+                              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
+                              <Line type="monotone" dataKey="total" stroke="#9333ea" name="Volume" strokeWidth={2.5} />
+                            </RLineChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-950/20">
+                            <BarChart className="w-8 h-8 text-slate-500 mb-2" />
+                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-[10px] text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -179,16 +179,16 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold tracking-wider text-purple-600 mb-6 uppercase">
               <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              <span>O Marketplace de Reservas Premium em Portugal</span>
+              <span>A Plataforma Integradora SaaS para Salões e Estética em Portugal</span>
             </div>
             
             <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900 leading-[1.08] mb-6">
-              Encontre e reserve os melhores <br />
-              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">serviços de beleza</span> de elite.
+              O seu salão de beleza no <br />
+              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">topo do mercado</span> digital.
             </h1>
             
-            <p className="text-xs sm:text-sm text-slate-500 font-normal max-w-xl mx-auto leading-relaxed">
-              Agendamento em tempo real nos salões recomendados, tratamentos estéticos de alta costura e serviços de elite em toda a República Portuguesa. No waits, no fuss.
+            <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-2xl mx-auto leading-relaxed">
+              Descubra os estúdios de maior prestígio em Portugal ou posicione o seu próprio negócio no ecossistema digital mais avançado: agendamentos inteligentes em tempo real, faturamento integrado via Stripe e gestão unificada de equipas.
             </p>
           </div>
 
@@ -428,8 +428,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Praticidade e Segurança Sem Esforço</h2>
-            <p className="text-slate-500 text-xs sm:text-sm mt-2 max-w-sm mx-auto">Surgido para descomplicar a beleza profissional com agendamentos de confiança em minutos.</p>
+            <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Potencialize a Sua Operação e Faturação</h2>
+            <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-sm mx-auto">Tecnologia avançada desenvolvida especificamente para facilitar o crescimento de marcas e profissionais de estética de alta performance.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -438,19 +438,19 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <Smile className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Zero tempos de espera</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Captação & Mais Reservas</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Visualização de horários em tempo real. Planeie em segundos no conforto do seu telemóvel, sem necessitar de longas filas ou telefonemas indesejados.
+                Maximize a taxa de preenchimento de horários e evite perdas de faturação. Permita que os seus clientes façam marcações automáticas em tempo real através de qualquer dispositivo móvel.
               </p>
             </div>
 
-            <div className="p-6.5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-slate-100/30">
+            <div className="p-6.5 bg-slate-50 rounded-2xl border border-slate-105 border-slate-100 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-slate-100/30">
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <Star className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Reviews Verificadas</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Organização de Equipa</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Críticas de utilizadores reais pós-reservas. Conheça as classificações e os portfólios antes de investir noutros tratamentos.
+                Atribua serviços específicos de forma dinâmica, defina comissões exclusivas para cada técnico e acompanhe o desempenho da sua equipa sem folhas de cálculo manuais ou atrasos organizacionais.
               </p>
             </div>
 
@@ -458,9 +458,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <ShieldCheck className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Pague como quiser</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Fluxo Financeiro via Stripe</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Opte pelo pagamento online super rápido integrado com Stripe Wallet, ou reserve de forma livre e pague em numerário ou multibanco directamente no salão.
+                Opte por liquidações ou pré-pagamentos automáticos obrigatórios nas marcações para erradicar faltas comparativas (No-Shows) e proteger o fluxo de caixa operacional do salão.
               </p>
             </div>
 

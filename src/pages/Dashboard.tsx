@@ -226,15 +226,9 @@ export default function Dashboard() {
 
   // Dynamic real-time partner dashboard charts (Phase 12 validation)
   const getDynamicPartnerVolumeData = () => {
-    // If no bookings have been generated yet, supply realistic initial values based on actual pricing or seed bookings
+    // If no bookings have been generated yet, return empty to support transparent reporting fallbacks
     if (!bookings || bookings.length === 0) {
-      return [
-        { month: 'Jan', receita: 350 },
-        { month: 'Fev', receita: 480 },
-        { month: 'Mar', receita: 620 },
-        { month: 'Abr', receita: 890 },
-        { month: 'Mai', receita: 1250 }
-      ];
+      return [];
     }
 
     // Build authentic dynamic revenue aggregates grouping by month of booking
@@ -245,50 +239,38 @@ export default function Dashboard() {
 
     const monthNamesPt = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
+    let hasAnyCompleted = false;
     bookings.forEach(b => {
       if (b.booking_status === 'completed' || b.booking_status === 'confirmed') {
         const d = new Date(b.starts_at || Date.now());
         const mName = monthNamesPt[d.getMonth()];
         if (mName) {
           monthlyAccumulators[mName] += Number(b.price || b.total_price || 0);
+          hasAnyCompleted = true;
         }
       }
     });
 
-    // Make sure we show at least some initial seed tracking if the aggregated total is 0 to avoid boring blank chart
-    const hasAnyRevenue = Object.values(monthlyAccumulators).some(v => v > 0);
-    if (!hasAnyRevenue) {
-      return [
-        { month: 'Jan', receita: 180 },
-        { month: 'Fev', receita: 220 },
-        { month: 'Mar', receita: 400 },
-        { month: 'Abr', receita: 550 },
-        { month: 'Mai', receita: 650 }
-      ];
+    if (!hasAnyCompleted) {
+      return [];
     }
 
     // Return the active tracking months in pt
     return monthNamesPt.map(m => ({
       month: m,
       receita: parseFloat(monthlyAccumulators[m].toFixed(2))
-    })).filter(item => item.receita > 0 || ['Abr', 'Mai', 'Jun'].includes(item.month));
+    })).filter(item => item.receita > 0);
   };
 
   const getDynamicPartnerWeeklyOccupancy = () => {
-    if (!bookings || bookings.length === 0) {
-      return [
-        { day: 'Seg', taxa: 35 },
-        { day: 'Ter', taxa: 50 },
-        { day: 'Qua', taxa: 68 },
-        { day: 'Qui', taxa: 85 },
-        { day: 'Sex', taxa: 92 },
-        { day: 'Sáb', taxa: 98 }
-      ];
+    const activeBookings = bookings.filter(b => b.booking_status === 'completed' || b.booking_status === 'confirmed');
+    if (!activeBookings || activeBookings.length === 0) {
+      return [];
     }
 
     // Calculate rates from actual bookings count for weekdays (0 = Sunday, 1 = Monday ...)
     const completionsByDay = [0, 0, 0, 0, 0, 0, 0];
-    bookings.forEach(b => {
+    activeBookings.forEach(b => {
       const d = new Date(b.starts_at || Date.now());
       const dayIdx = d.getDay();
       completionsByDay[dayIdx] += 1;
@@ -299,16 +281,15 @@ export default function Dashboard() {
     // Convert counts to a nice percentage rate
     const maxCount = Math.max(...completionsByDay, 1);
     const data = weekdayLabels.map((label, idx) => {
-      // Scale count to percentage for stunning chart visuals
       const count = completionsByDay[idx];
-      const rate = Math.round((count / maxCount) * 85) + 15; // smooth background scale min 15%
+      const rate = Math.round((count / maxCount) * 100);
       return {
         day: label,
         taxa: rate
       };
     });
 
-    // Filter out Sunday of low business if it has zero activity
+    // Filter out Sunday if it has zero activity
     return data.filter(d => d.day !== 'Dom' || completionsByDay[0] > 0);
   };
 
@@ -2300,21 +2281,11 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <button
               onClick={loadTerminalData}
-              title="Recarregar Dados da Produção"
-              className="p-2 py-2.5 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-mono tracking-tight font-bold"
+              title="Sincronizar dados da base de dados"
+              className="p-2 py-2.5 bg-slate-950 border border-slate-800 text-slate-400 hover:text-white rounded-xl hover:bg-slate-900 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">BD Real Sinc</span>
-            </button>
-
-            {/* Simulated Booking trigger */}
-            <button 
-              onClick={handleSimulateNewBooking}
-              className="bg-amber-600 hover:bg-amber-700 px-4 py-2 text-[11px] rounded-xl font-black text-slate-950 font-mono tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-amber-950/50 cursor-pointer animate-pulse shrink-0"
-              id="btn-simulate-reception"
-            >
-              <Play className="w-3.5 h-3.5 fill-slate-950 stroke-none" />
-              <span>Simular Nova Reserva (Ding-Dong)</span>
+              <span>Atualizar Dados</span>
             </button>
           </div>
         </header>
@@ -2801,7 +2772,7 @@ export default function Dashboard() {
                         <h4 className="font-black text-xs text-white uppercase tracking-wider">Escala Ativa</h4>
                         <div className="space-y-3">
                           {staff.length === 0 ? (
-                            <p className="text-[11px] text-slate-500 font-mono">Sem profissionais escala.</p>
+                            <p className="text-[11px] text-slate-500 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                           ) : (
                             staff.map(st => (
                               <div key={st.id} className="flex items-center justify-between text-xs bg-slate-950 p-3 rounded-2xl border border-slate-900">
@@ -2965,7 +2936,7 @@ export default function Dashboard() {
                             <tr>
                               <td colSpan={7} className="text-center py-16 text-slate-500 text-xs font-mono space-y-2">
                                 <AlertCircle className="w-10 h-10 text-slate-600 mx-auto" />
-                                <p className="text-slate-400">Nenhuma reserva localizada na base de dados.</p>
+                                <p className="text-slate-400">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                               </td>
                             </tr>
                           )}
@@ -3061,8 +3032,8 @@ export default function Dashboard() {
                       <div className="col-span-1 md:col-span-3 text-center py-16 bg-slate-900 border border-dashed border-slate-850 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
                         <Scissors className="w-12 h-12 text-slate-600 mx-auto" />
                         <div>
-                          <p className="font-bold text-slate-350 text-slate-300">Sem serviços cadastrados.</p>
-                          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">Cadastre cortes de cabelo, manicures ou massagens de forma profissional e real.</p>
+                          <p className="font-bold text-slate-300">Sem dados disponíveis.</p>
+                          <p className="text-xs text-slate-550 mt-1 leading-relaxed text-slate-500">Os dados serão apresentados após atividade real de registo de serviços.</p>
                         </div>
                       </div>
                     )}
@@ -3512,8 +3483,8 @@ export default function Dashboard() {
                           {clientsList.length === 0 && (
                             <tr>
                               <td colSpan={6} className="text-center py-16 text-slate-500 text-xs font-mono">
-                                <UsersRound className="w-12 h-12 text-slate-650 mx-auto mb-2 text-slate-700" />
-                                <p>Os clientes que realizarem reservas reais salvas no Supabase constarão nesta folha analítica.</p>
+                                <UsersRound className="w-12 h-12 text-slate-700 mx-auto mb-2" />
+                                <p>Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                               </td>
                             </tr>
                           )}
@@ -3582,35 +3553,51 @@ export default function Dashboard() {
                   {/* Recharts Graphical charts */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-w-0">
                     {/* Monthly Volume BarChart */}
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
                       <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Volume de Vendas Mensal</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RBarChart data={getDynamicPartnerVolumeData()}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis dataKey="month" stroke="#64748b" fontSize={11} />
-                            <YAxis stroke="#64748b" fontSize={11} unit="€" />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
-                            <Legend />
-                            <Bar dataKey="receita" fill="#e11d48" name="Facturação Bruta" radius={[4, 4, 0, 0]} />
-                          </RBarChart>
-                        </ResponsiveContainer>
+                      <div className="h-64 flex items-center justify-center">
+                        {getDynamicPartnerVolumeData().length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RBarChart data={getDynamicPartnerVolumeData()}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                              <XAxis dataKey="month" stroke="#64748b" fontSize={11} />
+                              <YAxis stroke="#64748b" fontSize={11} unit="€" />
+                              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
+                              <Legend />
+                              <Bar dataKey="receita" fill="#e11d48" name="Facturação Bruta" radius={[4, 4, 0, 0]} />
+                            </RBarChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-slate-950/20">
+                            <BarChart className="w-8 h-8 text-slate-500 mb-2" />
+                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-[10px] text-slate-550 text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {/* Bookings Distribution LineChart */}
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
                       <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Frequência Semanal de Ocupação</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RLineChart data={getDynamicPartnerWeeklyOccupancy()}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
-                            <YAxis stroke="#64748b" fontSize={11} unit="%" />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
-                            <Line type="monotone" dataKey="taxa" stroke="#d97706" name="Taxa Ocupação" strokeWidth={2.5} activeDot={{ r: 8 }} />
-                          </RLineChart>
-                        </ResponsiveContainer>
+                      <div className="h-64 flex items-center justify-center">
+                        {getDynamicPartnerWeeklyOccupancy().length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RLineChart data={getDynamicPartnerWeeklyOccupancy()}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                              <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
+                              <YAxis stroke="#64748b" fontSize={11} unit="%" />
+                              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
+                              <Line type="monotone" dataKey="taxa" stroke="#d97706" name="Taxa Ocupação" strokeWidth={2.5} activeDot={{ r: 8 }} />
+                            </RLineChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-slate-950/20">
+                            <TrendingUp className="w-8 h-8 text-slate-500 mb-2" />
+                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-[10px] text-slate-550 text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -4027,7 +4014,7 @@ export default function Dashboard() {
                       })}
 
                       {ledgers.length === 0 && (
-                        <p className="text-xs text-slate-500 font-mono text-center py-10">Não há transações concluídas de momento.</p>
+                        <p className="text-xs text-slate-500 font-mono text-center py-10">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                       )}
                     </div>
                   </div>
@@ -4106,7 +4093,7 @@ export default function Dashboard() {
 
                         {coupons.length === 0 && (
                           <div className="text-center py-10 border border-dashed border-slate-850 rounded-2xl">
-                            <p className="text-xs text-slate-500 font-mono">Não possui cupões promocionais ativos.</p>
+                            <p className="text-xs text-slate-500 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                           </div>
                         )}
                       </div>
@@ -4411,11 +4398,11 @@ export default function Dashboard() {
                     {/* Stat 1: Visitas de página */}
                     <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block">Visitas Página</span>
-                        <span className="text-2xl font-black text-white font-mono">1 420</span>
-                        <p className="text-[9px] text-emerald-400 font-bold font-mono">+12% esta semana</p>
+                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Visitas Página</span>
+                        <span className="text-2xl font-black text-slate-400 font-mono">0</span>
+                        <p className="text-[9px] text-slate-500 font-mono leading-none">Sem visitas disponíveis</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-400 border border-purple-500/10">
+                      <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-slate-500 border border-slate-800">
                         <Eye className="w-5 h-5" />
                       </div>
                     </div>
@@ -4423,36 +4410,36 @@ export default function Dashboard() {
                     {/* Stat 2: Favoritos */}
                     <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block">Favoritos</span>
-                        <span className="text-2xl font-black text-pink-400 font-mono">84</span>
-                        <p className="text-[9px] text-pink-550 font-bold font-mono">Clientes fiéis guardados</p>
+                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Favoritos</span>
+                        <span className="text-2xl font-black text-slate-400 font-mono">0</span>
+                        <p className="text-[9px] text-slate-500 font-mono leading-none">Sem favoritos guardados</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-pink-950/20 flex items-center justify-center text-pink-400 border border-pink-500/10">
-                        <Heart className="w-5 h-5 fill-pink-550 text-pink-500" />
+                      <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-slate-500 border border-slate-800">
+                        <Heart className="w-5 h-5 text-slate-500" />
                       </div>
                     </div>
 
                     {/* Stat 3: Leituras de QR Code */}
                     <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block">Leituras QR Code</span>
-                        <span className="text-2xl font-black text-amber-400 font-mono">{business?.qr_scans_count || 329}</span>
-                        <p className="text-[9px] text-amber-500 font-bold font-mono">Direct scans ao balcão</p>
+                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Leituras QR Code</span>
+                        <span className="text-2xl font-black text-white font-mono">{business?.qr_scans_count || 0}</span>
+                        <p className="text-[9px] text-slate-400 font-bold font-mono">Leituras físicas ao balcão</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-amber-950/20 flex items-center justify-center text-amber-400 border border-amber-500/10">
-                        <QrCode className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <QrCode className="w-5 h-5 text-purple-405" />
                       </div>
                     </div>
 
                     {/* Stat 4: Reservas via QR */}
                     <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block">Reservas via QR</span>
-                        <span className="text-2xl font-black text-purple-450 font-mono text-purple-400">{Math.round((business?.qr_scans_count || 329) * 0.18)}</span>
-                        <p className="text-[9px] text-purple-400 font-bold font-mono">Taxa de conversão: 18%</p>
+                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Reservas via QR</span>
+                        <span className="text-2xl font-black text-white font-mono">{Math.round((business?.qr_scans_count || 0) * 0.18)}</span>
+                        <p className="text-[9px] text-slate-400 font-bold font-mono">Conversão estimada: 18%</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-400 border border-purple-500/10">
-                        <Calendar className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <Calendar className="w-5 h-5 text-purple-405" />
                       </div>
                     </div>
                   </div>
@@ -4524,19 +4511,10 @@ export default function Dashboard() {
                             playTerminalChime();
                             notifyTerminal("🔊 Teste de Sirene", "Sinal sonoro de volume amplificado disparado na estação física.");
                           }}
-                          className="px-4 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl font-bold flex items-center gap-1.5 transition-all text-[11px] cursor-pointer"
+                          className="px-4 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl font-bold flex items-center gap-1.5 transition-all text-[11px] cursor-pointer text-slate-350 hover:text-white"
                         >
                           <Play className="w-3.5 h-3.5 text-rose-500" />
                           <span>Testar Chime Sonoro</span>
-                        </button>
-
-                        {/* Force live simulated reservation */}
-                        <button
-                          onClick={handleSimulateNewBooking}
-                          className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-extrabold flex items-center gap-1.5 transition-all text-[11px] cursor-pointer"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-white animate-spin" />
-                          <span>Simular Nova Reserva (Cliente)</span>
                         </button>
                       </div>
                     </div>

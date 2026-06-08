@@ -96,29 +96,7 @@ export const financeService = {
   getAdminCoupons(): AdminCoupon[] {
     const list = localStorage.getItem('glamzo_admin_coupons');
     if (!list) {
-      // Seed default coupons
-      const initial: AdminCoupon[] = [
-        {
-          id: 'cp_1',
-          code: 'PROTRIAL30',
-          discount_type: 'percent',
-          discount_value: 100,
-          limit_uses: 200,
-          uses_count: 5,
-          trial_days: 30,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 'cp_2',
-          code: 'GLAM15',
-          discount_type: 'percent',
-          discount_value: 15,
-          limit_uses: 150,
-          uses_count: 32,
-          trial_days: 0,
-          created_at: new Date().toISOString()
-        }
-      ];
+      const initial: AdminCoupon[] = [];
       localStorage.setItem('glamzo_admin_coupons', JSON.stringify(initial));
       return initial;
     }
