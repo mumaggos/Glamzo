@@ -311,3 +311,104 @@ img, button, a {
   color: #475569 !important;
 }
 
+/* ==================================================== */
+/* COMPLETE BUTTON AND PURPLE ALERTS REPAIR ENGINE      */
+/* ==================================================== */
+
+/* Prevent white-on-white text on active hover states for secondary buttons */
+#partner-terminal-layout button {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Safe readable styling for ALL default primary buttons layout */
+#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600) {
+  background-color: #7c3aed !important; /* Force a gorgeous clear purple instead of overridden white! */
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2) !important;
+}
+
+#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600):hover {
+  background-color: #6d28d9 !important; /* Elevate background on hover */
+  color: #ffffff !important;
+}
+
+/* Repair Cancel/Alt buttons whose text gets hidden */
+#partner-terminal-layout button:not(.text-white):not([class*="text-purple"]):not([class*="text-rose"]):not([class*="bg-purple"]):not([class*="text-amber"]):not([class*="text-emerald"]) {
+  color: #0f172a !important; /* Set standard high-contrast charcoal black text */
+  background-color: #f1f5f9 !important; /* Solid neutral background */
+  border: 1px solid #e2e8f0 !important;
+}
+
+#partner-terminal-layout button:not(.text-white):not([class*="text-purple"]):not([class*="text-rose"]):not([class*="bg-purple"]):not([class*="text-amber"]):not([class*="text-emerald"]):hover {
+  background-color: #e2e8f0 !important; /* Darker hover */
+  color: #0f172a !important;
+}
+
+/* Keep standard styling intact for positive actions */
+#partner-terminal-layout button.bg-emerald-600,
+#partner-terminal-layout button.bg-emerald-500 {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+#partner-terminal-layout button.bg-emerald-600:hover,
+#partner-terminal-layout button.bg-emerald-500:hover {
+  background-color: #059669 !important;
+}
+
+/* Fix old muddy/dark purple and violet boxes to soft, luxury highlights */
+#partner-terminal-layout .bg-purple-950/11,
+#partner-terminal-layout .bg-purple-950/10,
+#partner-terminal-layout .bg-purple-950/20,
+#partner-terminal-layout .bg-purple-950/40,
+#partner-terminal-layout .bg-purple-950/50,
+#partner-terminal-layout .bg-purple-500/15,
+#partner-terminal-layout .bg-[#110724]/60,
+#partner-terminal-layout .bg-purple-900/40 {
+  background-color: #f5f3ff !important; /* Clean rich lavender */
+  border-color: #ddd6fe !important; /* Clean lavender boundary */
+  color: #5b21b6 !important;
+}
+
+/* Adjust texts for muddy purple/indigo boxes to high contrast violet */
+#partner-terminal-layout .text-purple-300,
+#partner-terminal-layout .text-purple-400,
+#partner-terminal-layout .text-purple-450,
+#partner-terminal-layout .text-indigo-400,
+#partner-terminal-layout .text-violet-300,
+#partner-terminal-layout .text-violet-400 {
+  color: #6d28d9 !important; /* Clear deep readable violet text */
+}
+
+/* Sidebar quick info wrapper background - should be sleek luxury white with subtle purple glow */
+#partner-terminal-layout aside .bg-purple-950\/20,
+#partner-terminal-layout aside .bg-[#0a0514] {
+  background-color: #fafbfc !important;
+  border: 1px solid #e1dbf7 !important;
+}
+
+#partner-terminal-layout aside .bg-purple-950\/20 .text-purple-300 {
+  color: #6d28d9 !important;
+}
+
+/* Interactive custom switch buttons */
+#partner-terminal-layout .font-mono.text-[10px].text-purple-400 {
+  color: #7c3aed !important;
+}
+
+/* Border repair systems */
+#partner-terminal-layout .border-white\/5,
+#partner-terminal-layout .border-purple-500\/10,
+#partner-terminal-layout .border-purple-500\/20,
+#partner-terminal-layout .border-purple-500\/25,
+#partner-terminal-layout .border-purple-900\/30,
+#partner-terminal-layout .border-purple-900\/60,
+#partner-terminal-layout .border-[#1f1635] {
+  border-color: #e2e8f0 !important;
+}
+
+#partner-terminal-layout .divide-[#1f1635] > * {
+  border-color: #f1f5f9 !important;
+}
+
+

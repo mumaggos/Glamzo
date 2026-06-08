@@ -11,6 +11,10 @@ export default function Partner() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (user && profile?.role === 'business') {
       navigate('/dashboard', { replace: true });
     } else if (user && profile?.role === 'admin') {

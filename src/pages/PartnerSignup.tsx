@@ -187,44 +187,44 @@ export default function PartnerSignup() {
   };
 
   return (
-    <div id="partner-signup-view" className="min-h-[calc(100vh-64px)] bg-slate-950 text-slate-105 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-rose-500/20 text-slate-200">
+    <div id="partner-signup-view" className="min-h-[calc(100vh-64px)] bg-slate-50 text-slate-800 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-purple-200 selection:text-purple-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl animate-fade-in text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/30 rounded-full text-xs font-semibold text-rose-400 mb-4 uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200 rounded-full text-xs font-semibold text-purple-700 mb-4 uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5 animate-pulse text-purple-600" />
           <span>Inscrição Glamzo Parceiros</span>
         </div>
-        <h2 className="text-3xl font-black text-white tracking-tight">
-          Crie a sua Conta Profissional
+        <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
+          Criar Conta Profissional<span className="text-purple-600 font-black">.</span>
         </h2>
-        <p className="mt-2 text-xs text-slate-400 max-w-md mx-auto">
-          Gira a sua agenda de reservas, faturação e visibilidade de forma simples a partir de uma plataforma dedicada.
+        <p className="mt-2 text-xs text-slate-500 font-medium max-w-sm mx-auto">
+          Gira a sua agenda de reservas, faturação e visibilidade de forma simples a partir de uma plataforma de elite dedicada.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 rounded-3xl shadow-2xl sm:px-10">
+        <div className="bg-white border border-slate-100 py-8 px-6 rounded-2xl shadow-sm sm:px-10">
           
           {/* Progress Bar / Steps indicator */}
-          <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-5">
+          <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-5">
             <div className="flex items-center gap-2">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400'}`}>1</span>
-              <span className={`text-xs font-semibold ${step === 1 ? 'text-white font-bold' : 'text-slate-400'}`}>Conta de Acesso</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
+              <span className={`text-xs font-semibold ${step === 1 ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>Conta de Acesso</span>
             </div>
-            <div className="w-12 h-[1px] bg-slate-800 flex-1 mx-3" />
+            <div className="w-12 h-[1px] bg-slate-100 flex-1 mx-3" />
             <div className="flex items-center gap-2">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400'}`}>2</span>
-              <span className={`text-xs font-semibold ${step === 2 ? 'text-white font-bold' : 'text-slate-400'}`}>Dados do Negócio</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
+              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>Dados do Negócio</span>
             </div>
           </div>
 
           {errorMsg && (
-            <div className="mb-5 p-4 bg-rose-950/40 border border-rose-900/50 text-rose-400 rounded-xl text-xs font-semibold">
+            <div className="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
               <p>{errorMsg}</p>
               {(errorMsg.includes('já está registado') || errorMsg.includes('já está associado') || errorMsg.toLowerCase().includes('already')) && (
                 <div className="mt-2.5 text-left">
                   <Link 
                     to={`/partner/login?email=${encodeURIComponent(email)}`} 
-                    className="inline-flex items-center gap-1 text-xs text-rose-300 hover:text-rose-450 font-extrabold hover:underline"
+                    className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-extrabold hover:underline"
                   >
                     <span>Iniciar Sessão como Parceiro Comercial &rarr;</span>
                   </Link>
@@ -234,7 +234,7 @@ export default function PartnerSignup() {
           )}
 
           {successMsg && (
-            <div className="mb-5 p-4 bg-emerald-950/40 border border-emerald-950 text-emerald-400 rounded-xl text-xs font-semibold animate-pulse">
+            <div className="mb-5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold animate-pulse">
               <p>{successMsg}</p>
             </div>
           )}
@@ -242,15 +242,15 @@ export default function PartnerSignup() {
           {/* Active Session Detection Bypass */}
           {user && !isSignUpProcessActive ? (
             <div className="space-y-6 text-center py-4 animate-fade-in">
-              <div className="p-4 bg-purple-950/25 border border-purple-900/50 rounded-2xl">
-                <p className="text-sm font-bold text-white mb-2">Sessão Ativa Detetada!</p>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Está atualmente ligado como <span className="font-semibold text-purple-400">{profile?.full_name || user.email}</span> ({profile?.role === 'customer' ? 'Conta de Cliente' : 'Conta de Parceiro'}).
+              <div className="p-4 bg-purple-50 border border-purple-100 rounded-2xl">
+                <p className="text-sm font-bold text-slate-900 mb-2">Sessão Ativa Detetada!</p>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Está atualmente ligado como <span className="font-semibold text-purple-600">{profile?.full_name || user.email}</span> ({profile?.role === 'customer' ? 'Conta de Cliente' : 'Conta de Parceiro'}).
                 </p>
               </div>
               {profile?.role === 'customer' ? (
                 <div className="space-y-3">
-                  <p className="text-[11px] text-amber-400 font-medium leading-relaxed">
+                  <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
                     As contas de Cliente e de Parceiro/Loja são totalmente independentes de modo a garantir a separação de dashboards. Por favor, termine a sessão da sua conta de cliente para poder criar o registo comercial do seu salão.
                   </p>
                   <button
@@ -260,7 +260,7 @@ export default function PartnerSignup() {
                         window.location.reload();
                       } catch (e) {}
                     }}
-                    className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-md text-xs uppercase tracking-wider cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                   >
                     <span>Terminar Sessão de Cliente</span>
                   </button>
@@ -268,7 +268,7 @@ export default function PartnerSignup() {
               ) : (
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-650 hover:bg-purple-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-md text-xs uppercase tracking-wider cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                 >
                   <span>Ir para o Painel do Salão</span>
                 </button>
@@ -277,11 +277,11 @@ export default function PartnerSignup() {
           ) : step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                   Nome Completo do Responsável
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <User className="w-4 h-4" />
                   </span>
                   <input
@@ -289,18 +289,18 @@ export default function PartnerSignup() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="ex. Profissional Responsável"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                   E-mail Comercial de Acesso
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail className="w-4 h-4" />
                   </span>
                   <input
@@ -308,7 +308,7 @@ export default function PartnerSignup() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="geral@oseunegocio.com"
                   />
                 </div>
@@ -316,7 +316,7 @@ export default function PartnerSignup() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Palavra-passe
                   </label>
                   <div className="relative rounded-xl shadow-sm">
@@ -325,13 +325,13 @@ export default function PartnerSignup() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full px-4 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                      className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                       placeholder="Mín. 6 letras"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-350"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-650"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -339,7 +339,7 @@ export default function PartnerSignup() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Confirmar Senha
                   </label>
                   <input
@@ -347,7 +347,7 @@ export default function PartnerSignup() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="Repita a senha"
                   />
                 </div>
@@ -355,7 +355,7 @@ export default function PartnerSignup() {
 
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 mt-6 py-3.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-md shadow-rose-950 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 mt-6 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
               >
                 <span>Inserir Dados do Estabelecimento</span>
                 <ArrowRight className="w-4 h-4" />
@@ -368,11 +368,11 @@ export default function PartnerSignup() {
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Nome do Estabelecimento
                   </label>
                   <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Store className="w-4 h-4" />
                     </span>
                     <input
@@ -380,23 +380,23 @@ export default function PartnerSignup() {
                       required
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                       placeholder="ex. Glamour Studio"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Categoria Principal
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
                   >
                     {categories.map((cat) => (
-                      <option key={cat} value={cat} className="bg-slate-900 text-slate-205">{cat}</option>
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
@@ -404,7 +404,7 @@ export default function PartnerSignup() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Distrito / Região
                   </label>
                   <select
@@ -416,36 +416,36 @@ export default function PartnerSignup() {
                         setCity(PORTUGAL_GEO[nextDist][0]);
                       }
                     }}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all cursor-pointer"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
                   >
                     {Object.keys(PORTUGAL_GEO).sort().map((dist) => (
-                      <option key={dist} value={dist} className="bg-slate-900 text-slate-205">{dist}</option>
+                      <option key={dist} value={dist}>{dist}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Cidade
                   </label>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all cursor-pointer"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
                   >
                     {(PORTUGAL_GEO[district] || []).map((c) => (
-                      <option key={c} value={c} className="bg-slate-900 text-slate-205">{c}</option>
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                   Morada / Nome da Rua *
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <MapPin className="w-4 h-4" />
                   </span>
                   <input
@@ -453,7 +453,7 @@ export default function PartnerSignup() {
                     required
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="Rua das Flores"
                   />
                 </div>
@@ -461,7 +461,7 @@ export default function PartnerSignup() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Porta / Andar *
                   </label>
                   <input
@@ -469,12 +469,12 @@ export default function PartnerSignup() {
                     required
                     value={doorNumber}
                     onChange={(e) => setDoorNumber(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="ex. 12C, 3º Esq"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Código Postal *
                   </label>
                   <input
@@ -482,7 +482,7 @@ export default function PartnerSignup() {
                     required
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="ex. 1000-100"
                   />
                 </div>
@@ -490,11 +490,11 @@ export default function PartnerSignup() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Telefone de Contacto
                   </label>
                   <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Phone className="w-4 h-4" />
                     </span>
                     <input
@@ -502,39 +502,39 @@ export default function PartnerSignup() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                       placeholder="Contacto comercial"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     WhatsApp (Opcional)
                   </label>
                   <input
                     type="text"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="ex. +351900000000"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-405 uppercase tracking-wider mb-1.5 text-slate-400">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                   Breve Descrição do Negócio
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-500">
+                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-400">
                     <FileText className="w-4 h-4" />
                   </span>
                   <textarea
                     rows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.bg-slate-950 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all placeholder:text-slate-600"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="Introduza uma breve apresentação do seu espaço e serviços especialidades..."
                   />
                 </div>
@@ -544,7 +544,7 @@ export default function PartnerSignup() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
+                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Voltar</span>
@@ -553,7 +553,7 @@ export default function PartnerSignup() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-rose-950 disabled:opacity-50 cursor-pointer"
+                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -573,7 +573,7 @@ export default function PartnerSignup() {
 
           <p className="mt-8 text-center text-xs text-slate-500">
             Deseja aceder a uma conta existente?{' '}
-            <Link to="/partner/login" className="font-bold text-rose-400 hover:underline">
+            <Link to="/partner/login" className="font-bold text-purple-600 hover:text-purple-700">
               Iniciar sessão profissional
             </Link>
           </p>

@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
+import ScrollToTop from './components/ScrollToTop';
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
 const Home = React.lazy(() => import('./pages/Home'));
 const Login = React.lazy(() => import('./pages/Login'));
@@ -64,6 +65,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
           {/* Elite subtle static top bar cue */}
