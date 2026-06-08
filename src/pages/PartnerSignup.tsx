@@ -191,13 +191,13 @@ export default function PartnerSignup() {
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl animate-fade-in text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/30 rounded-full text-xs font-semibold text-rose-400 mb-4 uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-          <span>Registo SaaS Glamzo Parceiros</span>
+          <span>Inscrição Glamzo Parceiros</span>
         </div>
         <h2 className="text-3xl font-black text-white tracking-tight">
           Crie a sua Conta Profissional
         </h2>
         <p className="mt-2 text-xs text-slate-400 max-w-md mx-auto">
-          Gerencie a sua agenda de reservas, faturamento e visibilidade de forma simples a partir de uma plataforma dedicada.
+          Gira a sua agenda de reservas, faturação e visibilidade de forma simples a partir de uma plataforma dedicada.
         </p>
       </div>
 
@@ -562,7 +562,7 @@ export default function PartnerSignup() {
                     </>
                   ) : (
                     <>
-                      <span>Criar Conta e Ativar SaaS</span>
+                      <span>Criar Conta e Começar Teste</span>
                       <Check className="w-4 h-4" />
                     </>
                   )}

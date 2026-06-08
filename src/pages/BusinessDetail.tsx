@@ -238,7 +238,7 @@ export default function BusinessDetail() {
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_reported: true, report_reason: reportReasonText.trim() } : r));
       setReportingReviewId(null);
       setReportReasonText('');
-      alert('A sua denúncia foi enviada com sucesso para análise do administrador do Glamzo.');
+      alert('A sua denúncia foi enviada com sucesso para análise da equipa de apoio da Glamzo.');
     } catch (e) {
       console.error(e);
     }

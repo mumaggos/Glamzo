@@ -179,16 +179,16 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold tracking-wider text-purple-600 mb-6 uppercase">
               <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              <span>A Plataforma Integradora SaaS para Salões e Estética em Portugal</span>
+              <span>A plataforma de gestão e agendamento para salões em Portugal</span>
             </div>
             
             <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900 leading-[1.08] mb-6">
-              O seu salão de beleza no <br />
-              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">topo do mercado</span> digital.
+              Receba mais marcações e <br />
+              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">gere o seu salão</span> num só lugar.
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-2xl mx-auto leading-relaxed">
-              Descubra os estúdios de maior prestígio em Portugal ou posicione o seu próprio negócio no ecossistema digital mais avançado: agendamentos inteligentes em tempo real, faturamento integrado via Stripe e gestão unificada de equipas.
+              Descubra os melhores salões de cabeleireiro, estética e bem-estar em Portugal ou organize o seu próprio negócio: marcações automáticas em tempo real, pagamentos integrados seguros e gestão simplificada da sua equipa.
             </p>
           </div>
 
@@ -428,8 +428,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Potencialize a Sua Operação e Faturação</h2>
-            <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-sm mx-auto">Tecnologia avançada desenvolvida especificamente para facilitar o crescimento de marcas e profissionais de estética de alta performance.</p>
+            <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Melhore a gestão e aumente as suas reservas</h2>
+            <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-sm mx-auto">Tudo o que o seu negócio precisa para atrair mais clientes, organizar a equipa e gerir faturas sem complicações.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -438,9 +438,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <Smile className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Captação & Mais Reservas</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Atraia mais marcações</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Maximize a taxa de preenchimento de horários e evite perdas de faturação. Permita que os seus clientes façam marcações automáticas em tempo real através de qualquer dispositivo móvel.
+                Preencha as horas livres do seu calendário facilmente. Permita aos seus clientes agendar serviços a qualquer hora do dia ou da noite, diretamente pelo telemóvel.
               </p>
             </div>
 
@@ -448,9 +448,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <Star className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Organização de Equipa</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Gestão simples da equipa</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Atribua serviços específicos de forma dinâmica, defina comissões exclusivas para cada técnico e acompanhe o desempenho da sua equipa sem folhas de cálculo manuais ou atrasos organizacionais.
+                Atribua serviços aos seus profissionais, defina horários de trabalho e comissões de forma descomplicada, sem necessidade de folhas de cálculo ou papel.
               </p>
             </div>
 
@@ -458,9 +458,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <ShieldCheck className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Fluxo Financeiro via Stripe</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Pagamentos online e menos faltas</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Opte por liquidações ou pré-pagamentos automáticos obrigatórios nas marcações para erradicar faltas comparativas (No-Shows) e proteger o fluxo de caixa operacional do salão.
+                Ative pagamentos seguros no agendamento para evitar ausências não justificadas. O cliente pode pagar online e os fundos entram com segurança na sua conta Stripe.
               </p>
             </div>
 
@@ -476,9 +476,9 @@ export default function Home() {
           
           <div className="max-w-xl relative">
             <span className="text-[9px] font-mono font-bold text-purple-600 uppercase tracking-widest block mb-2 leading-none">PARA SALÕES, CLÍNICAS & PROFISSIONAIS</span>
-            <h2 className="text-xl sm:text-3xl font-display font-medium text-slate-900 leading-snug tracking-tight">Gira a sua agenda, fature pagamentos e cresça na Glamzo</h2>
+            <h2 className="text-xl sm:text-3xl font-display font-medium text-slate-900 leading-snug tracking-tight">Organize a sua agenda, receba pagamentos e faça crescer o seu salão</h2>
             <p className="text-slate-500 text-xs mt-3 leading-relaxed">
-              Disponibilize faturamento imediato via Stripe Connect, automatize lembretes de marcações via WhatsApp, controle o desempenho da equipa e aumente a sua conversão.
+              Ative pagamentos imediatos através do Stripe, automatize confirmações de reserva e faça a gestão integral da sua equipa na melhor plataforma para cabeleireiros e estética.
             </p>
           </div>
 

@@ -554,7 +554,10 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     const calculatedSuccessUrl = getRealRedirectUrl(req, successUrl, `/dashboard?status=success_pro&biz_id=${businessId}`);
     const calculatedCancelUrl = getRealRedirectUrl(req, cancelUrl, `/dashboard?status=cancelled_pro&biz_id=${businessId}`);
 
-    console.log("Initiating stripe.checkout.sessions.create...");
+    const hasUsedTrial = !!business.trial_started_at;
+    const subscriptionData = hasUsedTrial ? {} : { trial_period_days: 14 };
+
+    console.log(`Initiating stripe.checkout.sessions.create... (Trial Used previously: ${hasUsedTrial})`);
     let session: Stripe.Checkout.Session;
     try {
       if (!priceId) {
@@ -571,9 +574,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             quantity: 1,
           },
         ],
-        subscription_data: {
-          trial_period_days: 14,
-        },
+        subscription_data: subscriptionData,
         metadata: {
           business_id: businessId,
           businessId: businessId,
@@ -605,9 +606,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
                 quantity: 1,
               },
             ],
-            subscription_data: {
-              trial_period_days: 14,
-            },
+            subscription_data: subscriptionData,
             metadata: {
               business_id: businessId,
               businessId: businessId,

@@ -475,6 +475,11 @@ export default function Dashboard() {
     }
   }, [user]);
 
+  // Force scroll to top on tab change for sleek navigation comforts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
   // Live Real-Time Postgres Change Subscriptions via WebSockets
   useEffect(() => {
     if (!business?.id) return;
@@ -2419,8 +2424,8 @@ export default function Dashboard() {
                 <div id="view-agenda" className="space-y-6">
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-900 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Quadro da Agenda</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Visor diário premium estilo Apple/Google Calendar integrado com o terminal.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white">Agenda do Salão</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">Visualize e controle todas as marcações do dia de forma simplificada.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -2609,7 +2614,7 @@ export default function Dashboard() {
                                           </div>
                                         ))
                                       ) : (
-                                        <span className="block text-[8px] font-mono text-slate-600 text-center py-4">Sem reservas</span>
+                                        <span className="block text-[8px] font-mono text-slate-600 text-center py-4">Sem marcações</span>
                                       )}
                                     </div>
                                   </div>
@@ -2796,8 +2801,8 @@ export default function Dashboard() {
                 <div id="view-reservas" className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-900 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Todas as Marcações</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Gestão operacional completa de reservas efetuadas na base de dados.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white">Gestão das Marcações</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">Consulte e gira todos os agendamentos feitos pelos seus clientes e equipa num único ecrã.</p>
                     </div>
                   </div>
 
@@ -2936,7 +2941,7 @@ export default function Dashboard() {
                             <tr>
                               <td colSpan={7} className="text-center py-16 text-slate-500 text-xs font-mono space-y-2">
                                 <AlertCircle className="w-10 h-10 text-slate-600 mx-auto" />
-                                <p className="text-slate-400">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
+                                <p className="text-slate-400">Ainda não recebeu marcações. Os agendamentos futuros aparecerão aqui automaticamente.</p>
                               </td>
                             </tr>
                           )}
@@ -2975,7 +2980,7 @@ export default function Dashboard() {
                       className="bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold rounded-xl text-white inline-flex items-center gap-2 shadow shadow-rose-950 cursor-pointer text-nowrap"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>Cadastrar Serviço</span>
+                      <span>Adicionar Serviço</span>
                     </button>
                   </div>
 
@@ -3029,11 +3034,11 @@ export default function Dashboard() {
                     ))}
 
                     {services.length === 0 && (
-                      <div className="col-span-1 md:col-span-3 text-center py-16 bg-slate-900 border border-dashed border-slate-850 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
+                      <div className="col-span-1 md:col-span-3 text-center py-16 bg-slate-900 border border-dashed border-slate-855 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
                         <Scissors className="w-12 h-12 text-slate-600 mx-auto" />
                         <div>
-                          <p className="font-bold text-slate-300">Sem dados disponíveis.</p>
-                          <p className="text-xs text-slate-550 mt-1 leading-relaxed text-slate-500">Os dados serão apresentados após atividade real de registo de serviços.</p>
+                          <p className="font-bold text-slate-300">Sem serviços criados.</p>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">Crie os seus serviços (como cortes, colorações ou unhas) para que apareçam no seu salão online.</p>
                         </div>
                       </div>
                     )}
@@ -3126,8 +3131,8 @@ export default function Dashboard() {
                 <div id="view-equipa" className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-900 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Escala e Equipa</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Gerenciamento dos profissionais de mesa e disponibilidade operacional.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white">Equipa e Escalas</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">Gira as escalas, competências e horários de folga dos membros da equipa.</p>
                     </div>
 
                     <button
@@ -3145,7 +3150,7 @@ export default function Dashboard() {
                       className="bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold rounded-xl text-white inline-flex items-center gap-2 shadow shadow-rose-950 cursor-pointer text-nowrap"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>Contratar Agente / Profissional</span>
+                      <span>Adicionar Profissional</span>
                     </button>
                   </div>
 
@@ -3193,11 +3198,21 @@ export default function Dashboard() {
                             onClick={() => handleDeleteStaff(st.id)}
                             className="p-1.5 px-2 py-1.5 bg-rose-950/20 hover:bg-rose-950 text-rose-450 hover:text-rose-500 text-[10px] rounded-lg cursor-pointer"
                           >
-                            Dispensa
+                            Remover
                           </button>
                         </div>
                       </div>
                     ))}
+
+                    {staff.length === 0 && (
+                      <div className="col-span-1 md:col-span-4 text-center py-16 bg-slate-900 border border-dashed border-slate-850 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
+                        <Users className="w-12 h-12 text-slate-600 mx-auto" />
+                        <div>
+                          <p className="font-bold text-slate-300">Ainda não tem profissionais adicionados.</p>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">Adicione a sua equipa para que as suas clientes possam agendar diretamente com os profissionais favoritos.</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Staff Modal */}
@@ -3205,7 +3220,7 @@ export default function Dashboard() {
                     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                       <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 sm:p-8 space-y-6 text-slate-100">
                         <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                          <h4 className="font-extrabold text-base text-white">{editingStaff ? "Editar Artista" : "Cadastrar Novo Agente"}</h4>
+                          <h4 className="font-extrabold text-base text-white">{editingStaff ? "Editar Detalhes do Profissional" : "Adicionar Novo Profissional"}</h4>
                           <button onClick={() => setShowStaffModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
                         </div>
 
@@ -3422,7 +3437,7 @@ export default function Dashboard() {
                 <div id="view-clientes" className="space-y-6">
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white">Livro de Clientes Registados</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Base cadastral automatizada revelando a sua rentabilidade individual por cliente fidelizado.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Histórico automático de visitas e gastos individuais de cada cliente.</p>
                   </div>
 
                   <div className="bg-slate-900 border border-slate-900 rounded-3xl overflow-hidden shadow-2xl">
@@ -3430,7 +3445,7 @@ export default function Dashboard() {
                       <table className="w-full text-left">
                         <thead className="bg-slate-950 text-[10px] font-bold text-slate-450 uppercase tracking-widest leading-none border-b border-slate-900">
                           <tr>
-                            <th className="py-4.5 px-6">Cliente Cadastrado</th>
+                            <th className="py-4.5 px-6">Cliente Registado</th>
                             <th className="py-4.5 px-4">Correio Electrónico</th>
                             <th className="py-4.5 px-4 text-center font-mono">Visitas Concluídas</th>
                             <th className="py-4.5 px-4 text-right font-mono">Gasto Bruto</th>
@@ -3484,7 +3499,7 @@ export default function Dashboard() {
                             <tr>
                               <td colSpan={6} className="text-center py-16 text-slate-500 text-xs font-mono">
                                 <UsersRound className="w-12 h-12 text-slate-700 mx-auto mb-2" />
-                                <p>Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
+                                <p>Ainda não tem clientes registados no seu histórico.</p>
                               </td>
                             </tr>
                           )}
@@ -3712,7 +3727,7 @@ export default function Dashboard() {
                         type="submit"
                         className="bg-rose-600 hover:bg-rose-700 w-full py-3.5 rounded-xl font-bold uppercase tracking-wide text-white transition-all cursor-pointer text-xs"
                       >
-                        Salvar Quadro e Definições no Supabase
+                        Guardar Definições
                       </button>
                     </form>
                   )}
@@ -3722,14 +3737,14 @@ export default function Dashboard() {
               {activeTab === 'financeiro' && (
                 <div id="view-financeiro" className="space-y-6 max-w-3xl animate-fade-in">
                   <div className="border-b border-slate-900 pb-5 text-left">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Subscrição e Faturamento</h3>
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Subscrição e Faturação</h3>
                     <p className="text-xs text-slate-400 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Stripe Connect.</p>
                   </div>
 
                   {/* Operational Metrics Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-purple-500">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturamento Bruto</span>
+                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturação Bruta</span>
                       <span className="text-base sm:text-lg font-black text-white mt-1.5 block font-mono">{totalVolumeBruto.toFixed(2)} €</span>
                     </div>
 
@@ -3739,7 +3754,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-emerald-500">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturamento Líquido</span>
+                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturação Líquida</span>
                       <span className="text-base sm:text-lg font-black text-emerald-400 mt-1.5 block font-mono">{totalReceivedVolume.toFixed(2)} €</span>
                     </div>
                   </div>
@@ -4092,8 +4107,9 @@ export default function Dashboard() {
                         })}
 
                         {coupons.length === 0 && (
-                          <div className="text-center py-10 border border-dashed border-slate-850 rounded-2xl">
-                            <p className="text-xs text-slate-500 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
+                          <div className="text-center py-10 border border-dashed border-slate-855 rounded-2xl bg-slate-950/20">
+                            <p className="text-xs text-slate-350 font-bold">Sem cupões promocionais criados.</p>
+                            <p className="text-[10px] text-slate-500 mt-1">Crie códigos de desconto no formulário ao lado para oferecer promoções especiais aos seus clientes.</p>
                           </div>
                         )}
                       </div>
@@ -4197,9 +4213,9 @@ export default function Dashboard() {
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-purple-900/40 text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-md border border-purple-500/20">Website</span>
-                      A Minha Loja Pública & QR Code
+                      Página Online & QR Code
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Administre o seu mini-website profissional, personalize o link exclusivo e faça o download do QR Code oficial.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Gira o website do seu salão, personalize o endereço exclusivo e descarregue o seu QR Code oficial.</p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -4452,8 +4468,8 @@ export default function Dashboard() {
               {activeTab === 'terminal' && (
                 <div id="view-terminal" className="space-y-6 animate-fade-in max-w-2xl">
                   <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Glamzo Operational Terminal (Tablet Comodato)</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Estação física tátil alocada para balcão, garantindo alertas imediatos e check-in físico.</p>
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Terminal de Balcão (Estação Desk)</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Visor de balcão otimizado para acompanhamento rápido e Alertas Sonoros em tempo real no salão.</p>
                   </div>
 
                   {/* Device Specification */}
@@ -4463,10 +4479,10 @@ export default function Dashboard() {
                         <Smartphone className="w-10 h-10 animate-pulse" />
                       </div>
                       <div className="space-y-1.5 text-left md:text-left text-xs">
-                        <span className="text-[10px] font-mono uppercase font-bold text-amber-400">Equipamento Alocado</span>
-                        <h4 className="font-extrabold text-sm text-white">Estação Tátil Glamzo Desk V2 (10" IPS HD)</h4>
+                        <span className="text-[10px] font-mono uppercase font-bold text-amber-400">Equipamento de Apoio</span>
+                        <h4 className="font-extrabold text-sm text-white">Ecrã de Balcão Glamzo Desk</h4>
                         <p className="text-slate-400 leading-normal text-[11px] font-medium font-sans max-w-md">
-                          Estação desenhada para funcionar no balcão de recepção com altifalante de alta amplificação, suportando pings imediatos e confirmações de cartão via Contactless/NFC.
+                          Estação para balcão de receção com som de alta amplificação, para pings e confirmações de reservas na chegada dos clientes.
                         </p>
                       </div>
                     </div>
