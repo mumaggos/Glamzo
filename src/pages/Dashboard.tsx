@@ -22,6 +22,7 @@ import { realtimeService } from '../utils/realtimeService';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { slugify, validateSlugUniqueness } from '../utils/slugify';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
+import DashboardAssistant from '../components/DashboardAssistant';
 
 export default function Dashboard() {
   const { user, profile, signOut, loading: authLoading, refreshProfile } = useAuth();
@@ -29,7 +30,7 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
 
   // Active tab of our dark high-contrast operational terminal
-  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'horarios' | 'clientes' | 'analytics' | 'configuracoes' | 'financeiro' | 'campanhas' | 'terminal' | 'loja'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'assistente' | 'reservas' | 'servicos' | 'equipa' | 'horarios' | 'clientes' | 'analytics' | 'configuracoes' | 'financeiro' | 'campanhas' | 'terminal' | 'loja'>('agenda');
 
   // Core Database States
   const [business, setBusiness] = useState<Business | null>(null);
@@ -2101,6 +2102,7 @@ export default function Dashboard() {
             <nav className="flex-1 overflow-y-auto space-y-1 pr-1.5 scrollbar-thin scrollbar-thumb-[#1f1635]" style={{ WebkitOverflowScrolling: 'touch' }}>
               {[
                 { id: 'agenda', label: 'Agenda Diária', icon: Calendar },
+                { id: 'assistente', label: 'Assistente Glamzo 🪄', icon: Sparkles, highlight: true },
                 { id: 'reservas', label: 'Reservas Totais', icon: CheckSquare },
                 { id: 'servicos', label: 'Catálogo de Serviços', icon: Scissors },
                 { id: 'equipa', label: 'Escalas de Equipa', icon: Users },
@@ -2197,6 +2199,7 @@ export default function Dashboard() {
           <nav className="px-3 py-2 space-y-1 overflow-y-auto max-h-[calc(100vh-270px)] scrollbar-thin scrollbar-thumb-[#1f1635]" style={{ WebkitOverflowScrolling: 'touch' }}>
             {[
               { id: 'agenda', label: 'Agenda Diária', icon: Calendar },
+              { id: 'assistente', label: 'Assistente Glamzo 🪄', icon: Sparkles, highlight: true },
               { id: 'reservas', label: 'Reservas Totais', icon: CheckSquare },
               { id: 'servicos', label: 'Catálogo de Serviços', icon: Scissors },
               { id: 'equipa', label: 'Escalas de Equipa', icon: Users },
@@ -2417,6 +2420,19 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
+              {/* ==================================================== */}
+              {/* VIEW 0: ASSISTENTE GLAMZO & CENTRAL IA               */}
+              {/* ==================================================== */}
+              {activeTab === 'assistente' && (
+                <DashboardAssistant
+                  business={business}
+                  bookings={bookings}
+                  services={services}
+                  hours={hours}
+                  staff={staff}
+                />
+              )}
+
               {/* ==================================================== */}
               {/* VIEW 1: AGENDA DIÁRIA (PREMIUM TABLET/TERMINAL GRID) */}
               {/* ==================================================== */}

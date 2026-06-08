@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { realtimeService } from '../utils/realtimeService';
-import { GlamzoNotification, ChatSession, ChatMessage, SupportTicket } from '../types';
+import { supabase } from '../lib/supabase';
 import { 
-  MessageSquare, Bell, LifeBuoy, Mail, Send, CheckCircle, 
-  X, AlertCircle, Sparkles, ChevronRight, User, Phone, Check, 
-  ShieldAlert, ExternalLink, HelpCircle, Eye, RefreshCw, SendHorizontal
+  fetchChatSessionsForCustomer, 
+  startChatSession, 
+  fetchMessagesForSession, 
+  submitMessage,
+  createSupportTicket
+} from '../utils/communicationHelper';
+import { ChatSession, ChatMessage } from '../types';
+import { 
+  MessageSquare, Bell, LifeBuoy, Send, CheckCircle, 
+  X, HelpCircle, Search, MessageCircle, Phone, ArrowLeft, ExternalLink, Calendar, Info
 } from 'lucide-react';
 import GlamzoLogo from './GlamzoLogo';
 
@@ -14,36 +20,27 @@ export default function GlamzoMessenger() {
   
   // Floating status
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'notifications' | 'chat' | 'support' | 'resend_logs'>('notifications');
+  const [activeTab, setActiveTab] = useState<'faq' | 'stores' | 'chats'>('faq');
   const [unreads, setUnreads] = useState(0);
 
-  // States
-  const [notifications, setNotifications] = useState<GlamzoNotification[]>([]);
+  // Business context
+  const [currentBusiness, setCurrentBusiness] = useState<any | null>(null);
+  const [loadingBusiness, setLoadingBusiness] = useState(false);
+
+  // FAQ Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  // Chats states
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
-  const [chatAttachmentUrl, setChatAttachmentUrl] = useState('');
-
-  // Support
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
-  const [supportInput, setSupportInput] = useState('');
-  const [supportPriority, setSupportPriority] = useState<'low' | 'medium' | 'high'>('medium');
-  const [ticketReply, setTicketReply] = useState('');
-
-  // Resend Outbox Logs
-  const [emailLogs, setEmailLogs] = useState<any[]>([]);
-  const [selectedMail, setSelectedMail] = useState<any | null>(null);
-
-  // IA assistant state in active chat
   const [isAiAnswering, setIsAiAnswering] = useState(false);
-  const [suggestedHoursOpen, setSuggestedHoursOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const sfxPlayedRef = useRef(false);
 
-  // Synthesize terminal chime on message
+  // Play micro chime sound
   const playPingChime = () => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -52,72 +49,97 @@ export default function GlamzoMessenger() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.2);
     } catch (_) {}
   };
 
-  // Sync state with Realtime
-  const loadWorkspaceState = () => {
-    if (!user || !profile) return;
+  // 1. Detect Context Store from URL Pathname
+  useEffect(() => {
+    const detectContextBusiness = async () => {
+      const path = window.location.pathname;
+      // Slugs are usually after /business/ or /store/ or at root /:slug for premium short domains
+      const parts = path.split('/').filter(Boolean);
+      let slug = '';
 
-    // Load active notifications
-    const unreadNotifications = realtimeService.getNotifications(user.id, profile.role);
-    setNotifications(unreadNotifications);
+      if (parts[0] === 'business' || parts[0] === 'store') {
+        slug = parts[1];
+      } else if (parts.length === 1 && !['login', 'signup', 'explore', 'partner', 'dashboard', 'admin', 'onboarding', 'account'].includes(parts[0])) {
+        slug = parts[0];
+      }
 
-    // Calculate unread items
-    setUnreads(unreadNotifications.length);
+      if (slug) {
+        setLoadingBusiness(true);
+        try {
+          const { data, error } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('slug', slug)
+            .single();
 
-    // Load active chats
-    const userSessions = realtimeService.getConversations(user.id, profile.role === 'business' ? 'business' : 'customer');
-    setSessions(userSessions);
+          if (!error && data) {
+            setCurrentBusiness(data);
+            setActiveTab('stores'); // Pivot automatically to relevant store tab
+          } else {
+            setCurrentBusiness(null);
+          }
+        } catch (_) {
+          setCurrentBusiness(null);
+        } finally {
+          setLoadingBusiness(false);
+        }
+      } else {
+        setCurrentBusiness(null);
+      }
+    };
 
-    // Load active support tickets
-    const userTickets = realtimeService.getTickets(profile.role === 'admin' ? undefined : user.id);
-    setTickets(userTickets);
+    detectContextBusiness();
+  }, [window.location.pathname]);
 
-    // Load simulated emails
-    const localEmails = localStorage.getItem('glamzo_mailer_outbox');
-    setEmailLogs(localEmails ? JSON.parse(localEmails) : []);
+  // 2. Load active client conversations & calculate alerts count
+  const loadCustomerConversations = async () => {
+    if (!user) return;
+    try {
+      const data = await fetchChatSessionsForCustomer(user.id);
+      setSessions(data);
+      // Mock notifications/unread calculation
+      setUnreads(data.length > 0 ? 1 : 0);
+    } catch (_) {}
   };
 
   useEffect(() => {
-    loadWorkspaceState();
+    loadCustomerConversations();
+  }, [user, isOpen]);
 
-    // Hook to global Realtime events
-    realtimeService.initRealtime((event, payload) => {
-      loadWorkspaceState();
-      
-      if (event === 'chat:message') {
-        playPingChime();
-        if (selectedSession && selectedSession.id === payload.sessionId) {
-          setChatMessages(prev => [...prev, payload.message]);
-        }
-      } else if (event === 'notification:received') {
-        playPingChime();
-      } else if (event === 'support:ticket_updated') {
-        playPingChime();
-        if (selectedTicket && selectedTicket.id === payload.id) {
-          setSelectedTicket(payload);
-        }
-      }
-    });
-  }, [user, profile, selectedSession?.id, selectedTicket?.id]);
-
+  // Handle auto-scroll inside direct dialogue
   useEffect(() => {
-    const handleOpenChatEvent = (e: any) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isAiAnswering]);
+
+  // 3. Intercept native open_chat trigger (from catalog details page)
+  useEffect(() => {
+    const handleOpenChatEvent = async (e: any) => {
       const { businessId, businessName } = e.detail;
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
       setIsOpen(true);
-      setActiveTab('chat');
+      setActiveTab('chats');
       
       const authorName = profile?.full_name || user?.email?.split('@')[0] || 'Cliente Glamzo';
-      const sess = realtimeService.getOrCreateSession(businessId, businessName, user!.id, authorName);
-      handleSelectSession(sess);
+      const sess = await startChatSession(user.id, authorName, businessId, businessName);
+      setSelectedSession(sess);
+      
+      const msgs = await fetchMessagesForSession(sess.id);
+      setChatMessages(msgs);
     };
 
     window.addEventListener('glamzo:open_chat', handleOpenChatEvent);
@@ -126,120 +148,92 @@ export default function GlamzoMessenger() {
     };
   }, [user, profile]);
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  // Hide widget entirely inside the Business control terminal or Admin board to prevent overlapping
+  const pathname = window.location.pathname;
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || profile?.role === 'business' || profile?.role === 'admin') {
+    return null;
+  }
+
+  // Precompiled Help Topics for Customer FAQs
+  const faqItems = [
+    {
+      q: 'Como alterar ou cancelar o meu agendamento?',
+      a: 'Pode gerir as suas marcações ativas acedendo à sua área de cliente ("Minha Conta"), no painel "As Minhas Reservas". Cancelamentos efetuados com até 24h de antecedência dão direito ao reembolso total.'
+    },
+    {
+      q: 'O reembolso no Stripe é automático?',
+      a: 'Sim. Em caso de cancelamento elegível, o valor debitado no cartão de crédito/débito é estornado de forma totalmente automatizada pelo processador Stripe para o saldo da sua conta num prazo médio de 2 a 5 dias úteis.'
+    },
+    {
+      q: 'Como conseguir descontos via Pontos de Fidelidade?',
+      a: 'Cada agendamento completo no marketplace acumula automaticamente 100 pontos de fidelidade. Na barra de Loyalty em "Minha Conta", pode trocar 500 ou 1000 pontos por vouchers diretos de 5€ ou 10€ respetivamente no Stripe.'
+    },
+    {
+      q: 'Posso pagar presencialmente no salão?',
+      a: 'Temos flexibilidade total! No checkout, no momento do agendamento, pode escolher efetuar o pagamento seguro digital online (Cartão/MBWay via Stripe) ou optar por pagar fisicamente no estabelecimento no dia do serviço.'
     }
-  }, [chatMessages, selectedTicket?.chat_history]);
+  ];
 
-  if (!user || !profile) return null;
+  const filteredFaqs = faqItems.filter(item => 
+    item.q.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    item.a.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const handleSelectSession = (sess: ChatSession) => {
+  const handleSelectSession = async (sess: ChatSession) => {
     setSelectedSession(sess);
-    const msgs = realtimeService.getChatMessages(sess.id);
+    const msgs = await fetchMessagesForSession(sess.id);
     setChatMessages(msgs);
   };
 
-  const handleSendChatMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim() || !selectedSession) return;
+    if (!chatInput.trim() || !selectedSession || !user) return;
 
-    const senderType = profile.role === 'business' ? 'business' : 'customer';
-    const msg = realtimeService.sendMessage(
-      selectedSession.id,
-      senderType,
-      profile.full_name || 'Membro',
-      chatInput
-    );
-
-    setChatMessages(prev => [...prev, msg]);
+    const messageText = chatInput.trim();
     setChatInput('');
 
-    // Trigger AI assistance helper if message starts with "/ai" or asks questions in client room
-    if (senderType === 'customer' && (chatInput.toLowerCase().startsWith('/ai') || chatInput.toLowerCase().includes('ajuda') || chatInput.toLowerCase().includes('horário'))) {
-      setIsAiAnswering(true);
-      const aiReply = await realtimeService.callAiAssistant(chatInput.replace('/ai', ''));
-      
-      // Send message in 1.2 seconds for realistic chat pace
-      setTimeout(() => {
-        const aiMsg = realtimeService.sendMessage(
-          selectedSession.id,
-          'ai',
-          '🤖 Assistente IA (Glamzo)',
-          aiReply
-        );
-        setChatMessages(prev => [...prev, aiMsg]);
-        setIsAiAnswering(false);
-      }, 1200);
+    // Trigger local optimistic render
+    const clientName = profile?.full_name || user.email?.split('@')[0] || 'Cliente';
+    const msg = await submitMessage(selectedSession.id, 'customer', clientName, messageText);
+    
+    // Refresh list
+    setChatMessages(prev => [...prev, msg]);
+    setIsAiAnswering(true);
+
+    // Simulate AI / salon auto-answer delay
+    setTimeout(async () => {
+      const updatedMsgs = await fetchMessagesForSession(selectedSession.id);
+      setChatMessages(updatedMsgs);
+      setIsAiAnswering(false);
+      loadCustomerConversations();
+    }, 1500);
+  };
+
+  const startNewChatWithBusiness = async (biz: any) => {
+    if (!user) {
+      window.location.href = '/login';
+      return;
     }
+    const authorName = profile?.full_name || user?.email?.split('@')[0] || 'Cliente';
+    const sess = await startChatSession(user.id, authorName, biz.id, biz.name);
+    setSelectedSession(sess);
+    setActiveTab('chats');
+    const msgs = await fetchMessagesForSession(sess.id);
+    setChatMessages(msgs);
   };
 
-  const handleCreateSupportTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!supportInput.trim()) return;
-
-    const businessId = profile.role === 'business' ? user.id : null;
-    const businessName = profile.role === 'business' ? (profile.full_name || 'Estabelecimento') : null;
-
-    realtimeService.createTicket(
-      user.id,
-      profile.full_name || 'Cliente Particular',
-      businessId,
-      businessName,
-      supportInput,
-      supportPriority
-    );
-
-    setSupportInput('');
-    loadWorkspaceState();
-  };
-
-  const handleReplyTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticketReply.trim() || !selectedTicket) return;
-
-    const isAdmin = profile.role === 'admin';
-    realtimeService.replyTicket(selectedTicket.id, ticketReply, isAdmin);
-    
-    // Update active view
-    const updatedTickets = realtimeService.getTickets();
-    const curr = updatedTickets.find(t => t.id === selectedTicket.id);
-    if (curr) setSelectedTicket(curr);
-
-    setTicketReply('');
-    loadWorkspaceState();
-  };
-
-  const handleResolveTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticketReply.trim() || !selectedTicket) return;
-
-    realtimeService.resolveTicket(selectedTicket.id, ticketReply);
-    
-    // Reset selection
-    setSelectedTicket(null);
-    setTicketReply('');
-    loadWorkspaceState();
-  };
-
-  // Toggle layout
   return (
-    <div id="glamzo-messenger-widget" className="fixed bottom-6 right-6 z-50 font-sans">
+    <div id="glamzo-messenger-widget" className="fixed bottom-[88px] md:bottom-6 right-6 z-40 font-sans">
       {!isOpen ? (
         <button
           onClick={() => { setIsOpen(true); playPingChime(); }}
-          className="relative group w-14 h-14 bg-gradient-to-tr from-[#8B5CF6] via-[#6366F1] to-[#EC4899] text-white rounded-2xl flex items-center justify-center shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-105 hover:rotate-2 duration-200 cursor-pointer border border-white/20"
+          className="relative w-12 h-12 md:w-14 md:h-14 bg-gradient-to-tr from-purple-600 to-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-200 cursor-pointer border border-white/20"
           id="btn-open-messenger"
-          title="Abrir Chat Glamzo"
+          title="Ajuda & Suporte Glamzo"
         >
-          {/* Branded elements inside floating button */}
-          <GlamzoLogo size={28} glow={false} className="animate-pulse" />
-          <div className="absolute -bottom-1 -right-1 bg-slate-950 text-white p-1 rounded-lg border border-white/10 shadow flex items-center justify-center">
-            <MessageSquare className="w-3 h-3 text-purple-400" />
-          </div>
-          
+          <HelpCircle className="w-6 h-6 md:w-7 md:h-7" />
           {unreads > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 text-[10px] font-black px-1.8 py-0.5 rounded-full border border-slate-950 animate-bounce">
+            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
               {unreads}
             </span>
           )}
@@ -247,44 +241,43 @@ export default function GlamzoMessenger() {
       ) : (
         <div 
           id="messenger-flyout" 
-          className="w-[420px] h-[580px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100"
+          className="w-[340px] md:w-[380px] h-[520px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100"
         >
           {/* Header */}
-          <header className="p-4 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between">
+          <header className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <GlamzoLogo size={26} glow={true} />
+              <GlamzoLogo size={24} glow={true} />
               <div>
-                <h4 className="font-extrabold text-sm text-white">Canal de Comunicação</h4>
-                <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[9px] font-mono text-slate-400 capitalize uppercase">{profile.role}</span>
+                <h4 className="font-extrabold text-sm text-white">Central de Apoio</h4>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="text-[10px] font-mono text-slate-400">Cliente Glamzo</span>
                 </div>
               </div>
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1 px-1.8 hover:bg-slate-900 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+              className="p-1.5 hover:bg-slate-850 text-slate-400 hover:text-white rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </header>
 
-          {/* Navigation Tabs */}
-          <nav className="flex bg-slate-950 border-b border-slate-800/60 p-1 text-[11px] font-bold font-mono">
+          {/* Clean Navigation */}
+          <nav className="flex bg-slate-950 p-1 text-[11px] font-bold font-mono">
             {[
-              { id: 'notifications', label: 'Alertas', icon: Bell },
-              { id: 'chat', label: 'Mensagens', icon: MessageSquare },
-              { id: 'support', label: 'Suporte', icon: LifeBuoy },
-              { id: 'resend_logs', label: 'Emails (Resend)', icon: Mail },
+              { id: 'faq', label: 'Dúvidas FAQs', icon: HelpCircle },
+              { id: 'stores', label: 'Contacto Loja', icon: Info },
+              { id: 'chats', label: 'Minhas Conversas', icon: MessageSquare },
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => { setActiveTab(tab.id as any); setSelectedSession(null); setSelectedTicket(null); setSelectedMail(null); }}
-                  className={`flex-1 flex flex-col items-center py-2 gap-1 rounded-xl transition-colors cursor-pointer ${
-                    isActive ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-350'
+                  onClick={() => { setActiveTab(tab.id as any); setSelectedSession(null); }}
+                  className={`flex-1 flex flex-col items-center py-2.5 gap-1 rounded-xl transition-colors cursor-pointer ${
+                    isActive ? 'bg-slate-900 text-purple-400' : 'text-slate-500 hover:text-slate-300'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -294,362 +287,267 @@ export default function GlamzoMessenger() {
             })}
           </nav>
 
-          {/* Workspace scroll area */}
+          {/* Core Body Container */}
           <div className="flex-1 overflow-y-auto p-4 flex flex-col bg-slate-900/40 relative">
             
-            {/* ==================== NOTIFICATIONS TAB ==================== */}
-            {activeTab === 'notifications' && (
-              <div className="space-y-3 flex-1">
-                {notifications.length > 0 ? (
-                  notifications.map(n => (
-                    <div 
-                      key={n.id}
-                      className="p-3.5 bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-2xl flex gap-3 text-xs leading-relaxed transition-all"
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-rose-950/60 text-rose-400 border border-rose-900/30 flex items-center justify-center shrink-0">
-                        <Bell className="w-4 h-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-extrabold text-white">{n.title}</div>
-                        <p className="text-slate-420 text-slate-400 font-medium leading-normal">{n.content}</p>
-                        <span className="block text-[9px] font-mono text-slate-600">
-                          {new Date(n.created_at).toLocaleTimeString('pt-PT')} • Canal: {n.channel.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-550 py-12 text-center text-xs">
-                    <CheckCircle className="w-12 h-12 text-slate-705 text-slate-700 mb-2.5" />
-                    <span className="font-bold text-slate-500">Sem Alertas Pendentes</span>
-                    <p className="text-[10px] text-slate-600 max-w-[200px] mt-1 leading-normal">
-                      Todas as alterações de horários ou novas reservas aparecerão instantaneamente aqui.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* View A: HELP & DYNAMIC FAQS */}
+            {activeTab === 'faq' && !selectedSession && (
+              <div className="space-y-4 flex flex-col h-full">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
+                  <input 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Escreva a sua dúvida..."
+                    className="w-full bg-slate-950/60 border border-slate-800 text-slate-200 pl-10 pr-4 py-2.5 rounded-2xl text-xs placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
 
-            {/* ==================== CHAT VIEW ==================== */}
-            {activeTab === 'chat' && (
-              <div className="flex-1 flex flex-col">
-                {!selectedSession ? (
-                  // Sessions list
-                  <div className="space-y-2.5">
-                    {sessions.length > 0 ? (
-                      sessions.map(s => (
+                <div className="flex-1 space-y-2">
+                  <span className="text-[10px] font-bold font-mono text-slate-500 uppercase tracking-widest block">Perguntas Frequentes</span>
+                  {filteredFaqs.length > 0 ? (
+                    filteredFaqs.map((faq, idx) => (
+                      <div key={idx} className="bg-slate-950/40 border border-slate-850 rounded-2xl overflow-hidden transition-all">
                         <button
-                          key={s.id}
-                          onClick={() => handleSelectSession(s)}
-                          className="w-full p-4 bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
+                          onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
+                          className="w-full p-3.5 text-left text-xs font-bold text-slate-250 hover:bg-slate-950/80 flex items-center justify-between transition-colors gap-3"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs border border-slate-700">
-                              {profile.role === 'business' ? s.customer_name[0] : s.business_name[0]}
-                            </div>
-                            <div>
-                              <strong className="block text-xs font-extrabold text-white">
-                                {profile.role === 'business' ? s.customer_name : s.business_name}
-                              </strong>
-                              <span className="block text-[10px] text-slate-400 max-w-[230px] truncate">
-                                {s.last_message}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-slate-600" />
+                          <span>{faq.q}</span>
+                          <span className="text-purple-400 text-sm">{expandedFaq === idx ? '−' : '+'}</span>
                         </button>
-                      ))
-                    ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center text-slate-550 py-16 text-center text-xs">
-                        <MessageSquare className="w-12 h-12 text-slate-700 mb-2" />
-                        <span className="font-bold text-slate-500">Nenhuma conversa ativa</span>
-                        <p className="text-[10px] text-slate-600 max-w-[220px] mt-1 leading-normal">
-                          Para começar uma conversa, vá para a página de um salão e prima o botão "Falar com a loja".
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // Active Room chat messages
-                  <div className="flex-1 flex flex-col h-[400px]">
-                    <div className="pb-2 border-b border-slate-800 flex items-center justify-between">
-                      <button 
-                        onClick={() => setSelectedSession(null)}
-                        className="text-[10px] font-mono hover:text-white text-slate-400 font-bold bg-slate-950 px-2 py-1 rounded"
-                      >
-                        ← Voltar
-                      </button>
-                      <strong className="text-xs font-black text-rose-400">
-                        {profile.role === 'business' ? selectedSession.customer_name : selectedSession.business_name}
-                      </strong>
-                    </div>
-
-                    {/* Message listing */}
-                    <div className="flex-1 overflow-y-auto space-y-2 py-4">
-                      {chatMessages.map(m => {
-                        const isMe = (profile.role === 'business' && m.sender_type === 'business') || 
-                                     (profile.role === 'customer' && m.sender_type === 'customer');
-                        const isAi = m.sender_type === 'ai';
-
-                        return (
-                          <div 
-                            key={m.id}
-                            className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div className={`p-3 max-w-[80%] rounded-2xl text-xs leading-normal ${
-                              isMe 
-                                ? 'bg-rose-600 text-white rounded-tr-none' 
-                                : isAi
-                                ? 'bg-sky-950/70 border border-sky-900/45 text-sky-200 rounded-tl-none'
-                                : 'bg-slate-950/60 border border-slate-850 text-slate-300 rounded-tl-none'
-                            }`}>
-                              {!isMe && (
-                                <span className="block text-[8px] font-mono text-slate-550 text-slate-400 font-bold mb-0.5">
-                                  {m.sender_name}
-                                </span>
-                              )}
-                              <p className="whitespace-pre-wrap">{m.message}</p>
-                              <span className="block text-[8px] font-mono text-slate-600 text-right mt-1.5 leading-none">
-                                {new Date(m.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
+                        {expandedFaq === idx && (
+                          <div className="px-3.5 pb-4 text-[11px] text-slate-400 leading-relaxed border-t border-slate-900 pt-2 bg-slate-950/10">
+                            {faq.a}
                           </div>
-                        );
-                      })}
-                      {isAiAnswering && (
-                        <div className="flex justify-start">
-                          <div className="p-3 bg-slate-950/40 rounded-2xl text-xs text-slate-400 animate-pulse">
-                            🤖 IA Assistente está a redigir conselho...
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Message input */}
-                    <form onSubmit={handleSendChatMessage} className="pt-2 border-t border-slate-800 flex gap-1.5">
-                      <input 
-                        type="text" 
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        placeholder="Escreva algo... ou digite /ai"
-                        className="flex-1 bg-slate-950 border border-slate-850 focus:border-rose-600/50 rounded-xl px-3 text-xs text-slate-150 focus:outline-none"
-                      />
-                      <button 
-                        type="submit" 
-                        className="p-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl cursor-pointer"
-                      >
-                        <SendHorizontal className="w-4 h-4" />
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ==================== SUPPORT TICKETS ==================== */}
-            {activeTab === 'support' && (
-              <div className="flex-1 flex flex-col">
-                {!selectedTicket ? (
-                  // Tickets list & Open-ticket Form
-                  <div className="space-y-4">
-                    {/* Open Ticket Form */}
-                    <form onSubmit={handleCreateSupportTicket} className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl space-y-3">
-                      <span className="text-[10px] font-mono font-bold uppercase text-rose-500">Abrir Ticket de Suporte</span>
-                      <textarea
-                        value={supportInput}
-                        onChange={(e) => setSupportInput(e.target.value)}
-                        rows={2}
-                        placeholder="Descreva o seu ticket de reclamação ou dúvida técnica..."
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-600/40"
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold">
-                          <span className="text-slate-500">PRIORIDADE:</span>
-                          {(['low', 'medium', 'high'] as const).map(p => (
-                            <button
-                              key={p}
-                              type="button"
-                              onClick={() => setSupportPriority(p)}
-                              className={`px-2 py-0.5 rounded uppercase cursor-pointer ${
-                                supportPriority === p ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                              }`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        </div>
-                        <button 
-                          type="submit"
-                          className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl cursor-pointer flex items-center gap-1"
-                        >
-                          <span>Submeter</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </form>
-
-                    {/* Historical Tickets list */}
-                    <div className="space-y-2">
-                      <strong className="block text-[10px] font-mono text-slate-500 uppercase">Teus Pedidos de Auxílio</strong>
-                      {tickets.length > 0 ? (
-                        tickets.map(t => (
-                          <button
-                            key={t.id}
-                            onClick={() => setSelectedTicket(t)}
-                            className="w-full p-3.5 bg-slate-950/40 border border-slate-850 hover:border-slate-800 rounded-2xl flex items-center justify-between text-left transition-colors cursor-pointer"
-                          >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-extrabold text-white text-xs">{t.id}</span>
-                                <span className={`text-[8px] font-mono uppercase px-1 py-0.2 rounded font-bold ${
-                                  t.priority === 'high' ? 'bg-rose-950 text-rose-400' : 'bg-slate-800 text-slate-400'
-                                }`}>
-                                  {t.priority}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-400 truncate max-w-[280px]">
-                                {t.description}
-                              </p>
-                            </div>
-                            <span className={`text-[9px] font-mono py-0.5 px-2 rounded-full font-bold ${
-                              t.status === 'open' ? 'bg-amber-950/40 text-amber-500' : 'bg-slate-800 text-slate-550 text-slate-500'
-                            }`}>
-                              {t.status === 'open' ? 'Pendente' : 'Resolvido'}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="h-20 bg-slate-950/20 border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-500 text-[10px] font-mono">
-                          Nenhum ticket pendente
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  // Active ticket chat details
-                  <div className="flex-1 flex flex-col h-[400px]">
-                    <div className="pb-2 border-b border-slate-800 flex items-center justify-between">
-                      <button 
-                        onClick={() => setSelectedTicket(null)}
-                        className="text-[10px] font-mono hover:text-white text-slate-400 font-bold bg-slate-950 px-2 py-1"
-                      >
-                        ← Voltar
-                      </button>
-                      <strong className="text-xs font-black text-white">Ticket {selectedTicket.id}</strong>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto space-y-3 py-4 text-xs">
-                      {/* Ticket Description */}
-                      <div className="p-3 bg-slate-950 border border-slate-850 rounded-2xl space-y-1.5">
-                        <div className="text-[9px] font-mono text-slate-400 uppercase">Descrição Original:</div>
-                        <p className="leading-relaxed font-semibold text-slate-200">{selectedTicket.description}</p>
-                        <span className="block text-[9px] font-mono text-slate-600">
-                          Aberto às: {new Date(selectedTicket.created_at).toLocaleString('pt-PT')}
-                        </span>
-                      </div>
-
-                      {/* Chat history list */}
-                      {selectedTicket.chat_history ? (
-                        <div className="bg-slate-950/40 p-3 rounded-2xl border border-slate-850/40 space-y-2 whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-slate-350">
-                          {selectedTicket.chat_history}
-                        </div>
-                      ) : (
-                        <div className="text-[10px] font-mono text-slate-550 text-center py-4">A aguardar resposta de staff...</div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Interactive chat input */}
-                    <form onSubmit={handleReplyTicket} className="pt-2 border-t border-slate-800 flex flex-col gap-2">
-                      <input 
-                        type="text"
-                        value={ticketReply}
-                        onChange={(e) => setTicketReply(e.target.value)}
-                        placeholder={profile.role === 'admin' ? "Escrever decisão/reply para resolver..." : "Adicionar detalhes ao chat do ticket..."}
-                        className="bg-slate-950 border border-slate-850 focus:outline-none rounded-xl px-3 py-2 text-xs"
-                      />
-                      <div className="flex items-center gap-2">
-                        <button 
-                          type="submit"
-                          className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer"
-                        >
-                          Adicionar Mensagem
-                        </button>
-                        {profile.role === 'admin' && (
-                          <button 
-                            type="button"
-                            onClick={handleResolveTicket}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-purple-150 rounded-xl text-xs font-bold cursor-pointer"
-                          >
-                            Resolver Ticket
-                          </button>
                         )}
                       </div>
-                    </form>
-                  </div>
-                )}
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-slate-500 text-xs">
+                      Nenhuma dúvida encontrada para "{searchQuery}".
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-purple-950/20 border border-purple-500/10 rounded-2xl mt-auto">
+                  <p className="text-[10px] text-purple-300 leading-normal font-medium">
+                    💡 <strong>Dica Premium:</strong> Se pretender abrir uma disputa ou reclamação técnica oficial sobre um pagamento, aceda à secção de Suporte em <strong>Minha Conta</strong>.
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* ==================== RESEND LOGS ==================== */}
-            {activeTab === 'resend_logs' && (
-              <div className="space-y-3 flex-1">
-                <span className="text-[10px] font-mono uppercase bg-slate-950 px-2.5 py-1 rounded text-rose-500 font-bold tracking-wider inline-block">
-                  Enterprise Mail Logs (Resend SMTP API)
-                </span>
-                
-                {!selectedMail ? (
-                  <div className="space-y-2">
-                    {emailLogs.length > 0 ? (
-                      emailLogs.map(mail => (
-                        <button
-                          key={mail.id}
-                          onClick={() => setSelectedMail(mail)}
-                          className="w-full p-3 bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
-                        >
-                          <div>
-                            <strong className="block text-xs font-extrabold text-white truncate max-w-[280px]">
-                              {mail.subject}
-                            </strong>
-                            <span className="block text-[10px] text-slate-400">
-                              Para: {mail.to} • Temp: {mail.template}
-                            </span>
-                          </div>
-                          <Eye className="w-4 h-4 text-slate-500 shrink-0" />
-                        </button>
-                      ))
-                    ) : (
-                      <div className="text-center py-12 text-slate-550 text-xs text-slate-500">
-                        Nenhum email disparado ainda.
-                        <p className="text-[10px] text-slate-600 mt-2 leading-relaxed">
-                          Os emails premium da Glamzo disparam de forma real e instantânea na criação, conclusão ou cancelamento de reservas.
-                        </p>
+            {/* View B: CONTEXT STORE INFO CARD */}
+            {activeTab === 'stores' && !selectedSession && (
+              <div className="flex-1 flex flex-col space-y-4">
+                {currentBusiness ? (
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Loja Em Destaque</span>
+                    
+                    <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-650 flex items-center justify-center font-mono font-bold text-white shadow-md">
+                          {currentBusiness.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <h5 className="font-extrabold text-sm text-white">{currentBusiness.name}</h5>
+                          <span className="text-[10px] text-slate-500 font-medium">{currentBusiness.city}</span>
+                        </div>
                       </div>
-                    )}
+
+                      <div className="space-y-1.5 border-t border-slate-900 pt-3 text-[11px]">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Telefone:</span>
+                          <span className="font-mono text-slate-300">{currentBusiness.phone || 'Sem telefone'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Email:</span>
+                          <span className="text-slate-300 truncate max-w-[180px]">{currentBusiness.email || 'Sem email'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Distrito:</span>
+                          <span className="text-slate-300">{currentBusiness.district || 'N/A'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 pt-2">
+                        {currentBusiness.phone && (
+                          <a 
+                            href={`https://wa.me/${currentBusiness.phone.replace(/\D/g, '')}?text=Olá! Gostaria de esclarecer uma dúvida sobre os serviços do ${currentBusiness.name}.`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-950/30"
+                          >
+                            <MessageCircle className="w-4 h-4 fill-white text-emerald-600" />
+                            <span>Falar no WhatsApp da Loja</span>
+                          </a>
+                        )}
+                        <button
+                          onClick={() => startNewChatWithBusiness(currentBusiness)}
+                          className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Enviar Mensagem Interna</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <a 
+                      href={`/business/${currentBusiness.slug}`}
+                      className="w-full py-3 bg-slate-950/30 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-2 transition-all mt-2"
+                    >
+                      <span>Aceder à página do Estabelecimento</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                    </a>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <button 
-                      onClick={() => setSelectedMail(null)}
-                      className="text-[10px] font-mono hover:text-white text-slate-400 font-bold bg-slate-950 px-2 py-1 rounded cursor-pointer"
-                    >
-                      ← Voltar à Lista
-                    </button>
-                    
-                    <div className="bg-white text-slate-900 rounded-2xl p-1.5 overflow-hidden border border-slate-700 max-h-[380px] overflow-y-auto">
-                      <div dangerouslySetInnerHTML={{ __html: selectedMail.contentHtml }} />
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                    <div className="w-12 h-12 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-500">
+                      <Info className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <h6 className="font-extrabold text-xs text-white">Nenhum salão selecionado</h6>
+                      <p className="text-[11px] text-slate-500 max-w-[200px]">
+                        Navegue pelas páginas de salão ou use a área "Escrever aos parceiros" nas suas mensagens.
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
             )}
-          </div>
 
-          {/* Footer informational context */}
-          <footer className="p-3 bg-slate-950 border-t border-slate-850 text-center text-[10px] font-mono text-slate-500 leading-none">
-            GLAMZO HQ v13.0 • REALTIME BROADCAST ENGINE
-          </footer>
+            {/* View C: LIVE CONVERSATIONS LIST & DIRECT DIALOGUE */}
+            {activeTab === 'chats' && (
+              <div className="flex-grow flex flex-col h-full">
+                
+                {/* 1. Conversations List (If No Session Selected) */}
+                {!selectedSession ? (
+                  <div className="space-y-3 flex-1">
+                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Mensagens Ativas</span>
+                    {sessions.length > 0 ? (
+                      <div className="space-y-2">
+                        {sessions.map(sess => (
+                          <button
+                            key={sess.id}
+                            onClick={() => handleSelectSession(sess)}
+                            className="w-full p-3 bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-2xl text-left flex items-center justify-between transition-colors cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-[#2e1065] text-purple-300 font-mono font-bold text-xs flex items-center justify-center border border-purple-950">
+                                {sess.business_name.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="overflow-hidden">
+                                <span className="block font-bold text-xs text-slate-200 group-hover:text-purple-400 transition-colors uppercase tracking-tight truncate">{sess.business_name}</span>
+                                <span className="block text-[10px] text-slate-500 truncate mt-0.5 font-medium">{sess.last_message || 'Início da conversa'}</span>
+                              </div>
+                            </div>
+                            <span className="text-[9px] font-mono text-slate-600 block shrink-0">
+                              {sess.updated_at ? new Date(sess.updated_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-slate-600 text-xs flex-1 flex flex-col items-center justify-center space-y-2">
+                        <MessageSquare className="w-8 h-8 text-slate-800" />
+                        <p className="max-w-[220px] text-[11px] leading-relaxed">
+                          Ainda não iniciou nenhuma conversa. Escolha um estabelecimento para falar em direto.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  
+                  // 2. Active Session Messaging Room
+                  <div className="flex-1 flex flex-col overflow-hidden h-full">
+                    {/* Inner room header */}
+                    <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-850 text-xs">
+                      <button 
+                        onClick={() => setSelectedSession(null)}
+                        className="p-1 px-1.8 bg-slate-950/40 hover:bg-slate-950 border border-slate-850 rounded-lg text-slate-400 hover:text-white"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="overflow-hidden">
+                        <span className="block font-black text-white truncate text-[11px] uppercase tracking-tight">{selectedSession.business_name}</span>
+                        <span className="block text-[9px] text-indigo-400 font-bold tracking-widest font-mono">CLIENT MESSAGE CHANNEL</span>
+                      </div>
+                    </div>
+
+                    {/* Messages log scroll container */}
+                    <div className="flex-1 overflow-y-auto space-y-3.5 pr-1.5 min-h-[220px] max-h-[300px]">
+                      {chatMessages.length > 0 ? (
+                        chatMessages.map(msg => {
+                          const isMe = msg.sender_type === 'customer';
+                          const isAi = msg.sender_type === 'ai';
+                          return (
+                            <div 
+                              key={msg.id}
+                              className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${isMe ? 'ml-auto' : 'mr-auto'}`}
+                            >
+                              <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-600 mb-0.5">
+                                <span>{msg.sender_name}</span>
+                                <span className="opacity-60">•</span>
+                                <span>{new Date(msg.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                              <div 
+                                className={`p-3 rounded-2xl text-[11px] leading-relaxed font-medium ${
+                                  isMe 
+                                    ? 'bg-purple-650 text-white rounded-tr-none' 
+                                    : isAi
+                                    ? 'bg-indigo-950/60 text-slate-200 border border-indigo-900/40 rounded-tl-none'
+                                    : 'bg-slate-950/40 text-slate-300 border border-slate-850 rounded-tl-none'
+                                }`}
+                              >
+                                {msg.message}
+                                {isMe && (
+                                  <span className="block text-[8px] text-white/55 text-right font-mono mt-1 font-bold">Lida</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-6 text-[10px] text-slate-600 font-mono italic">
+                          Começo da conversa privada e segura...
+                        </div>
+                      )}
+                      
+                      {isAiAnswering && (
+                        <div className="flex items-center gap-2 max-w-[80%] bg-slate-950/20 p-2.5 rounded-2xl border border-slate-850 font-mono text-[10px] text-purple-400 animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
+                          <span>Assistente IA do Salão está a formular resposta...</span>
+                        </div>
+                      )}
+                      
+                      <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Footer text form inputs */}
+                    <form onSubmit={handleSendMessage} className="mt-3.5 pt-3 border-t border-slate-850 flex gap-2">
+                      <input 
+                        type="text"
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        placeholder="Escreva ao estabelecimento..."
+                        className="flex-1 bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 placeholder:text-slate-600 text-slate-300"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isAiAnswering || !chatInput.trim()}
+                        className="bg-purple-650 hover:bg-purple-550 text-white p-2.5 px-3 rounded-xl disabled:bg-slate-850 disabled:text-slate-500 cursor-pointer transition-colors"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+          </div>
         </div>
       )}
     </div>
