@@ -104,95 +104,118 @@ img, button, a {
 }
 
 /* ==================================================== */
-/* HIGH-FASHION LIGHT THEME FOR THE PARTNER DASHBOARD */
+/* THE ULTIMATE COSMIC CYBER-TECH THEME (DARK & GLOWING) */
 /* ==================================================== */
 #partner-terminal-layout {
-  background-color: #fafbfc !important; /* Premium off-white workspace background */
-  color: #1e293b !important; /* Dark slate content */
+  background: #030008 !important; /* Absolute luxurious space background */
+  color: #f1f5f9 !important; /* Clean premium high-contrast silver */
+  position: relative;
+  overflow: hidden;
 }
 
-/* Base Wrapper Reset - Force light theme backgrounds globally within layout */
+/* Base Wrapper Reset - Force immersive cosmic darkness globally inside partner dashboard */
 #partner-terminal-layout,
 #partner-terminal-layout main,
+#partner-terminal-layout .bg-slate-50,
 #partner-terminal-layout .bg-slate-950,
+#partner-terminal-layout .bg-slate-900,
 #partner-terminal-layout .bg-[#0c0617],
 #partner-terminal-layout .bg-[#070210],
 #partner-terminal-layout .bg-[#0a0514],
 #partner-terminal-layout .bg-[#120a21],
 #partner-terminal-layout .bg-[#110724],
-#partner-terminal-layout .bg-slate-900,
-#partner-terminal-layout .bg-slate-900\/50,
-#partner-terminal-layout .bg-slate-900\/70,
-#partner-terminal-layout .bg-slate-950\/40,
-#partner-terminal-layout .bg-slate-950\/30,
-#partner-terminal-layout .bg-slate-900\/60,
 #partner-terminal-layout .bg-slate-800,
 #partner-terminal-layout .bg-slate-850,
 #partner-terminal-layout .bg-slate-800\/60 {
-  background-color: #fafbfc !important;
+  background: #030008 !important;
 }
 
-/* Beautiful Sidebar Styling */
+/* Glowing Background Balls (Bolas de Fundo) with smooth pulse loop animations */
+.partner-glow-ball-pink {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.12) 0%, rgba(244, 63, 94, 0) 70%) !important;
+  filter: blur(120px) !important;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.partner-glow-ball-purple {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.14) 0%, rgba(124, 58, 237, 0) 70%) !important;
+  filter: blur(140px) !important;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Beautiful Sidebar Styling - Clear Glassmorphism */
 #partner-terminal-layout aside {
-  background-color: #ffffff !important; /* Crisp white sidebar */
-  border-right: 1px solid #e2e8f0 !important; /* Slate light split */
+  background-color: rgba(7, 3, 16, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(124, 58, 237, 0.15) !important;
 }
 
 #partner-terminal-layout aside .bg-purple-950\/20,
 #partner-terminal-layout aside .bg-[#0a0514] {
-  background-color: #fafbfc !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: rgba(18, 10, 33, 0.6) !important;
+  border: 1px solid rgba(124, 58, 237, 0.18) !important;
 }
 
 #partner-terminal-layout aside h4, 
 #partner-terminal-layout aside span, 
 #partner-terminal-layout aside h3 {
-  color: #0f172a !important;
+  color: #ffffff !important;
 }
 
 #partner-terminal-layout aside nav button {
-  color: #475569 !important; /* Slate body links */
+  color: #94a3b8 !important; /* Silver grey text for inactive navigation menu links */
 }
 
 #partner-terminal-layout aside nav button:hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
+  background-color: rgba(124, 58, 237, 0.15) !important;
+  color: #ffffff !important;
 }
 
 #partner-terminal-layout aside nav button.bg-purple-650 {
   background: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%) !important; /* Classic Glamzo gradient */
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15) !important;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4) !important;
 }
 
-/* Header Area - Clean crisp white header with perfect border */
+/* Top Operational Header */
 #partner-terminal-layout header,
 #partner-terminal-layout .h-16 {
-  background-color: #ffffff !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  background-color: rgba(5, 2, 11, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.15) !important;
 }
 
 #partner-terminal-layout header h2,
 #partner-terminal-layout header span {
-  color: #0f172a !important;
+  color: #ffffff !important;
 }
 
 #partner-terminal-layout header pCode,
 #partner-terminal-layout header p {
-  color: #64748b !important;
+  color: #94a3b8 !important;
 }
 
-/* High-Contrast Headings */
+/* High-Contrast Cyberpunk Headings */
 #partner-terminal-layout h1, 
 #partner-terminal-layout h2, 
 #partner-terminal-layout h3, 
 #partner-terminal-layout h4, 
 #partner-terminal-layout h5, 
 #partner-terminal-layout h6 {
-  color: #0f172a !important;
+  color: #ffffff !important;
   font-family: var(--font-display) !important;
-  font-weight: 750 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 15px rgba(124, 58, 237, 0.1);
 }
 
 /* Subtitles, paragraphs and custom text styles */
@@ -201,187 +224,110 @@ img, button, a {
 #partner-terminal-layout span.text-slate-400,
 #partner-terminal-layout div.text-slate-400,
 #partner-terminal-layout span.text-slate-450,
-#partner-terminal-layout p.text-slate-450 {
-  color: #475569 !important; /* Visible clean slate body color */
+#partner-terminal-layout p.text-slate-450,
+#partner-terminal-layout .text-slate-650,
+#partner-terminal-layout .text-slate-500,
+#partner-terminal-layout .text-slate-600 {
+  color: #cbd5e1 !important; /* Subtitles and content paragraphs as highly readable soft grey-cream */
 }
 
 #partner-terminal-layout .text-white {
-  color: #0f172a !important; /* Convert text-white to clean dark text inside lists */
+  color: #ffffff !important; /* Enforce crystal white texts on tables & forms */
 }
 
-/* Ensure icons, badge labels and specific button text remain white */
-#partner-terminal-layout button.text-white,
-#partner-terminal-layout .text-white-force,
-#partner-terminal-layout button span,
-#partner-terminal-layout .font-extrabold.text-white,
-#partner-terminal-layout span.bg-purple-650,
-#partner-terminal-layout .bg-purple-650 span,
-#partner-terminal-layout .bg-gradient-to-r span,
-#partner-terminal-layout .bg-gradient-to-tr span,
-#partner-terminal-layout .bg-emerald-600 span,
-#partner-terminal-layout .bg-emerald-600 {
-  color: #ffffff !important;
-}
-
-/* Solid Premium White Cards (Form layouts, lists) */
+/* Glassmorphic Solid Cards (Form containers, listings, options) */
+#partner-terminal-layout .bg-[#ffffff],
+#partner-terminal-layout .bg-white,
 #partner-terminal-layout .bg-slate-900,
 #partner-terminal-layout .bg-slate-900\/50,
 #partner-terminal-layout .bg-slate-900\/70,
 #partner-terminal-layout .bg-slate-950\/40,
 #partner-terminal-layout .bg-slate-950\/30,
-#partner-terminal-layout .bg-slate-900\/65,
 #partner-terminal-layout .bg-[#120a21],
 #partner-terminal-layout .bg-[#110724]/60 {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #334155 !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.01), 0 4px 12px rgba(15,23,42,0.01) !important;
-  border-radius: 1rem !important;
+  background-color: rgba(13, 6, 26, 0.72) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(124, 58, 237, 0.18) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 1.25rem !important;
 }
 
-/* Borders adjustments */
-#partner-terminal-layout .border-slate-900, 
-#partner-terminal-layout .border-slate-800,
-#partner-terminal-layout .border-slate-850,
-#partner-terminal-layout .border-slate-950,
-#partner-terminal-layout .border-slate-950\/40,
-#partner-terminal-layout .border-b.border-slate-900,
-#partner-terminal-layout .border-[#1f1635],
-#partner-terminal-layout .border-white\/5,
-#partner-terminal-layout .border-purple-500\/10,
-#partner-terminal-layout .border-purple-500\/20,
-#partner-terminal-layout .border-purple-900\/30 {
-  border-color: #e2e8f0 !important;
-}
-
-/* Timeline/Divider grids */
-#partner-terminal-layout .divide-slate-900\/40,
-#partner-terminal-layout .divide-[#1f1635] > * {
-  border-color: #f1f5f9 !important;
-}
-
-/* Input boxes & choices styling */
+/* Inputs & Selection Box elements */
 #partner-terminal-layout input, 
 #partner-terminal-layout select, 
 #partner-terminal-layout textarea {
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0f172a !important;
+  background-color: rgba(10, 4, 20, 0.9) !important;
+  border: 1px solid rgba(124, 58, 237, 0.3) !important;
+  color: #ffffff !important;
   border-radius: 0.75rem !important;
 }
 
 #partner-terminal-layout input:focus, 
 #partner-terminal-layout select:focus, 
 #partner-terminal-layout textarea:focus {
-  border-color: #7c3aed !important;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1) !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
 }
 
-/* Booking timelines color definitions */
-#partner-terminal-layout .bg-rose-950\/20 {
-  background-color: #fff1f2 !important; /* Soft rose highlight */
-  border: 1px solid #fecdd3 !important;
-  color: #be123c !important;
-}
-
-#partner-terminal-layout .bg-amber-950\/25 {
-  background-color: #fef3c7 !important; /* Soft amber highlight */
-  border: 1px solid #fde047 !important;
-  color: #92400e !important;
-}
-
-/* Recharts chart labels */
-#partner-terminal-layout .recharts-text {
-  fill: #475569 !important;
-}
-
-/* Buttons - Consistent hover interaction systems */
-#partner-terminal-layout button {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-/* Primary Purple Buttons (Enforce Stripe/Linear clean style) */
-#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600):not(.bg-slate-950) {
-  background: #7c3aed !important;
+/* Beautiful Action & Active State Toggle Buttons (Cyberpunk gradient) */
+#partner-terminal-layout button.bg-purple-650,
+#partner-terminal-layout button.bg-gradient-to-r,
+#partner-terminal-layout button.bg-gradient-to-tr,
+#partner-terminal-layout button.text-white,
+#partner-terminal-layout button.bg-purple-600 {
+  background: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(124, 58, 237, 0.15) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
 }
 
-#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600):not(.bg-slate-950):hover {
-  background: #6d28d9 !important;
+#partner-terminal-layout button.bg-purple-650:hover,
+#partner-terminal-layout button.bg-gradient-to-r:hover,
+#partner-terminal-layout button.bg-gradient-to-tr:hover,
+#partner-terminal-layout button.text-white:hover,
+#partner-terminal-layout button.bg-purple-600:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ff4e6e 100%) !important;
+  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.5) !important;
+  transform: translateY(-1px);
 }
 
-/* Neutral back / secondary buttons - Clean Slate style */
-#partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr) {
-  color: #334155 !important;
-  background-color: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-#partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
-}
-
-#partner-terminal-layout .text-slate-350 {
-  color: #475569 !important;
-}
-
-#partner-terminal-layout .text-slate-400 {
-  color: #475569 !important;
-}
-
-#partner-terminal-layout .text-slate-450 {
-  color: #475569 !important;
-}
-
-/* ==================================================== */
-/* COMPLETE BUTTON AND PURPLE ALERTS REPAIR ENGINE      */
-/* ==================================================== */
-
-/* Prevent white-on-white text on active hover states for secondary buttons */
-#partner-terminal-layout button {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-/* Safe readable styling for ALL default primary buttons layout */
-#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600) {
-  background-color: #7c3aed !important; /* Force a gorgeous clear purple instead of overridden white! */
-  color: #ffffff !important;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2) !important;
-}
-
-#partner-terminal-layout button.text-white:not(.bg-purple-650):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-teal-600):hover {
-  background-color: #6d28d9 !important; /* Elevate background on hover */
-  color: #ffffff !important;
-}
-
-/* Repair Cancel/Alt buttons whose text gets hidden */
-#partner-terminal-layout button:not(.text-white):not([class*="text-purple"]):not([class*="text-rose"]):not([class*="bg-purple"]):not([class*="text-amber"]):not([class*="text-emerald"]) {
-  color: #0f172a !important; /* Set standard high-contrast charcoal black text */
-  background-color: #f1f5f9 !important; /* Solid neutral background */
-  border: 1px solid #e2e8f0 !important;
-}
-
-#partner-terminal-layout button:not(.text-white):not([class*="text-purple"]):not([class*="text-rose"]):not([class*="bg-purple"]):not([class*="text-amber"]):not([class*="text-emerald"]):hover {
-  background-color: #e2e8f0 !important; /* Darker hover */
-  color: #0f172a !important;
-}
-
-/* Keep standard styling intact for positive actions */
+/* Positive action buttons (switches / positive statuses) */
 #partner-terminal-layout button.bg-emerald-600,
 #partner-terminal-layout button.bg-emerald-500 {
-  background-color: #10b981 !important;
+  background-color: #059669 !important;
   color: #ffffff !important;
+  border: none !important;
 }
 
 #partner-terminal-layout button.bg-emerald-600:hover,
 #partner-terminal-layout button.bg-emerald-500:hover {
-  background-color: #059669 !important;
+  background-color: #10b981 !important;
 }
 
-/* Fix old muddy/dark purple and violet boxes to soft, luxury highlights */
+/* Secondary normal buttons - Sleek transparent glass with silver boundary */
+#partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-purple-600):not(.bg-purple-500):not(.bg-emerald-500) {
+  color: #f1f5f9 !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(124, 58, 237, 0.2) !important;
+}
+
+#partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-purple-600):not(.bg-purple-500):not(.bg-emerald-500):hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(244, 63, 94, 0.4) !important;
+}
+
+/* Neutral back / secondary buttons - Clean Slate style */
+#partner-terminal-layout .text-slate-350,
+#partner-terminal-layout .text-slate-400,
+#partner-terminal-layout .text-slate-450,
+#partner-terminal-layout .text-slate-500 {
+  color: #cbd5e1 !important; /* Silver gray for crisp texts */
+}
+
+/* Custom interactive pill badges */
 #partner-terminal-layout .bg-purple-950/11,
 #partner-terminal-layout .bg-purple-950/10,
 #partner-terminal-layout .bg-purple-950/20,
@@ -390,50 +336,41 @@ img, button, a {
 #partner-terminal-layout .bg-purple-500/15,
 #partner-terminal-layout .bg-[#110724]/60,
 #partner-terminal-layout .bg-purple-900/40 {
-  background-color: #f5f3ff !important; /* Clean rich lavender */
-  border-color: #ddd6fe !important; /* Clean lavender boundary */
-  color: #5b21b6 !important;
+  background-color: rgba(124, 58, 237, 0.12) !important;
+  border: 1px solid rgba(124, 58, 237, 0.25) !important;
+  color: #d8b4fe !important;
 }
 
-/* Adjust texts for muddy purple/indigo boxes to high contrast violet */
-#partner-terminal-layout .text-purple-300,
-#partner-terminal-layout .text-purple-400,
-#partner-terminal-layout .text-purple-450,
-#partner-terminal-layout .text-indigo-400,
-#partner-terminal-layout .text-violet-300,
-#partner-terminal-layout .text-violet-400 {
-  color: #6d28d9 !important; /* Clear deep readable violet text */
+#partner-terminal-layout .bg-rose-950\/20 {
+  background-color: rgba(244, 63, 94, 0.1) !important;
+  border: 1px solid rgba(244, 63, 94, 0.2) !important;
+  color: #fda4af !important;
 }
 
-/* Sidebar quick info wrapper background - should be sleek luxury white with subtle purple glow */
-#partner-terminal-layout aside .bg-purple-950\/20,
-#partner-terminal-layout aside .bg-[#0a0514] {
-  background-color: #fafbfc !important;
-  border: 1px solid #e1dbf7 !important;
+#partner-terminal-layout .bg-amber-950\/25 {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+  color: #fcd34d !important;
 }
 
-#partner-terminal-layout aside .bg-purple-950\/20 .text-purple-300 {
-  color: #6d28d9 !important;
-}
-
-/* Interactive custom switch buttons */
-#partner-terminal-layout .font-mono.text-[10px].text-purple-400 {
-  color: #7c3aed !important;
-}
-
-/* Border repair systems */
-#partner-terminal-layout .border-white\/5,
+/* Repair border systems */
+#partner-terminal-layout .border-slate-900, 
+#partner-terminal-layout .border-slate-800,
+#partner-terminal-layout .border-slate-200,
+#partner-terminal-layout .border-slate-100,
+#partner-terminal-layout .border-slate-850,
+#partner-terminal-layout .border-slate-950,
 #partner-terminal-layout .border-purple-500\/10,
 #partner-terminal-layout .border-purple-500\/20,
 #partner-terminal-layout .border-purple-500\/25,
 #partner-terminal-layout .border-purple-900\/30,
-#partner-terminal-layout .border-purple-900\/60,
 #partner-terminal-layout .border-[#1f1635] {
-  border-color: #e2e8f0 !important;
+  border-color: rgba(124, 58, 237, 0.18) !important;
 }
 
+#partner-terminal-layout .divide-slate-900\/40,
 #partner-terminal-layout .divide-[#1f1635] > * {
-  border-color: #f1f5f9 !important;
+  border-color: rgba(124, 58, 237, 0.12) !important;
 }
 
 

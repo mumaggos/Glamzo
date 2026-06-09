@@ -2321,24 +2321,28 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Terminal view screen area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950 relative">
         
+        {/* Ambient Glowing Background Spheres (Bolas de Fundo) */}
+        <div className="partner-glow-ball-pink top-10 right-1/4 animate-pulse pointer-events-none" style={{ animationDuration: '10s' }} />
+        <div className="partner-glow-ball-purple bottom-12 left-10 animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
+
         {/* Top Operational Header */}
-        <header className="h-16 border-b border-slate-100 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white shadow-xs">
+        <header className="h-16 border-b border-[#1f1635] px-4 sm:px-8 flex items-center justify-between shrink-0 bg-[#070210]/80 backdrop-blur-md shadow-sm relative z-10">
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Mobile Sidebar Hamburger */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition-all cursor-pointer"
+              className="lg:hidden p-2 bg-[#120a21] border border-[#1f1635] text-slate-300 hover:text-white rounded-xl transition-all cursor-pointer"
               title="Abrir Menu Lateral"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="text-left">
-              <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">
+              <h2 className="text-sm font-black text-white flex items-center gap-2">
                 <span>{business?.name || 'Carregando...'}</span>
               </h2>
-              <p className="text-[10px] text-slate-500 font-mono">
+              <p className="text-[10px] text-slate-400 font-mono">
                 📞 {business?.phone} • 📍 {business?.city || 'Lisboa, Portugal'}
               </p>
             </div>
@@ -2348,7 +2352,7 @@ export default function Dashboard() {
             <button
               onClick={loadTerminalData}
               title="Sincronizar dados da base de dados"
-              className="p-2 py-2.5 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
+              className="p-2 py-2.5 bg-[#120a21] border border-[#1f1635] text-slate-300 hover:text-white rounded-xl hover:bg-slate-900 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Atualizar Dados</span>
