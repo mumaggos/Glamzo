@@ -6,7 +6,7 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Mail, Calendar, Upload, Loader2, Link, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2 } from 'lucide-react';
+import { User, Mail, Calendar, Upload, Loader2, Link, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle } from 'lucide-react';
 
 export default function Account() {
   const { user, profile, updateProfile, loading: authLoading } = useAuth();
@@ -931,6 +931,132 @@ export default function Account() {
               <p className="text-xs text-slate-400 font-mono">Ainda não escreveu nenhum comentário. Conclua marcações para poder avaliar os serviços!</p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ========== GLAMZO CUSTOMER SUPPORT & FAQ SEGMENT ========== */}
+      <div id="customer-support-faq" className="mt-12 bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-sm text-left">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 border-b border-slate-100 mb-6 gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-xs font-semibold text-purple-600 mb-2">
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Glamzo Apoio Técnico</span>
+            </div>
+            <h3 className="text-xl font-black text-slate-800">Ajuda & Contacto</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Esclareça as suas dúvidas de imediato ou submeta pedidos de intervenção humana.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* FAQ Accordion list */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="font-extrabold text-sm text-slate-800 flex items-center gap-2">
+              <span>Perguntas Frequentes (FAQ)</span>
+            </h4>
+            <div className="space-y-3">
+              {[
+                {
+                  q: "Como posso remarcar ou cancelar o meu agendamento?",
+                  a: "Pode cancelar ou remarcar na sua conta até 24h antes sem custos. Se faltar menos de 24h, o cancelamento ou reembolso fica sujeito aos termos e condições do próprio estabelecimento. Utilize a tabela de reservas acima para solicitar cancelamentos."
+                },
+                {
+                  q: "Quais são as plataformas de pagamento e cartões aceites?",
+                  a: "Todos os pagamentos integrados no checkout digital são processados de forma encriptada através do Stripe, líder mundial de transação online. Aceitamos cartões de crédito e débito (Visa, Mastercard), além de opções dinâmicas como Apple Pay e MB Way."
+                },
+                {
+                  q: "Como funciona o reembolso das minhas marcações?",
+                  a: "Em caso de cancelamento elegível no prazo, o estorno na conta bancária do seu cartão de crédito é processado de forma autónoma e automática pela central do Stripe num prazo de 3 a 5 dias úteis."
+                },
+                {
+                  q: "Acumulação de descontos virtuais com o Clube VIP?",
+                  a: "Ganha 1 ponto por cada 1€ de consumo real e verificado nas lojas do ecossistema Glamzo. Ao acumular saldo de fidelização suficiente, pode trocá-los aqui por vales promocionais de 5€ ou 10€ de redução direta na sua próxima reserva."
+                }
+              ].map((faq, idx) => (
+                <details key={idx} className="group bg-slate-50 border border-slate-100 rounded-2xl p-4 transition-all duration-300 [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none select-none">
+                    <span className="text-xs font-bold text-slate-700">{faq.q}</span>
+                    <span className="shrink-0 transition duration-300 group-open:-rotate-180 text-slate-400">
+                      ▼
+                    </span>
+                  </summary>
+                  <p className="mt-2.5 text-xs text-slate-500 leading-relaxed font-sans">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+
+          {/* Instant contact methods and Chat Form */}
+          <div className="bg-slate-50 border border-slate-100 p-6 rounded-3xl space-y-4">
+            <h4 className="font-extrabold text-sm text-slate-800">Assistente de Apoio Directo</h4>
+            <p className="text-xs text-slate-500 leading-normal font-medium">
+              Insira a sua dúvida abaixo no chat automático para assistência interativa.
+            </p>
+
+            {/* Support Messages List Container only if there are any */}
+            {supportMessages.length > 0 ? (
+              <div className="bg-white border rounded-2xl p-3 space-y-2.5 max-h-[160px] overflow-y-auto font-sans">
+                {supportMessages.map((msg, idx) => (
+                  <div key={idx} className={`text-xs p-2.5 rounded-xl ${
+                    msg.sender_type === 'customer' 
+                      ? 'bg-purple-50 text-purple-800 ml-6 border border-purple-100' 
+                      : 'bg-slate-50 text-slate-750 mr-6 border border-slate-150'
+                  }`}>
+                    <span className="block text-[8px] uppercase tracking-wider font-bold text-slate-400 mb-0.5">
+                      {msg.sender_type === 'customer' ? 'Você' : 'Suporte Glamzo'}
+                    </span>
+                    <p className="leading-normal">{msg.message}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-150/60 rounded-2xl p-3 py-6 text-center">
+                <HelpCircle className="w-6 h-6 text-slate-300 mx-auto mb-1.5 animate-pulse" />
+                <p className="text-[10px] text-slate-400 leading-normal font-mono">Sem histórico de chat ativo.</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSendSupportMessage} className="space-y-2">
+              <input
+                type="text"
+                value={supportInput}
+                onChange={(e) => setSupportInput(e.target.value)}
+                required
+                placeholder="Diga qual é a sua dúvida..."
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 text-xs rounded-xl focus:border-purple-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={sendingSupport}
+                className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold text-xs py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                {sendingSupport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                <span>Iniciar Conversa</span>
+              </button>
+            </form>
+
+            <div className="border-t border-slate-200 pt-4 space-y-3">
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Canais Oficiais de Atendimento</span>
+              <div className="flex flex-col gap-2 mt-2">
+                <a 
+                  href="mailto:glamzo.suporte@gmail.com"
+                  className="flex bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[10px] py-2 rounded-xl text-center shadow-sm cursor-pointer transition items-center justify-center gap-1.5"
+                >
+                  ✉ Mail: glamzo.suporte@gmail.com
+                </a>
+                <a 
+                  href="https://wa.me/351912345678"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex bg-emerald-50 hover:bg-emerald-100 border border-emerald-150 text-emerald-850 font-bold text-[10px] py-2 rounded-xl text-center shadow-sm cursor-pointer transition items-center justify-center gap-1.5"
+                >
+                  🟢 WhatsApp de Apoio Rápido
+                </a>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
 

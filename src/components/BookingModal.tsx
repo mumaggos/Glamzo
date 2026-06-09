@@ -72,22 +72,65 @@ export default function BookingModal({
       return;
     }
 
-    // Check custom coupons inside local storage (created dynamically by admin)
+    // Check custom coupons inside physical/relational DB (from table business_coupons created dynamically by this partner)
+    if (business?.id) {
+      try {
+        const { data: dbCoupons, error: dbErr } = await supabase
+          .from('business_coupons')
+          .select('*')
+          .eq('business_id', business.id)
+          .eq('code', code)
+          .eq('is_active', true);
+
+        if (!dbErr && dbCoupons && dbCoupons.length > 0) {
+          const matchedCoupon = dbCoupons[0];
+          // Check if expired
+          const isValid = !matchedCoupon.valid_until || new Date(matchedCoupon.valid_until) > new Date();
+          if (isValid) {
+            let disc = 0;
+            if (matchedCoupon.discount_percent) {
+              disc = Number((selectedService.price * (Number(matchedCoupon.discount_percent) / 100)).toFixed(2));
+            } else if (matchedCoupon.discount_value) {
+              disc = Math.min(Number(matchedCoupon.discount_value), selectedService.price);
+            }
+            setCouponDiscount(disc);
+            setAppliedCoupon({ code, ...matchedCoupon });
+            setCouponSuccess(`Cupão ${code} (${matchedCoupon.discount_percent ? `${matchedCoupon.discount_percent}%` : `${matchedCoupon.discount_value}€`}) aplicado com sucesso!`);
+            setAppliedReward(null);
+            return;
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Failed to find or parse business_coupons on database:", dbErr);
+      }
+    }
+
+    // Check custom coupons inside local storage (created dynamically by admin or salon owner)
     try {
       const localCoupons = JSON.parse(localStorage.getItem('glamzo_coupons') || '[]');
-      const found = localCoupons.find((c: any) => c.code.toUpperCase() === code);
+      const found = localCoupons.find((c: any) => c.code.toUpperCase() === code && (!c.business_id || c.business_id === business?.id));
       if (found) {
-        let disc = 0;
-        if (found.discount_type === 'percent') {
-          disc = Number((selectedService.price * (found.discount_value / 100)).toFixed(2));
-        } else {
-          disc = Math.min(found.discount_value, selectedService.price);
+        const isValid = !found.valid_until || new Date(found.valid_until) > new Date();
+        const isCurrentlyActive = found.is_active !== false;
+        if (isValid && isCurrentlyActive) {
+          let disc = 0;
+          if (found.discount_percent) {
+            disc = Number((selectedService.price * (Number(found.discount_percent) / 100)).toFixed(2));
+          } else if (found.discount_value) {
+            disc = Math.min(Number(found.discount_value), selectedService.price);
+          } else if (found.discount_type === 'percent') {
+            const val = found.discount_value || found.discount_percent;
+            disc = Number((selectedService.price * (Number(val) / 100)).toFixed(2));
+          } else {
+            const val = found.discount_value || found.discount_flat || 0;
+            disc = Math.min(Number(val), selectedService.price);
+          }
+          setCouponDiscount(disc);
+          setAppliedCoupon({ code, ...found });
+          setCouponSuccess(`Cupão ${code} aplicado com sucesso! Desconto de -${disc.toFixed(2)}€`);
+          setAppliedReward(null);
+          return;
         }
-        setCouponDiscount(disc);
-        setAppliedCoupon({ code, ...found });
-        setCouponSuccess(`Cupão ${code} aplicado com sucesso! Desconto de -${disc.toFixed(2)}€`);
-        setAppliedReward(null);
-        return;
       }
     } catch (_) {}
 

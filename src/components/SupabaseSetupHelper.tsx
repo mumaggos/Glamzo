@@ -458,6 +458,35 @@ create policy "Allow owners to update reward_coupons"
   on public.reward_coupons for update
   using (auth.uid() = customer_id);
 
+-- 18. Create business_coupons table for salon partner promotions
+create table public.business_coupons (
+  id uuid default gen_random_uuid() primary key,
+  business_id uuid references public.businesses(id) on delete cascade not null,
+  code text not null,
+  discount_percent numeric(5,2),
+  discount_value numeric(10,2),
+  valid_until timestamp with time zone,
+  is_active boolean default true not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique (business_id, code)
+);
+
+-- Turn on RLS for business_coupons
+alter table public.business_coupons enable row level security;
+
+create policy "Allow read access to business_coupons for all"
+  on public.business_coupons for select
+  using (true);
+
+create policy "Allow owners to manage business_coupons"
+  on public.business_coupons for all
+  using (
+    exists (
+      select 1 from public.businesses b
+      where b.id = business_coupons.business_id and b.owner_id = auth.uid()
+    )
+  );
+
 -- ==========================================
 -- 17. CREATE STORAGE BUCKET 'avatars' & POLICIES
 -- ==========================================
