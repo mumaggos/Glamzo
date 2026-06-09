@@ -104,16 +104,17 @@ img, button, a {
 }
 
 /* ==================================================== */
-/* THE ULTIMATE COSMIC CYBER-TECH THEME (DARK & GLOWING) */
+/*   HIGH-FASHION LIGHT LUXURY THEME FOR THE PARTNER   */
+/*   (UNIFIED PALETTE: AIRBNB & APPLE LIGHT ELEGANCE)  */
 /* ==================================================== */
 #partner-terminal-layout {
-  background: #030008 !important; /* Absolute luxurious space background */
-  color: #f1f5f9 !important; /* Clean premium high-contrast silver */
+  background: #fafbfc !important; /* Premium clean off-white workspace background */
+  color: #1e293b !important; /* Elegant dark slate content */
   position: relative;
   overflow: hidden;
 }
 
-/* Base Wrapper Reset - Force immersive cosmic darkness globally inside partner dashboard */
+/* Base Wrapper Reset - Force light luxury backgrounds globally within layout */
 #partner-terminal-layout,
 #partner-terminal-layout main,
 #partner-terminal-layout .bg-slate-50,
@@ -127,95 +128,99 @@ img, button, a {
 #partner-terminal-layout .bg-slate-800,
 #partner-terminal-layout .bg-slate-850,
 #partner-terminal-layout .bg-slate-800\/60 {
-  background: #030008 !important;
+  background: #fafbfc !important;
 }
 
-/* Glowing Background Balls (Bolas de Fundo) with smooth pulse loop animations */
+/* Glowing Background Balls (Bolas de Fundo) with pulse effects matches homepage */
 .partner-glow-ball-pink {
   position: absolute;
-  width: 450px;
-  height: 450px;
+  width: 500px;
+  height: 500px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.12) 0%, rgba(244, 63, 94, 0) 70%) !important;
-  filter: blur(120px) !important;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0) 70%) !important;
+  filter: blur(80px) !important;
   pointer-events: none;
   z-index: 0;
 }
 
 .partner-glow-ball-purple {
   position: absolute;
-  width: 500px;
-  height: 500px;
+  width: 550px;
+  height: 550px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.14) 0%, rgba(124, 58, 237, 0) 70%) !important;
-  filter: blur(140px) !important;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.09) 0%, rgba(124, 58, 237, 0) 70%) !important;
+  filter: blur(90px) !important;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Beautiful Sidebar Styling - Clear Glassmorphism */
+/* Beautiful Sidebar Styling - Distinct premium white glassmorphism sidebar */
 #partner-terminal-layout aside {
-  background-color: rgba(7, 3, 16, 0.9) !important;
-  backdrop-filter: blur(20px) !important;
-  border-right: 1px solid rgba(124, 58, 237, 0.15) !important;
+  background-color: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
 #partner-terminal-layout aside .bg-purple-950\/20,
-#partner-terminal-layout aside .bg-[#0a0514] {
-  background-color: rgba(18, 10, 33, 0.6) !important;
-  border: 1px solid rgba(124, 58, 237, 0.18) !important;
+#partner-terminal-layout aside .bg-[#0a0514],
+#partner-terminal-layout aside .bg-slate-950 {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 #partner-terminal-layout aside h4, 
 #partner-terminal-layout aside span, 
 #partner-terminal-layout aside h3 {
-  color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 #partner-terminal-layout aside nav button {
-  color: #94a3b8 !important; /* Silver grey text for inactive navigation menu links */
+  color: #475569 !important; /* Clear dark-slate text for menu options */
 }
 
 #partner-terminal-layout aside nav button:hover {
-  background-color: rgba(124, 58, 237, 0.15) !important;
-  color: #ffffff !important;
+  background-color: #f1f5f9 !important;
+  color: #7c3aed !important;
 }
 
 #partner-terminal-layout aside nav button.bg-purple-650 {
-  background: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%) !important; /* Classic Glamzo gradient */
+  background: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%) !important; /* Elite Glamzo gradient */
   color: #ffffff !important;
-  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.22) !important;
+}
+
+#partner-terminal-layout aside nav button.bg-purple-650 * {
+  color: #ffffff !important;
 }
 
 /* Top Operational Header */
 #partner-terminal-layout header,
 #partner-terminal-layout .h-16 {
-  background-color: rgba(5, 2, 11, 0.8) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(124, 58, 237, 0.15) !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01) !important;
 }
 
 #partner-terminal-layout header h2,
 #partner-terminal-layout header span {
-  color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 #partner-terminal-layout header pCode,
+#partner-terminal-layout header pCode *,
 #partner-terminal-layout header p {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
-/* High-Contrast Cyberpunk Headings */
+/* Beautiful High-Contrast Headings */
 #partner-terminal-layout h1, 
 #partner-terminal-layout h2, 
 #partner-terminal-layout h3, 
 #partner-terminal-layout h4, 
 #partner-terminal-layout h5, 
 #partner-terminal-layout h6 {
-  color: #ffffff !important;
+  color: #0f172a !important; 
   font-family: var(--font-display) !important;
-  font-weight: 800 !important;
-  text-shadow: 0 0 15px rgba(124, 58, 237, 0.1);
+  font-weight: 750 !important;
 }
 
 /* Subtitles, paragraphs and custom text styles */
@@ -228,14 +233,19 @@ img, button, a {
 #partner-terminal-layout .text-slate-650,
 #partner-terminal-layout .text-slate-500,
 #partner-terminal-layout .text-slate-600 {
-  color: #cbd5e1 !important; /* Subtitles and content paragraphs as highly readable soft grey-cream */
+  color: #475569 !important; /* Slate gray readability */
 }
 
-#partner-terminal-layout .text-white {
-  color: #ffffff !important; /* Enforce crystal white texts on tables & forms */
+/* Specific styling helpers to keep colors beautiful */
+#partner-terminal-layout .text-emerald-400 {
+  color: #059669 !important;
+}
+#partner-terminal-layout .text-rose-450,
+#partner-terminal-layout .text-rose-500 {
+  color: #be123c !important;
 }
 
-/* Glassmorphic Solid Cards (Form containers, listings, options) */
+/* High contrast white cards styled with elegant Airbnb/Apple style contours */
 #partner-terminal-layout .bg-[#ffffff],
 #partner-terminal-layout .bg-white,
 #partner-terminal-layout .bg-slate-900,
@@ -245,32 +255,31 @@ img, button, a {
 #partner-terminal-layout .bg-slate-950\/30,
 #partner-terminal-layout .bg-[#120a21],
 #partner-terminal-layout .bg-[#110724]/60 {
-  background-color: rgba(13, 6, 26, 0.72) !important;
-  backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(124, 58, 237, 0.18) !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 1.25rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02) !important;
+  border-radius: 1rem !important;
 }
 
-/* Inputs & Selection Box elements */
+/* Inputs & Selection lists */
 #partner-terminal-layout input, 
 #partner-terminal-layout select, 
 #partner-terminal-layout textarea {
-  background-color: rgba(10, 4, 20, 0.9) !important;
-  border: 1px solid rgba(124, 58, 237, 0.3) !important;
-  color: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
   border-radius: 0.75rem !important;
 }
 
 #partner-terminal-layout input:focus, 
 #partner-terminal-layout select:focus, 
 #partner-terminal-layout textarea:focus {
-  border-color: #f43f5e !important;
-  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
 }
 
-/* Beautiful Action & Active State Toggle Buttons (Cyberpunk gradient) */
+/* Ensure buttons with solid colors are gorgeous and highly readable */
 #partner-terminal-layout button.bg-purple-650,
 #partner-terminal-layout button.bg-gradient-to-r,
 #partner-terminal-layout button.bg-gradient-to-tr,
@@ -280,7 +289,7 @@ img, button, a {
   color: #ffffff !important;
   font-weight: 700 !important;
   border: none !important;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
 }
 
 #partner-terminal-layout button.bg-purple-650:hover,
@@ -288,12 +297,12 @@ img, button, a {
 #partner-terminal-layout button.bg-gradient-to-tr:hover,
 #partner-terminal-layout button.text-white:hover,
 #partner-terminal-layout button.bg-purple-600:hover {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ff4e6e 100%) !important;
-  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.5) !important;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #6d28d9 0%, #e11d48 100%) !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35) !important;
+  transform: translateY(-0.5px);
 }
 
-/* Positive action buttons (switches / positive statuses) */
+/* Positive state triggers (e.g. switches, green status elements) */
 #partner-terminal-layout button.bg-emerald-600,
 #partner-terminal-layout button.bg-emerald-500 {
   background-color: #059669 !important;
@@ -303,31 +312,34 @@ img, button, a {
 
 #partner-terminal-layout button.bg-emerald-600:hover,
 #partner-terminal-layout button.bg-emerald-500:hover {
-  background-color: #10b981 !important;
+  background-color: #047857 !important;
 }
 
-/* Secondary normal buttons - Sleek transparent glass with silver boundary */
+/* Ensure text inside actions is crisp white */
+#partner-terminal-layout .text-white,
+#partner-terminal-layout .text-white *,
+#partner-terminal-layout .bg-purple-650 *,
+#partner-terminal-layout .bg-purple-600 *,
+#partner-terminal-layout .bg-emerald-600 *,
+#partner-terminal-layout .bg-rose-600 *,
+#partner-terminal-layout .bg-gradient-to-r * {
+  color: #ffffff !important;
+}
+
+/* Secondary & Back Buttons (Sleek minimalist style, highly readable text) */
 #partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-purple-600):not(.bg-purple-500):not(.bg-emerald-500) {
-  color: #f1f5f9 !important;
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(124, 58, 237, 0.2) !important;
+  color: #475569 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 #partner-terminal-layout button:not(.text-white):not(.bg-purple-650):not(.bg-rose-600):not(.bg-emerald-600):not(.bg-gradient-to-r):not(.bg-gradient-to-tr):not(.bg-purple-600):not(.bg-purple-500):not(.bg-emerald-500):hover {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  border-color: rgba(244, 63, 94, 0.4) !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
 }
 
-/* Neutral back / secondary buttons - Clean Slate style */
-#partner-terminal-layout .text-slate-350,
-#partner-terminal-layout .text-slate-400,
-#partner-terminal-layout .text-slate-450,
-#partner-terminal-layout .text-slate-500 {
-  color: #cbd5e1 !important; /* Silver gray for crisp texts */
-}
-
-/* Custom interactive pill badges */
+/* Status Pill Badges */
 #partner-terminal-layout .bg-purple-950/11,
 #partner-terminal-layout .bg-purple-950/10,
 #partner-terminal-layout .bg-purple-950/20,
@@ -336,24 +348,48 @@ img, button, a {
 #partner-terminal-layout .bg-purple-500/15,
 #partner-terminal-layout .bg-[#110724]/60,
 #partner-terminal-layout .bg-purple-900/40 {
-  background-color: rgba(124, 58, 237, 0.12) !important;
-  border: 1px solid rgba(124, 58, 237, 0.25) !important;
-  color: #d8b4fe !important;
+  background-color: #f5f3ff !important;
+  border: 1px solid #ddd6fe !important;
+  color: #6d28d9 !important;
+}
+
+#partner-terminal-layout .bg-purple-950/11 *,
+#partner-terminal-layout .bg-purple-950/10 *,
+#partner-terminal-layout .bg-purple-950/20 *,
+#partner-terminal-layout .bg-purple-950/40 *,
+#partner-terminal-layout .bg-purple-500/15 *,
+#partner-terminal-layout .bg-purple-900/40 * {
+  color: #6d28d9 !important;
 }
 
 #partner-terminal-layout .bg-rose-950\/20 {
-  background-color: rgba(244, 63, 94, 0.1) !important;
-  border: 1px solid rgba(244, 63, 94, 0.2) !important;
-  color: #fda4af !important;
+  background-color: #fff1f2 !important;
+  border: 1px solid #fecdd3 !important;
+  color: #be123c !important;
+}
+#partner-terminal-layout .bg-rose-950\/20 * {
+  color: #be123c !important;
 }
 
 #partner-terminal-layout .bg-amber-950\/25 {
-  background-color: rgba(245, 158, 11, 0.1) !important;
-  border: 1px solid rgba(245, 158, 11, 0.2) !important;
-  color: #fcd34d !important;
+  background-color: #fef3c7 !important;
+  border: 1px solid #fde047 !important;
+  color: #92400e !important;
+}
+#partner-terminal-layout .bg-amber-950\/25 * {
+  color: #92400e !important;
 }
 
-/* Repair border systems */
+#partner-terminal-layout .bg-emerald-950\/30 {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+}
+#partner-terminal-layout .bg-emerald-950\/30 * {
+  color: #047857 !important;
+}
+
+/* Beautiful custom calendar cell & grid lines */
 #partner-terminal-layout .border-slate-900, 
 #partner-terminal-layout .border-slate-800,
 #partner-terminal-layout .border-slate-200,
@@ -365,12 +401,19 @@ img, button, a {
 #partner-terminal-layout .border-purple-500\/25,
 #partner-terminal-layout .border-purple-900\/30,
 #partner-terminal-layout .border-[#1f1635] {
-  border-color: rgba(124, 58, 237, 0.18) !important;
+  border-color: #e2e8f0 !important;
 }
 
 #partner-terminal-layout .divide-slate-900\/40,
 #partner-terminal-layout .divide-[#1f1635] > * {
-  border-color: rgba(124, 58, 237, 0.12) !important;
+  border-color: #f1f5f9 !important;
 }
 
-
+/* Fix any possible text colors that are forced dark gray but need to remain dark gray without crashing */
+#partner-terminal-layout .text-slate-350,
+#partner-terminal-layout .text-slate-300,
+#partner-terminal-layout .text-slate-400,
+#partner-terminal-layout .text-slate-450,
+#partner-terminal-layout .text-slate-500 {
+  color: #475569 !important;
+}
