@@ -216,7 +216,7 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all disabled:opacity-50 gap-2 items-center cursor-pointer"
+                className="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-rose-500 hover:from-purple-700 hover:to-rose-600 transition-all disabled:opacity-50 gap-2 items-center cursor-pointer shadow-md shadow-purple-100"
                 id="btn-submit-signup"
               >
                 {loading ? (

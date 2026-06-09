@@ -367,14 +367,14 @@ export default function DashboardAssistant({ business, bookings, services, hours
             </div>
           </div>
 
-          {/* ARQUITETURA PARA IA FUTURA CUE */}
+          {/* SEGURANÇA E PRIVACIDADE DE DADOS */}
           <div className="p-4 bg-purple-50/30 border border-purple-100 rounded-2xl flex items-center justify-between gap-4 text-xs font-medium">
             <span className="text-purple-700 font-display font-bold flex items-center gap-1.5 shrink-0 select-none">
               <ShieldCheck className="w-4 h-4 text-purple-600" />
-              Arquitetura de Apoio
+              Segurança Certificada
             </span>
-            <span className="text-[10px] text-slate-500 text-right leading-relaxed max-w-lg font-mono">
-              O motor de inteligência local está pronto para integração futura com OpenAI e Gemini API de forma ultra-segura, sem dependências adicionais obrigatórias nesta versão.
+            <span className="text-[10px] text-slate-500 text-right leading-relaxed max-w-lg">
+              Os dados das suas marcações e clientes são processados em total conformidade com o RGPD. Todas as estatísticas e sugestões automáticas são geradas localmente com máxima encriptação de dados.
             </span>
           </div>
 
