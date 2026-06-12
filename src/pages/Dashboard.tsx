@@ -1930,7 +1930,7 @@ export default function Dashboard() {
   })();
 
   return (
-    <div id="partner-terminal-layout" className="min-h-screen bg-[#fafbfc] text-slate-800 flex font-sans select-none overflow-hidden h-screen">
+    <div id="partner-terminal-layout" className="min-h-screen bg-[#0f172a] text-slate-100 flex font-sans select-none overflow-hidden h-screen">
       
       {/* Blocked subscription Lock Screen Overlay */}
       {isBillingBlocked && (
@@ -2147,12 +2147,12 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="p-3 bg-white border border-slate-100 rounded-xl mb-4 shrink-0">
-              <span className="text-[8px] font-mono uppercase tracking-widest block text-slate-400 font-bold mb-1">Estabelecimento</span>
-              <span className="text-xs font-bold text-purple-705 block truncate">{business?.name || 'A sincronizar...'}</span>
+            <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl mb-4 shrink-0">
+              <span className="text-[8px] font-mono uppercase tracking-widest block text-slate-500 font-bold mb-1">Estabelecimento</span>
+              <span className="text-xs font-bold text-purple-400 block truncate">{business?.name || 'A sincronizar...'}</span>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] text-emerald-600 font-semibold uppercase font-mono">Ligado</span>
+                <span className="text-[9px] text-emerald-400 font-semibold uppercase font-mono">Ligado</span>
               </div>
             </div>
 
@@ -2179,8 +2179,8 @@ export default function Dashboard() {
                     }}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                       isActive 
-                        ? 'bg-purple-650 text-white shadow shadow-purple-950/50' 
-                        : 'text-slate-500 hover:bg-slate-100/80 hover:text-purple-600'
+                        ? 'bg-purple-600 text-white shadow shadow-purple-950/20' 
+                        : 'text-slate-400 hover:bg-slate-900/60 hover:text-purple-440'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -2225,24 +2225,24 @@ export default function Dashboard() {
       )}
 
       {/* Side Rail Panel */}
-      <aside className="hidden lg:flex w-64 border-r border-slate-200 bg-white flex-col justify-between shrink-0 h-full">
+      <aside className="hidden lg:flex w-64 border-r border-slate-800/80 bg-[#0a0f1d] flex-col justify-between shrink-0 h-full">
         <div>
           {/* Logo Brand Brand */}
-          <div className="h-16 border-b border-slate-100 flex items-center px-6 gap-3">
+          <div className="h-16 border-b border-slate-850/60 flex items-center px-6 gap-3">
             <GlamzoLogo size={32} glow={true} />
             <div>
-              <span className="font-extrabold text-slate-800 tracking-widest block leading-none text-xs">GLAMZO</span>
-              <span className="text-[9px] font-mono uppercase font-bold text-purple-650 tracking-wider">Painel do Parceiro</span>
+              <span className="font-extrabold text-white tracking-widest block leading-none text-xs font-display">GLAMZO</span>
+              <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel do Parceiro</span>
             </div>
           </div>
 
           {/* Quick Stats overview inside SideRail */}
-          <div className="p-4 mx-4 my-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-            <span className="text-[9px] font-mono uppercase tracking-widest block text-slate-400 font-bold mb-1.5">Estabelecimento</span>
-            <span className="text-xs font-bold text-slate-800 block truncate">{business?.name || 'A sincronizar...'}</span>
+          <div className="p-4 mx-4 my-2.5 bg-slate-900/40 border border-slate-800/80 rounded-xl">
+            <span className="text-[9px] font-mono uppercase tracking-widest block text-slate-500 font-bold mb-1.5">Estabelecimento</span>
+            <span className="text-xs font-bold text-slate-200 block truncate">{business?.name || 'A sincronizar...'}</span>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] text-emerald-600 font-semibold uppercase font-mono">Ligado / Sincronizado</span>
+              <span className="text-[10px] text-emerald-400 font-semibold uppercase font-mono">Ligado / Sincronizado</span>
             </div>
           </div>
 
@@ -2266,8 +2266,8 @@ export default function Dashboard() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                     isActive 
-                      ? 'bg-purple-650 text-white shadow shadow-purple-950/50' 
-                      : 'text-slate-600 hover:bg-slate-100/85 hover:text-purple-600'
+                      ? 'bg-purple-600 text-white shadow shadow-purple-900/40' 
+                      : 'text-slate-450 hover:bg-slate-900/60 hover:text-purple-405 hover:text-purple-400'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -2286,19 +2286,19 @@ export default function Dashboard() {
         </div>
 
         {/* User Card Profile & SignOut inside sidebar bottom */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
+        <div className="p-4 border-t border-slate-850 bg-slate-950/40">
           <div className="flex items-center gap-2.5 mb-3.5">
-            <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center font-mono font-bold text-purple-700 text-xs border border-purple-100">
+            <div className="w-8 h-8 rounded-full bg-purple-950/30 flex items-center justify-center font-mono font-bold text-purple-400 text-xs border border-purple-900/60">
               {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
             </div>
             <div className="overflow-hidden">
-              <span className="block text-xs font-bold truncate text-slate-800">{profile?.full_name || 'Profissional'}</span>
-              <span className="block text-[10px] text-slate-400 font-mono truncate">{user?.email}</span>
+              <span className="block text-xs font-bold truncate text-slate-200">{profile?.full_name || 'Profissional'}</span>
+              <span className="block text-[10px] text-slate-500 font-mono truncate">{user?.email}</span>
             </div>
           </div>
           <button 
             onClick={async () => { await signOut(); navigate('/'); }}
-            className="w-full py-2 bg-slate-150 hover:bg-slate-200 hover:text-slate-800 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-2 bg-slate-900 hover:bg-slate-850 hover:text-slate-200 border border-slate-800 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Terminar Sessão</span>
@@ -2307,28 +2307,28 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Terminal view screen area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#fafbfc] relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950 relative">
         
         {/* Ambient Glowing Background Spheres (Bolas de Fundo) like landing page */}
         <div className="partner-glow-ball-pink top-10 right-1/4 animate-pulse pointer-events-none" style={{ animationDuration: '10s' }} />
         <div className="partner-glow-ball-purple bottom-12 left-10 animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
 
         {/* Top Operational Header */}
-        <header className="h-16 border-b border-slate-100 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white shadow-xs relative z-10">
+        <header className="h-16 border-b border-slate-850 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-slate-900/30 backdrop-blur-md relative z-10">
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Mobile Sidebar Hamburger */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 bg-white border border-slate-200 text-slate-600 hover:text-purple-600 rounded-xl transition-all cursor-pointer"
+              className="lg:hidden p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-purple-400 rounded-xl transition-all cursor-pointer"
               title="Abrir Menu Lateral"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="text-left">
-              <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">
+              <h2 className="text-sm font-black text-white flex items-center gap-2 font-display">
                 <span>{business?.name || 'Carregando...'}</span>
               </h2>
-              <p className="text-[10px] text-slate-500 font-mono">
+              <p className="text-[10px] text-slate-400 font-mono">
                 📞 {business?.phone} • 📍 {business?.city || 'Lisboa, Portugal'}
               </p>
             </div>
@@ -2338,7 +2338,7 @@ export default function Dashboard() {
             <button
               onClick={loadTerminalData}
               title="Sincronizar dados da base de dados"
-              className="p-2 py-2.5 bg-white border border-slate-200 text-slate-600 hover:text-purple-600 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
+              className="p-2 py-2.5 bg-slate-900 border border-slate-800 text-slate-350 hover:text-purple-400 rounded-xl hover:bg-slate-850 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Atualizar Dados</span>
@@ -3738,113 +3738,250 @@ export default function Dashboard() {
               {/* VIEW 8: CONFIGURAÇÕES - EDIT SHOP PROFILE            */}
               {/* ==================================================== */}
               {activeTab === 'configuracoes' && (
-                <div id="view-configuracoes" className="space-y-6 max-w-2xl animate-fade-in">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Configurações do Estabelecimento</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Mantenha a sua foto de capa, logótipo e endereço atualizados no marketplace real.</p>
+                <div id="view-configuracoes" className="space-y-6 max-w-7xl animate-fade-in">
+                  <div className="border-b border-slate-800 pb-5 text-left">
+                    <h3 className="text-xl font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-purple-400" />
+                      <span>Configurações do Estabelecimento</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">Mantenha a sua foto de capa, logótipo, endereço e dados de marca atualizados no marketplace real.</p>
                   </div>
 
                   {business && (
-                    <form onSubmit={handleUpdateConfiguracoes} className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 text-xs font-semibold">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                       
-                      {/* Name & Phone */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Nome do Salão</label>
+                      {/* Left: Interactive Input Form */}
+                      <form onSubmit={handleUpdateConfiguracoes} className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 text-xs font-semibold [box-shadow:0_20px_50px_rgba(0,0,0,0.35)]">
+                        
+                        {/* Name & Phone */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Nome do Salão</label>
+                            <input 
+                              type="text" required
+                              value={business.name}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Telefone de Atendimento</label>
+                            <input 
+                              type="tel" required
+                              value={business.phone}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, phone: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* District & City */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Distrito / Concelho</label>
+                            <input 
+                              type="text" required
+                              value={business.district}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, district: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Cidade (Freguesia)</label>
+                            <input 
+                              type="text" required
+                              value={business.city}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, city: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Address */}
+                        <div className="text-left">
+                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Endereço de Portaria (Rua, Número, Código Postal)</label>
                           <input 
                             type="text" required
-                            value={business.name}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans"
+                            value={business.address}
+                            onChange={e => setBusiness(prev => prev ? ({ ...prev, address: e.target.value }) : null)}
+                            placeholder="Avenida da Liberdade Nº 42, 1250-142 Lisboa"
+                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Telefone de Atendimento</label>
-                          <input 
-                            type="tel" required
-                            value={business.phone}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, phone: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans font-mono"
+
+                        {/* Logo and Cover URL */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL do Logótipo</label>
+                            <input 
+                              type="url"
+                              value={business.logo_url || ''}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, logo_url: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500"
+                              placeholder="https://exemplo.com/logotipo.jpg"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL da Foto de Capa</label>
+                            <input 
+                              type="url"
+                              value={business.cover_url || ''}
+                              onChange={e => setBusiness(prev => prev ? ({ ...prev, cover_url: e.target.value }) : null)}
+                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500"
+                              placeholder="https://exemplo.com/capasalao.jpg"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Biography description */}
+                        <div className="text-left">
+                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Apresentação Editorial do Salão</label>
+                          <textarea 
+                            value={business.description || ''}
+                            onChange={e => setBusiness(prev => prev ? ({ ...prev, description: e.target.value }) : null)}
+                            rows={3}
+                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            placeholder="Escreva brevemente sobre o conceito e estilo do salão..."
                           />
+                        </div>
+
+                        <button 
+                          type="submit"
+                          className="bg-purple-600 hover:bg-purple-700 w-full py-3.5 rounded-xl font-bold uppercase tracking-wide text-white transition-all cursor-pointer text-xs"
+                        >
+                          Guardar Definições
+                        </button>
+                      </form>
+
+                      {/* Right: Live Identity Visual Mockup Card mirroring the Brand Manual template */}
+                      <div className="lg:col-span-5 bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-6 [box-shadow:0_15px_40px_rgba(0,0,0,0.4)] lg:sticky lg:top-24 text-left">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-purple-400" />
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300 font-bold">Manual de Identidade Visual</span>
+                          </div>
+                          <span className="text-[8px] bg-purple-950/80 text-purple-400 border border-purple-800/60 px-2 py-0.5 rounded-full font-mono uppercase">Ref Ativo</span>
+                        </div>
+
+                        {/* Interactive Dark Navy Card mimicking Option 3 from reference image */}
+                        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-5 shadow-inner select-none relative overflow-hidden group">
+                          
+                          {/* Top bar with url slug mock */}
+                          <div className="flex items-center justify-between text-slate-400">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono hover:text-white transition-colors">
+                              <Globe className="w-3.5 h-3.5 text-purple-400" />
+                              <span className="underline truncate max-w-[200px]">glamzo.com/salon/{business?.slug || 'parceiro'}</span>
+                            </div>
+                            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                          </div>
+
+                          {/* Logo Display representation segment */}
+                          <div className="flex items-center gap-4 py-1">
+                            {business?.logo_url ? (
+                              <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
+                                <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 rounded-xl bg-purple-950/40 border-2 border-dashed border-purple-800/40 flex flex-col items-center justify-center shrink-0 shadow-sm grow-0 group-hover:border-purple-500 transition-colors">
+                                <Plus className="w-4 h-4 text-purple-400" />
+                                <span className="text-[7px] text-slate-500 block font-mono font-bold leading-none mt-1">Logo URL</span>
+                              </div>
+                            )}
+                            <div>
+                              <span className="block text-sm font-display font-black text-white tracking-tight">{business?.name || 'Seu Salão Glamzo'}</span>
+                              <span className="block text-[9px] text-slate-400 font-mono mt-0.5 uppercase tracking-widest">{business?.city || 'Lisboa'}, Portugal</span>
+                            </div>
+                          </div>
+
+                          {/* Fonts Division: Aa Outfit and Aa Inter layout like reference guide */}
+                          <div className="grid grid-cols-2 gap-4 border-t border-slate-800/50 pt-4">
+                            <div>
+                              <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">Display Headings</span>
+                              <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl">
+                                <span className="block text-xs font-display font-black text-white">Aa Outfit</span>
+                                <span className="text-[9px] text-purple-400 block mt-0.5 leading-none">Elegant & Tech</span>
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">Body Text</span>
+                              <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl">
+                                <span className="block text-xs font-sans font-bold text-slate-200">Aa Inter</span>
+                                <span className="text-[9px] text-slate-400 block mt-0.5 leading-none">Clean & Modern</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Color Palette circle row + hex labels exactly mirroring the mockup layout */}
+                          <div className="space-y-2 border-t border-slate-800/50 pt-4">
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block">Esquema de Cores do Guidelines</span>
+                            <div className="grid grid-cols-4 gap-2 text-center">
+                              <div className="space-y-1 animate-pulse" style={{ animationDuration: '4s' }}>
+                                <div className="w-8 h-8 rounded-full bg-[#9333ea] border border-white/10 mx-auto shadow-md shadow-purple-900/40" />
+                                <span className="font-mono text-[8px] block text-purple-400 font-bold">#9333ea</span>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="w-8 h-8 rounded-full bg-[#fafbfc] border border-white/10 mx-auto shadow-md" />
+                                <span className="font-mono text-[8px] block text-slate-300 font-bold">#fafbfc</span>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="w-8 h-8 rounded-full bg-[#0f172a] border border-white/10 mx-auto shadow-md" />
+                                <span className="font-mono text-[8px] block text-slate-400 font-bold">#0f172a</span>
+                              </div>
+                              <div className="space-y-1 animate-pulse" style={{ animationDuration: '6s' }}>
+                                <div className="w-8 h-8 rounded-full bg-[#f43f5e] border border-white/10 mx-auto shadow-md shadow-rose-900/10" />
+                                <span className="font-mono text-[8px] block text-rose-400 font-bold font-mono">#f43f5e</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Tagline editor mirroring tagline box in brand layout (incorporates salon description) */}
+                          <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-1.5 border-l-2 border-purple-500 mt-2">
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block font-bold">Apresentação / Editorial</span>
+                            <p className="text-[11px] font-sans text-slate-300 italic leading-relaxed">
+                              "{business?.description || 'Descubra e marque os melhores serviços de beleza e bem-estar de Portugal.'}"
+                            </p>
+                          </div>
+
+                          {/* Section: Voice of Tone pills */}
+                          <div className="space-y-2 border-t border-slate-800/40 pt-3">
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block">Tom de Voz da Marca (Voice)</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['Elegante', 'Profissional', 'Moderno', 'Confiante'].map((tone) => (
+                                <span key={tone} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-purple-300 border border-purple-900/40 shadow-sm">
+                                  {tone}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Section: Values pills */}
+                          <div className="space-y-2 mt-2">
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block">Valores de Marca (Values)</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['Qualidade Elite', 'Foco no Cliente', 'Modernidade Digital', 'Organização'].map((value) => (
+                                <span key={value} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-rose-300 border border-slate-800/80 shadow-sm">
+                                  {value}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Section: Aesthetics pills */}
+                          <div className="space-y-2 mt-2">
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block">Linha Estética (Aesthetic)</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {['Minimalismo Moderno', 'High-End Beauty Tech', 'Energia de Gradientes'].map((aes) => (
+                                <span key={aes} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-200 border border-slate-850 flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                                  <span>{aes}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
                         </div>
                       </div>
-
-                      {/* District & City */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Distrito / Concelho</label>
-                          <input 
-                            type="text" required
-                            value={business.district}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, district: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Cidade (Freguesia)</label>
-                          <input 
-                            type="text" required
-                            value={business.city}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, city: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Address */}
-                      <div>
-                        <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Endereço de Portaria (Rua, Número, Código Postal)</label>
-                        <input 
-                          type="text" required
-                          value={business.address}
-                          onChange={e => setBusiness(prev => prev ? ({ ...prev, address: e.target.value }) : null)}
-                          placeholder="Avenida da Liberdade Nº 42, 1250-142 Lisboa"
-                          className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans"
-                        />
-                      </div>
-
-                      {/* Logo and Cover URL */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL do Logótipo</label>
-                          <input 
-                            type="url"
-                            value={business.logo_url || ''}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, logo_url: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600"
-                            placeholder="https://exemplo.com/logotipo.jpg"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL da Foto de Capa</label>
-                          <input 
-                            type="url"
-                            value={business.cover_url || ''}
-                            onChange={e => setBusiness(prev => prev ? ({ ...prev, cover_url: e.target.value }) : null)}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600"
-                            placeholder="https://exemplo.com/capasalao.jpg"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Biography description */}
-                      <div>
-                        <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Apresentação Editorial do Salão</label>
-                        <textarea 
-                          value={business.description || ''}
-                          onChange={e => setBusiness(prev => prev ? ({ ...prev, description: e.target.value }) : null)}
-                          rows={3}
-                          className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-rose-600 font-sans"
-                        />
-                      </div>
-
-                      <button 
-                        type="submit"
-                        className="bg-rose-600 hover:bg-rose-700 w-full py-3.5 rounded-xl font-bold uppercase tracking-wide text-white transition-all cursor-pointer text-xs"
-                      >
-                        Guardar Definições
-                      </button>
-                    </form>
+                    </div>
                   )}
                 </div>
               )}
