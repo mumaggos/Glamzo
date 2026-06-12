@@ -12,7 +12,8 @@ import {
   TrendingUp, BarChart, Tag, Landmark, Smartphone, Settings, LogOut, 
   Plus, Edit2, Trash2, Check, X, AlertCircle, Sparkles, AlertTriangle, CheckCircle, 
   DollarSign, CheckSquare, Search, Phone, Mail, HelpCircle, Eye, RefreshCw, MapPin, Gift, Bell, Play, Truck, Menu,
-  Lock, CreditCard, ShieldCheck, Globe, QrCode, Copy, ExternalLink, Download, Printer, Share2, Heart
+  Lock, CreditCard, ShieldCheck, Globe, QrCode, Copy, ExternalLink, Download, Printer, Share2, Heart,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -85,6 +86,7 @@ export default function Dashboard() {
 
   // Sub-tab / filters states
   const [agendaMode, setAgendaMode] = useState<'today' | 'week' | 'month' | 'by_staff'>('today');
+  const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>('all');
   const [bookingSearch, setBookingSearch] = useState('');
 
@@ -2472,11 +2474,14 @@ export default function Dashboard() {
               {/* VIEW 1: AGENDA DIÁRIA (PREMIUM TABLET/TERMINAL GRID) */}
               {/* ==================================================== */}
               {activeTab === 'agenda' && (
-                <div id="view-agenda" className="space-y-6 text-left">
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-100 pb-5">
+                <div id="view-agenda" className="space-y-6 text-left animate-fade-in text-slate-200">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
                     <div>
-                      <h3 className="text-xl font-black tracking-tight text-slate-800">Agenda do Salão</h3>
-                      <p className="text-xs text-slate-500 mt-0.5">Visualize e controle todas as marcações do dia de forma simplificada.</p>
+                      <h3 className="text-xl font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-purple-400" />
+                        <span>Agenda do Salão</span>
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1">Visualize, filtre e controle todas as marcações em tempo real de forma profissional.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -2492,22 +2497,22 @@ export default function Dashboard() {
                             setManualStaffId(staff[0].id);
                           }
                         }}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-md shadow-purple-500/10"
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30"
                       >
                         <Calendar className="w-4 h-4 text-white" />
                         <span className="text-white">Agendar / Bloquear Horário</span>
                       </button>
 
                       {/* Mode Navigation selector */}
-                      <div className="bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 flex items-center gap-1 font-sans text-xs">
+                      <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-xl flex items-center gap-1 font-sans text-xs">
                         {(['today', 'week', 'month', 'by_staff'] as const).map(mode => (
                           <button
                             key={mode}
                             onClick={() => setAgendaMode(mode)}
                             className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer text-[11px] ${
                               agendaMode === mode 
-                                ? 'bg-white text-purple-700 shadow-sm border border-slate-200/40' 
-                                : 'text-slate-500 hover:text-slate-800'
+                                ? 'bg-purple-600 text-white shadow-md' 
+                                : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             {mode === 'today' ? 'Hoje' : mode === 'week' ? 'Semanal' : mode === 'month' ? 'Mensal' : 'Por Profissional'}
@@ -2517,31 +2522,96 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Hourly timeline view of today or custom calendar switcher */}
+                  {/* Hourly timeline view of selectedAgendaDate or custom calendar switcher */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
-                    {/* Hourly Blocks (Timeline) - Clean white card */}
-                    <div className="lg:col-span-8 bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                    {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
+                    <div className="lg:col-span-8 bg-[#0a0f1d] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
                       
                       {/* ==================== TODAY VIEW ==================== */}
                       {agendaMode === 'today' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-lg text-purple-700 font-extrabold tracking-wide inline-block">
-                            Fita Horária • {new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}
+                          {/* Rich Interactive Date Selector and Scroller */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-900 border border-slate-800 rounded-2xl">
+                            <div className="flex items-center gap-2">
+                              {/* Go back 1 day */}
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const d = new Date(selectedAgendaDate + 'T12:00:00');
+                                  d.setDate(d.getDate() - 1);
+                                  setSelectedAgendaDate(d.toISOString().split('T')[0]);
+                                }}
+                                className="p-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                title="Dia Anterior"
+                              >
+                                <ChevronLeft className="w-4 h-4" />
+                              </button>
+
+                              {/* Selected date and custom date selector */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-mono uppercase text-purple-400 font-extrabold tracking-wider bg-purple-950/40 border border-purple-900/40 px-2.5 py-1 rounded-lg">
+                                  {new Date(selectedAgendaDate + 'T12:00:00').toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                </span>
+                                
+                                <input 
+                                  type="date" 
+                                  value={selectedAgendaDate}
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      setSelectedAgendaDate(e.target.value);
+                                    }
+                                  }}
+                                  className="bg-slate-950 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 cursor-pointer outline-none focus:border-purple-500 font-mono"
+                                />
+                              </div>
+
+                              {/* Go forward 1 day */}
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const d = new Date(selectedAgendaDate + 'T12:00:00');
+                                  d.setDate(d.getDate() + 1);
+                                  setSelectedAgendaDate(d.toISOString().split('T')[0]);
+                                }}
+                                className="p-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                title="Próximo Dia"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Back to Today button */}
+                            {selectedAgendaDate !== new Date().toISOString().split('T')[0] && (
+                              <button 
+                                type="button"
+                                onClick={() => setSelectedAgendaDate(new Date().toISOString().split('T')[0])}
+                                className="text-[10px] font-bold font-mono bg-purple-950/40 text-purple-300 hover:text-white hover:bg-purple-900/60 border border-purple-850 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                              >
+                                Voltar para Hoje
+                              </button>
+                            )}
+                          </div>
+
+                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Fita Horária • Marcações Reais do Dia
                           </span>
 
                           {/* Timeline Slots */}
-                          <div className="space-y-4 divide-y divide-slate-100/80">
-                            {['09:00', '10:30', '12:00', '14:30', '16:00', '17:30', '19:00'].map((hourSlot) => {
+                          <div className="space-y-4 divide-y divide-slate-800/60">
+                            {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'].map((hourSlot) => {
                               // Find any active booking corresponding roughly to slot
-                              const activeBookingsAtHour = bookings.filter(b => b.start_time.startsWith(hourSlot.split(':')[0]));
+                              const activeBookingsAtHour = bookings.filter(b => 
+                                b.booking_date === selectedAgendaDate && 
+                                b.start_time.startsWith(hourSlot.split(':')[0])
+                              );
 
                               return (
-                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row">
+                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row text-left">
                                   {/* Left Hour Indicator */}
-                                  <div className="w-14 shrink-0 flex flex-col items-end pt-1">
-                                    <span className="text-xs font-mono font-bold text-slate-800 tracking-tight">{hourSlot}</span>
-                                    <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Slot</span>
+                                  <div className="w-14 shrink-0 flex flex-col items-end pt-1 select-none">
+                                    <span className="text-xs font-mono font-bold text-slate-200 tracking-tight">{hourSlot}</span>
+                                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Slot</span>
                                   </div>
 
                                   {/* Right Content */}
@@ -2552,68 +2622,68 @@ export default function Dashboard() {
                                         const status = bk.booking_status;
                                         
                                         // Dynamic Left Accent Color Bar for Status
-                                        let borderColor = 'border-purple-500';
+                                        let borderColor = 'border-purple-800';
                                         let leftBarColor = 'bg-purple-600';
-                                        let bgClass = 'bg-white';
+                                        let bgClass = 'bg-[#12192c]/90 border-slate-800';
                                         
                                         if (isBlock) {
-                                          borderColor = 'border-rose-400';
+                                          borderColor = 'border-rose-900/30';
                                           leftBarColor = 'bg-rose-500';
-                                          bgClass = 'bg-rose-50/20';
+                                          bgClass = 'bg-[#1e121a] border border-rose-900/30';
                                         } else if (status === 'completed') {
-                                          borderColor = 'border-slate-300';
-                                          leftBarColor = 'bg-slate-450';
-                                          bgClass = 'bg-slate-50/40';
+                                          borderColor = 'border-slate-800';
+                                          leftBarColor = 'bg-slate-600';
+                                          bgClass = 'bg-slate-900/50 border border-slate-800/80';
                                         } else if (status === 'pending') {
-                                          borderColor = 'border-amber-400';
+                                          borderColor = 'border-amber-900/60';
                                           leftBarColor = 'bg-amber-500';
-                                          bgClass = 'bg-amber-50/30';
+                                          bgClass = 'bg-[#1e1a12] border border-amber-900/40';
                                         }
 
                                         return (
                                           <div 
                                             key={bk.id} 
-                                            className={`relative overflow-hidden p-5 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-all hover:border-slate-200 hover:shadow-md ${bgClass}`}
+                                            className={`relative overflow-hidden p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-colors hover:border-slate-700 ${bgClass}`}
                                           >
                                             {/* Status accent left bar */}
                                             <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${leftBarColor}`} />
 
                                             <div className="pl-2">
                                               <div className="flex items-center gap-2">
-                                                <h4 className="font-extrabold text-slate-800 text-sm tracking-tight">
+                                                <h4 className="font-extrabold text-white text-sm tracking-tight">
                                                   {getBookingDisplayName(bk)}
                                                 </h4>
                                                 {!isBlock && (
-                                                  <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-purple-50 text-purple-750 border border-purple-100">
+                                                  <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-purple-95 border border-purple-800/50 text-purple-350">
                                                     Atendimento
                                                   </span>
                                                 )}
                                               </div>
                                               
                                               {!isBlock ? (
-                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 leading-none">
+                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-400 leading-none">
                                                   <span className="flex items-center gap-1">
-                                                    <span className="text-purple-600">💈</span> {bk.service?.name || 'Serviço'}
+                                                    <span className="text-purple-400">💈</span> {bk.service?.name || 'Serviço'}
                                                   </span>
-                                                  <span className="text-slate-300">•</span>
+                                                  <span className="text-slate-700">•</span>
                                                   <span className="flex items-center gap-1">
-                                                    <span className="text-purple-600 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
+                                                    <span className="text-purple-405 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
                                                   </span>
-                                                  <span className="text-slate-300">•</span>
-                                                  <span className="font-mono bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-600">
+                                                  <span className="text-slate-700">•</span>
+                                                  <span className="font-mono bg-slate-950 border border-slate-850 px-1.5 py-0.5 rounded text-[10px] text-slate-300">
                                                     ⏱ {bk.service?.duration_minutes || '0'} min
                                                   </span>
-                                                  <span className="text-slate-300">•</span>
-                                                  <span className="font-bold text-slate-800 text-xs">
+                                                  <span className="text-slate-700">•</span>
+                                                  <span className="text-white font-extrabold text-xs">
                                                     {bk.total_price}€
                                                   </span>
-                                                  <span className="text-slate-300">•</span>
-                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-650">
+                                                  <span className="text-slate-700">•</span>
+                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-300">
                                                     💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
                                                   </span>
                                                 </div>
                                               ) : (
-                                                <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-semibold text-rose-700 font-mono">
+                                                <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-semibold text-rose-400 font-mono">
                                                   <span>🛑 Slot Bloqueado (Intervalo / Indisponível)</span>
                                                   <span>•</span>
                                                   <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
@@ -2625,14 +2695,16 @@ export default function Dashboard() {
                                               {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && (
                                                 <div className="flex items-center gap-1.5">
                                                   <button 
+                                                    type="button"
                                                     onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
                                                     className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
                                                   >
                                                     Concluir
                                                   </button>
                                                   <button 
+                                                    type="button"
                                                     onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-                                                    className="px-3.5 py-2 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-650 hover:text-rose-700 rounded-xl text-[10px] font-mono cursor-pointer uppercase transition-all"
+                                                    className="px-3.5 py-2 bg-slate-950 hover:bg-rose-95 border border-slate-800 text-slate-400 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
                                                   >
                                                     Mover/Cancelar
                                                   </button>
@@ -2640,10 +2712,10 @@ export default function Dashboard() {
                                               )}
                                               <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider ${
                                                 bk.booking_status === 'completed' 
-                                                  ? 'bg-slate-100 text-slate-500 border border-slate-200/60' 
+                                                  ? 'bg-slate-900 text-slate-400 border border-slate-800' 
                                                   : bk.booking_status === 'cancelled'
-                                                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                                  ? 'bg-rose-950/40 text-rose-400 border border-rose-900'
+                                                  : 'bg-indigo-950/40 text-indigo-400 border border-indigo-900'
                                               }`}>
                                                 {bk.booking_status === 'completed' ? 'concluída' : bk.booking_status}
                                               </span>
@@ -2652,22 +2724,24 @@ export default function Dashboard() {
                                         );
                                       })
                                     ) : (
-                                      /* Quick Book / Block Event placeholder button: Fresha style */
+                                      /* Quick Book / Block Event placeholder button: Fresha style with premium Dark Look */
                                       <button
+                                        type="button"
                                         onClick={() => {
                                           setManualStartTime(hourSlot);
                                           setManualBookingType('booking');
+                                          setManualDate(selectedAgendaDate);
                                           setIsManualBookingOpen(true);
                                           if (services.length > 0) setManualServiceId(services[0].id);
                                           if (staff.length > 0) setManualStaffId(staff[0].id);
                                         }}
-                                        className="w-full h-14 bg-slate-50/50 hover:bg-purple-50/20 border border-dashed border-slate-200 hover:border-purple-300 text-slate-400 hover:text-purple-650 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
+                                        className="w-full h-14 bg-[#0a0f1d] hover:bg-purple-950/20 border border-dashed border-slate-800 hover:border-purple-800/80 text-slate-500 hover:text-purple-400 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
                                       >
                                         <div className="flex items-center gap-2">
-                                          <span className="text-lg font-bold font-mono opacity-60 group-hover:opacity-100 transition-opacity">+</span>
-                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase group-hover:translate-x-1 transition-transform">Disponível</span>
+                                          <span className="text-lg font-bold font-mono opacity-65 group-hover:opacity-100 text-purple-400">+</span>
+                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase text-slate-400 group-hover:text-white">Disponível</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-400 group-hover:text-purple-600 bg-white border border-slate-150 px-2 py-1 rounded-lg">
+                                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded-lg">
                                           Reservar {hourSlot}
                                         </span>
                                       </button>
@@ -2683,28 +2757,28 @@ export default function Dashboard() {
                       {/* ==================== WEEKLY VIEW ==================== */}
                       {agendaMode === 'week' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-lg text-purple-700 font-extrabold tracking-wide inline-block">
-                            Visualização Semanal • Multi-Colunas
+                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Visualização Semanal Dinâmica • Multi-Colunas
                           </span>
 
                           <div className="grid grid-cols-1 sm:grid-cols-7 gap-3 pt-2">
                             {(() => {
-                              const today = new Date();
-                              const currentDayIdx = today.getDay();
-                              const diffToMonday = today.getDate() - currentDayIdx + (currentDayIdx === 0 ? -6 : 1);
+                              const baseDate = new Date(selectedAgendaDate + 'T12:00:00');
+                              const currentDayIdx = baseDate.getDay();
+                              const diffToMonday = baseDate.getDate() - currentDayIdx + (currentDayIdx === 0 ? -6 : 1);
                               const weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
                               return weekdays.map((dayLabel, idx) => {
-                                const targetDay = new Date(today);
+                                const targetDay = new Date(baseDate);
                                 targetDay.setDate(diffToMonday + idx);
                                 const dateStr = targetDay.toISOString().split('T')[0];
                                 const bookingsThisDay = bookings.filter(b => b.booking_date === dateStr);
 
                                 return (
-                                  <div key={dayLabel} className="bg-slate-50 border border-slate-150 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left">
-                                    <div className="border-b border-slate-200 pb-1.5 text-center">
-                                      <span className="block text-[11px] font-extrabold text-purple-700 uppercase">{dayLabel}</span>
-                                      <span className="block text-[10px] font-mono font-bold text-slate-550">{targetDay.getDate()}</span>
+                                  <div key={dayLabel} className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left">
+                                    <div className="border-b border-slate-800 pb-1.5 text-center">
+                                      <span className="block text-[11px] font-extrabold text-purple-400 uppercase">{dayLabel}</span>
+                                      <span className="block text-[10px] font-mono font-bold text-slate-400">{targetDay.getDate()}</span>
                                     </div>
 
                                     <div className="space-y-2">
@@ -2713,20 +2787,20 @@ export default function Dashboard() {
                                           <div 
                                             key={bk.id}
                                             className={`p-2 rounded-xl border text-[9px] space-y-1 transition-all ${
-                                              bk.booking_status === 'confirmed' 
-                                                ? 'bg-purple-100 border-purple-200 text-purple-900 font-medium' 
-                                                : 'bg-slate-100 border-slate-200 text-slate-500'
+                                              bk.booking_status === 'completed'
+                                                ? 'bg-slate-950 border-slate-850 text-slate-500'
+                                                : 'bg-purple-950/40 border-purple-900/40 text-purple-200'
                                             }`}
                                           >
-                                            <div className="font-mono font-bold text-[8px] text-purple-700">{bk.start_time}</div>
-                                            <div className="font-extrabold truncate text-slate-850">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
-                                            <div className="text-[8px] text-slate-500 truncate font-semibold">💈 {bk.service?.name}</div>
-                                            <div className="text-[8px] text-emerald-700 font-extrabold">{bk.total_price}€</div>
-                                            <div className="text-[8px] font-mono text-slate-500 truncate">👥 {bk.staff?.full_name ? bk.staff.full_name.split(' ')[0] : 'Auto'}</div>
+                                            <div className="font-mono font-bold text-[8px] text-purple-400">{bk.start_time}</div>
+                                            <div className="font-extrabold truncate text-white">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
+                                            <div className="text-[8px] text-slate-400 truncate">💈 {bk.service?.name}</div>
+                                            <div className="text-[8px] text-emerald-400 font-extrabold">{bk.total_price}€</div>
+                                            <div className="text-[8px] font-mono text-slate-400 truncate">👥 {bk.staff?.full_name ? bk.staff.full_name.split(' ')[0] : 'Auto'}</div>
                                           </div>
                                         ))
                                       ) : (
-                                        <span className="block text-[8px] font-mono text-slate-400 text-center py-6">Vazio</span>
+                                        <span className="block text-[8px] font-mono text-slate-500 text-center py-6">Vazio</span>
                                       )}
                                     </div>
                                   </div>
@@ -2740,19 +2814,19 @@ export default function Dashboard() {
                       {/* ==================== MONTHLY VIEW ==================== */}
                       {agendaMode === 'month' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-lg text-purple-700 font-extrabold tracking-wide inline-block">
-                            Visualização Mensal • Roster 35 Dias
+                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Visualização Mensal Dinâmica • Roster 35 Dias
                           </span>
 
                           <div className="grid grid-cols-7 gap-2 pt-2">
                             {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(lbl => (
-                              <div key={lbl} className="text-center text-[10px] font-mono font-extrabold uppercase text-slate-450 pb-1">{lbl}</div>
+                              <div key={lbl} className="text-center text-[10px] font-mono font-extrabold uppercase text-slate-500 pb-1">{lbl}</div>
                             ))}
 
                             {(() => {
-                              const current = new Date();
-                              const year = current.getFullYear();
-                              const month = current.getMonth();
+                              const baseDate = new Date(selectedAgendaDate + 'T12:00:00');
+                              const year = baseDate.getFullYear();
+                              const month = baseDate.getMonth();
                               const firstDayOfMonth = new Date(year, month, 1);
                               const lastDayOfMonth = new Date(year, month + 1, 0);
 
@@ -2779,11 +2853,11 @@ export default function Dashboard() {
                                 return (
                                   <div 
                                     key={cellIdx} 
-                                    className={`min-h-[70px] bg-white p-2 border rounded-xl flex flex-col justify-between shadow-sm transition-all ${
-                                      isSameMonth ? 'opacity-100 border-slate-150' : 'opacity-30 border-slate-100'
-                                    } ${isToday ? 'border-purple-500 bg-purple-50/50' : ''}`}
+                                    className={`min-h-[70px] bg-slate-900/60 p-2 border rounded-xl flex flex-col justify-between transition-all ${
+                                      isSameMonth ? 'opacity-100 border-slate-800' : 'opacity-30 border-slate-850'
+                                    } ${isToday ? 'border-purple-500 bg-purple-950/20' : ''}`}
                                   >
-                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-700 font-black' : 'text-slate-400'}`}>
+                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-400 font-extrabold' : 'text-slate-400'}`}>
                                       {dateObj.getDate()}
                                     </span>
 
@@ -2791,7 +2865,7 @@ export default function Dashboard() {
                                       {matchBookings.slice(0, 2).map(bk => (
                                         <div 
                                           key={bk.id} 
-                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-50 border border-purple-100 text-purple-700 font-bold"
+                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-950/40 border border-purple-900/40 text-purple-300 font-bold"
                                         >
                                           {bk.start_time} {bk.service?.name ? bk.service.name.substring(0, 8) : 'Srv'}
                                         </div>
@@ -2811,18 +2885,18 @@ export default function Dashboard() {
                       {/* ==================== BY STAFF VIEW ==================== */}
                       {agendaMode === 'by_staff' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-lg text-purple-700 font-extrabold tracking-wide inline-block">
-                            Escalas do Dia por Profissional
+                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Escalas por Profissional • Dia Selecionado
                           </span>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                             {staff.map(st => {
-                              const staffBookingsToday = bookings.filter(b => b.staff_id === st.id && b.booking_date === new Date().toISOString().split('T')[0]);
+                              const staffBookingsToday = bookings.filter(b => b.staff_id === st.id && b.booking_date === selectedAgendaDate);
 
                               return (
-                                <div key={st.id} className="bg-slate-50 border border-slate-150 p-4.5 rounded-2xl space-y-4.5 min-h-[180px] text-left">
-                                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                                    <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-500 overflow-hidden text-[10px]">
+                                <div key={st.id} className="bg-slate-900/80 border border-slate-800 p-4.5 rounded-2xl space-y-4.5 min-h-[180px] text-left">
+                                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+                                    <div className="w-8 h-8 rounded-full bg-slate-850 border border-slate-800 flex items-center justify-center font-bold text-slate-400 overflow-hidden text-[10px]">
                                       {st.avatar_url ? (
                                         <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                       ) : (
@@ -2830,7 +2904,7 @@ export default function Dashboard() {
                                       )}
                                     </div>
                                     <div>
-                                      <h5 className="font-extrabold text-[12px] text-slate-800 leading-tight">{st.full_name}</h5>
+                                      <h5 className="font-extrabold text-[12px] text-white leading-tight">{st.full_name}</h5>
                                       <span className="text-[9px] text-slate-400 block font-bold">{st.role_title || 'Artista Escala'}</span>
                                     </div>
                                   </div>
@@ -2841,21 +2915,21 @@ export default function Dashboard() {
                                         <div 
                                           key={bk.id} 
                                           className={`p-2.5 rounded-xl border text-[10px] space-y-1 ${
-                                            bk.booking_status === 'confirmed' 
-                                              ? 'bg-purple-100 border-purple-150 text-purple-900 font-medium' 
-                                              : 'bg-emerald-50 border-emerald-150 text-emerald-800'
+                                            bk.booking_status === 'completed'
+                                              ? 'bg-slate-950 border-slate-850 text-slate-400'
+                                              : 'bg-purple-950/30 border-purple-900/30 text-purple-200'
                                           }`}
                                         >
                                           <div className="flex justify-between items-center text-[8.5px] font-mono">
-                                            <span className="font-bold text-purple-700">{bk.start_time} - {bk.end_time}</span>
-                                            <span className="uppercase text-slate-500 font-bold">{bk.booking_status}</span>
+                                            <span className="font-bold text-purple-400">{bk.start_time} - {bk.end_time}</span>
+                                            <span className="uppercase text-slate-400 font-bold">{bk.booking_status}</span>
                                           </div>
-                                          <div className="font-black text-slate-850 leading-tight">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
-                                          <div className="text-[9px] text-slate-500 truncate font-semibold">💈 {bk.service?.name}</div>
+                                          <div className="font-black text-white leading-tight">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
+                                          <div className="text-[9px] text-slate-400 truncate font-semibold">💈 {bk.service?.name}</div>
                                         </div>
                                       ))
                                     ) : (
-                                      <div className="h-16 bg-white border border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-[10px] font-mono text-slate-400 shadow-sm">
+                                      <div className="h-16 bg-slate-950/50 border border-dashed border-slate-805 border-slate-800 rounded-2xl flex items-center justify-center text-[10px] font-mono text-slate-500 shadow-sm">
                                         Roster livre hoje
                                       </div>
                                     )}
