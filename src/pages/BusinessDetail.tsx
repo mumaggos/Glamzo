@@ -519,9 +519,9 @@ export default function BusinessDetail() {
         <div className="absolute top-6 left-6 z-10">
           <Link
             to="/explore"
-            className="flex items-center gap-1 bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all border border-slate-200"
+            className="flex items-center gap-1 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 font-mono"
           >
-            <ArrowLeft className="w-4 h-4 text-purple-600" />
+            <ArrowLeft className="w-4 h-4 text-purple-400" />
             <span className="hidden sm:inline">Explorar salões</span>
           </Link>
         </div>
@@ -531,18 +531,18 @@ export default function BusinessDetail() {
           {/* Favorite Switch */}
           <button
             onClick={handleToggleFavorite}
-            className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all border border-slate-200 cursor-pointer"
+            className="flex items-center gap-1.5 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 cursor-pointer font-mono"
           >
-            <Heart className={`w-4 h-4 transition-all ${favoriteActive ? 'fill-purple-600 text-purple-600 scale-110' : 'text-slate-400'}`} />
+            <Heart className={`w-4 h-4 transition-all ${favoriteActive ? 'fill-purple-500 text-purple-400 scale-110' : 'text-slate-400'}`} />
             <span>{favoriteActive ? 'Favorito' : 'Guardar'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1 bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all border border-slate-200 cursor-pointer"
+            className="flex items-center gap-1 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 cursor-pointer font-mono"
           >
-            <Share2 className="w-4 h-4 text-purple-600" />
+            <Share2 className="w-4 h-4 text-purple-400" />
             <span>{copiedLink ? 'Copiado!' : 'Partilhar'}</span>
           </button>
         </div>
@@ -965,9 +965,9 @@ export default function BusinessDetail() {
               <button
                 type="button"
                 onClick={() => handleOpenBooking(null)}
-                className="w-full py-3 bg-white hover:bg-purple-50 text-purple-600 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 bg-slate-950 hover:bg-slate-900 text-white hover:text-purple-450 hover:text-purple-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border border-slate-800/80 font-mono"
               >
-                <Calendar className="w-4 h-4 text-purple-600" />
+                <Calendar className="w-4 h-4 text-purple-400" />
                 <span>Reservar Agora</span>
               </button>
             </div>

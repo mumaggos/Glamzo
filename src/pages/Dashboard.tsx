@@ -31,7 +31,7 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
 
   // Active tab of our dark high-contrast operational terminal
-  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'clientes' | 'configuracoes' | 'financeiro' | 'campanhas'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'clientes' | 'configuracoes' | 'financeiro' | 'campanhas' | 'loja'>('agenda');
 
   // Core Database States
   const [business, setBusiness] = useState<Business | null>(null);
@@ -2168,6 +2168,7 @@ export default function Dashboard() {
                 { id: 'servicos', label: 'Serviços', icon: Scissors },
                 { id: 'campanhas', label: 'Promoções', icon: Tag },
                 { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
+                { id: 'loja', label: 'Website & QR Code', icon: Globe },
                 { id: 'configuracoes', label: 'Configurações', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -2182,7 +2183,7 @@ export default function Dashboard() {
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                       isActive 
                         ? 'bg-purple-600 text-white shadow shadow-purple-950/20' 
-                        : 'text-slate-400 hover:bg-slate-900/60 hover:text-purple-440'
+                        : 'text-slate-400 hover:bg-slate-900/60 hover:text-purple-400'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -2204,13 +2205,13 @@ export default function Dashboard() {
             </nav>
 
             {/* Sidebar Bottom Profile */}
-            <div className="pt-4 border-t border-slate-100 mt-4 shrink-0 col-span-1">
+            <div className="pt-4 border-t border-slate-800 mt-4 shrink-0 col-span-1 bg-slate-950/40">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center font-mono font-bold text-purple-700 text-xs border border-purple-100 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-purple-950/30 flex items-center justify-center font-mono font-bold text-purple-400 text-xs border border-purple-900/60 shrink-0">
                   {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
                 </div>
                 <div className="overflow-hidden">
-                  <span className="block text-xs font-bold truncate text-slate-800">{profile?.full_name || 'Profissional'}</span>
+                  <span className="block text-xs font-bold truncate text-slate-200">{profile?.full_name || 'Profissional'}</span>
                   <span className="block text-[9px] text-slate-400 font-mono truncate">{user?.email}</span>
                 </div>
               </div>
@@ -2220,7 +2221,7 @@ export default function Dashboard() {
                   await signOut(); 
                   navigate('/'); 
                 }}
-                className="w-full py-2 bg-slate-50 hover:bg-slate-100 hover:text-slate-800 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2 bg-slate-900 hover:bg-slate-850 hover:text-slate-200 border border-slate-800 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Terminar Sessão</span>
@@ -2262,6 +2263,7 @@ export default function Dashboard() {
               { id: 'servicos', label: 'Serviços', icon: Scissors },
               { id: 'campanhas', label: 'Promoções', icon: Tag },
               { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
+              { id: 'loja', label: 'Website & QR Code', icon: Globe },
               { id: 'configuracoes', label: 'Configurações', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -4678,13 +4680,15 @@ export default function Dashboard() {
                         <h4 className="font-extrabold text-xs text-white uppercase tracking-wider mb-5">Digitalizar para Reservar</h4>
 
                         {/* Interactive Canvas frame with professional safety bounding & max sizes */}
-                        <div className="p-3.5 bg-white rounded-3xl border border-slate-800 shadow-2xl space-y-2.5 flex flex-col items-center justify-center">
-                          <canvas 
-                            ref={qrCanvasRef} 
-                            style={{ maxWidth: '220px', maxHeight: '220px', width: '100%', height: 'auto' }}
-                            className="bg-white px-0.5 rounded-2xl select-none"
-                          />
-                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-500 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
+                        <div className="p-5 bg-slate-950 border border-slate-800/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
+                          <div className="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-inner">
+                            <canvas 
+                              ref={qrCanvasRef} 
+                              style={{ maxWidth: '190px', maxHeight: '190px', width: '100%', height: 'auto' }}
+                              className="select-none"
+                            />
+                          </div>
+                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-450 text-slate-400 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
                             <span>Integrado com Logo Glamzo</span>
                           </div>
