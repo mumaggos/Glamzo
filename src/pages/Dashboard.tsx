@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
 
   // Active tab of our dark high-contrast operational terminal
-  const [activeTab, setActiveTab] = useState<'agenda' | 'assistente' | 'reservas' | 'servicos' | 'equipa' | 'horarios' | 'clientes' | 'analytics' | 'configuracoes' | 'financeiro' | 'campanhas' | 'terminal' | 'loja'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'clientes' | 'configuracoes' | 'financeiro' | 'campanhas'>('agenda');
 
   // Core Database States
   const [business, setBusiness] = useState<Business | null>(null);
@@ -2147,31 +2147,26 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="p-3 bg-purple-950/20 border border-purple-500/10 rounded-xl mb-4 shrink-0">
-              <span className="text-[8px] font-mono uppercase tracking-widest block text-slate-500 font-bold mb-1">Estabelecimento</span>
-              <span className="text-xs font-bold text-purple-300 block truncate">{business?.name || 'A sincronizar...'}</span>
+            <div className="p-3 bg-white border border-slate-100 rounded-xl mb-4 shrink-0">
+              <span className="text-[8px] font-mono uppercase tracking-widest block text-slate-400 font-bold mb-1">Estabelecimento</span>
+              <span className="text-xs font-bold text-purple-705 block truncate">{business?.name || 'A sincronizar...'}</span>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] text-emerald-400 font-semibold uppercase font-mono">Terminal Activo</span>
+                <span className="text-[9px] text-emerald-600 font-semibold uppercase font-mono">Ligado</span>
               </div>
             </div>
 
             {/* Scrolling Navigation Links */}
-            <nav className="flex-1 overflow-y-auto space-y-1 pr-1.5 scrollbar-thin scrollbar-thumb-[#1f1635]" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <nav className="flex-1 overflow-y-auto space-y-1 pr-1.5 scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch' }}>
               {[
-                { id: 'agenda', label: 'Agenda Diária', icon: Calendar },
-                { id: 'assistente', label: 'Assistente Glamzo 🪄', icon: Sparkles, highlight: true },
-                { id: 'reservas', label: 'Reservas Totais', icon: CheckSquare },
-                { id: 'servicos', label: 'Catálogo de Serviços', icon: Scissors },
-                { id: 'equipa', label: 'Escalas de Equipa', icon: Users },
-                { id: 'horarios', label: 'Horas de Serviço', icon: Clock },
-                { id: 'clientes', label: 'Registo de Clientes', icon: UsersRound },
-                { id: 'analytics', label: 'Relatórios & Gráficos', icon: BarChart },
-                { id: 'campanhas', label: 'Marketing Campanhas', icon: Tag },
-                { id: 'financeiro', label: 'Faturação & Subscrição', icon: Landmark },
-                { id: 'loja', label: 'Website & QR Code 👑', icon: Globe },
-                { id: 'configuracoes', label: 'Configurações', icon: Settings },
-                { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone, highlight: true }
+                { id: 'agenda', label: 'Agenda', icon: Calendar },
+                { id: 'reservas', label: 'Reservas', icon: CheckSquare },
+                { id: 'clientes', label: 'Clientes', icon: UsersRound },
+                { id: 'equipa', label: 'Equipa', icon: Users },
+                { id: 'servicos', label: 'Serviços', icon: Scissors },
+                { id: 'campanhas', label: 'Promoções', icon: Tag },
+                { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
+                { id: 'configuracoes', label: 'Configurações', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -2185,9 +2180,7 @@ export default function Dashboard() {
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                       isActive 
                         ? 'bg-purple-650 text-white shadow shadow-purple-950/50' 
-                        : tab.highlight 
-                        ? 'text-amber-400 hover:bg-[#110724]/60 hover:text-amber-300 border border-transparent hover:border-amber-950'
-                        : 'text-slate-400 hover:bg-[#110724]/60 hover:text-white'
+                        : 'text-slate-500 hover:bg-slate-100/80 hover:text-purple-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -2195,7 +2188,7 @@ export default function Dashboard() {
                       <span>{tab.label}</span>
                     </div>
                     {tab.id === 'agenda' && bookings.filter(b => b.booking_status === 'pending').length > 0 && (
-                      <span className="bg-amber-500 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
+                      <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
                         {bookings.filter(b => b.booking_status === 'pending').length}
                       </span>
                     )}
@@ -2205,14 +2198,14 @@ export default function Dashboard() {
             </nav>
 
             {/* Sidebar Bottom Profile */}
-            <div className="pt-4 border-t border-white/5 mt-4 shrink-0 col-span-1">
+            <div className="pt-4 border-t border-slate-100 mt-4 shrink-0 col-span-1">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-purple-950/50 flex items-center justify-center font-mono font-bold text-purple-300 text-xs border border-purple-500/20 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center font-mono font-bold text-purple-700 text-xs border border-purple-100 shrink-0">
                   {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
                 </div>
                 <div className="overflow-hidden">
-                  <span className="block text-xs font-bold truncate text-white">{profile?.full_name || 'Profissional'}</span>
-                  <span className="block text-[9px] text-slate-500 font-mono truncate">{user?.email}</span>
+                  <span className="block text-xs font-bold truncate text-slate-800">{profile?.full_name || 'Profissional'}</span>
+                  <span className="block text-[9px] text-slate-400 font-mono truncate">{user?.email}</span>
                 </div>
               </div>
               <button 
@@ -2221,10 +2214,10 @@ export default function Dashboard() {
                   await signOut(); 
                   navigate('/'); 
                 }}
-                className="w-full py-2 bg-purple-950/11 hover:bg-purple-950/20 hover:text-purple-400 border border-white/5 hover:border-purple-500/25 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2 bg-slate-50 hover:bg-slate-100 hover:text-slate-800 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Sair do Terminal</span>
+                <span>Terminar Sessão</span>
               </button>
             </div>
           </div>
@@ -2232,43 +2225,38 @@ export default function Dashboard() {
       )}
 
       {/* Side Rail Panel */}
-      <aside className="hidden lg:flex w-64 border-r border-[#1f1635] bg-[#0c0617] flex-col justify-between shrink-0 h-full">
+      <aside className="hidden lg:flex w-64 border-r border-slate-200 bg-white flex-col justify-between shrink-0 h-full">
         <div>
           {/* Logo Brand Brand */}
-          <div className="h-16 border-b border-white/5 flex items-center px-6 gap-3">
+          <div className="h-16 border-b border-slate-100 flex items-center px-6 gap-3">
             <GlamzoLogo size={32} glow={true} />
             <div>
-              <span className="font-extrabold text-white tracking-widest block leading-none text-xs">GLAMZO LOGO</span>
-              <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Terminal de Parceiro</span>
+              <span className="font-extrabold text-slate-800 tracking-widest block leading-none text-xs">GLAMZO</span>
+              <span className="text-[9px] font-mono uppercase font-bold text-purple-650 tracking-wider">Painel do Parceiro</span>
             </div>
           </div>
 
           {/* Quick Stats overview inside SideRail */}
-          <div className="p-4 mx-4 my-2.5 bg-purple-950/20 border border-purple-500/10 rounded-xl">
-            <span className="text-[9px] font-mono uppercase tracking-widest block text-slate-550 font-bold mb-1.5">Estabelecimento</span>
-            <span className="text-xs font-bold text-purple-300 block truncate">{business?.name || 'A sincronizar...'}</span>
+          <div className="p-4 mx-4 my-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+            <span className="text-[9px] font-mono uppercase tracking-widest block text-slate-400 font-bold mb-1.5">Estabelecimento</span>
+            <span className="text-xs font-bold text-slate-800 block truncate">{business?.name || 'A sincronizar...'}</span>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] text-slate-400 font-semibold uppercase font-mono text-emerald-400">Terminal Activo (LAN)</span>
+              <span className="text-[10px] text-emerald-600 font-semibold uppercase font-mono">Ligado / Sincronizado</span>
             </div>
           </div>
 
           {/* Sidebar Tabs Selectors */}
-          <nav className="px-3 py-2 space-y-1 overflow-y-auto max-h-[calc(100vh-270px)] scrollbar-thin scrollbar-thumb-[#1f1635]" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <nav className="px-3 py-2 space-y-1 overflow-y-auto max-h-[calc(100vh-270px)]" style={{ WebkitOverflowScrolling: 'touch' }}>
             {[
-              { id: 'agenda', label: 'Agenda Diária', icon: Calendar },
-              { id: 'assistente', label: 'Assistente Glamzo 🪄', icon: Sparkles, highlight: true },
-              { id: 'reservas', label: 'Reservas Totais', icon: CheckSquare },
-              { id: 'servicos', label: 'Catálogo de Serviços', icon: Scissors },
-              { id: 'equipa', label: 'Escalas de Equipa', icon: Users },
-              { id: 'horarios', label: 'Horas de Serviço', icon: Clock },
-              { id: 'clientes', label: 'Registo de Clientes', icon: UsersRound },
-              { id: 'analytics', label: 'Relatórios & Gráficos', icon: BarChart },
-              { id: 'campanhas', label: 'Marketing Campanhas', icon: Tag },
-              { id: 'financeiro', label: 'Faturação & Subscrição', icon: Landmark },
-              { id: 'loja', label: 'Website & QR Code 👑', icon: Globe },
-              { id: 'configuracoes', label: 'Configurações', icon: Settings },
-              { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone, highlight: true }
+              { id: 'agenda', label: 'Agenda', icon: Calendar },
+              { id: 'reservas', label: 'Reservas', icon: CheckSquare },
+              { id: 'clientes', label: 'Clientes', icon: UsersRound },
+              { id: 'equipa', label: 'Equipa', icon: Users },
+              { id: 'servicos', label: 'Serviços', icon: Scissors },
+              { id: 'campanhas', label: 'Promoções', icon: Tag },
+              { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
+              { id: 'configuracoes', label: 'Configurações', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -2279,9 +2267,7 @@ export default function Dashboard() {
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-purple-650 text-white shadow shadow-purple-950/50' 
-                      : tab.highlight 
-                      ? 'text-amber-400 hover:bg-[#110724]/60 hover:text-amber-300 border border-transparent hover:border-amber-950'
-                      : 'text-slate-400 hover:bg-[#110724]/60 hover:text-white'
+                      : 'text-slate-600 hover:bg-slate-100/85 hover:text-purple-600'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -2289,7 +2275,7 @@ export default function Dashboard() {
                     <span>{tab.label}</span>
                   </div>
                   {tab.id === 'agenda' && bookings.filter(b => b.booking_status === 'pending').length > 0 && (
-                    <span className="bg-amber-500 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
+                    <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
                       {bookings.filter(b => b.booking_status === 'pending').length}
                     </span>
                   )}
@@ -2300,22 +2286,22 @@ export default function Dashboard() {
         </div>
 
         {/* User Card Profile & SignOut inside sidebar bottom */}
-        <div className="p-4 border-t border-white/5 bg-[#0a0514]">
+        <div className="p-4 border-t border-slate-100 bg-slate-50">
           <div className="flex items-center gap-2.5 mb-3.5">
-            <div className="w-8 h-8 rounded-full bg-purple-950/50 flex items-center justify-center font-mono font-bold text-purple-300 text-xs border border-purple-500/20">
+            <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center font-mono font-bold text-purple-700 text-xs border border-purple-100">
               {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
             </div>
             <div className="overflow-hidden">
-              <span className="block text-xs font-bold truncate text-white">{profile?.full_name || 'Profissional'}</span>
-              <span className="block text-[10px] text-slate-500 font-mono truncate">{user?.email}</span>
+              <span className="block text-xs font-bold truncate text-slate-800">{profile?.full_name || 'Profissional'}</span>
+              <span className="block text-[10px] text-slate-400 font-mono truncate">{user?.email}</span>
             </div>
           </div>
           <button 
             onClick={async () => { await signOut(); navigate('/'); }}
-            className="w-full py-2 bg-purple-950/10 hover:bg-purple-950/20 hover:text-purple-400 border border-white/5 hover:border-purple-500/25 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-2 bg-slate-150 hover:bg-slate-200 hover:text-slate-800 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Sair do Terminal</span>
+            <span>Terminar Sessão</span>
           </button>
         </div>
       </aside>
@@ -2483,19 +2469,6 @@ export default function Dashboard() {
           ) : (
             <>
               {/* ==================================================== */}
-              {/* VIEW 0: ASSISTENTE GLAMZO & CENTRAL IA               */}
-              {/* ==================================================== */}
-              {activeTab === 'assistente' && (
-                <DashboardAssistant
-                  business={business}
-                  bookings={bookings}
-                  services={services}
-                  hours={hours}
-                  staff={staff}
-                />
-              )}
-
-              {/* ==================================================== */}
               {/* VIEW 1: AGENDA DIÁRIA (PREMIUM TABLET/TERMINAL GRID) */}
               {/* ==================================================== */}
               {activeTab === 'agenda' && (
@@ -2558,89 +2531,146 @@ export default function Dashboard() {
                           </span>
 
                           {/* Timeline Slots */}
-                          <div className="space-y-4 divide-y divide-slate-100">
+                          <div className="space-y-4 divide-y divide-slate-100/80">
                             {['09:00', '10:30', '12:00', '14:30', '16:00', '17:30', '19:00'].map((hourSlot) => {
                               // Find any active booking corresponding roughly to slot
                               const activeBookingsAtHour = bookings.filter(b => b.start_time.startsWith(hourSlot.split(':')[0]));
 
                               return (
-                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-4 first:pt-0">
-                                  <span className="w-12 text-xs font-mono font-extrabold text-slate-450 text-right shrink-0 mt-3">{hourSlot}</span>
-                                  <div className="flex-1 min-h-[50px] space-y-2">
-                                    {activeBookingsAtHour.length > 0 ? (
-                                      activeBookingsAtHour.map((bk) => (
-                                        <div 
-                                          key={bk.id} 
-                                          className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs transition-colors shadow-sm ${
-                                            bk.notes?.startsWith('Bloqueio Agenda:')
-                                              ? 'bg-rose-50/50 border-rose-100 text-rose-800'
-                                              : bk.booking_status === 'confirmed'
-                                              ? 'bg-purple-50 border-purple-100/80 text-purple-900'
-                                              : bk.booking_status === 'completed'
-                                              ? 'bg-slate-50/80 border-slate-150 text-slate-500'
-                                              : 'bg-amber-50/50 border-amber-150 text-amber-900'
-                                          }`}
-                                        >
-                                          <div>
-                                            <div className="font-extrabold text-slate-800 text-xs sm:text-sm">
-                                              {getBookingDisplayName(bk)}
-                                            </div>
-                                            {!bk.notes?.startsWith('Bloqueio Agenda:') ? (
-                                              <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] font-semibold text-slate-500 leading-normal">
-                                                <span>💈 {bk.service?.name || 'Serviço Premium'}</span>
-                                                <span>•</span>
-                                                <span>👥 {bk.staff?.full_name || 'Profissional'}</span>
-                                                <span>•</span>
-                                                <span>⏱ {bk.service?.duration_minutes || '0'} min</span>
-                                                <span>•</span>
-                                                <span className="font-extrabold text-slate-800">{bk.total_price}€</span>
-                                                <span>•</span>
-                                                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-slate-100 rounded text-slate-650 font-bold border border-slate-200/55">
-                                                  💳 {bk.payment_method === 'stripe_online' ? 'Pagamento Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
-                                                </span>
-                                              </div>
-                                            ) : (
-                                              <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] font-bold text-rose-700/90 font-mono">
-                                                <span>🛑 Horário Indisponível / Reservado pelo Proprietário</span>
-                                                <span>•</span>
-                                                <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
-                                              </div>
-                                            )}
-                                          </div>
+                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row">
+                                  {/* Left Hour Indicator */}
+                                  <div className="w-14 shrink-0 flex flex-col items-end pt-1">
+                                    <span className="text-xs font-mono font-bold text-slate-800 tracking-tight">{hourSlot}</span>
+                                    <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Slot</span>
+                                  </div>
 
-                                          <div className="flex items-center gap-2 self-end sm:self-auto">
-                                            {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && (
-                                              <>
-                                                <button 
-                                                  onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
-                                                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 font-extrabold text-white rounded-lg text-[10px] font-mono cursor-pointer uppercase tracking-tight shadow-sm"
-                                                >
-                                                  Concluir
-                                                </button>
-                                                <button 
-                                                  onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-                                                  className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-[10px] font-mono cursor-pointer uppercase"
-                                                >
-                                                  Cancelar
-                                                </button>
-                                              </>
-                                            )}
-                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase ${
-                                              bk.booking_status === 'completed' 
-                                                ? 'bg-slate-100 text-slate-500 border border-slate-200/60' 
-                                                : bk.booking_status === 'cancelled'
-                                                ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                                                : 'bg-purple-100 text-purple-705 border border-purple-200 text-purple-700'
-                                            }`}>
-                                              {bk.booking_status === 'completed' ? 'concluída' : bk.booking_status}
-                                            </span>
+                                  {/* Right Content */}
+                                  <div className="flex-1 min-h-[64px] space-y-3">
+                                    {activeBookingsAtHour.length > 0 ? (
+                                      activeBookingsAtHour.map((bk) => {
+                                        const isBlock = bk.notes?.startsWith('Bloqueio Agenda:');
+                                        const status = bk.booking_status;
+                                        
+                                        // Dynamic Left Accent Color Bar for Status
+                                        let borderColor = 'border-purple-500';
+                                        let leftBarColor = 'bg-purple-600';
+                                        let bgClass = 'bg-white';
+                                        
+                                        if (isBlock) {
+                                          borderColor = 'border-rose-400';
+                                          leftBarColor = 'bg-rose-500';
+                                          bgClass = 'bg-rose-50/20';
+                                        } else if (status === 'completed') {
+                                          borderColor = 'border-slate-300';
+                                          leftBarColor = 'bg-slate-450';
+                                          bgClass = 'bg-slate-50/40';
+                                        } else if (status === 'pending') {
+                                          borderColor = 'border-amber-400';
+                                          leftBarColor = 'bg-amber-500';
+                                          bgClass = 'bg-amber-50/30';
+                                        }
+
+                                        return (
+                                          <div 
+                                            key={bk.id} 
+                                            className={`relative overflow-hidden p-5 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-all hover:border-slate-200 hover:shadow-md ${bgClass}`}
+                                          >
+                                            {/* Status accent left bar */}
+                                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${leftBarColor}`} />
+
+                                            <div className="pl-2">
+                                              <div className="flex items-center gap-2">
+                                                <h4 className="font-extrabold text-slate-800 text-sm tracking-tight">
+                                                  {getBookingDisplayName(bk)}
+                                                </h4>
+                                                {!isBlock && (
+                                                  <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-purple-50 text-purple-750 border border-purple-100">
+                                                    Atendimento
+                                                  </span>
+                                                )}
+                                              </div>
+                                              
+                                              {!isBlock ? (
+                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 leading-none">
+                                                  <span className="flex items-center gap-1">
+                                                    <span className="text-purple-600">💈</span> {bk.service?.name || 'Serviço'}
+                                                  </span>
+                                                  <span className="text-slate-300">•</span>
+                                                  <span className="flex items-center gap-1">
+                                                    <span className="text-purple-600 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
+                                                  </span>
+                                                  <span className="text-slate-300">•</span>
+                                                  <span className="font-mono bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-600">
+                                                    ⏱ {bk.service?.duration_minutes || '0'} min
+                                                  </span>
+                                                  <span className="text-slate-300">•</span>
+                                                  <span className="font-bold text-slate-800 text-xs">
+                                                    {bk.total_price}€
+                                                  </span>
+                                                  <span className="text-slate-300">•</span>
+                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-650">
+                                                    💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
+                                                  </span>
+                                                </div>
+                                              ) : (
+                                                <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-semibold text-rose-700 font-mono">
+                                                  <span>🛑 Slot Bloqueado (Intervalo / Indisponível)</span>
+                                                  <span>•</span>
+                                                  <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
+                                                </div>
+                                              )}
+                                            </div>
+
+                                            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 pl-2">
+                                              {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && (
+                                                <div className="flex items-center gap-1.5">
+                                                  <button 
+                                                    onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
+                                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
+                                                  >
+                                                    Concluir
+                                                  </button>
+                                                  <button 
+                                                    onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
+                                                    className="px-3.5 py-2 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-650 hover:text-rose-700 rounded-xl text-[10px] font-mono cursor-pointer uppercase transition-all"
+                                                  >
+                                                    Mover/Cancelar
+                                                  </button>
+                                                </div>
+                                              )}
+                                              <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider ${
+                                                bk.booking_status === 'completed' 
+                                                  ? 'bg-slate-100 text-slate-500 border border-slate-200/60' 
+                                                  : bk.booking_status === 'cancelled'
+                                                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                              }`}>
+                                                {bk.booking_status === 'completed' ? 'concluída' : bk.booking_status}
+                                              </span>
+                                            </div>
                                           </div>
-                                        </div>
-                                      ))
+                                        );
+                                      })
                                     ) : (
-                                      <div className="h-10 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-400 text-[10px] font-mono">
-                                        Roster livre
-                                      </div>
+                                      /* Quick Book / Block Event placeholder button: Fresha style */
+                                      <button
+                                        onClick={() => {
+                                          setManualStartTime(hourSlot);
+                                          setManualBookingType('booking');
+                                          setIsManualBookingOpen(true);
+                                          if (services.length > 0) setManualServiceId(services[0].id);
+                                          if (staff.length > 0) setManualStaffId(staff[0].id);
+                                        }}
+                                        className="w-full h-14 bg-slate-50/50 hover:bg-purple-50/20 border border-dashed border-slate-200 hover:border-purple-300 text-slate-400 hover:text-purple-650 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-lg font-bold font-mono opacity-60 group-hover:opacity-100 transition-opacity">+</span>
+                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase group-hover:translate-x-1 transition-transform">Disponível</span>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400 group-hover:text-purple-600 bg-white border border-slate-150 px-2 py-1 rounded-lg">
+                                          Reservar {hourSlot}
+                                        </span>
+                                      </button>
                                     )}
                                   </div>
                                 </div>

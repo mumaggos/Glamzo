@@ -63,7 +63,6 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     const detectContextBusiness = async () => {
       const path = window.location.pathname;
-      // Slugs are usually after /business/ or /store/ or at root /:slug for premium short domains
       const parts = path.split('/').filter(Boolean);
       let slug = '';
 
@@ -107,7 +106,6 @@ export default function GlamzoMessenger() {
     try {
       const data = await fetchChatSessionsForCustomer(user.id);
       setSessions(data);
-      // Mock notifications/unread calculation
       setUnreads(data.length > 0 ? 1 : 0);
     } catch (_) {}
   };
@@ -200,7 +198,7 @@ export default function GlamzoMessenger() {
     setChatMessages(prev => [...prev, msg]);
     setIsAiAnswering(true);
 
-    // Simulate AI / salon auto-answer delay
+    // Simulate auto-answer delay
     setTimeout(async () => {
       const updatedMsgs = await fetchMessagesForSession(selectedSession.id);
       setChatMessages(updatedMsgs);
@@ -227,7 +225,7 @@ export default function GlamzoMessenger() {
       {!isOpen ? (
         <button
           onClick={() => { setIsOpen(true); playPingChime(); }}
-          className="relative w-12 h-12 md:w-14 md:h-14 bg-gradient-to-tr from-purple-600 to-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-200 cursor-pointer border border-white/20"
+          className="relative w-12 h-12 md:w-14 md:h-14 bg-gradient-to-tr from-purple-600 to-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 hover:shadow-purple-500/35 hover:scale-105 transition-all duration-200 cursor-pointer border border-white/20"
           id="btn-open-messenger"
           title="Ajuda & Suporte Glamzo"
         >
@@ -241,34 +239,34 @@ export default function GlamzoMessenger() {
       ) : (
         <div 
           id="messenger-flyout" 
-          className="w-[340px] md:w-[380px] h-[520px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100"
+          className="w-[340px] md:w-[380px] h-[520px] bg-white border border-slate-200 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-800"
         >
           {/* Header */}
-          <header className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+          <header className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <GlamzoLogo size={24} glow={true} />
               <div>
-                <h4 className="font-extrabold text-sm text-white">Central de Apoio</h4>
+                <h4 className="font-extrabold text-sm text-slate-800">Suporte Glamzo</h4>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="text-[10px] font-mono text-slate-400">Cliente Glamzo</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-mono text-slate-500">Apoio a Clientes</span>
                 </div>
               </div>
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1.5 hover:bg-slate-850 text-slate-400 hover:text-white rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-850 rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </header>
 
           {/* Clean Navigation */}
-          <nav className="flex bg-slate-950 p-1 text-[11px] font-bold font-mono">
+          <nav className="flex bg-slate-50 p-1 text-[11px] font-bold font-mono border-b border-slate-100">
             {[
-              { id: 'faq', label: 'Dúvidas FAQs', icon: HelpCircle },
-              { id: 'stores', label: 'Contacto Loja', icon: Info },
-              { id: 'chats', label: 'Minhas Conversas', icon: MessageSquare },
+              { id: 'faq', label: 'Perguntas FAQs', icon: HelpCircle },
+              { id: 'stores', label: 'Contacto Salão', icon: Info },
+              { id: 'chats', label: 'Conversas', icon: MessageSquare },
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -276,8 +274,8 @@ export default function GlamzoMessenger() {
                 <button
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id as any); setSelectedSession(null); }}
-                  className={`flex-1 flex flex-col items-center py-2.5 gap-1 rounded-xl transition-colors cursor-pointer ${
-                    isActive ? 'bg-slate-900 text-purple-400' : 'text-slate-500 hover:text-slate-300'
+                  className={`flex-1 flex flex-col items-center py-2 gap-1 rounded-xl transition-all cursor-pointer ${
+                    isActive ? 'bg-white text-purple-600 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -288,51 +286,51 @@ export default function GlamzoMessenger() {
           </nav>
 
           {/* Core Body Container */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col bg-slate-900/40 relative">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col bg-white relative">
             
             {/* View A: HELP & DYNAMIC FAQS */}
             {activeTab === 'faq' && !selectedSession && (
               <div className="space-y-4 flex flex-col h-full">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
                   <input 
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Escreva a sua dúvida..."
-                    className="w-full bg-slate-950/60 border border-slate-800 text-slate-200 pl-10 pr-4 py-2.5 rounded-2xl text-xs placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
+                    placeholder="Pesquisar ajuda..."
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-2.5 rounded-2xl text-xs placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-colors"
                   />
                 </div>
 
                 <div className="flex-1 space-y-2">
-                  <span className="text-[10px] font-bold font-mono text-slate-500 uppercase tracking-widest block">Perguntas Frequentes</span>
+                  <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Dúvidas Frequentes</span>
                   {filteredFaqs.length > 0 ? (
                     filteredFaqs.map((faq, idx) => (
-                      <div key={idx} className="bg-slate-950/40 border border-slate-850 rounded-2xl overflow-hidden transition-all">
+                      <div key={idx} className="bg-slate-50/50 border border-slate-150 rounded-2xl overflow-hidden transition-all">
                         <button
                           onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-                          className="w-full p-3.5 text-left text-xs font-bold text-slate-250 hover:bg-slate-950/80 flex items-center justify-between transition-colors gap-3"
+                          className="w-full p-3.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-105 flex items-center justify-between transition-colors gap-3"
                         >
                           <span>{faq.q}</span>
-                          <span className="text-purple-400 text-sm">{expandedFaq === idx ? '−' : '+'}</span>
+                          <span className="text-purple-600 font-bold text-sm">{expandedFaq === idx ? '−' : '+'}</span>
                         </button>
                         {expandedFaq === idx && (
-                          <div className="px-3.5 pb-4 text-[11px] text-slate-400 leading-relaxed border-t border-slate-900 pt-2 bg-slate-950/10">
+                          <div className="px-3.5 pb-4 text-[11px] text-slate-500 leading-relaxed border-t border-slate-100 pt-2 bg-slate-50/20">
                             {faq.a}
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-slate-500 text-xs">
+                    <div className="text-center py-8 text-slate-400 text-xs">
                       Nenhuma dúvida encontrada para "{searchQuery}".
                     </div>
                   )}
                 </div>
 
-                <div className="p-3 bg-purple-950/20 border border-purple-500/10 rounded-2xl mt-auto">
-                  <p className="text-[10px] text-purple-300 leading-normal font-medium">
-                    💡 <strong>Dica Premium:</strong> Se pretender abrir uma disputa ou reclamação técnica oficial sobre um pagamento, aceda à secção de Suporte em <strong>Minha Conta</strong>.
+                <div className="p-3 bg-purple-50 border border-purple-100 rounded-2xl mt-auto">
+                  <p className="text-[10px] text-purple-700 leading-normal font-semibold">
+                    💡 <strong>Dica:</strong> Se pretender abrir um pedido de intervenção ou suporte técnico oficial sobre uma reserva, aceda a <strong>Minha Conta</strong> e utilize o canal de Apoio.
                   </p>
                 </div>
               </div>
@@ -343,49 +341,49 @@ export default function GlamzoMessenger() {
               <div className="flex-1 flex flex-col space-y-4">
                 {currentBusiness ? (
                   <div className="space-y-4">
-                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Loja Em Destaque</span>
+                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Estabelecimento</span>
                     
-                    <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3.5">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-650 flex items-center justify-center font-mono font-bold text-white shadow-md">
+                        <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center font-mono font-bold text-white shadow-md">
                           {currentBusiness.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <h5 className="font-extrabold text-sm text-white">{currentBusiness.name}</h5>
+                          <h5 className="font-extrabold text-sm text-slate-800">{currentBusiness.name}</h5>
                           <span className="text-[10px] text-slate-500 font-medium">{currentBusiness.city}</span>
                         </div>
                       </div>
 
-                      <div className="space-y-1.5 border-t border-slate-900 pt-3 text-[11px]">
+                      <div className="space-y-1.5 border-t border-slate-150 pt-3 text-[11px]">
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Telefone:</span>
-                          <span className="font-mono text-slate-300">{currentBusiness.phone || 'Sem telefone'}</span>
+                          <span className="text-slate-500 font-semibold">Telefone:</span>
+                          <span className="font-mono text-slate-700 font-bold">{currentBusiness.phone || 'Sem telefone'}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Email:</span>
-                          <span className="text-slate-300 truncate max-w-[180px]">{currentBusiness.email || 'Sem email'}</span>
+                          <span className="text-slate-500 font-semibold">Email:</span>
+                          <span className="text-slate-750 truncate max-w-[180px] font-medium">{currentBusiness.email || 'Sem email'}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Distrito:</span>
-                          <span className="text-slate-300">{currentBusiness.district || 'N/A'}</span>
+                          <span className="text-slate-500 font-semibold">Distrito:</span>
+                          <span className="text-slate-700 font-medium">{currentBusiness.district || 'N/A'}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-2 pt-2">
                         {currentBusiness.phone && (
                           <a 
-                            href={`https://wa.me/${currentBusiness.phone.replace(/\D/g, '')}?text=Olá! Gostaria de esclarecer uma dúvida sobre os serviços do ${currentBusiness.name}.`}
+                            href={`https://wa.me/${currentBusiness.phone.replace(/\D/g, '')}?text=Olá! Gostaria de esclarecer uma dúvida com o ${currentBusiness.name}.`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-950/30"
+                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
                           >
                             <MessageCircle className="w-4 h-4 fill-white text-emerald-600" />
-                            <span>Falar no WhatsApp da Loja</span>
+                            <span>Falar no WhatsApp</span>
                           </a>
                         )}
                         <button
                           onClick={() => startNewChatWithBusiness(currentBusiness)}
-                          className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md"
+                          className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
                           <span>Enviar Mensagem Interna</span>
@@ -395,21 +393,21 @@ export default function GlamzoMessenger() {
 
                     <a 
                       href={`/business/${currentBusiness.slug}`}
-                      className="w-full py-3 bg-slate-950/30 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-2 transition-all mt-2"
+                      className="w-full py-3 bg-slate-50 border border-slate-250 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all mt-2"
                     >
-                      <span>Aceder à página do Estabelecimento</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Aceder à página do Salão</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
                     </a>
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                    <div className="w-12 h-12 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-500">
+                    <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400">
                       <Info className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h6 className="font-extrabold text-xs text-white">Nenhum salão selecionado</h6>
+                      <h6 className="font-extrabold text-xs text-slate-700">Nenhum salão selecionado</h6>
                       <p className="text-[11px] text-slate-500 max-w-[200px]">
-                        Navegue pelas páginas de salão ou use a área "Escrever aos parceiros" nas suas mensagens.
+                        Navegue pelos salões no marketplace para interagir ou abrir canais de chat.
                       </p>
                     </div>
                   </div>
@@ -431,26 +429,26 @@ export default function GlamzoMessenger() {
                           <button
                             key={sess.id}
                             onClick={() => handleSelectSession(sess)}
-                            className="w-full p-3 bg-slate-950/60 border border-slate-850 hover:border-slate-800 rounded-2xl text-left flex items-center justify-between transition-colors cursor-pointer group"
+                            className="w-full p-3 bg-slate-50 border border-slate-150 hover:bg-slate-100 rounded-2xl text-left flex items-center justify-between transition-colors cursor-pointer group"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-[#2e1065] text-purple-300 font-mono font-bold text-xs flex items-center justify-center border border-purple-950">
+                              <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 font-mono font-bold text-xs flex items-center justify-center border border-purple-100">
                                 {sess.business_name.substring(0, 2).toUpperCase()}
                               </div>
                               <div className="overflow-hidden">
-                                <span className="block font-bold text-xs text-slate-200 group-hover:text-purple-400 transition-colors uppercase tracking-tight truncate">{sess.business_name}</span>
-                                <span className="block text-[10px] text-slate-500 truncate mt-0.5 font-medium">{sess.last_message || 'Início da conversa'}</span>
+                                <span className="block font-bold text-xs text-slate-700 group-hover:text-purple-600 transition-colors uppercase tracking-tight truncate">{sess.business_name}</span>
+                                <span className="block text-[10px] text-slate-400 truncate mt-0.5 font-medium">{sess.last_message || 'Início da conversa'}</span>
                               </div>
                             </div>
-                            <span className="text-[9px] font-mono text-slate-600 block shrink-0">
+                            <span className="text-[9px] font-mono text-slate-500 block shrink-0">
                               {sess.updated_at ? new Date(sess.updated_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}
                             </span>
                           </button>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12 text-slate-600 text-xs flex-1 flex flex-col items-center justify-center space-y-2">
-                        <MessageSquare className="w-8 h-8 text-slate-800" />
+                      <div className="text-center py-12 text-slate-400 text-xs flex-1 flex flex-col items-center justify-center space-y-2">
+                        <MessageSquare className="w-8 h-8 text-slate-300" />
                         <p className="max-w-[220px] text-[11px] leading-relaxed">
                           Ainda não iniciou nenhuma conversa. Escolha um estabelecimento para falar em direto.
                         </p>
@@ -462,16 +460,16 @@ export default function GlamzoMessenger() {
                   // 2. Active Session Messaging Room
                   <div className="flex-1 flex flex-col overflow-hidden h-full">
                     {/* Inner room header */}
-                    <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-850 text-xs">
+                    <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100 text-xs">
                       <button 
                         onClick={() => setSelectedSession(null)}
-                        className="p-1 px-1.8 bg-slate-950/40 hover:bg-slate-950 border border-slate-850 rounded-lg text-slate-400 hover:text-white"
+                        className="p-1 px-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
                       </button>
                       <div className="overflow-hidden">
-                        <span className="block font-black text-white truncate text-[11px] uppercase tracking-tight">{selectedSession.business_name}</span>
-                        <span className="block text-[9px] text-indigo-400 font-bold tracking-widest font-mono">CLIENT MESSAGE CHANNEL</span>
+                        <span className="block font-black text-slate-800 truncate text-[11px] uppercase tracking-tight">{selectedSession.business_name}</span>
+                        <span className="block text-[9px] text-purple-600 font-bold tracking-widest font-mono">CANAL DE MENSAGENS</span>
                       </div>
                     </div>
 
@@ -486,18 +484,18 @@ export default function GlamzoMessenger() {
                               key={msg.id}
                               className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${isMe ? 'ml-auto' : 'mr-auto'}`}
                             >
-                              <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-600 mb-0.5">
+                              <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-400 mb-0.5">
                                 <span>{msg.sender_name}</span>
                                 <span className="opacity-60">•</span>
                                 <span>{new Date(msg.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                               <div 
-                                className={`p-3 rounded-2xl text-[11px] leading-relaxed font-medium ${
+                                className={`p-3 rounded-2xl text-[11px] leading-relaxed font-semibold ${
                                   isMe 
                                     ? 'bg-purple-650 text-white rounded-tr-none' 
                                     : isAi
-                                    ? 'bg-indigo-950/60 text-slate-200 border border-indigo-900/40 rounded-tl-none'
-                                    : 'bg-slate-950/40 text-slate-300 border border-slate-850 rounded-tl-none'
+                                    ? 'bg-purple-50 text-purple-800 border border-purple-100 rounded-tl-none'
+                                    : 'bg-slate-100 text-slate-700 border border-slate-150 rounded-tl-none'
                                 }`}
                               >
                                 {msg.message}
@@ -509,15 +507,15 @@ export default function GlamzoMessenger() {
                           );
                         })
                       ) : (
-                        <div className="text-center py-6 text-[10px] text-slate-600 font-mono italic">
+                        <div className="text-center py-6 text-[10px] text-slate-400 font-mono italic">
                           Começo da conversa privada e segura...
                         </div>
                       )}
                       
                       {isAiAnswering && (
-                        <div className="flex items-center gap-2 max-w-[80%] bg-slate-950/20 p-2.5 rounded-2xl border border-slate-850 font-mono text-[10px] text-purple-400 animate-pulse">
+                        <div className="flex items-center gap-2 max-w-[80%] bg-purple-50 p-2.5 rounded-2xl border border-purple-100 font-mono text-[10px] text-purple-650 animate-pulse">
                           <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
-                          <span>Assistente IA do Salão está a formular resposta...</span>
+                          <span>A responder...</span>
                         </div>
                       )}
                       
@@ -525,18 +523,18 @@ export default function GlamzoMessenger() {
                     </div>
 
                     {/* Footer text form inputs */}
-                    <form onSubmit={handleSendMessage} className="mt-3.5 pt-3 border-t border-slate-850 flex gap-2">
+                    <form onSubmit={handleSendMessage} className="mt-3.5 pt-3 border-t border-slate-150 flex gap-2">
                       <input 
                         type="text"
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder="Escreva ao estabelecimento..."
-                        className="flex-1 bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 placeholder:text-slate-600 text-slate-300"
+                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 placeholder:text-slate-400"
                       />
                       <button
                         type="submit"
                         disabled={isAiAnswering || !chatInput.trim()}
-                        className="bg-purple-650 hover:bg-purple-550 text-white p-2.5 px-3 rounded-xl disabled:bg-slate-850 disabled:text-slate-500 cursor-pointer transition-colors"
+                        className="bg-purple-650 hover:bg-purple-700 text-white p-2.5 px-3 rounded-xl disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer transition-colors"
                       >
                         <Send className="w-4 h-4" />
                       </button>
