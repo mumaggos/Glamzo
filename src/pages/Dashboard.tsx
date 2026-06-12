@@ -2189,11 +2189,15 @@ export default function Dashboard() {
                       <Icon className="w-4 h-4 shrink-0" />
                       <span>{tab.label}</span>
                     </div>
-                    {tab.id === 'agenda' && bookings.filter(b => b.booking_status === 'pending').length > 0 && (
-                      <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
-                        {bookings.filter(b => b.booking_status === 'pending').length}
-                      </span>
-                    )}
+                    {tab.id === 'agenda' && (() => {
+                      const todayStr = new Date().toISOString().split('T')[0];
+                      const bookingsToday = bookings.filter(b => b.booking_date === todayStr);
+                      return bookingsToday.length > 0 ? (
+                        <span className="bg-purple-600 border border-purple-400/30 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
+                          {bookingsToday.length}
+                        </span>
+                      ) : null;
+                    })()}
                   </button>
                 );
               })}
@@ -2269,18 +2273,22 @@ export default function Dashboard() {
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-purple-600 text-white shadow shadow-purple-900/40' 
-                      : 'text-slate-450 hover:bg-slate-900/60 hover:text-purple-405 hover:text-purple-400'
+                      : 'text-slate-450 hover:bg-slate-900/60 hover:text-purple-400 text-slate-400'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{tab.label}</span>
                   </div>
-                  {tab.id === 'agenda' && bookings.filter(b => b.booking_status === 'pending').length > 0 && (
-                    <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
-                      {bookings.filter(b => b.booking_status === 'pending').length}
-                    </span>
-                  )}
+                  {tab.id === 'agenda' && (() => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const bookingsToday = bookings.filter(b => b.booking_date === todayStr);
+                    return bookingsToday.length > 0 ? (
+                      <span className="bg-purple-600 border border-purple-400/30 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">
+                        {bookingsToday.length}
+                      </span>
+                    ) : null;
+                  })()}
                 </button>
               );
             })}
@@ -2775,10 +2783,17 @@ export default function Dashboard() {
                                 const bookingsThisDay = bookings.filter(b => b.booking_date === dateStr);
 
                                 return (
-                                  <div key={dayLabel} className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left">
-                                    <div className="border-b border-slate-800 pb-1.5 text-center">
+                                  <div 
+                                    key={dayLabel} 
+                                    onClick={() => {
+                                      setSelectedAgendaDate(dateStr);
+                                      setAgendaMode('today');
+                                    }}
+                                    className="bg-slate-900/80 hover:bg-slate-850/80 hover:border-purple-500/50 cursor-pointer transition-all border border-slate-800 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left group"
+                                  >
+                                    <div className="border-b border-slate-800 pb-1.5 text-center group-hover:border-purple-900/40 transition-colors">
                                       <span className="block text-[11px] font-extrabold text-purple-400 uppercase">{dayLabel}</span>
-                                      <span className="block text-[10px] font-mono font-bold text-slate-400">{targetDay.getDate()}</span>
+                                      <span className="block text-[10px] font-mono font-bold text-slate-200 group-hover:text-white transition-colors">{targetDay.getDate()}</span>
                                     </div>
 
                                     <div className="space-y-2">
@@ -2853,11 +2868,15 @@ export default function Dashboard() {
                                 return (
                                   <div 
                                     key={cellIdx} 
-                                    className={`min-h-[70px] bg-slate-900/60 p-2 border rounded-xl flex flex-col justify-between transition-all ${
-                                      isSameMonth ? 'opacity-100 border-slate-800' : 'opacity-30 border-slate-850'
+                                    onClick={() => {
+                                      setSelectedAgendaDate(dateStr);
+                                      setAgendaMode('today');
+                                    }}
+                                    className={`min-h-[70px] bg-slate-900/60 p-2 border rounded-xl flex flex-col justify-between transition-all cursor-pointer hover:bg-slate-850/70 hover:border-purple-500/50 group ${
+                                      isSameMonth ? 'opacity-100 border-slate-800' : 'opacity-40 hover:opacity-85 border-slate-850'
                                     } ${isToday ? 'border-purple-500 bg-purple-950/20' : ''}`}
                                   >
-                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-400 font-extrabold' : 'text-slate-400'}`}>
+                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-400 font-extrabold' : isSameMonth ? 'text-slate-200 group-hover:text-white' : 'text-slate-500'}`}>
                                       {dateObj.getDate()}
                                     </span>
 
@@ -2865,13 +2884,13 @@ export default function Dashboard() {
                                       {matchBookings.slice(0, 2).map(bk => (
                                         <div 
                                           key={bk.id} 
-                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-950/40 border border-purple-900/40 text-purple-300 font-bold"
+                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-950/40 border border-purple-900/40 text-purple-200 font-bold"
                                         >
                                           {bk.start_time} {bk.service?.name ? bk.service.name.substring(0, 8) : 'Srv'}
                                         </div>
                                       ))}
                                       {matchBookings.length > 2 && (
-                                        <span className="block text-[6.5px] text-slate-450 text-center font-bold">+ {matchBookings.length - 2}</span>
+                                        <span className="block text-[6.5px] text-slate-400 text-center font-bold">+ {matchBookings.length - 2}</span>
                                       )}
                                     </div>
                                   </div>
@@ -2945,30 +2964,30 @@ export default function Dashboard() {
 
                     {/* Quick Scaled Agenda Tools - Elegant clean banners */}
                     <div className="lg:col-span-4 space-y-6">
-                      <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-widest leading-none">Métricas Rápidas</h4>
+                      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-widest leading-none">Métricas Rápidas</h4>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-150 text-center shadow-inner">
-                            <span className="block text-[24px] font-black text-purple-600 leading-none mb-1">{bookings.filter(b => b.booking_status === 'confirmed').length}</span>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Activas</span>
+                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-805 border-slate-800 text-center shadow-inner animate-fade-in">
+                            <span className="block text-[24px] font-black text-purple-450 text-purple-400 leading-none mb-1">{bookings.filter(b => b.booking_status === 'confirmed').length}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Activas</span>
                           </div>
-                          <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-150 text-center shadow-inner">
-                            <span className="block text-[24px] font-black text-emerald-600 leading-none mb-1">{bookings.filter(b => b.booking_status === 'completed').length}</span>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Concluídas</span>
+                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-805 border-slate-800 text-center shadow-inner animate-fade-in">
+                            <span className="block text-[24px] font-black text-emerald-400 leading-none mb-1">{bookings.filter(b => b.booking_status === 'completed').length}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Concluídas</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-700 uppercase tracking-widest leading-none">Escala Ativa</h4>
+                      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-widest leading-none">Escala Ativa</h4>
                         <div className="space-y-2.5">
                           {staff.length === 0 ? (
-                            <p className="text-[11px] text-slate-450 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
+                            <p className="text-[11px] text-slate-400 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                           ) : (
                             staff.map(st => (
-                              <div key={st.id} className="flex items-center justify-between text-xs bg-slate-50 border border-slate-150 p-3 rounded-2xl shadow-sm">
-                                <span className="font-extrabold text-slate-700 truncate">{st.full_name}</span>
-                                <span className="text-[10px] font-mono text-emerald-600 font-bold uppercase brand-pulse flex items-center gap-1.5">
+                              <div key={st.id} className="flex items-center justify-between text-xs bg-slate-950/40 border border-slate-800 p-3 rounded-2xl">
+                                <span className="font-extrabold text-slate-200 truncate">{st.full_name}</span>
+                                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase brand-pulse flex items-center gap-1.5">
                                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                                   <span>{st.is_active ? 'Ativo' : 'Pausa'}</span>
                                 </span>
@@ -3415,7 +3434,7 @@ export default function Dashboard() {
 
                         <form onSubmit={handleSaveStaff} className="space-y-4 text-xs font-semibold">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 mb-1.5">Nome Completo</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Nome Completo</label>
                             <input 
                               type="text" required
                               value={staffForm.full_name}
@@ -3426,7 +3445,7 @@ export default function Dashboard() {
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 mb-1.5">Cargo / Especialização</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Cargo / Especialização</label>
                             <input 
                               type="text"
                               value={staffForm.role_title}
@@ -3437,7 +3456,7 @@ export default function Dashboard() {
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 mb-1.5">Link da foto</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Link da foto</label>
                             <input 
                               type="text"
                               value={staffForm.avatar_url}

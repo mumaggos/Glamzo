@@ -172,7 +172,7 @@ export default function Navbar() {
 
             {/* Button 3: Account (or Log in if not logged in) */}
             <Link 
-              to={user ? "/account" : "/login"} 
+              to={user ? "/account?tab=favorites" : "/login"} 
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
                 location.pathname === '/account' || location.pathname === '/login' ? 'text-purple-600 scale-[1.02]' : 'text-slate-550 hover:text-slate-900'
               }`}
@@ -186,14 +186,14 @@ export default function Navbar() {
             <Link 
               to={getProfileTargetRoute()} 
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
-                location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner')
+                location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner') || location.pathname === '/account'
                   ? 'text-purple-600 scale-[1.02]' 
                   : 'text-slate-550 hover:text-slate-900'
               }`}
             >
-              <Briefcase className="w-5 h-5 stroke-[2]" />
-              <span className="text-[9px] font-bold tracking-wide uppercase font-mono">Gestão</span>
-              {(location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner')) && (
+              <User className="w-5 h-5 stroke-[2]" />
+              <span className="text-[9px] font-bold tracking-wide uppercase font-mono">Perfil</span>
+              {(location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner') || location.pathname === '/account') && (
                 <span className="w-1 h-1 bg-purple-600 rounded-full mt-0.5" />
               )}
             </Link>

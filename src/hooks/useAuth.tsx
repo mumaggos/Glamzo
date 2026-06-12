@@ -28,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string, currentUserEmail: string): Promise<UserProfile | null> => {
     if (!isSupabaseConfigured) return null;
 
+    const emailSafe = currentUserEmail || '';
+    const nameFallback = emailSafe ? emailSafe.split('@')[0] : 'Utilizador';
+
     try {
       // 1. Fetch profile from database
       const { data, error: fetchErr } = await supabase
@@ -63,13 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // 2. Special hardcoded admin validation for admin account
       // email: admin@gmail.com, password: 191191 (Should have admin role)
-      if (currentUserEmail === 'admin@gmail.com' || currentUserEmail === 'glamzo.suporte@gmail.com') {
+      if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
         if (!currentProfile || currentProfile.role !== 'admin') {
           // Guard and force write/upsert of admin profile in the profiles table
           const adminProfilePayload = {
             id: userId,
-            email: currentUserEmail,
-            full_name: currentProfile?.full_name || (currentUserEmail === 'glamzo.suporte@gmail.com' ? 'Suporte Glamzo' : 'Administrador Geral'),
+            email: emailSafe,
+            full_name: currentProfile?.full_name || (emailSafe === 'glamzo.suporte@gmail.com' ? 'Suporte Glamzo' : 'Administrador Geral'),
             role: 'admin' as UserRole,
             avatar_url: currentProfile?.avatar_url || null,
             created_at: new Date().toISOString()
@@ -102,15 +105,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let defaultRole: UserRole = storedRole || metadataRole || 'customer';
         
         if (!storedRole && !metadataRole) {
-          if (currentUserEmail === 'admin@gmail.com' || currentUserEmail === 'glamzo.suporte@gmail.com') {
+          if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
             defaultRole = 'admin';
           }
         }
 
         const fallbackPayload = {
           id: userId,
-          email: currentUserEmail,
-          full_name: currentUserEmail.split('@')[0],
+          email: emailSafe,
+          full_name: nameFallback,
           role: defaultRole,
           avatar_url: null,
           created_at: new Date().toISOString()
@@ -155,15 +158,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let defaultRole: UserRole = storedRole || metadataRole || 'customer';
         
         if (!storedRole && !metadataRole) {
-          if (currentUserEmail === 'admin@gmail.com' || currentUserEmail === 'glamzo.suporte@gmail.com') {
+          if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
             defaultRole = 'admin';
           }
         }
 
         currentProfile = {
           id: userId,
-          email: currentUserEmail,
-          full_name: currentUserEmail.split('@')[0],
+          email: emailSafe,
+          full_name: nameFallback,
           role: defaultRole,
           avatar_url: null,
           created_at: new Date().toISOString()
@@ -188,15 +191,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let defaultRole: UserRole = storedRole || metadataRole || 'customer';
       
       if (!storedRole && !metadataRole) {
-        if (currentUserEmail === 'admin@gmail.com' || currentUserEmail === 'glamzo.suporte@gmail.com') {
+        if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
           defaultRole = 'admin';
         }
       }
 
       return {
         id: userId,
-        email: currentUserEmail,
-        full_name: currentUserEmail.split('@')[0],
+        email: emailSafe,
+        full_name: nameFallback,
         role: defaultRole,
         avatar_url: null,
         created_at: new Date().toISOString()
@@ -236,9 +239,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         lastUserId = session.user.id;
         setUser(session.user);
-        fetchProfile(session.user.id, session.user.email!).then((prof) => {
+        fetchProfile(session.user.id, session.user.email || '').then((prof) => {
           if (mounted) {
             setProfile(prof);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            setLoading(false);
+          }
+        }).catch((err) => {
+          console.error("fetchProfile exception during getSession fetch:", err);
+          if (mounted) {
             if (fallbackTimeout) clearTimeout(fallbackTimeout);
             setLoading(false);
           }
@@ -246,6 +255,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null);
         setProfile(null);
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
+        setLoading(false);
+      }
+    }).catch((sessionErr) => {
+      console.error("supabase auth getSession exception:", sessionErr);
+      if (mounted) {
         if (fallbackTimeout) clearTimeout(fallbackTimeout);
         setLoading(false);
       }
@@ -264,11 +279,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastUserId = session.user.id;
         setLoading(true);
         setUser(session.user);
-        const p = await fetchProfile(session.user.id, session.user.email!);
-        if (mounted) {
-          setProfile(p);
-          if (fallbackTimeout) clearTimeout(fallbackTimeout);
-          setLoading(false);
+        try {
+          const p = await fetchProfile(session.user.id, session.user.email || '');
+          if (mounted) {
+            setProfile(p);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            setLoading(false);
+          }
+        } catch (onAuthErr) {
+          console.error("fetchProfile inside onAuthStateChange exception:", onAuthErr);
+          if (mounted) {
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
+            setLoading(false);
+          }
         }
       } else {
         lastUserId = null;

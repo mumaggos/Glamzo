@@ -25,7 +25,12 @@ export default function BookingModal({
   initialSelectedService
 }: BookingModalProps) {
   const [step, setStep] = useState(1);
-  const [selectedService, setSelectedService] = useState<any | null>(null);
+  const [selectedServices, setSelectedServices] = useState<any[]>(
+    initialSelectedService ? [initialSelectedService] : []
+  );
+  const selectedService = selectedServices[0] || null;
+  const totalServicesPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+  const totalServicesDuration = selectedServices.reduce((sum, s) => sum + (s.duration_minutes || 30), 0);
   const [selectedStaff, setSelectedStaff] = useState<any | null>('any'); // 'any' or staff object
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -179,10 +184,10 @@ export default function BookingModal({
   // Set initial selected service if supplied
   useEffect(() => {
     if (initialSelectedService) {
-      setSelectedService(initialSelectedService);
+      setSelectedServices([initialSelectedService]);
       setStep(2); // Jump straight to choosing staff
     } else {
-      setSelectedService(null);
+      setSelectedServices([]);
       setStep(1);
     }
   }, [initialSelectedService, isOpen]);
@@ -277,7 +282,7 @@ export default function BookingModal({
 
   // Slots availability calculation engine
   const getAvailableSlots = () => {
-    if (!selectedDate || !selectedService) return [];
+    if (!selectedDate || selectedServices.length === 0) return [];
 
     const weekday = selectedDate.getDay();
     const dayHours = businessHours.find(h => h.weekday === weekday);
@@ -292,7 +297,7 @@ export default function BookingModal({
 
     const startMin = timeToMinutes(openTime);
     const endMin = timeToMinutes(closeTime);
-    const duration = selectedService.duration_minutes || 30;
+    const duration = totalServicesDuration;
 
     const dateStr = selectedDate.toISOString().split('T')[0];
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
@@ -394,7 +399,7 @@ export default function BookingModal({
 
   // Create real booking in database
   const handleConfirmReservation = async () => {
-    if (!selectedService || !selectedDate || !selectedTime) return;
+    if (selectedServices.length === 0 || !selectedDate || !selectedTime) return;
 
     setSubmitting(true);
     setErrorMsg(null);
@@ -413,7 +418,7 @@ export default function BookingModal({
       
       // Calculate end time string from selected time and duration
       const startMin = timeToMinutes(selectedTime);
-      const endMin = startMin + selectedService.duration_minutes;
+      const endMin = startMin + totalServicesDuration;
       const endTimeStr = minutesToTime(endMin);
 
       const initialBookingStatus = paymentMethod === 'local' ? 'confirmed' : 'pending';
@@ -423,7 +428,7 @@ export default function BookingModal({
       const isPro = businessSubscription?.plan_name === 'PRO';
       const feeRate = isPro ? 0.05 : 0.15;
       
-      const basePrice = Number(selectedService.price);
+      const basePrice = totalServicesPrice;
       const discount = Number(couponDiscount || 0);
       const stripeTax = 0.00; // No extra fees charged to the customer
       
@@ -434,13 +439,18 @@ export default function BookingModal({
       const businessAmount = paymentMethod === 'stripe' ? Number((basePrice - originalCommission).toFixed(2)) : finalPriceToPay; // Store receives full base rate minus commission for stripe, or 100% of final price for local cash!
       const glamzoFee = paymentMethod === 'stripe' ? Number((finalPriceToPay - businessAmount).toFixed(2)) : 0; // Glamzo absorbs the discount, resulting in a reduced/negative net fee representing the discount coverage on online, local is 0 fee!
 
+      const servicesText = selectedServices.map(s => `• ${s.name} (${s.price}€)`).join('\n');
+      const finalNotes = notes.trim() 
+        ? `${notes.trim()}\n\nServiços Solicitados:\n${servicesText}`
+        : `Serviços Solicitados:\n${servicesText}`;
+
       // Initially set booking's payment_status to 'unpaid'
       const { data, error } = await supabase
          .from('bookings')
          .insert({
            customer_id: user.id,
            business_id: business.id,
-           service_id: selectedService.id,
+           service_id: selectedServices[0].id,
            staff_id: finalStaffId,
            booking_date: dateStr,
            start_time: selectedTime,
@@ -449,7 +459,7 @@ export default function BookingModal({
            payment_method: paymentMethod,
            payment_status: initialPaymentStatus,
            booking_status: initialBookingStatus,
-           notes: notes.trim() || null
+           notes: finalNotes
          })
          .select(`
            *,
@@ -500,7 +510,7 @@ export default function BookingModal({
               amount: finalPriceToPay,
               customerEmail: user.email,
               businessName: business.name,
-              serviceName: selectedService.name,
+              serviceName: selectedServices.map(s => s.name).join(', '),
               stripeAccountId: business.stripe_account_id,
               successUrl: `${window.location.origin}/account?status=success&booking_id=${data.id}`,
               cancelUrl: `${window.location.origin}/account?status=cancelled`
@@ -551,6 +561,10 @@ export default function BookingModal({
       }
 
       setSuccessBooking(data);
+      // Automatically redirect to client panel dashboard after 1.5 seconds
+      setTimeout(() => {
+        window.location.href = "/account?status=success";
+      }, 1500);
     } catch (err: any) {
       console.error('Reservation booking creation failure:', err);
       setErrorMsg(err.message || 'Falha ao processar o seu agendamento no servidor. Tente novamente.');
@@ -686,22 +700,37 @@ export default function BookingModal({
 
               {/* STEP 1: SERVICE SELECTION */}
               {step === 1 && (
-                <div className="space-y-3">
-                  <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Menu de Serviços do Estabelecimento</p>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Menu de Serviços do Estabelecimento</p>
+                    {selectedServices.length > 0 && (
+                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-full border border-rose-100">
+                        {selectedServices.length} {selectedServices.length === 1 ? 'serviço selecionado' : 'serviços selecionados'} ({totalServicesPrice.toFixed(2)} €)
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed -mt-2">Pode selecionar múltiplos serviços para realizar todos os tratamentos no mesmo dia e com o mesmo profissional.</p>
                   <div className="grid grid-cols-1 gap-3">
                     {services.map(srv => {
-                      const isSelected = selectedService?.id === srv.id;
+                      const isSelected = selectedServices.some(s => s.id === srv.id);
                       return (
                         <div 
                           key={srv.id}
                           onClick={() => {
-                            setSelectedService(srv);
+                            const exists = selectedServices.some(s => s.id === srv.id);
+                            let updated = [];
+                            if (exists) {
+                              updated = selectedServices.filter(s => s.id !== srv.id);
+                            } else {
+                              updated = [...selectedServices, srv];
+                            }
+                            setSelectedServices(updated);
                             setSelectedDate(null);
                             setSelectedTime(null);
                           }}
                           className={`p-4 rounded-2xl border transition-all cursor-pointer flex gap-4 justify-between items-center ${
                             isSelected 
-                              ? 'border-rose-500 bg-rose-50/40 text-rose-950 font-semibold ring-2 ring-rose-500/10' 
+                              ? 'border-rose-500 bg-rose-50/45 text-rose-950 font-semibold ring-2 ring-rose-500/10' 
                               : 'border-slate-100 hover:bg-slate-50 text-slate-700 bg-slate-50/20'
                           }`}
                         >
@@ -718,7 +747,15 @@ export default function BookingModal({
                               />
                             </div>
                             <div>
-                              <h4 className="text-xs font-black text-slate-800">{srv.name}</h4>
+                              <h4 className="text-xs font-black text-slate-800 flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  checked={isSelected}
+                                  onChange={() => {}} // handled by parent onClick
+                                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 h-3.5 w-3.5 pointer-events-none"
+                                />
+                                {srv.name}
+                              </h4>
                               <p className="text-[10px] text-slate-400 leading-normal max-w-sm line-clamp-2 mt-0.5">{srv.description || 'Tratamento premium de assinatura'}</p>
                               <span className="text-[10px] font-mono text-slate-400 block mt-1">⏱ {srv.duration_minutes} minutos de duração</span>
                             </div>
@@ -728,7 +765,7 @@ export default function BookingModal({
                             <span className="text-sm font-black text-rose-700 font-mono block">{Number(srv.price).toFixed(2)} €</span>
                             {isSelected && (
                               <span className="inline-flex items-center gap-0.5 mt-1 text-[9px] font-bold text-rose-600 font-mono bg-rose-100/50 px-2 py-0.5 rounded-full">
-                                <Check className="w-3 h-3 text-rose-600" /> selecionado
+                                <Check className="w-2.5 h-2.5 text-rose-600" /> selecionado
                               </span>
                             )}
                           </div>
@@ -1010,12 +1047,20 @@ export default function BookingModal({
                     {/* Line Items */}
                     <div className="p-4 bg-slate-50/50 space-y-3 text-xs leading-relaxed text-slate-750">
                       
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Serviço de Beleza</span>
-                        <div className="text-right">
-                          <span className="font-extrabold text-slate-800 block text-xs">{selectedService.name}</span>
-                          <span className="text-[10px] text-slate-400">⏱ {selectedService.duration_minutes} min de duração</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Serviços de Beleza Selecionados</span>
+                        <div className="space-y-1.5 mt-1 bg-white p-2.5 rounded-xl border border-slate-100">
+                          {selectedServices.map(s => (
+                            <div key={s.id} className="flex justify-between items-center">
+                              <span className="font-bold text-slate-800">{s.name}</span>
+                              <div className="text-right font-mono text-[11px] text-slate-550">
+                                <span>{Number(s.price).toFixed(2)} €</span>
+                                <span className="text-slate-400 text-[10px] ml-1.5 font-sans">({s.duration_minutes} min)</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
+                        <span className="text-[10px] text-slate-400 font-medium block mt-1">⏱ Duração total estimada: {totalServicesDuration} minutos</span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
@@ -1049,8 +1094,8 @@ export default function BookingModal({
                       {/* Detailed billing breakdown with real numbers */}
                       <div className="border-t border-slate-150 pt-2.5 space-y-1 text-xs">
                         <div className="flex justify-between items-center text-slate-500">
-                          <span>Preço Base do Serviço</span>
-                          <span className="font-mono">{Number(selectedService.price).toFixed(2)} €</span>
+                          <span>Soma dos Serviços</span>
+                          <span className="font-mono">{totalServicesPrice.toFixed(2)} €</span>
                         </div>
                         {couponDiscount > 0 && (
                           <div className="flex justify-between items-center text-emerald-600 font-bold">
@@ -1063,7 +1108,7 @@ export default function BookingModal({
                       <div className="flex justify-between items-center border-t border-slate-150 pt-3">
                         <span className="text-slate-500 font-black uppercase text-[10px]">Preço Total a Pagar</span>
                         <span className="text-base font-black text-rose-700 font-mono">
-                          {Math.max(0, Number(selectedService.price) - couponDiscount).toFixed(2)} €
+                          {Math.max(0, totalServicesPrice - couponDiscount).toFixed(2)} €
                         </span>
                       </div>
                     </div>
@@ -1121,9 +1166,9 @@ export default function BookingModal({
               {step > 1 ? (
                 <button 
                   onClick={() => {
-                    // If service was pre-selected, let back skip Step 1 and go straight back to detail page!
+                    // If service was pre-selected, go back to Step 1 so they can add more services and customize!
                     if (step === 2 && initialSelectedService) {
-                      onClose();
+                      setStep(1);
                     } else {
                       setStep(step - 1);
                     }

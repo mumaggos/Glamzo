@@ -13,8 +13,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  // 1. Show dynamic, high-fidelity spinner while authenticating or looking up profiles
-  if (loading || (user && !profile)) {
+  // 1. Show dynamic, high-fidelity spinner while authenticating
+  if (loading) {
     return (
       <div id="loading-page" className="min-h-screen flex flex-col items-center justify-center bg-[#07040E] gap-4">
         {/* Glamzo style delicate purple glowing activity spinner */}

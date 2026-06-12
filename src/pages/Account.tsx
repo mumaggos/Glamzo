@@ -6,10 +6,59 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Mail, Calendar, Upload, Loader2, Link, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle } from 'lucide-react';
+import { User, Mail, Calendar, Upload, Loader2, Link, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart } from 'lucide-react';
+import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
   const { user, profile, updateProfile, loading: authLoading } = useAuth();
+
+  // Favorites management state
+  const [favoriteBusinesses, setFavoriteBusinesses] = useState<any[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+
+  const fetchUserFavoritesList = async () => {
+    if (!user) return;
+    setLoadingFavorites(true);
+    try {
+      const { data: favIds, error: favErr } = await supabase
+        .from('favorites')
+        .select('business_id')
+        .eq('customer_id', user.id);
+      
+      let ids: string[] = [];
+      if (!favErr && favIds && favIds.length > 0) {
+        ids = favIds.map((f: any) => f.business_id);
+      } else {
+        try {
+          const stored = JSON.parse(localStorage.getItem(`glamzo_customer_favorites_${user.id}`) || '[]');
+          ids = stored;
+        } catch (_) {}
+      }
+
+      if (ids.length === 0) {
+        setFavoriteBusinesses([]);
+        return;
+      }
+
+      const { data: bizData, error: bizErr } = await supabase
+        .from('businesses')
+        .select('*')
+        .in('id', ids);
+
+      if (bizErr) throw bizErr;
+      setFavoriteBusinesses(bizData || []);
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  const handleRemoveFavorite = async (bizId: string) => {
+    if (!user) return;
+    await toggleFavorite(user.id, bizId);
+    setFavoriteBusinesses(prev => prev.filter(b => b.id !== bizId));
+  };
 
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -134,8 +183,26 @@ export default function Account() {
       loadUserRewards();
       loadUserReviews();
       loadTickets();
+      fetchUserFavoritesList();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Scroll to favorites section if tab parameter is specified
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'favorites') {
+      setTimeout(() => {
+        const target = document.getElementById('meus-favoritos');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('ring-4', 'ring-rose-500/30', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            target.classList.remove('ring-4', 'ring-rose-500/30');
+          }, 4000);
+        }
+      }, 500);
+    }
+  }, [favoriteBusinesses]);
 
   // Synchronized Loyalty points using financeService
   const currentPointsBalance = financeService.getCustomerPoints(user?.id || 'default');
@@ -403,10 +470,99 @@ export default function Account() {
   }
 
   return (
-    <div id="account-view" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Minha Conta</h1>
-        <p className="text-sm text-slate-500 mt-1">Gerencie os seus agendamentos e dados de cadastro com o padrão do site principal.</p>
+    <div id="account-view" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans font-medium text-slate-800">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Minha Conta</h1>
+          <p className="text-sm text-slate-500 mt-1">Gerencie os seus agendamentos e dados de cadastro com o padrão do site principal.</p>
+        </div>
+        <a href="/explore" className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-purple-650 hover:bg-purple-750 text-white rounded-2xl text-[11px] font-bold transition-all shadow-sm">
+          📍 Pesquisar Salões Próximos
+        </a>
+      </div>
+
+      {/* SECTION: OS MEUS FAVORITOS (CUSTOMERS MOST LOVED STUDIOS) */}
+      <div id="meus-favoritos" className="mb-12 bg-white border border-rose-100 rounded-3xl p-6 sm:p-8 shadow-xs">
+        <div className="flex justify-between items-center pb-4 border-b border-rose-50 mb-6">
+          <div className="flex items-center gap-1.5">
+            <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">Os Seus Favoritos</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-normal">Os seus salões, clínicas e especialistas estéticos favoritos para reserva rápida.</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full font-mono text-[10px] font-bold border border-rose-100">
+            {favoriteBusinesses.length} {favoriteBusinesses.length === 1 ? 'salão' : 'salões'}
+          </span>
+        </div>
+
+        {loadingFavorites ? (
+          <div className="py-8 text-center space-y-2">
+            <Loader2 className="w-6 h-6 animate-spin text-rose-500 mx-auto" />
+            <p className="text-xs text-slate-400 font-mono">A ler os seus favoritos em tempo real...</p>
+          </div>
+        ) : favoriteBusinesses.length === 0 ? (
+          <div className="py-8 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+            <Heart className="w-8 h-8 text-slate-350 mx-auto mb-2" />
+            <h4 className="text-xs font-bold text-slate-700">Ainda não guardou nenhum salão.</h4>
+            <p className="text-[10px] text-slate-400 max-w-xs mx-auto mt-1 leading-relaxed font-normal">
+              Consulte e explore estabelecimentos no nosso marketplace e clique no coração para guardar nos seus favoritos.
+            </p>
+            <a href="/explore" className="inline-block px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold border border-rose-200 mt-3 transition-colors">
+              Explorar Salões & Estúdios
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {favoriteBusinesses.map(biz => (
+              <div 
+                key={biz.id} 
+                className="group relative flex items-center gap-3.5 p-3.5 bg-slate-50/40 hover:bg-white border hover:border-rose-200 border-slate-100 rounded-2xl shadow-xs transition-all duration-350"
+              >
+                {/* Image */}
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-slate-150">
+                  <img 
+                    src={biz.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=150&q=80'} 
+                    alt={biz.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[8px] font-bold text-rose-500 uppercase tracking-widest leading-none mb-1">
+                    {biz.city || 'Portugal'}
+                  </span>
+                  <a href={`/business/${biz.slug}`} className="block text-xs font-black text-slate-800 hover:text-purple-600 truncate mb-0.5">
+                    {biz.name}
+                  </a>
+                  <p className="text-[10px] text-slate-400 truncate leading-snug font-normal">
+                    {biz.address || 'Tratamentos de Beleza Premium'}
+                  </p>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFavorite(biz.id)}
+                    className="p-1.5 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-colors cursor-pointer"
+                    title="Remover dos favoritos"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <a
+                    href={`/business/${biz.slug}`}
+                    className="px-3.5 py-1.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[11px] font-bold transition-all shadow-xs cursor-pointer text-center"
+                  >
+                    Agendar
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bookings Engine Manager Section - FIRST */}
