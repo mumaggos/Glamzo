@@ -4948,10 +4948,10 @@ export default function Dashboard() {
             
             return (
               <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white text-slate-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-205 text-left">
+                <div className="bg-[#0c1122] text-slate-200 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-800 text-left">
                   
                   {/* Invoice Certificate Header */}
-                  <div className="bg-slate-900 text-white p-5 flex justify-between items-center">
+                  <div className="bg-[#070b16] text-white p-5 flex justify-between items-center border-b border-slate-900">
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -4961,105 +4961,105 @@ export default function Dashboard() {
                     </div>
                     <button 
                       onClick={() => setSelectedInvoice(null)}
-                      className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition"
+                      className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center hover:bg-slate-800 hover:text-white transition cursor-pointer text-xs"
                     >
                       ✕
                     </button>
                   </div>
 
                   {/* Printable Invoice Container */}
-                  <div className="p-6 space-y-5 flex-grow overflow-auto scrollbar-thin text-xs text-slate-600">
+                  <div className="p-6 space-y-5 flex-grow overflow-auto scrollbar-thin text-xs text-slate-300">
                     
                     {/* Visual watermark or seal */}
-                    <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+                    <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                       <div>
-                        <h2 className="font-black text-rose-600 tracking-tight text-lg leading-none">GLAMZO SA</h2>
-                        <span className="text-[10px] text-slate-400">Plataforma de Intermediação de Beleza & Bem-Estar</span>
-                        <p className="text-[9px] text-slate-400 font-mono mt-1">NIF: PT 509 231 411 • Av. da Liberdade, Lisboa</p>
+                        <h2 className="font-black text-[#8B5CF6] tracking-tight text-lg leading-none">GLAMZO SA</h2>
+                        <span className="text-[10px] text-slate-500">Plataforma de Intermediação de Beleza & Bem-Estar</span>
+                        <p className="text-[9px] text-slate-500 font-mono mt-1">NIF: PT 509 231 411 • Av. da Liberdade, Lisboa</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-extrabold text-[10px] block uppercase text-slate-800">Prestador do Serviço:</span>
-                        <p className="font-sans font-bold text-slate-705">{business?.name || 'Salão Parceiro'}</p>
-                        <p className="text-[9px] text-slate-400">{business?.city || 'Portugal'}</p>
+                        <span className="font-extrabold text-[10px] block uppercase text-purple-400">Prestador do Serviço:</span>
+                        <p className="font-sans font-bold text-white">{business?.name || 'Salão Parceiro'}</p>
+                        <p className="text-[9px] text-slate-500">{business?.city || 'Portugal'}</p>
                       </div>
                     </div>
 
                     {/* Audit Compliance Label */}
-                    <div className="bg-slate-50 border border-slate-150 p-3 rounded-xl flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <div className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-950/60 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-900/30">
+                        <CheckCircle className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div>
-                        <span className="font-bold text-slate-800 text-[10px] uppercase block">Assinatura Digital AT / SAF-T</span>
-                        <p className="text-[9px] text-slate-400 font-mono leading-none">Processado por Programa Certificado Glamzo Pay v10.4</p>
+                        <span className="font-bold text-slate-200 text-[10px] uppercase block">Assinatura Digital AT / SAF-T</span>
+                        <p className="text-[9px] text-slate-500 font-mono leading-none">Processado por Programa Certificado Glamzo Pay v10.4</p>
                       </div>
                     </div>
 
                     {/* Line Items of Receipt */}
                     <div className="space-y-3 pt-2">
-                      <h4 className="font-bold text-slate-800 uppercase tracking-wider text-[9px] border-b border-slate-100 pb-1.5">Artigos e Serviços Intermediados</h4>
+                      <h4 className="font-bold text-purple-400 uppercase tracking-wider text-[9px] border-b border-slate-800 pb-1.5">Artigos e Serviços Intermediados</h4>
                       
                       <div className="flex justify-between items-start">
                         <div>
-                          <span className="font-bold text-slate-800">Marcação Eletrónica Real</span>
-                          <p className="text-[10px] text-slate-450 mt-0.5">Disponibilização da infraestrutura de reservas táticas e assessoria Glamzo.</p>
+                          <span className="font-bold text-white">Marcação Eletrónica Real</span>
+                          <p className="text-[10px] text-slate-405 text-slate-400 mt-0.5">Disponibilização da infraestrutura de reservas táticas e assessoria Glamzo.</p>
                         </div>
-                        <span className="font-mono text-slate-800 font-bold">{baseAmount.toFixed(2)} €</span>
+                        <span className="font-mono text-white font-bold">{baseAmount.toFixed(2)} €</span>
                       </div>
 
                       {/* Commission calculation with safe business protection display */}
-                      <div className="border-t border-slate-100 pt-3 space-y-1.5">
-                        <div className="flex justify-between items-center text-slate-500">
+                      <div className="border-t border-slate-800 pt-3 space-y-1.5">
+                        <div className="flex justify-between items-center text-slate-400">
                           <span>Subtotal Bruto Cobrado</span>
-                          <span className="font-mono">{baseAmount.toFixed(2)} €</span>
+                          <span className="font-mono text-white">{baseAmount.toFixed(2)} €</span>
                         </div>
 
-                        <div className="flex justify-between items-center text-slate-500">
+                        <div className="flex justify-between items-center text-slate-400">
                           <span className="flex items-center gap-1.5">
                             <span>Taxa de Intermediação Glamzo</span>
-                            <span className="text-[9px] bg-slate-105 text-slate-500 px-1 rounded-sm">Plano PRO 5%</span>
+                            <span className="text-[9px] bg-slate-950 text-purple-300 border border-slate-850 px-1.5 py-0.5 rounded-sm">Plano PRO 5%</span>
                           </span>
-                          <span className="font-mono">-{feeAmount.toFixed(2)} €</span>
+                          <span className="font-mono text-purple-300">-{feeAmount.toFixed(2)} €</span>
                         </div>
 
                         {hasDiscount && (
-                          <div className="bg-emerald-50 text-emerald-800 p-2 rounded-xl text-[10px] font-medium leading-relaxed mt-1">
-                            ☘ **Campanha absorvida pela Glamzo**: O desconto do utilizador foi integralmente subsidiado pela Glamzo. O parceiro recebe os rendimentos contratados perfeitamente intactos!
+                          <div className="bg-emerald-950/40 text-emerald-305 text-emerald-350 border border-emerald-900/30 p-2.5 rounded-xl text-[10px] font-medium leading-relaxed mt-1">
+                            ☘ **Campanha absorvida pela Glamzo**: O desconto do utilizador foi instruído e integralmente subsidiado pela Glamzo. Recebe o seu rendimento original garantido!
                           </div>
                         )}
                       </div>
 
                       {/* Highlighted Net Earned block */}
-                      <div className="bg-slate-50 p-3 rounded-2xl flex justify-between items-center border border-slate-100 mt-4">
+                      <div className="bg-slate-950/60 p-3 rounded-2xl flex justify-between items-center border border-slate-800/80 mt-4">
                         <div>
-                          <span className="font-black text-slate-850 uppercase text-[9px] block">Rendimento Líquido Creditado</span>
-                          <span className="text-[9px] text-slate-400 font-medium font-sans">Lançado no saldo disponível do Stripe Connect</span>
+                          <span className="font-black text-purple-400 uppercase text-[9px] block">Rendimento Líquido Creditado</span>
+                          <span className="text-[9px] text-slate-500 font-medium font-sans">Lançado no saldo disponível do Stripe Connect</span>
                         </div>
-                        <span className="text-base font-black text-rose-600 font-mono">{netProfit.toFixed(2)} €</span>
+                        <span className="text-base font-black text-emerald-400 font-mono">{netProfit.toFixed(2)} €</span>
                       </div>
                     </div>
 
                     {/* Bottom Legal Disclaimer */}
-                    <div className="text-[9px] text-slate-400 leading-normal text-center pt-3 border-t border-slate-100 space-y-0.5">
+                    <div className="text-[9px] text-slate-500 leading-normal text-center pt-3 border-t border-slate-800 space-y-0.5">
                       <p>Este documento eletrónico serve de fatura simplificada conforme o Artigo 40º do CIVA.</p>
-                      <p className="font-mono uppercase text-[8px] tracking-wider text-slate-350">Código CHASH: GZ-PAY-SAF-T-{selectedInvoice.id.substring(0,8).toUpperCase()}</p>
+                      <p className="font-mono uppercase text-[8px] tracking-wider text-slate-600">Código CHASH: GZ-PAY-SAF-T-{selectedInvoice.id.substring(0,8).toUpperCase()}</p>
                     </div>
 
                   </div>
 
                   {/* Action Trigger Buttons inside receipt modal */}
-                  <div className="p-4 bg-slate-50 flex gap-3 border-t border-slate-150 shrink-0">
+                  <div className="p-4 bg-slate-950 flex gap-3 border-t border-slate-850 shrink-0">
                     <button
                       type="button"
                       onClick={() => alert("As faturas SAF-T reais são exportadas eletronicamente na sua faturação oficial.")}
-                      className="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 px-3 rounded-xl cursor-pointer text-center transition-all"
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl cursor-pointer text-center transition-all shadow-md shadow-purple-950/30 font-sans"
                     >
                       Exportar PDF / SAF-T
                     </button>
                     <button
                       type="button"
                       onClick={() => setSelectedInvoice(null)}
-                      className="bg-white border border-slate-205 hover:bg-slate-100 text-slate-700 text-xs font-bold py-2 px-4 rounded-xl cursor-pointer"
+                      className="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all"
                     >
                       Fechar
                     </button>

@@ -6,6 +6,7 @@ interface GlamzoLogoProps {
   showSquircle?: boolean;
   className?: string;
   glow?: boolean;
+  forceDark?: boolean;
 }
 
 export default function GlamzoLogo({
@@ -13,7 +14,8 @@ export default function GlamzoLogo({
   withText = false,
   showSquircle = false,
   className = "",
-  glow = true
+  glow = true,
+  forceDark = false
 }: GlamzoLogoProps) {
   
   // Custom styled CSS to ensure the laser beam shimmer and pulsing star play natively anywhere
