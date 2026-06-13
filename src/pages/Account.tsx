@@ -462,7 +462,7 @@ export default function Account() {
         <ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" />
         <h3 className="text-lg font-bold text-slate-800">Acesso Restrito</h3>
         <p className="text-sm text-slate-500 mt-2">Você precisa estar autenticado para visualizar esta página.</p>
-        <a href="/login" className="inline-block mt-4 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors">
+        <a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-colors">
           Fazer Login Real
         </a>
       </div>
@@ -820,7 +820,7 @@ export default function Account() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 border border-purple-500 rounded-xl shadow-sm text-sm font-bold text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all disabled:opacity-50 cursor-pointer"
                 id="btn-save-profile"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -881,7 +881,7 @@ export default function Account() {
               <button
                 onClick={() => handleRedeemPoints(500, 5)}
                 disabled={currentPointsBalance < 500}
-                className="flex-1 bg-slate-900 border border-transparent hover:bg-purple-750 hover:bg-purple-700 disabled:opacity-45 text-white py-3 px-4 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer text-center"
+                className="flex-1 bg-purple-600 border border-purple-500 hover:bg-purple-750 hover:bg-purple-700 disabled:opacity-45 text-white py-3 px-4 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer text-center"
               >
                 Resgatar 5.00€ <span className="block text-[9px] font-mono font-normal text-slate-350 tracking-wider mt-0.5">(Custo: 500 Pontos)</span>
               </button>
@@ -1080,7 +1080,7 @@ export default function Account() {
                 href="https://wa.me/351912345678"
                 target="_blank"
                 rel="noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm shadow-emerald-500/10"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm shadow-purple-500/10"
               >
                 <Phone className="w-4 h-4 text-white" />
                 <span className="text-white">Conversar via WhatsApp</span>
@@ -1088,7 +1088,7 @@ export default function Account() {
 
               <a 
                 href="mailto:glamzo.suporte@gmail.com"
-                className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer shadow-xs"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-xs"
               >
                 <Mail className="w-4 h-4 text-slate-500" />
                 <span>Enviar E-mail Oficial</span>
@@ -1110,7 +1110,7 @@ export default function Account() {
                 <button
                   type="submit"
                   disabled={sendingSupport}
-                  className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold text-xs py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {sendingSupport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                   <span>Enviar Pedido de Suporte</span>
@@ -1304,7 +1304,7 @@ export default function Account() {
                 <button
                   type="submit"
                   disabled={submittingDispute}
-                  className="flex-1 py-3 bg-slate-900 hover:bg-slate-950 text-white rounded-xl text-xs font-black uppercase tracking-wide transition shadow-md cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black uppercase tracking-wide transition shadow-md cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {submittingDispute ? (
                     <Loader2 className="w-4 h-4 animate-spin text-white" />

@@ -115,11 +115,12 @@ export async function submitMessage(
     // Determine the corresponding session
     const currentSession = sessions.find(s => s.id === sessionId);
     if (currentSession && !sessionId.startsWith('glamzo-support-')) {
-      // Trigger shop's AI assistance asynchronously or after small delay
+      // Remover a inteligência artificial. Enviar mensagem de ausência automática simulando status offline da loja.
       setTimeout(async () => {
-        const aiResponse = await getShopAIResponse(currentSession.business_name, messageText, sessionId);
-        await submitMessage(sessionId, 'ai', `Assistente IA ${currentSession.business_name}`, aiResponse);
-      }, 1000);
+        // Here we could check if the shop recently read the message. For now, auto-reply.
+        const msg = `Olá! A receção do ${currentSession.business_name} recebeu a sua mensagem. Responderemos o mais breve possível.`;
+        await submitMessage(sessionId, 'ai', currentSession.business_name, msg);
+      }, 5000); // 5 sec delay
     }
   }
 

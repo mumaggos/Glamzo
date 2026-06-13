@@ -449,7 +449,7 @@ export default function BusinessDetail() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 text-rose-600 animate-spin" />
-        <span className="text-xs text-slate-400 font-mono">Buscando detalhes do estabelecimento...</span>
+        <span className="text-xs text-slate-500 font-mono">Buscando detalhes do estabelecimento...</span>
       </div>
     );
   }
@@ -464,7 +464,7 @@ export default function BusinessDetail() {
         </p>
         <Link
           to="/explore"
-          className="mt-6 inline-flex items-center gap-1.5 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all"
+          className="mt-6 inline-flex items-center gap-1.5 px-6 py-2.5 bg-slate-50 hover:bg-slate-200 text-slate-900 text-xs font-bold rounded-xl transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Voltar para Explorar</span>
@@ -498,10 +498,10 @@ export default function BusinessDetail() {
   }
 
   return (
-    <div id="business-detail-view" className="bg-slate-950 min-h-screen pb-16 font-sans text-slate-200 selection:bg-purple-900/50 selection:text-purple-200">
+    <div id="business-detail-view" className="bg-white min-h-screen pb-16 font-sans text-slate-700 selection:bg-purple-100/50 selection:text-purple-200">
       
       {/* Upper Cover Banner Area */}
-      <div className="h-64 sm:h-80 w-full relative bg-slate-900 overflow-hidden border-b border-slate-900">
+      <div className="h-64 sm:h-80 w-full relative bg-slate-50 overflow-hidden border-b border-slate-100">
         <img
           src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=75'}
           alt={business.name}
@@ -513,13 +513,13 @@ export default function BusinessDetail() {
         />
         
         {/* Shadow Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent pointer-events-none" />
 
         {/* Back Link trigger */}
         <div className="absolute top-6 left-6 z-10">
           <Link
             to="/explore"
-            className="flex items-center gap-1 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 font-mono"
+            className="flex items-center gap-1 bg-white/85 backdrop-blur-md hover:bg-slate-50/95 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-200 font-mono"
           >
             <ArrowLeft className="w-4 h-4 text-purple-400" />
             <span className="hidden sm:inline">Explorar salões</span>
@@ -531,16 +531,16 @@ export default function BusinessDetail() {
           {/* Favorite Switch */}
           <button
             onClick={handleToggleFavorite}
-            className="flex items-center gap-1.5 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 cursor-pointer font-mono"
+            className="flex items-center gap-1.5 bg-white/85 backdrop-blur-md hover:bg-slate-50/95 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-200 cursor-pointer font-mono"
           >
-            <Heart className={`w-4 h-4 transition-all ${favoriteActive ? 'fill-purple-500 text-purple-400 scale-110' : 'text-slate-400'}`} />
+            <Heart className={`w-4 h-4 transition-all ${favoriteActive ? 'fill-purple-500 text-purple-400 scale-110' : 'text-slate-500'}`} />
             <span>{favoriteActive ? 'Favorito' : 'Guardar'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1 bg-slate-950/85 backdrop-blur-md hover:bg-slate-900/95 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-800 cursor-pointer font-mono"
+            className="flex items-center gap-1 bg-white/85 backdrop-blur-md hover:bg-slate-50/95 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition-all border border-slate-200 cursor-pointer font-mono"
           >
             <Share2 className="w-4 h-4 text-purple-400" />
             <span>{copiedLink ? 'Copiado!' : 'Partilhar'}</span>
@@ -556,11 +556,11 @@ export default function BusinessDetail() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Header Identity Card */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-900 shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden group">
+            <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-purple-500/5 rounded-full pointer-events-none blur-3xl" />
               
               {/* Overlapping logo image */}
-              <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-900 shadow-2xl bg-zinc-900 shrink-0">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-100 shadow-2xl bg-white shrink-0">
                 <img
                   src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                   alt="logo"
@@ -575,33 +575,33 @@ export default function BusinessDetail() {
 
               <div className="text-center sm:text-left flex-1 font-sans">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span className="px-2.5 py-0.5 bg-purple-950/50 text-purple-300 text-[10px] uppercase font-mono tracking-wider font-bold rounded-full border border-purple-900/40">
+                  <span className="px-2.5 py-0.5 bg-purple-50 text-purple-300 text-[10px] uppercase font-mono tracking-wider font-bold rounded-full border border-purple-900/40">
                     {business.category}
                   </span>
                   {business.is_verified && (
-                    <span className="px-2.5 py-0.5 bg-emerald-950/40 text-emerald-400 text-[10px] uppercase font-mono tracking-wider font-bold rounded-full flex items-center gap-1 border border-emerald-900/30">
+                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-400 text-[10px] uppercase font-mono tracking-wider font-bold rounded-full flex items-center gap-1 border border-emerald-200">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                       <span>Verificado</span>
                     </span>
                   )}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-white mt-2 uppercase tracking-tight flex items-center justify-center sm:justify-start gap-2 flex-wrap font-display">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 uppercase tracking-tight flex items-center justify-center sm:justify-start gap-2 flex-wrap font-display">
                   <span>{business.name}</span>
                   {(business.is_premium || (finalRating >= 4.5 && finalReviewsCount >= 1 && business.is_verified)) && (
-                    <span className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white text-[9.5px] font-bold uppercase px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 select-none shrink-0" title="Parceiro de destaque com serviços validados">
+                    <span className="bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-900 text-[9.5px] font-bold uppercase px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 select-none shrink-0" title="Parceiro de destaque com serviços validados">
                       👑 Premium
                     </span>
                   )}
                 </h1>
                 
-                <p className="text-xs text-slate-400 mt-1.5 flex items-center justify-center sm:justify-start gap-1 font-mono">
+                <p className="text-xs text-slate-500 mt-1.5 flex items-center justify-center sm:justify-start gap-1 font-mono">
                   <MapPin className="w-4 h-4 text-purple-400 shrink-0" />
                   <span>{business.city}, {business.district}</span>
                 </p>
 
                 {/* Visual Stars & Reviews metric */}
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-2.5 text-xs text-slate-400 font-mono">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-2.5 text-xs text-slate-500 font-mono">
                   {finalReviewsCount > 0 ? (
                     <>
                       <div className="flex">
@@ -616,9 +616,9 @@ export default function BusinessDetail() {
                           />
                         ))}
                       </div>
-                      <span className="font-extrabold text-slate-200">{finalRating.toFixed(1)}</span>
+                      <span className="font-extrabold text-slate-700">{finalRating.toFixed(1)}</span>
                       <span className="text-slate-500">•</span>
-                      <span className="text-slate-350 font-bold">
+                      <span className="text-slate-500 font-bold">
                         {finalReviewsCount} {finalReviewsCount === 1 ? 'avaliação' : 'avaliações'}
                       </span>
                     </>
@@ -637,18 +637,18 @@ export default function BusinessDetail() {
             </div>
 
             {/* Presentation/Biography Card */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-900 shadow-xl space-y-4">
-              <h2 className="text-base font-extrabold text-white font-display">Sobre o Estabelecimento</h2>
-              <p className="text-xs sm:text-sm text-slate-350 leading-relaxed font-sans whitespace-pre-wrap">
+            <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-xl space-y-4">
+              <h2 className="text-base font-extrabold text-slate-900 font-display">Sobre o Estabelecimento</h2>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-sans whitespace-pre-wrap">
                 {business.description || 'Presta serviços de corte, maquilhagem cosmética, manicura e assessoria de estilo personalizada de acordo com os padrões artísticos europeus.'}
               </p>
             </div>
 
             {/* Real Services Listing Section */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-900 shadow-xl space-y-6">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                <h2 className="text-base font-extrabold text-white font-display">Serviços Disponíveis</h2>
-                <span className="text-[10px] font-mono bg-purple-950/50 text-purple-300 border border-purple-800/40 px-2.5 py-0.5 rounded-full font-bold">
+            <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-xl space-y-6">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <h2 className="text-base font-extrabold text-slate-900 font-display">Serviços Disponíveis</h2>
+                <span className="text-[10px] font-mono bg-purple-50 text-purple-300 border border-purple-200 px-2.5 py-0.5 rounded-full font-bold">
                   {services.length} {services.length === 1 ? 'Serviço' : 'Serviços'}
                 </span>
               </div>
@@ -656,11 +656,11 @@ export default function BusinessDetail() {
               {loadingServices ? (
                 <div className="py-12 text-center space-y-2">
                   <Loader2 className="w-6 h-6 animate-spin text-purple-400 mx-auto" />
-                  <p className="text-xs text-slate-400 font-mono">Buscando menu de tratamentos...</p>
+                  <p className="text-xs text-slate-500 font-mono">Buscando menu de tratamentos...</p>
                 </div>
               ) : services.length === 0 ? (
                 <div className="py-12 text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-10 h-10 bg-purple-950/40 text-purple-450 rounded-full border border-purple-900/30">
+                  <div className="inline-flex items-center justify-center w-10 h-10 bg-purple-50 text-purple-450 rounded-full border border-purple-200">
                     <Compass className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-slate-500 font-medium font-mono">Ainda não existem serviços de atendimento ativo neste estabelecimento.</p>
@@ -670,10 +670,10 @@ export default function BusinessDetail() {
                   {services.map((srv) => (
                     <div
                       key={srv.id}
-                      className="p-4 bg-slate-950/60 hover:bg-purple-950/20 border border-slate-900 rounded-2xl transition-all flex flex-col sm:flex-row gap-4 justify-between sm:items-center group"
+                      className="p-4 bg-white/60 hover:bg-purple-50/50 border border-slate-100 rounded-2xl transition-all flex flex-col sm:flex-row gap-4 justify-between sm:items-center group"
                     >
                       <div className="flex gap-3.5 items-start">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-slate-800">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-200">
                           <img
                             src={srv.image_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                             alt={srv.name}
@@ -687,28 +687,28 @@ export default function BusinessDetail() {
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors uppercase font-sans">{srv.name}</h4>
-                            <span className="px-2 py-0.5 bg-purple-950/40 text-purple-300 text-[9px] rounded-full select-none font-bold border border-purple-800/40">
+                            <h4 className="text-sm font-bold text-slate-900 group-hover:text-purple-400 transition-colors uppercase font-sans">{srv.name}</h4>
+                            <span className="px-2 py-0.5 bg-purple-50 text-purple-300 text-[9px] rounded-full select-none font-bold border border-purple-200">
                               {srv.category?.name || 'Geral'}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 leading-relaxed max-w-md">{srv.description || 'Consulta e tratamento especializado.'}</p>
+                          <p className="text-xs text-slate-500 leading-relaxed max-w-md">{srv.description || 'Consulta e tratamento especializado.'}</p>
                           <div className="flex items-center gap-1 text-[11px] text-slate-500 font-mono pt-0.5">
                             <span>⏱ {srv.duration_minutes} min de atendimento</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 justify-between sm:justify-center shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-900">
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 justify-between sm:justify-center shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                         <div className="font-mono text-right">
                           <span className="text-[11px] text-slate-500 block sm:hidden">Preço</span>
-                          <span className="text-base sm:text-lg font-bold text-white">
+                          <span className="text-base sm:text-lg font-bold text-slate-900">
                             {srv.price ? Number(srv.price).toFixed(2) : '0.00'} €
                           </span>
                         </div>
                         <button
                           onClick={() => handleOpenBooking(srv)}
-                          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-purple-950/30"
+                          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-slate-900 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-purple-950/30"
                         >
                           <span>Reservar</span>
                         </button>
@@ -766,7 +766,7 @@ export default function BusinessDetail() {
                             onClick={() => setNewReviewRating(star)}
                             className="text-amber-400 focus:outline-none cursor-pointer"
                           >
-                            <Star className={`w-6 h-6 ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />
+                            <Star className={`w-6 h-6 ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-700'}`} />
                           </button>
                         ))}
                       </div>
@@ -817,7 +817,7 @@ export default function BusinessDetail() {
                       ) : (
                         <div>
                           <p className="text-xs text-slate-600 font-semibold">Arraste e solte ou faça upload da sua foto de look</p>
-                          <p className="text-[10px] text-slate-400 mt-1">Clique para escolher o ficheiro (PNG, JPG)</p>
+                          <p className="text-[10px] text-slate-500 mt-1">Clique para escolher o ficheiro (PNG, JPG)</p>
                         </div>
                       )}
                     </div>
@@ -827,7 +827,7 @@ export default function BusinessDetail() {
                     <button
                       type="submit"
                       disabled={submittingReview}
-                      className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                      className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                     >
                       {submittingReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                       <span>Submeter Avaliação</span>
@@ -849,7 +849,7 @@ export default function BusinessDetail() {
                           <span className="font-bold text-slate-800 block">{r.customer_name}</span>
                           <span className="text-[10px] text-slate-500 font-medium">Serviço: <span className="font-semibold text-purple-600">{r.service_name}</span></span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-[10px] text-slate-500 font-mono">
                           {r.created_at ? new Date(r.created_at).toLocaleDateString('pt-PT') : 'Hoje'}
                         </span>
                       </div>
@@ -862,7 +862,7 @@ export default function BusinessDetail() {
                             className={`w-3.5 h-3.5 ${
                               star <= r.rating
                                 ? 'fill-amber-400 text-amber-400'
-                                : 'text-slate-200'
+                                : 'text-slate-700'
                             }`}
                           />
                         ))}
@@ -887,7 +887,7 @@ export default function BusinessDetail() {
                       </p>
 
                       {/* Phase 12 Report workflow */}
-                      <div className="mt-3.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                      <div className="mt-3.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-medium">
                         {r.is_reported ? (
                           <span className="text-amber-600 font-semibold bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1 select-none">
                             ⚠️ Sob Investigação do Administrador (Denúncia Registada)
@@ -897,7 +897,7 @@ export default function BusinessDetail() {
                             onClick={() => setReportingReviewId(r.id)}
                             className="hover:text-purple-600 font-bold tracking-wide flex items-center gap-1 cursor-pointer"
                           >
-                            <Flag className="w-3 h-3 text-slate-400 hover:text-purple-600" />
+                            <Flag className="w-3 h-3 text-slate-500 hover:text-purple-600" />
                             <span>Contestar ou Reportar Avaliação</span>
                           </button>
                         )}
@@ -925,7 +925,7 @@ export default function BusinessDetail() {
                             <button
                               type="button"
                               onClick={() => handleReportReviewSubmit(r.id)}
-                              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[10px] font-bold cursor-pointer"
+                              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-slate-900 rounded-md text-[10px] font-bold cursor-pointer"
                             >
                               Submeter Denúncia
                             </button>
@@ -937,7 +937,7 @@ export default function BusinessDetail() {
                 </div>
               ) : (
                 <div className="text-center py-10">
-                  <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                  <MessageSquare className="w-8 h-8 text-slate-600 mx-auto mb-3" />
                   <p className="text-xs text-slate-505 text-slate-500 leading-normal">
                     Este estabelecimento ainda não recebeu qualquer avaliação ou comentário de clientes.<br />
                     Após realizar e concluir o seu agendamento no salão, poderá deixar o seu feedback!
@@ -952,10 +952,10 @@ export default function BusinessDetail() {
           <div className="space-y-6">
             
             {/* Premium Booking CTA card */}
-            <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-750 p-6 sm:p-8 rounded-[24px] text-white shadow-lg space-y-4 relative overflow-hidden group">
+            <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-750 p-6 sm:p-8 rounded-[24px] text-slate-900 shadow-lg space-y-4 relative overflow-hidden group">
               <div className="absolute -right-12 -bottom-12 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:bg-white/15 transition-all duration-500" />
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-mono tracking-widest font-extrabold bg-white/15 text-white px-2.5 py-0.5 rounded-full select-none border border-white/20">
+                <span className="text-[10px] uppercase font-mono tracking-widest font-extrabold bg-white/15 text-slate-900 px-2.5 py-0.5 rounded-full select-none border border-white/20">
                   Agendamento Online Real
                 </span>
                 <h3 className="text-lg font-bold tracking-tight uppercase font-display">Marcar Atendimento</h3>
@@ -966,7 +966,7 @@ export default function BusinessDetail() {
               <button
                 type="button"
                 onClick={() => handleOpenBooking(null)}
-                className="w-full py-3 bg-slate-950 hover:bg-slate-900 text-white hover:text-purple-450 hover:text-purple-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border border-slate-800/80 font-mono"
+                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-900 hover:text-purple-450 hover:text-purple-400 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border border-slate-200/80 font-mono"
               >
                 <Calendar className="w-4 h-4 text-purple-400" />
                 <span>Reservar Agora</span>
@@ -974,16 +974,16 @@ export default function BusinessDetail() {
             </div>
 
             {/* Phase 12 Dispute Launcher CTA Card */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md border border-slate-900 p-6 sm:p-8 rounded-[24px] shadow-xl space-y-4">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-100 p-6 sm:p-8 rounded-[24px] shadow-xl space-y-4">
               <div className="space-y-1">
-                <span className="text-[9px] uppercase font-mono tracking-widest font-black bg-purple-950/40 text-purple-300 px-2.5 py-0.5 rounded-full select-none border border-purple-900/30">
+                <span className="text-[9px] uppercase font-mono tracking-widest font-black bg-purple-50 text-purple-300 px-2.5 py-0.5 rounded-full select-none border border-purple-200">
                   Centro de Mediação Glamzo
                 </span>
-                <h3 className="text-sm font-extrabold text-white tracking-tight uppercase flex items-center gap-1.5 font-display">
+                <h3 className="text-sm font-extrabold text-slate-900 tracking-tight uppercase flex items-center gap-1.5 font-display">
                   <FileWarning className="w-4 h-4 text-purple-400" />
                   <span>Problemas ou Disputas?</span>
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-500 leading-relaxed">
                   Teve algum conflito com o seu agendamento, no-show indevido ou cobrança incorreta? Inicie uma disputa profissional regulada pelo suporte.
                 </p>
               </div>
@@ -997,24 +997,24 @@ export default function BusinessDetail() {
                   }
                   setDisputeOpen(true);
                 }}
-                className="w-full py-2.5 bg-purple-950/40 border border-purple-900/40 hover:bg-purple-900/60 text-purple-300 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                className="w-full py-2.5 bg-purple-50 border border-purple-900/40 hover:bg-purple-900/60 text-purple-300 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
               >
                 <span>Iniciar Disputa de Serviço</span>
               </button>
             </div>
 
             {/* Call to Actions Contact box */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-900 shadow-xl space-y-4">
-              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Contactos Comercial</h3>
+            <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-xl space-y-4">
+              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Contactos Comercial</h3>
               
               <div className="space-y-3 pt-2">
                 
                 {/* Internal Chat button */}
                 <button
                   onClick={handleOpenChat}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                  <Sparkles className="w-4 h-4 text-slate-900 animate-pulse" />
                   <span>Falar com Loja</span>
                 </button>
 
@@ -1024,7 +1024,7 @@ export default function BusinessDetail() {
                     href={business.whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-605 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-605 bg-emerald-600 hover:bg-emerald-700 text-slate-900 rounded-xl text-xs font-bold transition-all shadow-md"
                   >
                     <MessageSquare className="w-4 h-4 fill-white" />
                     <span>Falar no WhatsApp</span>
@@ -1034,7 +1034,7 @@ export default function BusinessDetail() {
                     href={`https://wa.me/${business.phone.replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-[#110724]/60 border border-white/5 hover:border-purple-500/20 text-white rounded-xl text-xs font-bold transition-all"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-[#110724]/60 border border-white/5 hover:border-purple-500/20 text-slate-900 rounded-xl text-xs font-bold transition-all"
                   >
                     <MessageSquare className="w-4 h-4 text-purple-400" />
                     <span>WhatsApp Comercial</span>
@@ -1047,7 +1047,7 @@ export default function BusinessDetail() {
                     href={business.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-800 hover:bg-slate-900 text-slate-300 rounded-xl text-xs font-semibold transition-all"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-all"
                   >
                     <Globe className="w-4 h-4 text-purple-400" />
                     <span>Visitar Website</span>
@@ -1057,8 +1057,8 @@ export default function BusinessDetail() {
             </div>
 
             {/* Information attributes list box */}
-            <div className="bg-[#0a0f1d]/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-900 shadow-xl space-y-5 font-sans">
-              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider border-b border-slate-800 pb-2">Detalhes de Localidade</h3>
+            <div className="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-xl space-y-5 font-sans">
+              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2">Detalhes de Localidade</h3>
               
               <div className="space-y-4 text-xs">
                 
@@ -1067,8 +1067,8 @@ export default function BusinessDetail() {
                   <MapPin className="w-4.5 h-4.5 text-purple-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-purple-400 tracking-wider uppercase text-[10px]">Morada Completa</h4>
-                    <p className="text-slate-200 mt-0.5">{business.address}</p>
-                    <p className="text-slate-400 mt-0.5">{business.city}, {business.district} {business.postal_code ? `- CP ${business.postal_code}` : ''}</p>
+                    <p className="text-slate-700 mt-0.5">{business.address}</p>
+                    <p className="text-slate-500 mt-0.5">{business.city}, {business.district} {business.postal_code ? `- CP ${business.postal_code}` : ''}</p>
                   </div>
                 </div>
 
@@ -1077,7 +1077,7 @@ export default function BusinessDetail() {
                   <Phone className="w-4.5 h-4.5 text-slate-500 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-purple-400 tracking-wider uppercase text-[10px]">Telefone de Contacto</h4>
-                    <a href={`tel:${business.phone}`} className="text-slate-200 mt-0.5 hover:text-white font-semibold block transition-colors">
+                    <a href={`tel:${business.phone}`} className="text-slate-700 mt-0.5 hover:text-slate-900 font-semibold block transition-colors">
                       {business.phone}
                     </a>
                   </div>
@@ -1089,7 +1089,7 @@ export default function BusinessDetail() {
                     <Mail className="w-4.5 h-4.5 text-slate-500 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-purple-400 tracking-wider uppercase text-[10px]">E-mail Comercial</h4>
-                      <a href={`mailto:${business.email}`} className="text-slate-200 mt-0.5 hover:text-purple-400 transition-colors block break-all">
+                      <a href={`mailto:${business.email}`} className="text-slate-700 mt-0.5 hover:text-purple-400 transition-colors block break-all">
                         {business.email}
                       </a>
                     </div>
@@ -1099,7 +1099,7 @@ export default function BusinessDetail() {
                 {/* Instagram details */}
                 {business.instagram && (
                   <div className="flex items-start gap-2.5">
-                    <span className="w-4.5 h-4.5 bg-purple-950/50 text-purple-300 border border-purple-900/40 font-mono flex items-center justify-center shrink-0 mt-0.5 rounded text-[10px] font-extrabold font-mono">IG</span>
+                    <span className="w-4.5 h-4.5 bg-purple-50 text-purple-300 border border-purple-900/40 font-mono flex items-center justify-center shrink-0 mt-0.5 rounded text-[10px] font-extrabold font-mono">IG</span>
                     <div>
                       <h4 className="font-bold text-purple-400 tracking-wider uppercase text-[10px]">Instagram</h4>
                       <a 
@@ -1115,10 +1115,10 @@ export default function BusinessDetail() {
                 )}
 
                 {/* Dynamic Weekly Operating Hours Visual Checklist */}
-                <div className="pt-4 mt-2 border-t border-slate-800 space-y-3">
+                <div className="pt-4 mt-2 border-t border-slate-200 space-y-3">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4.5 h-4.5 text-rose-500 animate-pulse" />
-                    <h4 className="font-bold text-white tracking-wider uppercase text-[10px]">Horário de Funcionamento</h4>
+                    <h4 className="font-bold text-slate-900 tracking-wider uppercase text-[10px]">Horário de Funcionamento</h4>
                   </div>
                   
                   <div className="space-y-1.5 pt-1">
@@ -1138,7 +1138,7 @@ export default function BusinessDetail() {
                           className={`flex items-center justify-between p-2 rounded-xl text-xs transition-colors ${
                             isToday 
                               ? 'bg-purple-950/55 border border-purple-500/30 text-purple-300 font-bold shadow-md shadow-purple-950/40' 
-                              : 'text-slate-400 hover:bg-slate-900/45'
+                              : 'text-slate-500 hover:bg-slate-50/45'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -1146,7 +1146,7 @@ export default function BusinessDetail() {
                             <span>{dayNames[dayIdx]}</span>
                           </div>
                           
-                          <span className={`font-mono text-[11px] ${isClosed ? 'text-rose-450 font-bold' : 'text-slate-300 font-medium'}`}>
+                          <span className={`font-mono text-[11px] ${isClosed ? 'text-rose-450 font-bold' : 'text-slate-600 font-medium'}`}>
                             {isClosed ? 'Fechado' : `${openStr} - ${closeStr}`}
                           </span>
                         </div>
@@ -1181,21 +1181,21 @@ export default function BusinessDetail() {
             {/* Backdrop filter blur backdrop overlay */}
             <div 
               onClick={() => setChatOpen(false)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs transition-opacity cursor-pointer" 
+              className="absolute inset-0 bg-white/40 backdrop-blur-xs transition-opacity cursor-pointer" 
               aria-hidden="true" 
             />
 
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
               <div className="pointer-events-auto w-screen max-w-md">
-                <div className="flex h-full flex-col bg-slate-950 shadow-2xl border-l border-slate-900">
+                <div className="flex h-full flex-col bg-white shadow-2xl border-l border-slate-100">
                   {/* Drawer Header Header */}
-                  <div className="bg-slate-900/40 px-6 py-5 border-b border-slate-900 flex items-center justify-between">
+                  <div className="bg-slate-50/40 px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white font-bold">
+                      <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-slate-900 font-bold">
                         <Sparkles className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-sm font-extrabold text-white tracking-tight">{business?.name || 'Salão Parceiro'}</h2>
+                        <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">{business?.name || 'Salão Parceiro'}</h2>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span className="text-[10px] text-emerald-450 font-bold tracking-wider uppercase">Assistente IA Glamzo Activo</span>
@@ -1204,20 +1204,20 @@ export default function BusinessDetail() {
                     </div>
                     <button 
                       onClick={() => setChatOpen(false)}
-                      className="rounded-lg p-1 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors focus:outline-none"
+                      className="rounded-lg p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Channel WhatsApp Direct Action */}
-                  <div className="bg-slate-900/20 px-6 py-3 border-b border-slate-900 flex items-center justify-between gap-1">
-                    <span className="text-[10px] text-slate-400 font-medium font-sans">Prefere falar no WhatsApp comercial?</span>
+                  <div className="bg-slate-50/20 px-6 py-3 border-b border-slate-100 flex items-center justify-between gap-1">
+                    <span className="text-[10px] text-slate-500 font-medium font-sans">Prefere falar no WhatsApp comercial?</span>
                     <a 
                       href={business?.whatsapp || `https://wa.me/${business?.phone?.replace(/[^0-9]/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-lg flex items-center gap-1 transition-all uppercase tracking-wider shadow-xs"
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-slate-900 font-bold text-[10px] rounded-lg flex items-center gap-1 transition-all uppercase tracking-wider shadow-xs"
                     >
                       <MessageSquare className="w-3.5 h-3.5 fill-white" />
                       <span>Continuar no WP</span>
@@ -1228,11 +1228,11 @@ export default function BusinessDetail() {
                   <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {chatMessages.length === 0 ? (
                       <div className="h-full flex flex-col justify-center items-center text-center px-4">
-                        <div className="w-12 h-12 rounded-full bg-purple-950/60 border border-purple-800/40 flex items-center justify-center text-purple-400 mb-3">
+                        <div className="w-12 h-12 rounded-full bg-purple-950/60 border border-purple-200 flex items-center justify-center text-purple-400 mb-3">
                           <MessageSquare className="w-6 h-6" />
                         </div>
-                        <p className="text-xs text-slate-205 text-white font-bold">Inicie o Bate-papo</p>
-                        <p className="text-[11px] text-slate-450 text-slate-400 max-w-xs mt-1 leading-normal">
+                        <p className="text-xs text-slate-205 text-slate-900 font-bold">Inicie o Bate-papo</p>
+                        <p className="text-[11px] text-slate-500 text-slate-500 max-w-xs mt-1 leading-normal">
                           Coloque qualquer questão sobre horários, cortes, serviços disponíveis ou preços ao nosso agente inteligente.
                         </p>
                       </div>
@@ -1247,8 +1247,8 @@ export default function BusinessDetail() {
                             <span className="text-[9px] text-slate-500 font-mono font-bold mb-1 px-1">{msg.sender_name}</span>
                             <div className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
                               isUser 
-                                ? 'bg-purple-600 text-white rounded-tr-none shadow-xs font-semibold' 
-                                : 'bg-slate-900 text-slate-100 rounded-tl-none border border-slate-805/80'
+                                ? 'bg-purple-600 text-slate-900 rounded-tr-none shadow-xs font-semibold' 
+                                : 'bg-slate-50 text-slate-800 rounded-tl-none border border-slate-805/80'
                             }`}>
                               {msg.message}
                             </div>
@@ -1260,7 +1260,7 @@ export default function BusinessDetail() {
                   </div>
 
                   {/* Quick Suggestion Chips */}
-                  <div className="px-6 py-2 border-t border-slate-900 bg-[#0d1222] space-x-2 overflow-x-auto whitespace-nowrap flex items-center">
+                  <div className="px-6 py-2 border-t border-slate-100 bg-[#0d1222] space-x-2 overflow-x-auto whitespace-nowrap flex items-center">
                     {[
                       { text: 'Sugira horários livres', query: 'Quais os melhores horários livres hoje para corte/estética?' },
                       { text: 'Serviços populares', query: 'Quais os vossos serviços de beleza mais populares e os preços?' },
@@ -1271,7 +1271,7 @@ export default function BusinessDetail() {
                         onClick={async () => {
                           setChatInput(chip.query);
                         }}
-                        className="inline-block px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-[10px] rounded-full transition-all border border-slate-850 shrink-0 cursor-pointer"
+                        className="inline-block px-3 py-1.5 bg-slate-50 hover:bg-slate-200 text-slate-600 font-bold text-[10px] rounded-full transition-all border border-slate-200 shrink-0 cursor-pointer"
                       >
                         {chip.text}
                       </button>
@@ -1279,20 +1279,20 @@ export default function BusinessDetail() {
                   </div>
 
                   {/* Drawer Footer Inputs */}
-                  <form onSubmit={handleSendMessage} className="p-4 bg-slate-950 border-t border-slate-900">
-                    <div className="flex items-center gap-2 bg-[#0a0f1d] border border-slate-900 focus-within:border-purple-500 rounded-xl px-3 py-1.5 transition-all">
+                  <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-slate-100">
+                    <div className="flex items-center gap-2 bg-white border border-slate-100 focus-within:border-purple-500 rounded-xl px-3 py-1.5 transition-all">
                       <input 
                         type="text"
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder="Escreva a sua mensagem..."
                         disabled={sendingMessage}
-                        className="flex-1 bg-transparent border-none text-white text-xs placeholder-slate-500 focus:outline-none focus:ring-0 py-1.5"
+                        className="flex-1 bg-transparent border-none text-slate-900 text-xs placeholder-slate-500 focus:outline-none focus:ring-0 py-1.5"
                       />
                       <button 
                         type="submit"
                         disabled={sendingMessage || !chatInput.trim()}
-                        className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all disabled:opacity-50 cursor-pointer text-xs font-bold uppercase tracking-wider"
+                        className="p-2 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-lg transition-all disabled:opacity-50 cursor-pointer text-xs font-bold uppercase tracking-wider"
                       >
                         Enviar
                       </button>
@@ -1307,19 +1307,19 @@ export default function BusinessDetail() {
 
       {/* Dynamic Dispute Creation Modal Dialog */}
       {disputeOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[999]">
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4 z-[999]">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl max-w-md w-full overflow-hidden flex flex-col justify-between max-h-[90vh]">
-            <div className="bg-gradient-to-r from-red-650 to-rose-700 text-white px-6 py-5 flex justify-between items-center">
+            <div className="bg-gradient-to-r from-red-650 to-rose-700 text-slate-900 px-6 py-5 flex justify-between items-center">
               <div>
                 <h3 className="text-base font-black uppercase tracking-tight flex items-center gap-1.5">
-                  <FileWarning className="w-5 h-5 text-white animate-pulse" />
+                  <FileWarning className="w-5 h-5 text-slate-900 animate-pulse" />
                   <span>Nova Disputa Comercial</span>
                 </h3>
                 <p className="text-[10px] text-rose-100 font-mono mt-0.5">Centro de Resolução de Conflitos Glamzo</p>
               </div>
               <button 
                 onClick={() => setDisputeOpen(false)}
-                className="text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all cursor-pointer"
+                className="text-slate-900 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1327,7 +1327,7 @@ export default function BusinessDetail() {
 
             <form onSubmit={handleLaunchDispute} className="p-6 space-y-4 overflow-y-auto">
               <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5 font-mono">ID do Agendamento (Opcional)</label>
+                <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 font-mono">ID do Agendamento (Opcional)</label>
                 <input
                   type="text"
                   placeholder="Ex: BK-9204 (Deixe em branco para preenchimento automático)"
@@ -1338,7 +1338,7 @@ export default function BusinessDetail() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5 font-mono">Motivo Principal do Litígio</label>
+                <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 font-mono">Motivo Principal do Litígio</label>
                 <select
                   required
                   value={disputeReason}
@@ -1354,7 +1354,7 @@ export default function BusinessDetail() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5 font-mono">Explicação Detalhada do Ocorrido</label>
+                <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 font-mono">Explicação Detalhada do Ocorrido</label>
                 <textarea
                   required
                   rows={4}
@@ -1363,7 +1363,7 @@ export default function BusinessDetail() {
                   onChange={(e) => setDisputeDesc(e.target.value)}
                   className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-rose-500 focus:ring-1 focus:ring-rose-500 focus:outline-none"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Insira evidências verdadeiras. Relatórios falsificados gerarão suspensão da sua reputação.</p>
+                <p className="text-[10px] text-slate-500 mt-1">Insira evidências verdadeiras. Relatórios falsificados gerarão suspensão da sua reputação.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 flex-wrap">
@@ -1377,7 +1377,7 @@ export default function BusinessDetail() {
                 <button
                   type="submit"
                   disabled={disputeLoading}
-                  className="px-5 py-2.5 bg-red-650 hover:bg-red-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  className="px-5 py-2.5 bg-red-650 hover:bg-red-700 text-slate-900 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
                 >
                   {disputeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
                   <span>Submeter para Arbitragem</span>
@@ -1392,7 +1392,7 @@ export default function BusinessDetail() {
       {/* FLOATING QR CODE GREETING AND LOYALTY WIDGET (PART 4)*/}
       {/* ==================================================== */}
       {qrPromptOpen && (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-[420px] bg-slate-950/95 backdrop-blur-md rounded-3xl border border-purple-500/20 shadow-2xl p-5 md:p-6 z-[50] animate-fade-in text-white">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-[420px] bg-white/95 backdrop-blur-md rounded-3xl border border-purple-500/20 shadow-2xl p-5 md:p-6 z-[50] animate-fade-in text-slate-900">
           <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-3.5">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 bg-purple-900/40 rounded-xl flex items-center justify-center border border-purple-500/30 text-purple-400">
@@ -1400,18 +1400,18 @@ export default function BusinessDetail() {
               </div>
               <div>
                 <h4 className="text-xs uppercase font-mono tracking-widest text-purple-400 font-extrabold">QR Conexão Digital</h4>
-                <h3 className="text-sm font-black text-white">{business?.name}</h3>
+                <h3 className="text-sm font-black text-slate-900">{business?.name}</h3>
               </div>
             </div>
             <button
               onClick={() => setQrPromptOpen(false)}
-              className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
+              className="text-slate-500 hover:text-slate-900 bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <p className="text-[11px] text-slate-350 leading-relaxed pt-3 text-left">
+          <p className="text-[11px] text-slate-500 leading-relaxed pt-3 text-left">
             Digitalizou o QR Code oficial de {business?.name || 'este salão'}. Guarde o espaço para reservar de forma instantânea em segundos.
           </p>
 
@@ -1430,7 +1430,7 @@ export default function BusinessDetail() {
                 className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                   favoriteActive 
                     ? 'bg-purple-900/30 text-purple-300 border-purple-500/30' 
-                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-purple-500 hover:text-white'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-purple-500 hover:text-slate-900'
                 }`}
               >
                 <Heart className={`w-3.5 h-3.5 ${favoriteActive ? 'fill-purple-500 text-purple-400' : ''}`} />
@@ -1440,7 +1440,7 @@ export default function BusinessDetail() {
               <button
                 type="button"
                 onClick={() => setIsHomePromptOpen(!isHomePromptOpen)}
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-slate-900 border border-slate-800 hover:border-purple-500 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 border border-slate-200 hover:border-purple-500 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 <Smartphone className="w-3.5 h-3.5 text-purple-400" />
                 <span>Instalar no Ecrã</span>
@@ -1449,23 +1449,23 @@ export default function BusinessDetail() {
 
             {/* Sub-prompt: Add to home screen steps */}
             {isHomePromptOpen && (
-              <div className="bg-slate-900/60 rounded-2xl p-3 border border-slate-800 text-[10px] leading-relaxed text-slate-300 space-y-1.5 text-left animate-slide-up">
+              <div className="bg-slate-50/60 rounded-2xl p-3 border border-slate-200 text-[10px] leading-relaxed text-slate-600 space-y-1.5 text-left animate-slide-up">
                 <div className="font-extrabold uppercase font-mono tracking-wider text-purple-450 flex items-center gap-1 text-purple-400">
                   <Smartphone className="w-3.5 h-3.5" />
                   <span>Como Adicionar ao Ecrã Inicial</span>
                 </div>
                 <p>
-                  <strong className="text-white">Para iOS (Safari):</strong> Clique no botão de <strong className="text-white">Partilhar</strong> no pé do ecrã e selecione <strong className="text-white">Adicionar ao Ecrã Principal</strong>.
+                  <strong className="text-slate-900">Para iOS (Safari):</strong> Clique no botão de <strong className="text-slate-900">Partilhar</strong> no pé do ecrã e selecione <strong className="text-slate-900">Adicionar ao Ecrã Principal</strong>.
                 </p>
                 <p>
-                  <strong className="text-white">Para Android (Chrome):</strong> Dê um clique nos <strong className="text-white">3 pontos</strong> de opções superiores e selecione <strong className="text-white">Instalar aplicação / Adicionar ao Ecrã</strong>.
+                  <strong className="text-slate-900">Para Android (Chrome):</strong> Dê um clique nos <strong className="text-slate-900">3 pontos</strong> de opções superiores e selecione <strong className="text-slate-900">Instalar aplicação / Adicionar ao Ecrã</strong>.
                 </p>
               </div>
             )}
 
             {/* Sub-prompt: newsletter promos and follow list */}
             <div className="border-t border-white/5 pt-3.5 space-y-2">
-              <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-extrabold block text-left">Registar para Campanhas & Descontos</span>
+              <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 font-extrabold block text-left">Registar para Campanhas & Descontos</span>
               
               {newsletterSubscribed ? (
                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl text-[11px] leading-snug font-bold text-center animate-pulse-subtle">
@@ -1486,11 +1486,11 @@ export default function BusinessDetail() {
                     placeholder="teu-email@exemplo.com"
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-purple-500 placeholder-slate-650"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 outline-none focus:border-purple-500 placeholder-slate-650"
                   />
                   <button
                     type="submit"
-                    className="px-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center shrink-0"
+                    className="px-3.5 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center shrink-0"
                   >
                     Seguir
                   </button>

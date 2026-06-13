@@ -198,13 +198,13 @@ export default function GlamzoMessenger() {
     setChatMessages(prev => [...prev, msg]);
     setIsAiAnswering(true);
 
-    // Simulate auto-answer delay
+    // Wait for auto-reply
     setTimeout(async () => {
       const updatedMsgs = await fetchMessagesForSession(selectedSession.id);
       setChatMessages(updatedMsgs);
       setIsAiAnswering(false);
       loadCustomerConversations();
-    }, 1500);
+    }, 5500);
   };
 
   const startNewChatWithBusiness = async (biz: any) => {

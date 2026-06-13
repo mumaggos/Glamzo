@@ -11,7 +11,7 @@ import {
   Building, LayoutGrid, Calendar, Scissors, Users, Clock, UsersRound,
   TrendingUp, BarChart, Tag, Landmark, Smartphone, Settings, LogOut, 
   Plus, Edit2, Trash2, Check, X, AlertCircle, Sparkles, AlertTriangle, CheckCircle, 
-  DollarSign, CheckSquare, Search, Phone, Mail, HelpCircle, Eye, RefreshCw, MapPin, Gift, Bell, Play, Truck, Menu,
+  DollarSign, CheckSquare, Search, Phone, Mail, HelpCircle, Eye, RefreshCw, MapPin, Gift, Bell, Play, Truck, Menu, MessageSquare,
   Lock, CreditCard, ShieldCheck, Globe, QrCode, Copy, ExternalLink, Download, Printer, Share2, Heart,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -24,6 +24,7 @@ import GlamzoLogo from '../components/GlamzoLogo';
 import { slugify, validateSlugUniqueness } from '../utils/slugify';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import DashboardAssistant from '../components/DashboardAssistant';
+import DashboardMessages from '../components/DashboardMessages';
 
 export default function Dashboard() {
   const { user, profile, signOut, loading: authLoading, refreshProfile } = useAuth();
@@ -31,7 +32,7 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
 
   // Active tab of our dark high-contrast operational terminal
-  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'clientes' | 'configuracoes' | 'financeiro' | 'campanhas' | 'loja'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'reservas' | 'servicos' | 'equipa' | 'clientes' | 'configuracoes' | 'financeiro' | 'campanhas' | 'loja' | 'mensagens'>('agenda');
 
   // Core Database States
   const [business, setBusiness] = useState<Business | null>(null);
@@ -2169,6 +2170,7 @@ export default function Dashboard() {
                 { id: 'campanhas', label: 'Promoções', icon: Tag },
                 { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
                 { id: 'loja', label: 'Website & QR Code', icon: Globe },
+                { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
                 { id: 'configuracoes', label: 'Configurações', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -2183,7 +2185,7 @@ export default function Dashboard() {
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                       isActive 
                         ? 'bg-purple-600 text-white shadow shadow-purple-950/20' 
-                        : 'text-slate-400 hover:bg-slate-900/60 hover:text-purple-400'
+                        : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -2264,6 +2266,7 @@ export default function Dashboard() {
               { id: 'campanhas', label: 'Promoções', icon: Tag },
               { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
               { id: 'loja', label: 'Website & QR Code', icon: Globe },
+              { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
               { id: 'configuracoes', label: 'Configurações', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -2275,7 +2278,7 @@ export default function Dashboard() {
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-purple-600 text-white shadow shadow-purple-900/40' 
-                      : 'text-slate-450 hover:bg-slate-900/60 hover:text-purple-400 text-slate-400'
+                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -2519,10 +2522,10 @@ export default function Dashboard() {
                           <button
                             key={mode}
                             onClick={() => setAgendaMode(mode)}
-                            className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer text-[11px] ${
+                            className={`px-4 py-2 rounded-xl border font-bold transition cursor-pointer text-[11px] uppercase tracking-wide ${
                               agendaMode === mode 
-                                ? 'bg-purple-600 text-white shadow-md' 
-                                : 'text-slate-400 hover:text-white'
+                                ? 'bg-purple-600 border-purple-500 text-white shadow-md' 
+                                : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700'
                             }`}
                           >
                             {mode === 'today' ? 'Hoje' : mode === 'week' ? 'Semanal' : mode === 'month' ? 'Mensal' : 'Por Profissional'}
@@ -3827,6 +3830,21 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* VIEW: MENSAGENS (CHAT)                               */}
+              {/* ==================================================== */}
+              {activeTab === 'mensagens' && (
+                <div id="view-mensagens" className="space-y-6 animate-fade-in max-w-5xl">
+                  <div className="border-b border-slate-900 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                      Mensagens e Suporte
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Responda rapidamente aos seus clientes. Dê suporte direto via portal.</p>
+                  </div>
+                  {business && <DashboardMessages businessId={business.id} />}
                 </div>
               )}
 
