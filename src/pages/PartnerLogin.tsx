@@ -5,8 +5,16 @@ import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Sparkles, Loader2, Landmark } from 'lucide-react';
 
 export default function PartnerLogin() {
-  const { signIn, signOut, resetPassword } = useAuth();
+  const { signIn, signOut, resetPassword, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!authLoading && user && profile) {
+      if (profile.role === 'admin') navigate('/admin', { replace: true });
+      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else navigate('/account', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
 
   const [email, setEmail] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -54,24 +62,18 @@ export default function PartnerLogin() {
 
       const role = profData?.role || 'customer';
 
-      if (role === 'customer') {
-        setErrorMsg('Esta conta pertence a um Cliente Final. Por favor aceda ao login do portal de clientes (/login).');
-        await signOut();
-        return;
-      }
+      let redirect = '/dashboard';
+      if (role === 'customer') redirect = '/account';
+      else if (role === 'admin') redirect = '/admin';
 
-      // Route based on role
-      const redirect = role === 'admin' ? '/admin' : '/dashboard';
-      setSuccessMsg('Sessão iniciada como parceiro comercial com sucesso!');
+      setSuccessMsg('Sessão iniciada com sucesso! A redirecionar...');
       
       setTimeout(() => {
         navigate(redirect, { replace: true });
-      }, 1500);
+      }, 800);
 
     } catch (err: any) {
       console.error('Partner Login Error:', err);
-      // Clean up session in case of partial logins
-      try { await signOut(); } catch (se) {}
       setErrorMsg(err.message || 'Falha ao autenticar. Confirme suas credenciais.');
     } finally {
       setLoading(false);

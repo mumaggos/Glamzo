@@ -22,6 +22,7 @@ const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
+const Favorites = React.lazy(() => import('./pages/Favorites'));
 const GlamzoMessenger = React.lazy(() => import('./components/GlamzoMessenger'));
 
 function RouteLoader() {
@@ -91,6 +92,7 @@ export default function App() {
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
                 <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
+                <Route path="/favorites" element={<Favorites />} />
 
                 {/* /onboarding: Partner Wizard - Restricted to authenticated members */}
                 <Route
@@ -106,7 +108,7 @@ export default function App() {
                 <Route
                   path="/account"
                   element={
-                    <ProtectedRoute allowedRoles={['customer', 'admin']}>
+                    <ProtectedRoute allowedRoles={['customer', 'business', 'admin']}>
                       <Account />
                     </ProtectedRoute>
                   }

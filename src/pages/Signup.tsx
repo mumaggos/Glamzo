@@ -6,8 +6,16 @@ import { Eye, EyeOff, User, Mail, Sparkles, Loader2, Store, UserPlus } from 'luc
 import GlamzoLogo from '../components/GlamzoLogo';
 
 export default function Signup() {
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp, signInWithGoogle, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!authLoading && user && profile) {
+      if (profile.role === 'admin') navigate('/admin', { replace: true });
+      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else navigate('/account', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
 
   // Signup fields
   const [fullName, setFullName] = useState('');

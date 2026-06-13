@@ -5,8 +5,16 @@ import { supabase } from '../lib/supabase';
 import { ShieldCheck, Eye, EyeOff, KeyRound, Mail, Loader2, Compass } from 'lucide-react';
 
 export default function AdminLogin() {
-  const { signIn, signOut, signUp } = useAuth();
+  const { signIn, signOut, signUp, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!authLoading && user && profile) {
+      if (profile.role === 'admin') navigate('/admin', { replace: true });
+      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else navigate('/account', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,7 +75,6 @@ export default function AdminLogin() {
 
     } catch (err: any) {
       console.error('Admin Login Error:', err);
-      try { await signOut(); } catch (se) {}
       setErrorMsg(err.message || 'Credenciais de administrador inválidas.');
     } finally {
       setLoading(false);

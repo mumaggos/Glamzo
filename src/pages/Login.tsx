@@ -6,8 +6,16 @@ import { Eye, EyeOff, KeyRound, Mail, Sparkles, Loader2, Compass } from 'lucide-
 import GlamzoLogo from '../components/GlamzoLogo';
 
 export default function Login() {
-  const { signIn, signInWithGoogle, resetPassword, signOut } = useAuth();
+  const { signIn, signInWithGoogle, resetPassword, signOut, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!authLoading && user && profile) {
+      if (profile.role === 'admin') navigate('/admin', { replace: true });
+      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else navigate('/account', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
 
   const [email, setEmail] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,13 +61,9 @@ export default function Login() {
           
           const role = profData?.role || 'customer';
           if (role === 'admin') {
-            setErrorMsg('Esta conta pertence ao administrador. Por favor use a página de Login do Admin correspondente.');
-            await signOut();
-            return;
+            redirect = '/admin';
           } else if (role === 'business') {
-            setErrorMsg('Esta conta pertence a um Parceiro. Por favor use a página de Login de Parceiros (/partner/login).');
-            await signOut();
-            return;
+            redirect = '/dashboard';
           } else {
             redirect = '/account';
           }

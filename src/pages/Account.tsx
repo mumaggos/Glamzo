@@ -476,93 +476,16 @@ export default function Account() {
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Minha Conta</h1>
           <p className="text-sm text-slate-500 mt-1">Gerencie os seus agendamentos e dados de cadastro com o padrão do site principal.</p>
         </div>
-        <a href="/explore" className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-purple-650 hover:bg-purple-750 text-white rounded-2xl text-[11px] font-bold transition-all shadow-sm">
-          📍 Pesquisar Salões Próximos
-        </a>
-      </div>
-
-      {/* SECTION: OS MEUS FAVORITOS (CUSTOMERS MOST LOVED STUDIOS) */}
-      <div id="meus-favoritos" className="mb-12 bg-white border border-rose-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="flex justify-between items-center pb-4 border-b border-rose-50 mb-6">
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">Os Seus Favoritos</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-normal">Os seus salões, clínicas e especialistas estéticos favoritos para reserva rápida.</p>
-            </div>
-          </div>
-          <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full font-mono text-[10px] font-bold border border-rose-100">
-            {favoriteBusinesses.length} {favoriteBusinesses.length === 1 ? 'salão' : 'salões'}
-          </span>
-        </div>
-
-        {loadingFavorites ? (
-          <div className="py-8 text-center space-y-2">
-            <Loader2 className="w-6 h-6 animate-spin text-rose-500 mx-auto" />
-            <p className="text-xs text-slate-400 font-mono">A ler os seus favoritos em tempo real...</p>
-          </div>
-        ) : favoriteBusinesses.length === 0 ? (
-          <div className="py-8 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-            <Heart className="w-8 h-8 text-slate-350 mx-auto mb-2" />
-            <h4 className="text-xs font-bold text-slate-700">Ainda não guardou nenhum salão.</h4>
-            <p className="text-[10px] text-slate-400 max-w-xs mx-auto mt-1 leading-relaxed font-normal">
-              Consulte e explore estabelecimentos no nosso marketplace e clique no coração para guardar nos seus favoritos.
-            </p>
-            <a href="/explore" className="inline-block px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold border border-rose-200 mt-3 transition-colors">
-              Explorar Salões & Estúdios
+        <div className="flex gap-2">
+          {profile?.role === 'business' && (
+            <a href="/dashboard" className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[11px] font-bold transition-all shadow-sm">
+              🏢 Gerir Loja / Dashboard
             </a>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {favoriteBusinesses.map(biz => (
-              <div 
-                key={biz.id} 
-                className="group relative flex items-center gap-3.5 p-3.5 bg-slate-50/40 hover:bg-white border hover:border-rose-200 border-slate-100 rounded-2xl shadow-xs transition-all duration-350"
-              >
-                {/* Image */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-slate-150">
-                  <img 
-                    src={biz.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=150&q=80'} 
-                    alt={biz.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <span className="block text-[8px] font-bold text-rose-500 uppercase tracking-widest leading-none mb-1">
-                    {biz.city || 'Portugal'}
-                  </span>
-                  <a href={`/business/${biz.slug}`} className="block text-xs font-black text-slate-800 hover:text-purple-600 truncate mb-0.5">
-                    {biz.name}
-                  </a>
-                  <p className="text-[10px] text-slate-400 truncate leading-snug font-normal">
-                    {biz.address || 'Tratamentos de Beleza Premium'}
-                  </p>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFavorite(biz.id)}
-                    className="p-1.5 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 transition-colors cursor-pointer"
-                    title="Remover dos favoritos"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                  <a
-                    href={`/business/${biz.slug}`}
-                    className="px-3.5 py-1.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[11px] font-bold transition-all shadow-xs cursor-pointer text-center"
-                  >
-                    Agendar
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          )}
+          <a href="/explore" className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-purple-650 hover:bg-purple-750 text-white rounded-2xl text-[11px] font-bold transition-all shadow-sm">
+            📍 Pesquisar Salões
+          </a>
+        </div>
       </div>
 
       {/* Bookings Engine Manager Section - FIRST */}

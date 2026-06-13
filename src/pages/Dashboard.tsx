@@ -2566,6 +2566,7 @@ export default function Dashboard() {
                                 
                                 <input 
                                   type="date" 
+                                  style={{ colorScheme: 'dark' }}
                                   value={selectedAgendaDate}
                                   onChange={(e) => {
                                     if (e.target.value) {
@@ -4513,6 +4514,7 @@ export default function Dashboard() {
                           <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Data de Validade (Opcional)</label>
                           <input 
                             type="date"
+                            style={{ colorScheme: 'dark' }}
                             value={couponForm.valid_until}
                             onChange={e => setCouponForm(prev => ({ ...prev, valid_until: e.target.value }))}
                             className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
@@ -5206,6 +5208,7 @@ export default function Dashboard() {
                   <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Data do Evento</label>
                   <input 
                     type="date"
+                    style={{ colorScheme: 'dark' }}
                     required
                     value={manualDate}
                     onChange={(e) => setManualDate(e.target.value)}
