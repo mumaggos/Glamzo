@@ -10,7 +10,7 @@ export default function Navbar() {
 
   const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
   const isPartnerPage = location.pathname.startsWith('/partner');
-  const isDarkNavbar = isPartnerPage || (!['/', '/explore', '/login', '/signup', '/account'].includes(location.pathname));
+  const isDarkNavbar = false; // Force light navbar everywhere to match site's style
 
   const getProfileTargetRoute = (): string => {
     if (!user) return isPartnerPage ? '/partner/login' : '/login';
@@ -46,7 +46,7 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
             {/* Logo */}
             <Link to={isPartnerPage ? "/partner" : "/"}>
-              <GlamzoLogo size={32} withText={true} forceDark={isDarkNavbar} />
+              <GlamzoLogo size={32} withText={true} forceDark={!isDarkNavbar} />
             </Link>
 
             {/* Middle Links - Desktop */}

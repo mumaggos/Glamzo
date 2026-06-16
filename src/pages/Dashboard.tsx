@@ -1793,7 +1793,7 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-slate-500 gap-3">
         <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
         <span className="text-xs font-mono select-none">A iniciar terminal operacional...</span>
       </div>
@@ -1803,11 +1803,11 @@ export default function Dashboard() {
   // Double guard role integrity Check
   if (!user || profile?.role === 'customer') {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-4">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md bg-slate-50 border border-slate-200 rounded-3xl p-8 shadow-2xl space-y-4">
           <AlertTriangle className="w-14 h-14 text-rose-500 mx-auto" />
-          <h2 className="text-2xl font-black text-white">Canal Restrito a Parceiros</h2>
-          <p className="text-sm text-slate-450 text-slate-400 leading-relaxed">
+          <h2 className="text-2xl font-black text-slate-900">Canal Restrito a Parceiros</h2>
+          <p className="text-sm text-slate-500 text-slate-500 leading-relaxed">
             A sua conta atual está qualificada como Cliente Final. Para obter acesso profissional, por favor crie ou entre numa conta qualificada como Parceiro Comercial.
           </p>
           <button onClick={() => { signOut(); navigate('/partner/login'); }} className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase rounded-xl transition-all cursor-pointer">
@@ -1933,13 +1933,13 @@ export default function Dashboard() {
   })();
 
   return (
-    <div id="partner-terminal-layout" className="min-h-screen bg-[#0f172a] text-slate-100 flex font-sans select-none overflow-hidden h-screen">
+    <div id="partner-terminal-layout" className="min-h-screen bg-[#fafbfc] text-slate-800 flex font-sans select-none overflow-hidden h-screen">
       
       {/* Blocked subscription Lock Screen Overlay */}
       {isBillingBlocked && (
-        <div className="fixed inset-0 z-50 bg-slate-950/98 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center select-text">
+        <div className="fixed inset-0 z-50 bg-white/98 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center select-text">
           {isVerifyingSub ? (
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden flex flex-col items-center">
+            <div className="w-full max-w-md bg-slate-50 border border-slate-200 p-8 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden flex flex-col items-center">
               {/* Spinning/pulsing indicators */}
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-4 border-rose-500/10 border-t-rose-500 animate-spin"></div>
@@ -1947,7 +1947,7 @@ export default function Dashboard() {
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-lg font-black text-white">Sincronização Stripe PRO</h3>
+                <h3 className="text-lg font-black text-slate-900">Sincronização Stripe PRO</h3>
                 <p className="text-xs text-rose-400 font-mono font-bold animate-pulse">{verifyingText}</p>
                 <p className="text-[11px] text-slate-500 leading-relaxed pt-2">
                   Não feche esta página. Estamos a confirmar de forma automática o estado da sua subscrição com os servidores do Stripe e a atualizar a base de dados em tempo real.
@@ -1955,10 +1955,10 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="w-full max-w-md bg-slate-50 border border-slate-200 p-8 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden">
               
               {/* Visual status lock/rocket/alert accent */}
-              <div className="w-16 h-16 bg-slate-950/60 rounded-2xl flex items-center justify-center border border-slate-800/80 mx-auto">
+              <div className="w-16 h-16 bg-white/60 rounded-2xl flex items-center justify-center border border-slate-200/80 mx-auto">
                 {subBlockReason === 'onboarding' ? (
                   <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
                 ) : subBlockReason === 'past_due' ? (
@@ -1971,23 +1971,23 @@ export default function Dashboard() {
               {subBlockReason === 'active_trial_requires_card' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-white flex flex-col items-center justify-center gap-2">
+                    <h2 className="text-xl font-black text-slate-900 flex flex-col items-center justify-center gap-2">
                       <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
                       <span>Ativar Período Experimental Glamzo PRO</span>
                     </h2>
-                    <p className="text-sm text-slate-300 leading-relaxed font-sans px-2">
+                    <p className="text-sm text-slate-600 leading-relaxed font-sans px-2">
                       Para colocar a sua loja online é necessário ativar o período experimental Glamzo PRO.
                     </p>
                   </div>
 
-                  <div className="text-[11px] text-left space-y-2.5 bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
-                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                  <div className="text-[11px] text-left space-y-2.5 bg-white/40 p-4 rounded-2xl border border-slate-200">
+                    <p className="text-slate-500 font-medium flex items-center gap-2">
                       <span className="text-purple-400 font-extrabold shrink-0">✔</span> 14 dias gratuitos de avaliação completa
                     </p>
-                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                    <p className="text-slate-500 font-medium flex items-center gap-2">
                       <span className="text-purple-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
                     </p>
-                    <p className="text-slate-400 font-medium flex items-center gap-2">
+                    <p className="text-slate-500 font-medium flex items-center gap-2">
                       <span className="text-purple-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
                     </p>
                   </div>
@@ -1995,32 +1995,32 @@ export default function Dashboard() {
               ) : subBlockReason === 'onboarding' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-white">Ativar Glamzo PRO</h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <h2 className="text-xl font-black text-slate-900">Ativar Glamzo PRO</h2>
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       O seu salão precisa de ativar o plano <span className="text-indigo-400 font-extrabold font-mono">Glamzo PRO</span> para:
                     </p>
                   </div>
                   
-                  <div className="text-left space-y-2.5 bg-slate-950/30 border border-slate-800/65 p-4 rounded-2xl">
-                    <p className="text-xs text-slate-300 font-medium flex items-center gap-2.5">
+                  <div className="text-left space-y-2.5 bg-white/30 border border-slate-200/65 p-4 rounded-2xl">
+                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
                       <span className="text-indigo-400 font-bold shrink-0">✔</span> aparecer no marketplace
                     </p>
-                    <p className="text-xs text-slate-300 font-medium flex items-center gap-2.5">
+                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
                       <span className="text-indigo-400 font-bold shrink-0">✔</span> receber reservas de clientes
                     </p>
-                    <p className="text-xs text-slate-300 font-medium flex items-center gap-2.5">
+                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
                       <span className="text-indigo-400 font-bold shrink-0">✔</span> aceitar pagamentos online seguros
                     </p>
-                    <p className="text-xs text-slate-300 font-medium flex items-center gap-2.5">
+                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
                       <span className="text-indigo-400 font-bold shrink-0">✔</span> usar o painel profissional completo
                     </p>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 pt-1 leading-normal">
+                  <p className="text-[11px] text-slate-500 pt-1 leading-normal">
                     Será feita apenas uma verificação segura do cartão via Stripe.
                   </p>
 
-                  <div className="text-left space-y-1.5 bg-indigo-950/20 p-4 rounded-2xl border border-indigo-500/10">
+                  <div className="text-left space-y-1.5 bg-indigo-50 p-4 rounded-2xl border border-indigo-500/10">
                     <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
                       <span>✔</span> 14 dias grátis de avaliação
                     </p>
@@ -2035,8 +2035,8 @@ export default function Dashboard() {
               ) : subBlockReason === 'past_due' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-white">Erro na Cobrança (PRO)</h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <h2 className="text-xl font-black text-slate-900">Erro na Cobrança (PRO)</h2>
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       A última tentativa de cobrança automática da subscrição <span className="text-amber-500 font-bold">Glamzo PRO</span> falhou. Por favor, aceda ao portal de faturação seguro abaixo para regularizar os dados do seu cartão.
                     </p>
                   </div>
@@ -2044,8 +2044,8 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-white">Período de Teste Expirado (PRO)</h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <h2 className="text-xl font-black text-slate-900">Período de Teste Expirado (PRO)</h2>
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       O seu período de teste gratuito de 14 dias para o plano <span className="text-rose-500 font-extrabold">Glamzo PRO</span> expirou. Para reativar o seu salão e continuar a receber marcações, configure a sua subscrição de forma segura via Stripe.
                     </p>
                   </div>
@@ -2053,8 +2053,8 @@ export default function Dashboard() {
               )}
 
               {subBlockReason !== 'onboarding' && (
-                <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 text-left space-y-2 text-xs">
-                  <div className="flex justify-between font-bold text-slate-350">
+                <div className="bg-white/60 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs">
+                  <div className="flex justify-between font-bold text-slate-500">
                     <span>Subscrição Glamzo PRO</span>
                     <span className="text-rose-400 font-bold">19.90€ / mês</span>
                   </div>
@@ -2067,7 +2067,7 @@ export default function Dashboard() {
               <div className="flex flex-col gap-2.5">
                 <button
                   onClick={handleSubscribePro}
-                  className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-white rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                  className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-slate-900 rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>
@@ -2082,7 +2082,7 @@ export default function Dashboard() {
                 {business?.stripe_customer_id && (
                   <button
                     onClick={handleOpenBillingPortal}
-                    className="w-full py-3 bg-slate-850 hover:bg-slate-750 text-xs font-bold text-slate-300 rounded-xl border border-slate-700 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                    className="w-full py-3 bg-slate-100 hover:bg-slate-100 text-xs font-bold text-slate-600 rounded-xl border border-slate-300 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                   >
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                     <span>Regularizar Assinatura (Billing Portal)</span>
@@ -2106,13 +2106,13 @@ export default function Dashboard() {
 
       {/* Sound active Toast Notification Popup */}
       {toastNotification?.visible && (
-        <div className="fixed top-6 right-6 z-50 bg-slate-900 border-2 border-rose-500/80 p-5 rounded-2xl shadow-2xl max-w-sm animate-bounce text-slate-100 flex items-start gap-4 shadow-rose-950/40">
+        <div className="fixed top-6 right-6 z-50 bg-slate-50 border-2 border-rose-500/80 p-5 rounded-2xl shadow-2xl max-w-sm animate-bounce text-slate-800 flex items-start gap-4 shadow-rose-950/40">
           <div className="w-10 h-10 rounded-xl bg-rose-950/80 text-rose-400 flex items-center justify-center shrink-0 border border-rose-900">
             <Bell className="w-5 h-5 animate-swing" />
           </div>
           <div className="space-y-1">
-            <h4 className="font-extrabold text-sm tracking-tight text-white">{toastNotification.title}</h4>
-            <p className="text-xs text-slate-400 leading-normal font-medium">{toastNotification.desc}</p>
+            <h4 className="font-extrabold text-sm tracking-tight text-slate-900">{toastNotification.title}</h4>
+            <p className="text-xs text-slate-500 leading-normal font-medium">{toastNotification.desc}</p>
             <button onClick={() => setToastNotification(null)} className="text-[10px] font-mono tracking-widest text-purple-400 hover:underline uppercase block font-bold pt-1.5 focus:outline-none">
               Fechar Alerta
             </button>
@@ -2130,27 +2130,27 @@ export default function Dashboard() {
           />
           
           {/* Drawer content */}
-          <div className="relative flex flex-col w-72 max-w-xs h-full bg-[#0c0617] border-r border-[#1f1635] p-5 shadow-2xl animate-fade-in text-slate-100 z-10 transition-transform">
+          <div className="relative flex flex-col w-72 max-w-xs h-full bg-white border-r border-[#1f1635] p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
             <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-white text-[11px] tracking-tight block leading-none">Glamzo Terminal</span>
+                  <span className="font-bold text-slate-900 text-[11px] tracking-tight block leading-none">Glamzo Terminal</span>
                   <span className="text-[8px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel de Controlo</span>
                 </div>
               </div>
               <button 
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
                 title="Fechar Menu"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl mb-4 shrink-0">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 shrink-0">
               <span className="text-[8px] font-mono uppercase tracking-widest block text-slate-500 font-bold mb-1">Estabelecimento</span>
               <span className="text-xs font-bold text-purple-400 block truncate">{business?.name || 'A sincronizar...'}</span>
               <div className="flex items-center gap-1.5 mt-1">
@@ -2185,7 +2185,7 @@ export default function Dashboard() {
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                       isActive 
                         ? 'bg-purple-600 text-white shadow shadow-purple-950/20' 
-                        : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:text-slate-900'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -2207,14 +2207,14 @@ export default function Dashboard() {
             </nav>
 
             {/* Sidebar Bottom Profile */}
-            <div className="pt-4 border-t border-slate-800 mt-4 shrink-0 col-span-1 bg-slate-950/40">
+            <div className="pt-4 border-t border-slate-200 mt-4 shrink-0 col-span-1 bg-white/40">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-purple-950/30 flex items-center justify-center font-mono font-bold text-purple-400 text-xs border border-purple-900/60 shrink-0">
                   {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
                 </div>
                 <div className="overflow-hidden">
-                  <span className="block text-xs font-bold truncate text-slate-200">{profile?.full_name || 'Profissional'}</span>
-                  <span className="block text-[9px] text-slate-400 font-mono truncate">{user?.email}</span>
+                  <span className="block text-xs font-bold truncate text-slate-700">{profile?.full_name || 'Profissional'}</span>
+                  <span className="block text-[9px] text-slate-500 font-mono truncate">{user?.email}</span>
                 </div>
               </div>
               <button 
@@ -2223,7 +2223,7 @@ export default function Dashboard() {
                   await signOut(); 
                   navigate('/'); 
                 }}
-                className="w-full py-2 bg-slate-900 hover:bg-slate-850 hover:text-slate-200 border border-slate-800 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2 bg-slate-50 hover:bg-slate-100 hover:text-slate-700 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Terminar Sessão</span>
@@ -2234,21 +2234,21 @@ export default function Dashboard() {
       )}
 
       {/* Side Rail Panel */}
-      <aside className="hidden lg:flex w-64 border-r border-slate-800/80 bg-[#0a0f1d] flex-col justify-between shrink-0 h-full">
+      <aside className="hidden lg:flex w-64 border-r border-slate-200/80 bg-white flex-col justify-between shrink-0 h-full">
         <div>
           {/* Logo Brand Brand */}
-          <div className="h-16 border-b border-slate-850/60 flex items-center px-6 gap-3">
+          <div className="h-16 border-b border-slate-200/60 flex items-center px-6 gap-3">
             <GlamzoLogo size={32} glow={true} />
             <div>
-              <span className="font-extrabold text-white tracking-widest block leading-none text-xs font-display">GLAMZO</span>
+              <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs font-display">GLAMZO</span>
               <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel do Parceiro</span>
             </div>
           </div>
 
           {/* Quick Stats overview inside SideRail */}
-          <div className="p-4 mx-4 my-2.5 bg-slate-900/40 border border-slate-800/80 rounded-xl">
+          <div className="p-4 mx-4 my-2.5 bg-slate-50/40 border border-slate-200/80 rounded-xl">
             <span className="text-[9px] font-mono uppercase tracking-widest block text-slate-500 font-bold mb-1.5">Estabelecimento</span>
-            <span className="text-xs font-bold text-slate-200 block truncate">{business?.name || 'A sincronizar...'}</span>
+            <span className="text-xs font-bold text-slate-700 block truncate">{business?.name || 'A sincronizar...'}</span>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] text-emerald-400 font-semibold uppercase font-mono">Ligado / Sincronizado</span>
@@ -2278,7 +2278,7 @@ export default function Dashboard() {
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl font-bold tracking-tight transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-purple-600 text-white shadow shadow-purple-900/40' 
-                      : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white'
+                      : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -2301,19 +2301,19 @@ export default function Dashboard() {
         </div>
 
         {/* User Card Profile & SignOut inside sidebar bottom */}
-        <div className="p-4 border-t border-slate-850 bg-slate-950/40">
+        <div className="p-4 border-t border-slate-200 bg-white/40">
           <div className="flex items-center gap-2.5 mb-3.5">
             <div className="w-8 h-8 rounded-full bg-purple-950/30 flex items-center justify-center font-mono font-bold text-purple-400 text-xs border border-purple-900/60">
               {profile?.full_name?.substring(0,2).toUpperCase() || 'P'}
             </div>
             <div className="overflow-hidden">
-              <span className="block text-xs font-bold truncate text-slate-200">{profile?.full_name || 'Profissional'}</span>
+              <span className="block text-xs font-bold truncate text-slate-700">{profile?.full_name || 'Profissional'}</span>
               <span className="block text-[10px] text-slate-500 font-mono truncate">{user?.email}</span>
             </div>
           </div>
           <button 
             onClick={async () => { await signOut(); navigate('/'); }}
-            className="w-full py-2 bg-slate-900 hover:bg-slate-850 hover:text-slate-200 border border-slate-800 text-slate-400 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-2 bg-slate-50 hover:bg-slate-100 hover:text-slate-700 border border-slate-200 text-slate-500 rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Terminar Sessão</span>
@@ -2322,28 +2322,28 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Terminal view screen area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950 relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white relative">
         
         {/* Ambient Glowing Background Spheres (Bolas de Fundo) like landing page */}
         <div className="partner-glow-ball-pink top-10 right-1/4 animate-pulse pointer-events-none" style={{ animationDuration: '10s' }} />
         <div className="partner-glow-ball-purple bottom-12 left-10 animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
 
         {/* Top Operational Header */}
-        <header className="h-16 border-b border-slate-850 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-slate-900/30 backdrop-blur-md relative z-10">
+        <header className="h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-slate-50/30 backdrop-blur-md relative z-10">
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Mobile Sidebar Hamburger */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-purple-400 rounded-xl transition-all cursor-pointer"
+              className="lg:hidden p-2 bg-slate-50 border border-slate-200 text-slate-600 hover:text-purple-400 rounded-xl transition-all cursor-pointer"
               title="Abrir Menu Lateral"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="text-left">
-              <h2 className="text-sm font-black text-white flex items-center gap-2 font-display">
+              <h2 className="text-sm font-black text-slate-900 flex items-center gap-2 font-display">
                 <span>{business?.name || 'Carregando...'}</span>
               </h2>
-              <p className="text-[10px] text-slate-400 font-mono">
+              <p className="text-[10px] text-slate-500 font-mono">
                 📞 {business?.phone} • 📍 {business?.city || 'Lisboa, Portugal'}
               </p>
             </div>
@@ -2353,7 +2353,7 @@ export default function Dashboard() {
             <button
               onClick={loadTerminalData}
               title="Sincronizar dados da base de dados"
-              className="p-2 py-2.5 bg-slate-900 border border-slate-800 text-slate-350 hover:text-purple-400 rounded-xl hover:bg-slate-850 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
+              className="p-2 py-2.5 bg-slate-50 border border-slate-200 text-slate-500 hover:text-purple-400 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] tracking-tight font-bold"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Atualizar Dados</span>
@@ -2372,7 +2372,7 @@ export default function Dashboard() {
                   <AlertCircle className="w-4 h-4 animate-bounce" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-white leading-normal">⚠️ O seu salão está ocultado do Marketplace Glamzo!</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">⚠️ O seu salão está ocultado do Marketplace Glamzo!</p>
                   <p className="text-[11px] text-amber-450 leading-normal">O seu período de teste PRO de 14 dias está ativo, mas para que a sua loja apareça nos resultados de pesquisa e na página de início, precisa de adicionar um cartão de pagamento seguro. O Stripe só efetuará cobranças automáticas no fim do teste.</p>
                 </div>
               </div>
@@ -2393,8 +2393,8 @@ export default function Dashboard() {
                   <Sparkles className="w-4 h-4 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-white leading-normal">Período de Testes Ativo — Glamzo PRO</p>
-                  <p className="text-[11px] text-purple-400">Tem acesso total a todas as funcionalidades profissionais premium por mais <span className="text-white font-bold">{trialDaysRemaining} {trialDaysRemaining === 1 ? 'dia' : 'dias'}</span>.</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">Período de Testes Ativo — Glamzo PRO</p>
+                  <p className="text-[11px] text-purple-400">Tem acesso total a todas as funcionalidades profissionais premium por mais <span className="text-slate-900 font-bold">{trialDaysRemaining} {trialDaysRemaining === 1 ? 'dia' : 'dias'}</span>.</p>
                 </div>
               </div>
               <button 
@@ -2414,7 +2414,7 @@ export default function Dashboard() {
                   <AlertCircle className="w-4 h-4 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-white leading-normal">Aviso de Cobrança — Subscrição Pendente</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">Aviso de Cobrança — Subscrição Pendente</p>
                   <p className="text-[11px] text-rose-400 leading-normal">A última tentativa de cobrança automática da sua mensalidade falhou. Por favor, regularize os seus dados de pagamento usando o Stripe Billing Portal.</p>
                 </div>
               </div>
@@ -2435,7 +2435,7 @@ export default function Dashboard() {
                   <Landmark className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-white leading-normal">Ative os pagamentos para receber reservas online.</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">Ative os pagamentos para receber reservas online.</p>
                   <p className="text-[11px] text-amber-450 leading-normal">Configure a sua conta Stripe Express (IBAN e verificação) para receber pagamentos de marcações diretamente na sua conta bancária de forma segura pelas marcações online.</p>
                 </div>
               </div>
@@ -2487,14 +2487,14 @@ export default function Dashboard() {
               {/* VIEW 1: AGENDA DIÁRIA (PREMIUM TABLET/TERMINAL GRID) */}
               {/* ==================================================== */}
               {activeTab === 'agenda' && (
-                <div id="view-agenda" className="space-y-6 text-left animate-fade-in text-slate-200">
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
+                <div id="view-agenda" className="space-y-6 text-left animate-fade-in text-slate-700">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
                     <div>
-                      <h3 className="text-xl font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+                      <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-purple-400" />
                         <span>Agenda do Salão</span>
                       </h3>
-                      <p className="text-xs text-slate-400 mt-1">Visualize, filtre e controle todas as marcações em tempo real de forma profissional.</p>
+                      <p className="text-xs text-slate-500 mt-1">Visualize, filtre e controle todas as marcações em tempo real de forma profissional.</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -2512,12 +2512,12 @@ export default function Dashboard() {
                         }}
                         className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30"
                       >
-                        <Calendar className="w-4 h-4 text-white" />
-                        <span className="text-white">Agendar / Bloquear Horário</span>
+                        <Calendar className="w-4 h-4 text-slate-900" />
+                        <span className="text-slate-900">Agendar / Bloquear Horário</span>
                       </button>
 
                       {/* Mode Navigation selector */}
-                      <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-xl flex items-center gap-1 font-sans text-xs">
+                      <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-xl flex items-center gap-1 font-sans text-xs">
                         {(['today', 'week', 'month', 'by_staff'] as const).map(mode => (
                           <button
                             key={mode}
@@ -2525,7 +2525,7 @@ export default function Dashboard() {
                             className={`px-4 py-2 rounded-xl border font-bold transition cursor-pointer text-[11px] uppercase tracking-wide ${
                               agendaMode === mode 
                                 ? 'bg-purple-600 border-purple-500 text-white shadow-md' 
-                                : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700'
+                                : 'bg-slate-100 border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                             }`}
                           >
                             {mode === 'today' ? 'Hoje' : mode === 'week' ? 'Semanal' : mode === 'month' ? 'Mensal' : 'Por Profissional'}
@@ -2539,13 +2539,13 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
                     {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
-                    <div className="lg:col-span-8 bg-[#0a0f1d] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                    <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
                       
                       {/* ==================== TODAY VIEW ==================== */}
                       {agendaMode === 'today' && (
                         <div className="space-y-4">
                           {/* Rich Interactive Date Selector and Scroller */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-900 border border-slate-800 rounded-2xl">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
                             <div className="flex items-center gap-2">
                               {/* Go back 1 day */}
                               <button 
@@ -2555,7 +2555,7 @@ export default function Dashboard() {
                                   d.setDate(d.getDate() - 1);
                                   setSelectedAgendaDate(d.toISOString().split('T')[0]);
                                 }}
-                                className="p-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                className="p-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                                 title="Dia Anterior"
                               >
                                 <ChevronLeft className="w-4 h-4" />
@@ -2563,7 +2563,7 @@ export default function Dashboard() {
 
                               {/* Selected date and custom date selector */}
                               <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-mono uppercase text-purple-400 font-extrabold tracking-wider bg-purple-950/40 border border-purple-900/40 px-2.5 py-1 rounded-lg">
+                                <span className="text-[11px] font-mono uppercase text-purple-400 font-extrabold tracking-wider bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
                                   {new Date(selectedAgendaDate + 'T12:00:00').toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </span>
                                 
@@ -2576,7 +2576,7 @@ export default function Dashboard() {
                                       setSelectedAgendaDate(e.target.value);
                                     }
                                   }}
-                                  className="bg-slate-950 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 cursor-pointer outline-none focus:border-purple-500 font-mono"
+                                  className="bg-white text-slate-900 text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 cursor-pointer outline-none focus:border-purple-500 font-mono"
                                 />
                               </div>
 
@@ -2588,7 +2588,7 @@ export default function Dashboard() {
                                   d.setDate(d.getDate() + 1);
                                   setSelectedAgendaDate(d.toISOString().split('T')[0]);
                                 }}
-                                className="p-1.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                className="p-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                                 title="Próximo Dia"
                               >
                                 <ChevronRight className="w-4 h-4" />
@@ -2600,14 +2600,14 @@ export default function Dashboard() {
                               <button 
                                 type="button"
                                 onClick={() => setSelectedAgendaDate(new Date().toISOString().split('T')[0])}
-                                className="text-[10px] font-bold font-mono bg-purple-950/40 text-purple-300 hover:text-white hover:bg-purple-900/60 border border-purple-850 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                className="text-[10px] font-bold font-mono bg-purple-50 text-purple-300 hover:text-slate-900 hover:bg-purple-900/60 border border-purple-850 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                               >
                                 Voltar para Hoje
                               </button>
                             )}
                           </div>
 
-                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
                             Fita Horária • Marcações Reais do Dia
                           </span>
 
@@ -2624,7 +2624,7 @@ export default function Dashboard() {
                                 <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row text-left">
                                   {/* Left Hour Indicator */}
                                   <div className="w-14 shrink-0 flex flex-col items-end pt-1 select-none">
-                                    <span className="text-xs font-mono font-bold text-slate-200 tracking-tight">{hourSlot}</span>
+                                    <span className="text-xs font-mono font-bold text-slate-700 tracking-tight">{hourSlot}</span>
                                     <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Slot</span>
                                   </div>
 
@@ -2638,33 +2638,33 @@ export default function Dashboard() {
                                         // Dynamic Left Accent Color Bar for Status
                                         let borderColor = 'border-purple-800';
                                         let leftBarColor = 'bg-purple-600';
-                                        let bgClass = 'bg-[#12192c]/90 border-slate-800';
+                                        let bgClass = 'bg-slate-50/90 border-slate-200';
                                         
                                         if (isBlock) {
                                           borderColor = 'border-rose-900/30';
                                           leftBarColor = 'bg-rose-500';
-                                          bgClass = 'bg-[#1e121a] border border-rose-900/30';
+                                          bgClass = 'bg-rose-50 border border-rose-900/30';
                                         } else if (status === 'completed') {
-                                          borderColor = 'border-slate-800';
+                                          borderColor = 'border-slate-200';
                                           leftBarColor = 'bg-slate-600';
-                                          bgClass = 'bg-slate-900/50 border border-slate-800/80';
+                                          bgClass = 'bg-slate-50/50 border border-slate-200/80';
                                         } else if (status === 'pending') {
                                           borderColor = 'border-amber-900/60';
                                           leftBarColor = 'bg-amber-500';
-                                          bgClass = 'bg-[#1e1a12] border border-amber-900/40';
+                                          bgClass = 'bg-amber-50 border border-amber-900/40';
                                         }
 
                                         return (
                                           <div 
                                             key={bk.id} 
-                                            className={`relative overflow-hidden p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-colors hover:border-slate-700 ${bgClass}`}
+                                            className={`relative overflow-hidden p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-colors hover:border-slate-300 ${bgClass}`}
                                           >
                                             {/* Status accent left bar */}
                                             <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${leftBarColor}`} />
 
                                             <div className="pl-2">
                                               <div className="flex items-center gap-2">
-                                                <h4 className="font-extrabold text-white text-sm tracking-tight">
+                                                <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">
                                                   {getBookingDisplayName(bk)}
                                                 </h4>
                                                 {!isBlock && (
@@ -2675,7 +2675,7 @@ export default function Dashboard() {
                                               </div>
                                               
                                               {!isBlock ? (
-                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-400 leading-none">
+                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 leading-none">
                                                   <span className="flex items-center gap-1">
                                                     <span className="text-purple-400">💈</span> {bk.service?.name || 'Serviço'}
                                                   </span>
@@ -2684,15 +2684,15 @@ export default function Dashboard() {
                                                     <span className="text-purple-405 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
                                                   </span>
                                                   <span className="text-slate-700">•</span>
-                                                  <span className="font-mono bg-slate-950 border border-slate-850 px-1.5 py-0.5 rounded text-[10px] text-slate-300">
+                                                  <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-600">
                                                     ⏱ {bk.service?.duration_minutes || '0'} min
                                                   </span>
                                                   <span className="text-slate-700">•</span>
-                                                  <span className="text-white font-extrabold text-xs">
+                                                  <span className="text-slate-900 font-extrabold text-xs">
                                                     {bk.total_price}€
                                                   </span>
                                                   <span className="text-slate-700">•</span>
-                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-300">
+                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-600">
                                                     💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
                                                   </span>
                                                 </div>
@@ -2718,7 +2718,7 @@ export default function Dashboard() {
                                                   <button 
                                                     type="button"
                                                     onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-                                                    className="px-3.5 py-2 bg-slate-950 hover:bg-rose-95 border border-slate-800 text-slate-400 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
+                                                    className="px-3.5 py-2 bg-white hover:bg-rose-95 border border-slate-200 text-slate-500 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
                                                   >
                                                     Mover/Cancelar
                                                   </button>
@@ -2726,7 +2726,7 @@ export default function Dashboard() {
                                               )}
                                               <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider ${
                                                 bk.booking_status === 'completed' 
-                                                  ? 'bg-slate-900 text-slate-400 border border-slate-800' 
+                                                  ? 'bg-slate-50 text-slate-500 border border-slate-200' 
                                                   : bk.booking_status === 'cancelled'
                                                   ? 'bg-rose-950/40 text-rose-400 border border-rose-900'
                                                   : 'bg-indigo-950/40 text-indigo-400 border border-indigo-900'
@@ -2749,13 +2749,13 @@ export default function Dashboard() {
                                           if (services.length > 0) setManualServiceId(services[0].id);
                                           if (staff.length > 0) setManualStaffId(staff[0].id);
                                         }}
-                                        className="w-full h-14 bg-[#0a0f1d] hover:bg-purple-950/20 border border-dashed border-slate-800 hover:border-purple-800/80 text-slate-500 hover:text-purple-400 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
+                                        className="w-full h-14 bg-white hover:bg-purple-50 border border-dashed border-slate-200 hover:border-purple-800/80 text-slate-500 hover:text-purple-400 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
                                       >
                                         <div className="flex items-center gap-2">
                                           <span className="text-lg font-bold font-mono opacity-65 group-hover:opacity-100 text-purple-400">+</span>
-                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase text-slate-400 group-hover:text-white">Disponível</span>
+                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase text-slate-500 group-hover:text-slate-900">Disponível</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded-lg">
+                                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-400 bg-white border border-slate-200 px-2 py-1 rounded-lg">
                                           Reservar {hourSlot}
                                         </span>
                                       </button>
@@ -2771,7 +2771,7 @@ export default function Dashboard() {
                       {/* ==================== WEEKLY VIEW ==================== */}
                       {agendaMode === 'week' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
                             Visualização Semanal Dinâmica • Multi-Colunas
                           </span>
 
@@ -2795,11 +2795,11 @@ export default function Dashboard() {
                                       setSelectedAgendaDate(dateStr);
                                       setAgendaMode('today');
                                     }}
-                                    className="bg-slate-900/80 hover:bg-slate-850/80 hover:border-purple-500/50 cursor-pointer transition-all border border-slate-800 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left group"
+                                    className="bg-slate-50/80 hover:bg-slate-100/80 hover:border-purple-200 cursor-pointer transition-all border border-slate-200 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left group"
                                   >
-                                    <div className="border-b border-slate-800 pb-1.5 text-center group-hover:border-purple-900/40 transition-colors">
+                                    <div className="border-b border-slate-200 pb-1.5 text-center group-hover:border-purple-200 transition-colors">
                                       <span className="block text-[11px] font-extrabold text-purple-400 uppercase">{dayLabel}</span>
-                                      <span className="block text-[10px] font-mono font-bold text-slate-200 group-hover:text-white transition-colors">{targetDay.getDate()}</span>
+                                      <span className="block text-[10px] font-mono font-bold text-slate-700 group-hover:text-slate-900 transition-colors">{targetDay.getDate()}</span>
                                     </div>
 
                                     <div className="space-y-2">
@@ -2809,15 +2809,15 @@ export default function Dashboard() {
                                             key={bk.id}
                                             className={`p-2 rounded-xl border text-[9px] space-y-1 transition-all ${
                                               bk.booking_status === 'completed'
-                                                ? 'bg-slate-950 border-slate-850 text-slate-500'
-                                                : 'bg-purple-950/40 border-purple-900/40 text-purple-200'
+                                                ? 'bg-white border-slate-200 text-slate-500'
+                                                : 'bg-purple-50 border-purple-200 text-purple-200'
                                             }`}
                                           >
                                             <div className="font-mono font-bold text-[8px] text-purple-400">{bk.start_time}</div>
-                                            <div className="font-extrabold truncate text-white">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
-                                            <div className="text-[8px] text-slate-400 truncate">💈 {bk.service?.name}</div>
+                                            <div className="font-extrabold truncate text-slate-900">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
+                                            <div className="text-[8px] text-slate-500 truncate">💈 {bk.service?.name}</div>
                                             <div className="text-[8px] text-emerald-400 font-extrabold">{bk.total_price}€</div>
-                                            <div className="text-[8px] font-mono text-slate-400 truncate">👥 {bk.staff?.full_name ? bk.staff.full_name.split(' ')[0] : 'Auto'}</div>
+                                            <div className="text-[8px] font-mono text-slate-500 truncate">👥 {bk.staff?.full_name ? bk.staff.full_name.split(' ')[0] : 'Auto'}</div>
                                           </div>
                                         ))
                                       ) : (
@@ -2835,7 +2835,7 @@ export default function Dashboard() {
                       {/* ==================== MONTHLY VIEW ==================== */}
                       {agendaMode === 'month' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
                             Visualização Mensal Dinâmica • Roster 35 Dias
                           </span>
 
@@ -2878,11 +2878,11 @@ export default function Dashboard() {
                                       setSelectedAgendaDate(dateStr);
                                       setAgendaMode('today');
                                     }}
-                                    className={`min-h-[70px] bg-slate-900/60 p-2 border rounded-xl flex flex-col justify-between transition-all cursor-pointer hover:bg-slate-850/70 hover:border-purple-500/50 group ${
-                                      isSameMonth ? 'opacity-100 border-slate-800' : 'opacity-40 hover:opacity-85 border-slate-850'
-                                    } ${isToday ? 'border-purple-500 bg-purple-950/20' : ''}`}
+                                    className={`min-h-[70px] bg-slate-50/60 p-2 border rounded-xl flex flex-col justify-between transition-all cursor-pointer hover:bg-slate-100/70 hover:border-purple-200 group ${
+                                      isSameMonth ? 'opacity-100 border-slate-200' : 'opacity-40 hover:opacity-85 border-slate-200'
+                                    } ${isToday ? 'border-purple-500 bg-purple-50' : ''}`}
                                   >
-                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-400 font-extrabold' : isSameMonth ? 'text-slate-200 group-hover:text-white' : 'text-slate-500'}`}>
+                                    <span className={`text-[9px] font-bold font-mono ${isToday ? 'text-purple-400 font-extrabold' : isSameMonth ? 'text-slate-700 group-hover:text-slate-900' : 'text-slate-500'}`}>
                                       {dateObj.getDate()}
                                     </span>
 
@@ -2890,13 +2890,13 @@ export default function Dashboard() {
                                       {matchBookings.slice(0, 2).map(bk => (
                                         <div 
                                           key={bk.id} 
-                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-950/40 border border-purple-900/40 text-purple-200 font-bold"
+                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-50 border border-purple-200 text-purple-200 font-bold"
                                         >
                                           {bk.start_time} {bk.service?.name ? bk.service.name.substring(0, 8) : 'Srv'}
                                         </div>
                                       ))}
                                       {matchBookings.length > 2 && (
-                                        <span className="block text-[6.5px] text-slate-400 text-center font-bold">+ {matchBookings.length - 2}</span>
+                                        <span className="block text-[6.5px] text-slate-500 text-center font-bold">+ {matchBookings.length - 2}</span>
                                       )}
                                     </div>
                                   </div>
@@ -2910,7 +2910,7 @@ export default function Dashboard() {
                       {/* ==================== BY STAFF VIEW ==================== */}
                       {agendaMode === 'by_staff' && (
                         <div className="space-y-4">
-                          <span className="text-[10px] font-mono uppercase bg-[#16122c] border border-purple-900/40 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
                             Escalas por Profissional • Dia Selecionado
                           </span>
 
@@ -2919,9 +2919,9 @@ export default function Dashboard() {
                               const staffBookingsToday = bookings.filter(b => b.staff_id === st.id && b.booking_date === selectedAgendaDate);
 
                               return (
-                                <div key={st.id} className="bg-slate-900/80 border border-slate-800 p-4.5 rounded-2xl space-y-4.5 min-h-[180px] text-left">
-                                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                                    <div className="w-8 h-8 rounded-full bg-slate-850 border border-slate-800 flex items-center justify-center font-bold text-slate-400 overflow-hidden text-[10px]">
+                                <div key={st.id} className="bg-slate-50/80 border border-slate-200 p-4.5 rounded-2xl space-y-4.5 min-h-[180px] text-left">
+                                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden text-[10px]">
                                       {st.avatar_url ? (
                                         <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                       ) : (
@@ -2929,8 +2929,8 @@ export default function Dashboard() {
                                       )}
                                     </div>
                                     <div>
-                                      <h5 className="font-extrabold text-[12px] text-white leading-tight">{st.full_name}</h5>
-                                      <span className="text-[9px] text-slate-400 block font-bold">{st.role_title || 'Artista Escala'}</span>
+                                      <h5 className="font-extrabold text-[12px] text-slate-900 leading-tight">{st.full_name}</h5>
+                                      <span className="text-[9px] text-slate-500 block font-bold">{st.role_title || 'Artista Escala'}</span>
                                     </div>
                                   </div>
 
@@ -2941,20 +2941,20 @@ export default function Dashboard() {
                                           key={bk.id} 
                                           className={`p-2.5 rounded-xl border text-[10px] space-y-1 ${
                                             bk.booking_status === 'completed'
-                                              ? 'bg-slate-950 border-slate-850 text-slate-400'
+                                              ? 'bg-white border-slate-200 text-slate-500'
                                               : 'bg-purple-950/30 border-purple-900/30 text-purple-200'
                                           }`}
                                         >
                                           <div className="flex justify-between items-center text-[8.5px] font-mono">
                                             <span className="font-bold text-purple-400">{bk.start_time} - {bk.end_time}</span>
-                                            <span className="uppercase text-slate-400 font-bold">{bk.booking_status}</span>
+                                            <span className="uppercase text-slate-500 font-bold">{bk.booking_status}</span>
                                           </div>
-                                          <div className="font-black text-white leading-tight">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
-                                          <div className="text-[9px] text-slate-400 truncate font-semibold">💈 {bk.service?.name}</div>
+                                          <div className="font-black text-slate-900 leading-tight">{bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}</div>
+                                          <div className="text-[9px] text-slate-500 truncate font-semibold">💈 {bk.service?.name}</div>
                                         </div>
                                       ))
                                     ) : (
-                                      <div className="h-16 bg-slate-950/50 border border-dashed border-slate-805 border-slate-800 rounded-2xl flex items-center justify-center text-[10px] font-mono text-slate-500 shadow-sm">
+                                      <div className="h-16 bg-white/50 border border-dashed border-slate-200 border-slate-200 rounded-2xl flex items-center justify-center text-[10px] font-mono text-slate-500 shadow-sm">
                                         Roster livre hoje
                                       </div>
                                     )}
@@ -2970,29 +2970,29 @@ export default function Dashboard() {
 
                     {/* Quick Scaled Agenda Tools - Elegant clean banners */}
                     <div className="lg:col-span-4 space-y-6">
-                      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-widest leading-none">Métricas Rápidas</h4>
+                      <div className="bg-slate-50/60 border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest leading-none">Métricas Rápidas</h4>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-805 border-slate-800 text-center shadow-inner animate-fade-in">
+                          <div className="bg-white/40 p-4 rounded-2xl border border-slate-200 border-slate-200 text-center shadow-inner animate-fade-in">
                             <span className="block text-[24px] font-black text-purple-450 text-purple-400 leading-none mb-1">{bookings.filter(b => b.booking_status === 'confirmed').length}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Activas</span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Activas</span>
                           </div>
-                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-805 border-slate-800 text-center shadow-inner animate-fade-in">
+                          <div className="bg-white/40 p-4 rounded-2xl border border-slate-200 border-slate-200 text-center shadow-inner animate-fade-in">
                             <span className="block text-[24px] font-black text-emerald-400 leading-none mb-1">{bookings.filter(b => b.booking_status === 'completed').length}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Concluídas</span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Concluídas</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-widest leading-none">Escala Ativa</h4>
+                      <div className="bg-slate-50/60 border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest leading-none">Escala Ativa</h4>
                         <div className="space-y-2.5">
                           {staff.length === 0 ? (
-                            <p className="text-[11px] text-slate-400 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
+                            <p className="text-[11px] text-slate-500 font-mono">Sem dados disponíveis. Os dados serão apresentados após atividade real.</p>
                           ) : (
                             staff.map(st => (
-                              <div key={st.id} className="flex items-center justify-between text-xs bg-slate-950/40 border border-slate-800 p-3 rounded-2xl">
-                                <span className="font-extrabold text-slate-200 truncate">{st.full_name}</span>
+                              <div key={st.id} className="flex items-center justify-between text-xs bg-white/40 border border-slate-200 p-3 rounded-2xl">
+                                <span className="font-extrabold text-slate-700 truncate">{st.full_name}</span>
                                 <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase brand-pulse flex items-center gap-1.5">
                                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                                   <span>{st.is_active ? 'Ativo' : 'Pausa'}</span>
@@ -3013,28 +3013,28 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'reservas' && (
                 <div id="view-reservas" className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-900 pb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Gestão das Marcações</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Consulte e gira todos os agendamentos feitos pelos seus clientes e equipa num único ecrã.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Gestão das Marcações</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Consulte e gira todos os agendamentos feitos pelos seus clientes e equipa num único ecrã.</p>
                     </div>
                   </div>
 
                   {/* Search and Filters */}
-                  <div className="bg-slate-900/40 p-5 rounded-3xl border border-slate-900 flex flex-col md:flex-row gap-4 items-center justify-between">
+                  <div className="bg-slate-50/40 p-5 rounded-3xl border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:max-w-md">
-                      <Search className="w-4 h-4 text-slate-550 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Search className="w-4 h-4 text-slate-550 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input 
                         type="text"
                         value={bookingSearch}
                         onChange={(e) => setBookingSearch(e.target.value)}
                         placeholder="Pesquise por cliente ou serviço..."
-                        className="w-full bg-slate-950 border border-slate-800 text-sm pl-10 pr-4 py-2.5 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-550 focus:ring-rose-600/25"
+                        className="w-full bg-white border border-slate-200 text-sm pl-10 pr-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-600 focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-550 focus:ring-rose-600/25"
                       />
                     </div>
 
                     {/* Filter states */}
-                    <div className="flex flex-wrap gap-1 items-center bg-slate-950 p-1 border border-slate-800/80 rounded-xl text-[10px] font-mono font-bold">
+                    <div className="flex flex-wrap gap-1 items-center bg-white p-1 border border-slate-200/80 rounded-xl text-[10px] font-mono font-bold">
                       {[
                         { id: 'all', label: 'Todas' },
                         { id: 'pending', label: 'Pendentes' },
@@ -3046,7 +3046,7 @@ export default function Dashboard() {
                           key={item.id}
                           onClick={() => setBookingFilter(item.id as any)}
                           className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                            bookingFilter === item.id ? 'bg-rose-650 bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
+                            bookingFilter === item.id ? 'bg-rose-650 bg-rose-600 text-white' : 'text-slate-500 hover:text-slate-900'
                           }`}
                         >
                           {item.label}
@@ -3056,10 +3056,10 @@ export default function Dashboard() {
                   </div>
 
                   {/* Operational Data Table */}
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl overflow-hidden shadow-xl">
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-xl">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-950 border-b border-slate-900 text-[10px] font-bold text-slate-450 text-slate-400 uppercase tracking-widest leading-none">
+                        <thead className="bg-white border-b border-slate-100 text-[10px] font-bold text-slate-500 text-slate-500 uppercase tracking-widest leading-none">
                           <tr>
                             <th className="py-4.5 px-6">Cliente</th>
                             <th className="py-4.5 px-4">Serviço Adquirido</th>
@@ -3082,13 +3082,13 @@ export default function Dashboard() {
                               return b.booking_status === bookingFilter && matchesSearch;
                             })
                             .map((bk) => (
-                              <tr key={bk.id} className="hover:bg-slate-950/25 transition-colors">
+                              <tr key={bk.id} className="hover:bg-white/25 transition-colors">
                                 <td className="py-4 px-6 flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-slate-850 border border-slate-800 text-slate-300 flex items-center justify-center font-mono font-bold text-[10px]">
+                                  <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-mono font-bold text-[10px]">
                                     {(bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular').substring(0, 2).toUpperCase()}
                                   </div>
                                   <div>
-                                    <div className="font-extrabold text-white">
+                                    <div className="font-extrabold text-slate-900">
                                       {bk.customer?.full_name || bk.customer_profile?.full_name || 'Cliente Particular'}
                                     </div>
                                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">{bk.customer?.email || bk.customer_profile?.email || 'N/A'}</div>
@@ -3096,16 +3096,16 @@ export default function Dashboard() {
                                 </td>
 
                                 <td className="py-4 px-4">
-                                  <span className="font-bold text-slate-200">{bk.service?.name || 'Serviço Premium'}</span>
-                                  <span className="block text-[10px] text-slate-550 text-slate-400 font-mono mt-0.5">⏱ {bk.service?.duration_minutes || '0'} min</span>
+                                  <span className="font-bold text-slate-700">{bk.service?.name || 'Serviço Premium'}</span>
+                                  <span className="block text-[10px] text-slate-550 text-slate-500 font-mono mt-0.5">⏱ {bk.service?.duration_minutes || '0'} min</span>
                                 </td>
 
                                 <td className="py-4 px-4 font-mono">
-                                  <div className="font-bold text-white">{bk.booking_date}</div>
+                                  <div className="font-bold text-slate-900">{bk.booking_date}</div>
                                   <div className="text-[10px] text-rose-500 font-bold mt-0.5">{bk.start_time} - {bk.end_time}</div>
                                 </td>
 
-                                <td className="py-4 px-4 text-slate-350">
+                                <td className="py-4 px-4 text-slate-500">
                                   {bk.staff?.full_name || 'Designação Automática'}
                                 </td>
 
@@ -3120,7 +3120,7 @@ export default function Dashboard() {
                                       : bk.booking_status === 'completed'
                                       ? 'bg-emerald-950 border-emerald-900/60 text-emerald-400'
                                       : bk.booking_status === 'cancelled'
-                                      ? 'bg-slate-950 border-slate-850 text-slate-500 text-slate-400 border-slate-800'
+                                      ? 'bg-white border-slate-200 text-slate-500 text-slate-500 border-slate-200'
                                       : 'bg-amber-950/45 border-amber-900 text-amber-500 text-amber-400'
                                   }`}>
                                     {bk.booking_status === 'no_show' ? 'Falta' : bk.booking_status === 'confirmed' ? 'Confirmado' : bk.booking_status}
@@ -3155,7 +3155,7 @@ export default function Dashboard() {
                             <tr>
                               <td colSpan={7} className="text-center py-16 text-slate-500 text-xs font-mono space-y-2">
                                 <AlertCircle className="w-10 h-10 text-slate-600 mx-auto" />
-                                <p className="text-slate-400">Ainda não recebeu marcações. Os agendamentos futuros aparecerão aqui automaticamente.</p>
+                                <p className="text-slate-500">Ainda não recebeu marcações. Os agendamentos futuros aparecerão aqui automaticamente.</p>
                               </td>
                             </tr>
                           )}
@@ -3171,10 +3171,10 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'servicos' && (
                 <div id="view-servicos" className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-900 pb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Catálogo de Serviços</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Configuração dos seus procedimentos estéticos com preços e durações reais.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Catálogo de Serviços</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Configuração dos seus procedimentos estéticos com preços e durações reais.</p>
                     </div>
 
                     <button
@@ -3201,18 +3201,18 @@ export default function Dashboard() {
                   {/* Grid of active services */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {services.map(sv => (
-                      <div key={sv.id} className="bg-slate-900 border border-slate-900 rounded-3xl p-5 hover:border-slate-800 transition-all space-y-4 flex flex-col justify-between">
+                      <div key={sv.id} className="bg-slate-50 border border-slate-100 rounded-3xl p-5 hover:border-slate-200 transition-all space-y-4 flex flex-col justify-between">
                         <div>
                           <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-rose-400">{sv.category?.name || 'Geral'}</p>
-                          <h4 className="text-base font-black text-white mt-1">{sv.name}</h4>
-                          <p className="text-xs text-slate-400 mt-2 leading-relaxed line-clamp-2">{sv.description || 'Sem descrição cadastrada.'}</p>
+                          <h4 className="text-base font-black text-slate-900 mt-1">{sv.name}</h4>
+                          <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-2">{sv.description || 'Sem descrição cadastrada.'}</p>
                         </div>
 
-                        <div className="border-t border-slate-950/80 pt-4 flex items-center justify-between text-xs mt-auto">
+                        <div className="border-t border-slate-200/80 pt-4 flex items-center justify-between text-xs mt-auto">
                           <div className="font-mono">
                             <span className="block text-[10px] text-slate-500 font-bold uppercase">Preço / Duração</span>
-                            <span className="text-base font-black text-white">{sv.price} €</span>
-                            <span className="text-slate-450 text-slate-400 font-bold ml-1.5 font-sans">({sv.duration_minutes} min)</span>
+                            <span className="text-base font-black text-slate-900">{sv.price} €</span>
+                            <span className="text-slate-500 text-slate-500 font-bold ml-1.5 font-sans">({sv.duration_minutes} min)</span>
                           </div>
 
                           <div className="flex items-center gap-1">
@@ -3230,14 +3230,14 @@ export default function Dashboard() {
                                 });
                                 setShowServiceModal(true);
                               }}
-                              className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+                              className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                               title="Editar"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteService(sv.id)}
-                              className="p-2 hover:bg-rose-950/40 rounded-xl text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                              className="p-2 hover:bg-rose-950/40 rounded-xl text-slate-500 hover:text-rose-500 transition-colors cursor-pointer"
                               title="Remover"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -3248,10 +3248,10 @@ export default function Dashboard() {
                     ))}
 
                     {services.length === 0 && (
-                      <div className="col-span-1 md:col-span-3 text-center py-16 bg-slate-900 border border-dashed border-slate-855 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
+                      <div className="col-span-1 md:col-span-3 text-center py-16 bg-slate-50 border border-dashed border-slate-200 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
                         <Scissors className="w-12 h-12 text-slate-600 mx-auto" />
                         <div>
-                          <p className="font-bold text-slate-300">Sem serviços criados.</p>
+                          <p className="font-bold text-slate-600">Sem serviços criados.</p>
                           <p className="text-xs text-slate-500 mt-1 leading-relaxed">Crie os seus serviços (como cortes, colorações ou unhas) para que apareçam no seu salão online.</p>
                         </div>
                       </div>
@@ -3260,62 +3260,62 @@ export default function Dashboard() {
 
                   {/* Service Add/Edit Modal */}
                   {showServiceModal && (
-                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-6 text-slate-150">
-                        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                          <h4 className="font-extrabold text-base text-white">{editingService ? "Editar Serviço Profissional" : "Adicionar Novo Serviço Real"}</h4>
-                          <button onClick={() => setShowServiceModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+                    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                      <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-6 text-slate-800">
+                        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+                          <h4 className="font-extrabold text-base text-slate-900">{editingService ? "Editar Serviço Profissional" : "Adicionar Novo Serviço Real"}</h4>
+                          <button onClick={() => setShowServiceModal(false)} className="text-slate-500 hover:text-slate-900"><X className="w-5 h-5" /></button>
                         </div>
 
                         <form onSubmit={handleSaveService} className="space-y-4 text-xs font-semibold">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Designação de Atendimento</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Designação de Atendimento</label>
                             <input 
                               type="text" required
                               value={serviceForm.name}
                               onChange={e => setServiceForm(prev => ({ ...prev, name: e.target.value }))}
                               placeholder="Ex: Corte Degradê Clássico"
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs outline-none focus:border-rose-600 transition-all font-sans"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Descrição</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Descrição</label>
                             <textarea 
                               value={serviceForm.description}
                               onChange={e => setServiceForm(prev => ({ ...prev, description: e.target.value }))}
                               placeholder="Fórmula, produtos especiais de shampoo ou lavagem incluídos..."
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs h-20 outline-none focus:border-rose-600 transition-all font-sans"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs h-20 outline-none focus:border-rose-600 transition-all font-sans"
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Preço (€)</label>
+                              <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Preço (€)</label>
                               <input 
                                 type="number" required min={5}
                                 value={serviceForm.price}
                                 onChange={e => setServiceForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                                className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-mono outline-none focus:border-rose-600 transition-all"
+                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none focus:border-rose-600 transition-all"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Duração (minutos)</label>
+                              <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Duração (minutos)</label>
                               <input 
                                 type="number" required min={10} step={5}
                                 value={serviceForm.duration_minutes}
                                 onChange={e => setServiceForm(prev => ({ ...prev, duration_minutes: Number(e.target.value) }))}
-                                className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-mono outline-none focus:border-rose-600 transition-all"
+                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none focus:border-rose-600 transition-all"
                               />
                             </div>
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Categoria Associada</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Categoria Associada</label>
                             <select
                               value={serviceForm.category_id}
                               onChange={e => setServiceForm(prev => ({ ...prev, category_id: e.target.value }))}
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 pr-8 rounded-xl text-slate-300 text-xs outline-none focus:border-rose-600 transition-all appearance-none"
+                              className="w-full bg-white border border-slate-200 p-2.5 pr-8 rounded-xl text-slate-600 text-xs outline-none focus:border-rose-600 transition-all appearance-none"
                             >
                               <option value="">Selecione a Categoria</option>
                               {categories.map(c => (
@@ -3343,10 +3343,10 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'equipa' && (
                 <div id="view-equipa" className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-900 pb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-white">Equipa e Escalas</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Gira as escalas, competências e horários de folga dos membros da equipa.</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Equipa e Escalas</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Gira as escalas, competências e horários de folga dos membros da equipa.</p>
                     </div>
 
                     <button
@@ -3371,8 +3371,8 @@ export default function Dashboard() {
                   {/* Grid layout staff */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {staff.map(st => (
-                      <div key={st.id} className="bg-slate-900 border border-slate-900 rounded-3xl p-5 hover:border-slate-805 text-center flex flex-col items-center gap-3">
-                        <div className="w-16 h-16 rounded-full bg-slate-855 bg-slate-950/80 border border-slate-800 text-slate-300 font-bold flex items-center justify-center font-mono text-xl overflow-hidden">
+                      <div key={st.id} className="bg-slate-50 border border-slate-100 rounded-3xl p-5 hover:border-slate-200 text-center flex flex-col items-center gap-3">
+                        <div className="w-16 h-16 rounded-full bg-slate-100 bg-white/80 border border-slate-200 text-slate-600 font-bold flex items-center justify-center font-mono text-xl overflow-hidden">
                           {st.avatar_url ? (
                             <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
                           ) : (
@@ -3381,17 +3381,17 @@ export default function Dashboard() {
                         </div>
 
                         <div>
-                          <h4 className="font-black text-sm text-white">{st.full_name}</h4>
+                          <h4 className="font-black text-sm text-slate-900">{st.full_name}</h4>
                           <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 block">{st.role_title || 'Artista Cabelo'}</span>
                         </div>
 
                         <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-bold leading-none ${
-                          st.is_active ? 'bg-emerald-900/30 text-emerald-400' : 'bg-slate-950 text-slate-500'
+                          st.is_active ? 'bg-emerald-900/30 text-emerald-400' : 'bg-white text-slate-500'
                         }`}>
                           {st.is_active ? 'Em Atendimento' : 'Fora de Escala'}
                         </span>
 
-                        <div className="border-t border-slate-950 w-full pt-3 flex items-center justify-center gap-2">
+                        <div className="border-t border-slate-200 w-full pt-3 flex items-center justify-center gap-2">
                           <button
                             onClick={() => {
                               setEditingStaff(st);
@@ -3404,7 +3404,7 @@ export default function Dashboard() {
                               });
                               setShowStaffModal(true);
                             }}
-                            className="p-1 px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors text-[10px] rounded-lg font-bold font-mono tracking-tight cursor-pointer"
+                            className="p-1 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors text-[10px] rounded-lg font-bold font-mono tracking-tight cursor-pointer"
                           >
                             Configurar
                           </button>
@@ -3419,10 +3419,10 @@ export default function Dashboard() {
                     ))}
 
                     {staff.length === 0 && (
-                      <div className="col-span-1 md:col-span-4 text-center py-16 bg-slate-900 border border-dashed border-slate-850 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
+                      <div className="col-span-1 md:col-span-4 text-center py-16 bg-slate-50 border border-dashed border-slate-200 rounded-3xl text-sm font-mono text-slate-500 space-y-3">
                         <Users className="w-12 h-12 text-slate-600 mx-auto" />
                         <div>
-                          <p className="font-bold text-slate-300">Ainda não tem profissionais adicionados.</p>
+                          <p className="font-bold text-slate-600">Ainda não tem profissionais adicionados.</p>
                           <p className="text-xs text-slate-500 mt-1 leading-relaxed">Adicione a sua equipa para que as suas clientes possam agendar diretamente com os profissionais favoritos.</p>
                         </div>
                       </div>
@@ -3431,49 +3431,49 @@ export default function Dashboard() {
 
                   {/* Staff Modal */}
                   {showStaffModal && (
-                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 sm:p-8 space-y-6 text-slate-100">
-                        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                          <h4 className="font-extrabold text-base text-white">{editingStaff ? "Editar Detalhes do Profissional" : "Adicionar Novo Profissional"}</h4>
-                          <button onClick={() => setShowStaffModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+                    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                      <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-sm p-6 sm:p-8 space-y-6 text-slate-800">
+                        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+                          <h4 className="font-extrabold text-base text-slate-900">{editingStaff ? "Editar Detalhes do Profissional" : "Adicionar Novo Profissional"}</h4>
+                          <button onClick={() => setShowStaffModal(false)} className="text-slate-500 hover:text-slate-900"><X className="w-5 h-5" /></button>
                         </div>
 
                         <form onSubmit={handleSaveStaff} className="space-y-4 text-xs font-semibold">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Nome Completo</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Nome Completo</label>
                             <input 
                               type="text" required
                               value={staffForm.full_name}
                               onChange={e => setStaffForm(prev => ({ ...prev, full_name: e.target.value }))}
                               placeholder="Fábio Henriques"
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs outline-none focus:border-rose-605"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-605"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Cargo / Especialização</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Cargo / Especialização</label>
                             <input 
                               type="text"
                               value={staffForm.role_title}
                               onChange={e => setStaffForm(prev => ({ ...prev, role_title: e.target.value }))}
                               placeholder="Ex: Barbeiro Escalonador"
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs outline-none focus:border-rose-605"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-605"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Link da foto</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Link da foto</label>
                             <input 
                               type="text"
                               value={staffForm.avatar_url}
                               onChange={e => setStaffForm(prev => ({ ...prev, avatar_url: e.target.value }))}
                               placeholder="https://exemplo.com/fotoperfil.jpg"
-                              className="w-full bg-slate-950 border border-slate-800 p-2.5 rounded-xl text-white text-xs outline-none focus:border-rose-605"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-605"
                             />
                           </div>
 
                            <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Dias de Folga Semanais</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Dias de Folga Semanais</label>
                             <div className="flex flex-wrap gap-1">
                               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((letter, dayIdx) => {
                                 const offDaysArr = staffForm.off_days ? staffForm.off_days.split(',').map(item => item.trim()) : [];
@@ -3494,7 +3494,7 @@ export default function Dashboard() {
                                     className={`w-8 h-8 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer ${
                                       isSelected 
                                         ? 'bg-rose-600 text-white border border-rose-600' 
-                                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                                        : 'bg-white text-slate-500 hover:text-slate-900 border border-slate-200'
                                     }`}
                                     title={['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][dayIdx]}
                                   >
@@ -3516,7 +3516,7 @@ export default function Dashboard() {
                               onChange={e => setStaffForm(prev => ({ ...prev, is_active: e.target.checked }))}
                               className="w-4 h-4 accent-rose-600 rounded"
                             />
-                            <label htmlFor="staff-active-check" className="text-slate-300 font-bold">Activo na Escala Diária</label>
+                            <label htmlFor="staff-active-check" className="text-slate-600 font-bold">Activo na Escala Diária</label>
                           </div>
 
                           <button 
@@ -3555,17 +3555,17 @@ export default function Dashboard() {
 
                 return (
                   <div id="view-horarios" className="space-y-6 animate-fade-in max-w-3xl">
-                    <div className="border-b border-slate-900 pb-5 text-left">
-                      <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    <div className="border-b border-slate-100 pb-5 text-left">
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                         <Clock className="w-5 h-5 text-purple-400" />
                         <span>Horário de Funcionamento Oficial</span>
                       </h3>
-                      <p className="text-xs text-slate-450 text-slate-400 mt-1 leading-normal">
+                      <p className="text-xs text-slate-500 text-slate-500 mt-1 leading-normal">
                         Defina de forma simples as horas de funcionamento reais e dias de encerramento do salão. A sua agenda online atualizará instantaneamente no marketplace da Glamzo.
                       </p>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-7 space-y-4">
+                    <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-5 sm:p-7 space-y-4">
                       <div className="space-y-3.5">
                         {weekdaysOrdered.map(({ name, idx }) => {
                           const match = hours.find(h => h.weekday === idx);
@@ -3574,21 +3574,21 @@ export default function Dashboard() {
                           const currentClose = match ? match.close_time : '19:00';
 
                           return (
-                            <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-950 rounded-2xl border border-slate-900/80 hover:border-slate-800 transition-all text-left">
+                            <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-2xl border border-slate-100/80 hover:border-slate-200 transition-all text-left">
                               <div className="flex items-center gap-3 shrink-0">
                                 <span className={`w-2.5 h-2.5 rounded-full ${isClosed ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`} />
-                                <span className="font-extrabold text-sm text-white w-28 uppercase tracking-wide font-mono">{name}</span>
+                                <span className="font-extrabold text-sm text-slate-900 w-28 uppercase tracking-wide font-mono">{name}</span>
                               </div>
 
                               <div className="flex flex-wrap items-center gap-3">
                                 {/* Aperture Select */}
                                 <div className="flex items-center gap-2">
-                                  <label className="text-[10px] text-slate-400 uppercase font-bold font-mono">Abertura</label>
+                                  <label className="text-[10px] text-slate-500 uppercase font-bold font-mono">Abertura</label>
                                   <select
                                     disabled={isClosed}
                                     value={currentOpen}
                                     onChange={e => handleUpdateHours(idx, 'open_time', e.target.value)}
-                                    className="bg-slate-900 border border-slate-800 p-2 px-3 rounded-xl text-white text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
+                                    className="bg-slate-50 border border-slate-200 p-2 px-3 rounded-xl text-slate-900 text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
                                   >
                                     {timeList.map(t => <option key={t} value={t}>{t}</option>)}
                                   </select>
@@ -3598,12 +3598,12 @@ export default function Dashboard() {
 
                                 {/* Closing Select */}
                                 <div className="flex items-center gap-2">
-                                  <label className="text-[10px] text-slate-400 uppercase font-bold font-mono">Fecho</label>
+                                  <label className="text-[10px] text-slate-500 uppercase font-bold font-mono">Fecho</label>
                                   <select
                                     disabled={isClosed}
                                     value={currentClose}
                                     onChange={e => handleUpdateHours(idx, 'close_time', e.target.value)}
-                                    className="bg-slate-900 border border-slate-800 p-2 px-3 rounded-xl text-white text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
+                                    className="bg-slate-50 border border-slate-200 p-2 px-3 rounded-xl text-slate-900 text-xs font-bold font-mono outline-none disabled:opacity-40 select-all transition-all"
                                   >
                                     {timeList.map(t => <option key={t} value={t}>{t}</option>)}
                                   </select>
@@ -3615,7 +3615,7 @@ export default function Dashboard() {
                                 {!isClosed && (
                                   <button
                                     onClick={() => handleCopyHoursToAll(idx)}
-                                    className="p-1 px-2.5 bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-900/60 transition-all rounded-lg text-[10px] uppercase font-black tracking-wider font-mono cursor-pointer flex items-center gap-1"
+                                    className="p-1 px-2.5 bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-slate-900 border border-purple-900/60 transition-all rounded-lg text-[10px] uppercase font-black tracking-wider font-mono cursor-pointer flex items-center gap-1"
                                     title="Replica este mesmo horário de abertura/fecho para todos os dias úteis."
                                   >
                                     <Copy className="w-3 h-3" />
@@ -3629,7 +3629,7 @@ export default function Dashboard() {
                                   className={`px-3 py-1.5 rounded-xl text-[10px] font-mono uppercase font-black tracking-wider transition-all cursor-pointer border ${
                                     isClosed 
                                       ? 'bg-rose-950/60 text-rose-450 border-rose-900 h-8 flex items-center justify-center' 
-                                      : 'bg-slate-900 text-slate-400 hover:text-white border-slate-805 hover:bg-slate-850 h-8 flex items-center justify-center'
+                                      : 'bg-slate-50 text-slate-500 hover:text-slate-900 border-slate-200 hover:bg-slate-100 h-8 flex items-center justify-center'
                                   }`}
                                 >
                                   {isClosed ? 'Encerrado' : 'Aberto'}
@@ -3649,15 +3649,15 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'clientes' && (
                 <div id="view-clientes" className="space-y-6">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Livro de Clientes Registados</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Histórico automático de visitas e gastos individuais de cada cliente.</p>
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Livro de Clientes Registados</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Histórico automático de visitas e gastos individuais de cada cliente.</p>
                   </div>
 
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
-                        <thead className="bg-slate-950 text-[10px] font-bold text-slate-450 uppercase tracking-widest leading-none border-b border-slate-900">
+                        <thead className="bg-white text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none border-b border-slate-100">
                           <tr>
                             <th className="py-4.5 px-6">Cliente Registado</th>
                             <th className="py-4.5 px-4">Correio Electrónico</th>
@@ -3671,7 +3671,7 @@ export default function Dashboard() {
                           {clientsList.map((client, idx) => {
                             const fidelityPoints = client.visits * 15;
                             let loyaltyTier = 'Membro Standard';
-                            let tierBadge = 'bg-slate-950 border-slate-800 text-slate-450 text-slate-400';
+                            let tierBadge = 'bg-white border-slate-200 text-slate-500 text-slate-500';
                             if (fidelityPoints >= 60) {
                               loyaltyTier = 'VIP Platinum';
                               tierBadge = 'bg-amber-950 text-amber-400 border-amber-900';
@@ -3681,17 +3681,17 @@ export default function Dashboard() {
                             }
 
                             return (
-                              <tr key={idx} className="hover:bg-slate-950/20 transition-colors">
-                                <td className="py-4.5 px-6 font-bold text-white flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-slate-950 border border-slate-850 flex items-center justify-center font-mono font-bold text-[10px] text-slate-350">
+                              <tr key={idx} className="hover:bg-white/20 transition-colors">
+                                <td className="py-4.5 px-6 font-bold text-slate-900 flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center font-mono font-bold text-[10px] text-slate-500">
                                     {client.name.substring(0, 2).toUpperCase()}
                                   </div>
                                   <span>{client.name}</span>
                                 </td>
-                                <td className="py-4.5 px-4 text-slate-400 font-mono select-all">
+                                <td className="py-4.5 px-4 text-slate-500 font-mono select-all">
                                   {client.email}
                                 </td>
-                                <td className="py-4.5 px-4 text-center font-mono font-extrabold text-slate-205 text-slate-200">
+                                <td className="py-4.5 px-4 text-center font-mono font-extrabold text-slate-700 text-slate-700">
                                   {client.visits}
                                 </td>
                                 <td className="py-4.5 px-4 text-right font-mono font-black text-rose-450 text-rose-400">
@@ -3729,26 +3729,26 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'analytics' && (
                 <div id="view-analytics" className="space-y-6 animate-fade-in">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Gráficos de Desempenho</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Analise o crescimento do seu negócio com dados transparentes originando do Stripe e faturas da base.</p>
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Gráficos de Desempenho</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Analise o crescimento do seu negócio com dados transparentes originando do Stripe e faturas da base.</p>
                   </div>
 
                   {/* Operational Cards Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center justify-between">
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
                       <div>
-                        <span className="block text-[10px] font-mono text-slate-450 uppercase font-bold tracking-widest text-slate-400 leading-none">Vendas Realizadas</span>
-                        <span className="text-2xl font-black text-white mt-1.5 block">{bookings.filter(b => b.booking_status === 'completed').length}</span>
+                        <span className="block text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest text-slate-500 leading-none">Vendas Realizadas</span>
+                        <span className="text-2xl font-black text-slate-900 mt-1.5 block">{bookings.filter(b => b.booking_status === 'completed').length}</span>
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-slate-950 text-slate-350 flex items-center justify-center border border-slate-800">
-                        <CheckSquare className="w-5 h-5 text-slate-400" />
+                      <div className="w-10 h-10 rounded-2xl bg-white text-slate-500 flex items-center justify-center border border-slate-200">
+                        <CheckSquare className="w-5 h-5 text-slate-500" />
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center justify-between">
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
                       <div>
-                        <span className="block text-[10px] font-mono text-slate-450 uppercase font-bold tracking-widest text-slate-400 leading-none">Receita Total</span>
+                        <span className="block text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest text-slate-500 leading-none">Receita Total</span>
                         <span className="text-2xl font-black text-emerald-400 mt-1.5 block">
                           {bookings.filter(b => b.booking_status === 'completed').reduce((sum, item) => sum + Number(item.total_price), 0).toFixed(2)} €
                         </span>
@@ -3758,9 +3758,9 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center justify-between">
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
                       <div>
-                        <span className="block text-[10px] font-mono text-slate-450 uppercase font-bold tracking-widest text-slate-400 leading-none">Agendamentos Pendentes</span>
+                        <span className="block text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest text-slate-500 leading-none">Agendamentos Pendentes</span>
                         <span className="text-2xl font-black text-amber-400 mt-1.5 block">{bookings.filter(b => b.booking_status === 'pending').length}</span>
                       </div>
                       <div className="w-10 h-10 rounded-2xl bg-amber-950 text-amber-400 flex items-center justify-center border border-amber-900">
@@ -3768,13 +3768,13 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center justify-between">
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
                       <div>
-                        <span className="block text-[10px] font-mono text-slate-450 uppercase font-bold tracking-widest text-slate-400 leading-none">Tickets Suporte</span>
-                        <span className="text-2xl font-black text-white mt-1.5 block">0</span>
+                        <span className="block text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest text-slate-500 leading-none">Tickets Suporte</span>
+                        <span className="text-2xl font-black text-slate-900 mt-1.5 block">0</span>
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-slate-950 text-slate-350 flex items-center justify-center border border-slate-850">
-                        <HelpCircle className="w-5 h-5 text-slate-400" />
+                      <div className="w-10 h-10 rounded-2xl bg-white text-slate-500 flex items-center justify-center border border-slate-200">
+                        <HelpCircle className="w-5 h-5 text-slate-500" />
                       </div>
                     </div>
                   </div>
@@ -3782,8 +3782,8 @@ export default function Dashboard() {
                   {/* Recharts Graphical charts */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-w-0">
                     {/* Monthly Volume BarChart */}
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
-                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Volume de Vendas Mensal</h4>
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Volume de Vendas Mensal</h4>
                       <div className="h-64 flex items-center justify-center">
                         {getDynamicPartnerVolumeData().length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
@@ -3797,9 +3797,9 @@ export default function Dashboard() {
                             </RBarChart>
                           </ResponsiveContainer>
                         ) : (
-                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-slate-950/20">
+                          <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-white/20">
                             <BarChart className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
                             <p className="text-[10px] text-slate-550 text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
                           </div>
                         )}
@@ -3807,8 +3807,8 @@ export default function Dashboard() {
                     </div>
 
                     {/* Bookings Distribution LineChart */}
-                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
-                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Frequência Semanal de Ocupação</h4>
+                    <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-3 min-w-0 flex flex-col justify-between">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Frequência Semanal de Ocupação</h4>
                       <div className="h-64 flex items-center justify-center">
                         {getDynamicPartnerWeeklyOccupancy().length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
@@ -3821,9 +3821,9 @@ export default function Dashboard() {
                             </RLineChart>
                           </ResponsiveContainer>
                         ) : (
-                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-slate-950/20">
+                          <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center self-stretch bg-white/20">
                             <TrendingUp className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
                             <p className="text-[10px] text-slate-550 text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
                           </div>
                         )}
@@ -3838,11 +3838,11 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'mensagens' && (
                 <div id="view-mensagens" className="space-y-6 animate-fade-in max-w-5xl">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                       Mensagens e Suporte
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Responda rapidamente aos seus clientes. Dê suporte direto via portal.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Responda rapidamente aos seus clientes. Dê suporte direto via portal.</p>
                   </div>
                   {business && <DashboardMessages businessId={business.id} />}
                 </div>
@@ -3853,38 +3853,38 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'configuracoes' && (
                 <div id="view-configuracoes" className="space-y-6 max-w-7xl animate-fade-in">
-                  <div className="border-b border-slate-800 pb-5 text-left">
-                    <h3 className="text-xl font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+                  <div className="border-b border-slate-200 pb-5 text-left">
+                    <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-purple-400" />
                       <span>Configurações do Estabelecimento</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">Mantenha a sua foto de capa, logótipo, endereço e dados de marca atualizados no marketplace real.</p>
+                    <p className="text-xs text-slate-500 mt-1">Mantenha a sua foto de capa, logótipo, endereço e dados de marca atualizados no marketplace real.</p>
                   </div>
 
                   {business && (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                       
                       {/* Left: Interactive Input Form */}
-                      <form onSubmit={handleUpdateConfiguracoes} className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 text-xs font-semibold [box-shadow:0_20px_50px_rgba(0,0,0,0.35)]">
+                      <form onSubmit={handleUpdateConfiguracoes} className="lg:col-span-7 bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 text-xs font-semibold [box-shadow:0_20px_50px_rgba(0,0,0,0.35)]">
                         
                         {/* Name & Phone */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Nome do Salão</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Nome do Salão</label>
                             <input 
                               type="text" required
                               value={business.name}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Telefone de Atendimento</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Telefone de Atendimento</label>
                             <input 
                               type="tel" required
                               value={business.phone}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, phone: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans font-mono"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans font-mono"
                             />
                           </div>
                         </div>
@@ -3892,56 +3892,56 @@ export default function Dashboard() {
                         {/* District & City */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Distrito / Concelho</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Distrito / Concelho</label>
                             <input 
                               type="text" required
                               value={business.district}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, district: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Cidade (Freguesia)</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Cidade (Freguesia)</label>
                             <input 
                               type="text" required
                               value={business.city}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, city: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
                             />
                           </div>
                         </div>
 
                         {/* Address */}
                         <div className="text-left">
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Endereço de Portaria (Rua, Número, Código Postal)</label>
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Endereço de Portaria (Rua, Número, Código Postal)</label>
                           <input 
                             type="text" required
                             value={business.address}
                             onChange={e => setBusiness(prev => prev ? ({ ...prev, address: e.target.value }) : null)}
                             placeholder="Avenida da Liberdade Nº 42, 1250-142 Lisboa"
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
                           />
                         </div>
 
                         {/* Logo and Cover URL */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL do Logótipo</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Link URL do Logótipo</label>
                             <input 
                               type="url"
                               value={business.logo_url || ''}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, logo_url: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500"
                               placeholder="https://exemplo.com/logotipo.jpg"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Link URL da Foto de Capa</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Link URL da Foto de Capa</label>
                             <input 
                               type="url"
                               value={business.cover_url || ''}
                               onChange={e => setBusiness(prev => prev ? ({ ...prev, cover_url: e.target.value }) : null)}
-                              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500"
                               placeholder="https://exemplo.com/capasalao.jpg"
                             />
                           </div>
@@ -3949,12 +3949,12 @@ export default function Dashboard() {
 
                         {/* Biography description */}
                         <div className="text-left">
-                          <label className="block text-[10px] font-mono uppercase text-slate-450 text-slate-400 mb-1.5">Apresentação Editorial do Salão</label>
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Apresentação Editorial do Salão</label>
                           <textarea 
                             value={business.description || ''}
                             onChange={e => setBusiness(prev => prev ? ({ ...prev, description: e.target.value }) : null)}
                             rows={3}
-                            className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white text-xs outline-none focus:border-purple-500 font-sans"
+                            className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
                             placeholder="Escreva brevemente sobre o conceito e estilo do salão..."
                           />
                         </div>
@@ -3968,21 +3968,21 @@ export default function Dashboard() {
                       </form>
 
                       {/* Right: Live Identity Visual Mockup Card mirroring the Brand Manual template */}
-                      <div className="lg:col-span-5 bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-6 [box-shadow:0_15px_40px_rgba(0,0,0,0.4)] lg:sticky lg:top-24 text-left">
-                        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                      <div className="lg:col-span-5 bg-slate-50 border border-slate-200 p-6 rounded-3xl space-y-6 [box-shadow:0_15px_40px_rgba(0,0,0,0.4)] lg:sticky lg:top-24 text-left">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                           <div className="flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-purple-400" />
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-300 font-bold">Manual de Identidade Visual</span>
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 font-bold">Manual de Identidade Visual</span>
                           </div>
                           <span className="text-[8px] bg-purple-950/80 text-purple-400 border border-purple-800/60 px-2 py-0.5 rounded-full font-mono uppercase">Ref Ativo</span>
                         </div>
 
                         {/* Interactive Dark Navy Card mimicking Option 3 from reference image */}
-                        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-5 shadow-inner select-none relative overflow-hidden group">
+                        <div className="bg-[#fafbfc] border border-slate-200 rounded-2xl p-5 space-y-5 shadow-inner select-none relative overflow-hidden group">
                           
                           {/* Top bar with url slug mock */}
-                          <div className="flex items-center justify-between text-slate-400">
-                            <div className="flex items-center gap-1.5 text-[10px] font-mono hover:text-white transition-colors">
+                          <div className="flex items-center justify-between text-slate-500">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono hover:text-slate-900 transition-colors">
                               <Globe className="w-3.5 h-3.5 text-purple-400" />
                               <span className="underline truncate max-w-[200px]">glamzo.com/salon/{business?.slug || 'parceiro'}</span>
                             </div>
@@ -3992,41 +3992,41 @@ export default function Dashboard() {
                           {/* Logo Display representation segment */}
                           <div className="flex items-center gap-4 py-1">
                             {business?.logo_url ? (
-                              <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
+                              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-lg">
                                 <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                               </div>
                             ) : (
-                              <div className="w-12 h-12 rounded-xl bg-purple-950/40 border-2 border-dashed border-purple-800/40 flex flex-col items-center justify-center shrink-0 shadow-sm grow-0 group-hover:border-purple-500 transition-colors">
+                              <div className="w-12 h-12 rounded-xl bg-purple-50 border-2 border-dashed border-purple-800/40 flex flex-col items-center justify-center shrink-0 shadow-sm grow-0 group-hover:border-purple-500 transition-colors">
                                 <Plus className="w-4 h-4 text-purple-400" />
                                 <span className="text-[7px] text-slate-500 block font-mono font-bold leading-none mt-1">Logo URL</span>
                               </div>
                             )}
                             <div>
-                              <span className="block text-sm font-display font-black text-white tracking-tight">{business?.name || 'Seu Salão Glamzo'}</span>
-                              <span className="block text-[9px] text-slate-400 font-mono mt-0.5 uppercase tracking-widest">{business?.city || 'Lisboa'}, Portugal</span>
+                              <span className="block text-sm font-display font-black text-slate-900 tracking-tight">{business?.name || 'Seu Salão Glamzo'}</span>
+                              <span className="block text-[9px] text-slate-500 font-mono mt-0.5 uppercase tracking-widest">{business?.city || 'Lisboa'}, Portugal</span>
                             </div>
                           </div>
 
                           {/* Fonts Division: Aa Outfit and Aa Inter layout like reference guide */}
-                          <div className="grid grid-cols-2 gap-4 border-t border-slate-800/50 pt-4">
+                          <div className="grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4">
                             <div>
                               <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">Display Headings</span>
-                              <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl">
-                                <span className="block text-xs font-display font-black text-white">Aa Outfit</span>
+                              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span className="block text-xs font-display font-black text-slate-900">Aa Outfit</span>
                                 <span className="text-[9px] text-purple-400 block mt-0.5 leading-none">Elegant & Tech</span>
                               </div>
                             </div>
                             <div>
                               <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">Body Text</span>
-                              <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl">
-                                <span className="block text-xs font-sans font-bold text-slate-200">Aa Inter</span>
-                                <span className="text-[9px] text-slate-400 block mt-0.5 leading-none">Clean & Modern</span>
+                              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span className="block text-xs font-sans font-bold text-slate-700">Aa Inter</span>
+                                <span className="text-[9px] text-slate-500 block mt-0.5 leading-none">Clean & Modern</span>
                               </div>
                             </div>
                           </div>
 
                           {/* Color Palette circle row + hex labels exactly mirroring the mockup layout */}
-                          <div className="space-y-2 border-t border-slate-800/50 pt-4">
+                          <div className="space-y-2 border-t border-slate-200/50 pt-4">
                             <span className="text-[8px] font-mono uppercase text-slate-500 block">Esquema de Cores do Guidelines</span>
                             <div className="grid grid-cols-4 gap-2 text-center">
                               <div className="space-y-1 animate-pulse" style={{ animationDuration: '4s' }}>
@@ -4035,11 +4035,11 @@ export default function Dashboard() {
                               </div>
                               <div className="space-y-1">
                                 <div className="w-8 h-8 rounded-full bg-[#fafbfc] border border-white/10 mx-auto shadow-md" />
-                                <span className="font-mono text-[8px] block text-slate-300 font-bold">#fafbfc</span>
+                                <span className="font-mono text-[8px] block text-slate-600 font-bold">#fafbfc</span>
                               </div>
                               <div className="space-y-1">
-                                <div className="w-8 h-8 rounded-full bg-[#0f172a] border border-white/10 mx-auto shadow-md" />
-                                <span className="font-mono text-[8px] block text-slate-400 font-bold">#0f172a</span>
+                                <div className="w-8 h-8 rounded-full bg-[#fafbfc] border border-white/10 mx-auto shadow-md" />
+                                <span className="font-mono text-[8px] block text-slate-500 font-bold">#0f172a</span>
                               </div>
                               <div className="space-y-1 animate-pulse" style={{ animationDuration: '6s' }}>
                                 <div className="w-8 h-8 rounded-full bg-[#f43f5e] border border-white/10 mx-auto shadow-md shadow-rose-900/10" />
@@ -4049,19 +4049,19 @@ export default function Dashboard() {
                           </div>
 
                           {/* Tagline editor mirroring tagline box in brand layout (incorporates salon description) */}
-                          <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-1.5 border-l-2 border-purple-500 mt-2">
+                          <div className="p-3 bg-slate-50/60 border border-slate-200 rounded-xl space-y-1.5 border-l-2 border-purple-500 mt-2">
                             <span className="text-[8px] font-mono uppercase text-slate-500 block font-bold">Apresentação / Editorial</span>
-                            <p className="text-[11px] font-sans text-slate-300 italic leading-relaxed">
+                            <p className="text-[11px] font-sans text-slate-600 italic leading-relaxed">
                               "{business?.description || 'Descubra e marque os melhores serviços de beleza e bem-estar de Portugal.'}"
                             </p>
                           </div>
 
                           {/* Section: Voice of Tone pills */}
-                          <div className="space-y-2 border-t border-slate-800/40 pt-3">
+                          <div className="space-y-2 border-t border-slate-200/40 pt-3">
                             <span className="text-[8px] font-mono uppercase text-slate-500 block">Tom de Voz da Marca (Voice)</span>
                             <div className="flex flex-wrap gap-1.5">
                               {['Elegante', 'Profissional', 'Moderno', 'Confiante'].map((tone) => (
-                                <span key={tone} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-purple-300 border border-purple-900/40 shadow-sm">
+                                <span key={tone} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-50 text-purple-300 border border-purple-200 shadow-sm">
                                   {tone}
                                 </span>
                               ))}
@@ -4073,7 +4073,7 @@ export default function Dashboard() {
                             <span className="text-[8px] font-mono uppercase text-slate-500 block">Valores de Marca (Values)</span>
                             <div className="flex flex-wrap gap-1.5">
                               {['Qualidade Elite', 'Foco no Cliente', 'Modernidade Digital', 'Organização'].map((value) => (
-                                <span key={value} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-rose-300 border border-slate-800/80 shadow-sm">
+                                <span key={value} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-50 text-rose-300 border border-slate-200/80 shadow-sm">
                                   {value}
                                 </span>
                               ))}
@@ -4085,7 +4085,7 @@ export default function Dashboard() {
                             <span className="text-[8px] font-mono uppercase text-slate-500 block">Linha Estética (Aesthetic)</span>
                             <div className="flex flex-wrap gap-1.5">
                               {['Minimalismo Moderno', 'High-End Beauty Tech', 'Energia de Gradientes'].map((aes) => (
-                                <span key={aes} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-200 border border-slate-850 flex items-center gap-1.5">
+                                <span key={aes} className="text-[9px] font-bold px-2.5 py-0.5 rounded-full bg-slate-50 text-slate-700 border border-slate-200 flex items-center gap-1.5">
                                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                                   <span>{aes}</span>
                                 </span>
@@ -4102,63 +4102,63 @@ export default function Dashboard() {
 
               {activeTab === 'financeiro' && (
                 <div id="view-financeiro" className="space-y-6 max-w-3xl animate-fade-in">
-                  <div className="border-b border-slate-900 pb-5 text-left">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Subscrição e Faturação</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Stripe Connect.</p>
+                  <div className="border-b border-slate-100 pb-5 text-left">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Subscrição e Faturação</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Stripe Connect.</p>
                   </div>
 
                   {/* Operational Metrics Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-purple-500">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturação Bruta</span>
-                      <span className="text-base sm:text-lg font-black text-white mt-1.5 block font-mono">{totalVolumeBruto.toFixed(2)} €</span>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left border-l-2 border-l-purple-500">
+                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black tracking-wider leading-none">Faturação Bruta</span>
+                      <span className="text-base sm:text-lg font-black text-slate-900 mt-1.5 block font-mono">{totalVolumeBruto.toFixed(2)} €</span>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-orange-500">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Comissões Glamzo</span>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left border-l-2 border-l-orange-500">
+                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black tracking-wider leading-none">Comissões Glamzo</span>
                       <span className="text-base sm:text-lg font-black text-rose-350 mt-1.5 block font-mono">-{totalComissoesRetidas.toFixed(2)} €</span>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 text-left border-l-2 border-l-emerald-500">
-                      <span className="block text-[9px] font-mono text-slate-400 uppercase font-black tracking-wider leading-none">Faturação Líquida</span>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left border-l-2 border-l-emerald-500">
+                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black tracking-wider leading-none">Faturação Líquida</span>
                       <span className="text-base sm:text-lg font-black text-emerald-400 mt-1.5 block font-mono">{totalReceivedVolume.toFixed(2)} €</span>
                     </div>
                   </div>
 
                   {/* Gestão da Subscrição Glamzo PRO */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left">
-                    <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
+                  <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4 text-left">
+                    <div className="border-b border-slate-200 pb-2 flex justify-between items-center">
                       <div>
-                        <h4 className="font-extrabold text-sm text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                        <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-purple-400" />
                           <span>Subscrição & Plano Atual (Glamzo PRO)</span>
                         </h4>
-                        <p className="text-[10px] text-slate-400 mt-0.5 leading-normal font-sans">
+                        <p className="text-[10px] text-slate-500 mt-0.5 leading-normal font-sans">
                           Acompanhe o estado da sua assinatura de software e os seus dias de teste ativo.
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
+                      <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-200 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
                         {business?.subscription_status || 'Trialing'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/40 p-4 rounded-2xl border border-slate-850 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/40 p-4 rounded-2xl border border-slate-200 text-xs">
                       <div className="space-y-1">
-                        <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
-                        <span className="text-white font-extrabold text-xs sm:text-sm leading-none block">Glamzo PRO</span>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
+                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">Glamzo PRO</span>
                         <span className="text-[10px] text-slate-500 block">Acesso ilimitado à plataforma, agenda e comissões integradas.</span>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-slate-400 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
-                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-400 font-medium font-sans">/ mês</span></span>
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
+                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span></span>
                         <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Stripe.</span>
                       </div>
                     </div>
 
                     {/* Subscriptions Info Details */}
-                    <div className="text-xs text-slate-350 leading-relaxed space-y-2">
+                    <div className="text-xs text-slate-500 leading-relaxed space-y-2">
                       <p>
-                        O plano <span className="font-extrabold text-white">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
+                        O plano <span className="font-extrabold text-slate-900">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
                       </p>
                       {trialEndsAt && (
                         <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
@@ -4172,7 +4172,7 @@ export default function Dashboard() {
                         <>
                           <button
                             onClick={handleOpenBillingPortal}
-                            className="bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                            className="bg-slate-100 hover:bg-slate-100 text-slate-700 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                           >
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             <span>Gerir faturas no portal Stripe</span>
@@ -4192,7 +4192,7 @@ export default function Dashboard() {
                           </p>
                           <button
                             onClick={handleSubscribePro}
-                            className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-white text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
+                            className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-slate-900 text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />
                             <span>Ativar Glamzo PRO (Stripe Checkout)</span>
@@ -4203,10 +4203,10 @@ export default function Dashboard() {
                   </div>
 
                   {/* Dynamic Stripe Express Connect Manager */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4">
-                    <div className="border-b border-slate-800 pb-2 text-left">
-                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">Definições de Recebimentos (Stripe Connect)</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-slate-200 pb-2 text-left">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">Definições de Recebimentos (Stripe Connect)</h4>
+                      <p className="text-[10px] text-slate-500 mt-0.5 leading-normal">
                         Configure a sua conta Stripe Express obrigatória para receber pagamentos de marcações diretamente na sua conta bancária.
                       </p>
                     </div>
@@ -4223,15 +4223,15 @@ export default function Dashboard() {
                                 </div>
                                 <div className="space-y-1 grow">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS ATIVA</h4>
+                                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS ATIVA</h4>
                                     <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PRONTO</span>
                                   </div>
-                                  <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-                                    A sua conta está totalmente verificada e operacional com o ID <span className="text-white font-bold font-mono text-[10px] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">{business.stripe_account_id}</span>.
+                                  <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+                                    A sua conta está totalmente verificada e operacional com o ID <span className="text-slate-900 font-bold font-mono text-[10px] bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">{business.stripe_account_id}</span>.
                                   </p>
-                                  <div className="bg-slate-950/40 rounded-xl p-3 border border-slate-900 text-[10px] space-y-1 mt-2">
+                                  <div className="bg-white/40 rounded-xl p-3 border border-slate-100 text-[10px] space-y-1 mt-2">
                                     <p className="text-emerald-400 font-bold">✓ Split de Fundos Ativo: Loja recebe 95% do valor; Plataforma retém comissão de 5%.</p>
-                                    <p className="text-slate-450 text-slate-400 font-sans">✓ Transferências Automáticas: Processadas pelo Stripe diretamente para o seu IBAN associado de acordo com a sua calendarização no parceiro de pagamentos.</p>
+                                    <p className="text-slate-500 text-slate-500 font-sans">✓ Transferências Automáticas: Processadas pelo Stripe diretamente para o seu IBAN associado de acordo com a sua calendarização no parceiro de pagamentos.</p>
                                   </div>
                                 </div>
                               </div>
@@ -4244,11 +4244,11 @@ export default function Dashboard() {
                                   </div>
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">CONEXÃO STRIPE INCOMPLETA</h4>
+                                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONEXÃO STRIPE INCOMPLETA</h4>
                                       <span className="px-1.5 py-0.2 bg-amber-950 text-amber-400 border border-amber-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PENDENTE</span>
                                     </div>
-                                    <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-                                      O seu ID de conta <span className="text-white font-mono text-[10px] bg-slate-950 border border-slate-900 px-1 py-0.5 rounded">{business.stripe_account_id}</span> foi associado, mas ainda precisa completar o fluxo de onboarding no Stripe para ativar cobranças e transferências.
+                                    <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+                                      O seu ID de conta <span className="text-slate-900 font-mono text-[10px] bg-white border border-slate-100 px-1 py-0.5 rounded">{business.stripe_account_id}</span> foi associado, mas ainda precisa completar o fluxo de onboarding no Stripe para ativar cobranças e transferências.
                                     </p>
                                   </div>
                                 </div>
@@ -4264,14 +4264,14 @@ export default function Dashboard() {
                           </>
                         ) : (
                           /* FETCHING STATUS OR SIMPLE ID LINKED SKELETON */
-                          <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-2xl p-5 text-left flex items-start gap-4">
+                          <div className="bg-indigo-50 border border-indigo-900/40 rounded-2xl p-5 text-left flex items-start gap-4">
                             <div className="p-2.5 bg-indigo-950 text-indigo-400 rounded-xl border border-indigo-900 shrink-0">
                               <Building className="w-5 h-5" />
                             </div>
                             <div className="space-y-1 grow">
-                              <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">Carregando Informações do Connect...</h4>
-                              <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-                                ID Associado: <span className="text-white font-mono text-[10px] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">{business.stripe_account_id}</span>. A obter status em tempo real...
+                              <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">Carregando Informações do Connect...</h4>
+                              <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+                                ID Associado: <span className="text-slate-900 font-mono text-[10px] bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">{business.stripe_account_id}</span>. A obter status em tempo real...
                               </p>
                             </div>
                           </div>
@@ -4286,8 +4286,8 @@ export default function Dashboard() {
                               <AlertTriangle className="w-5 h-5 animate-pulse" />
                             </div>
                             <div className="space-y-0.5 grow">
-                              <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS REQUERIDA</h4>
-                              <p className="text-[11px] text-slate-400 leading-normal font-sans">
+                              <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS REQUERIDA</h4>
+                              <p className="text-[11px] text-slate-500 leading-normal font-sans">
                                 É necessário interligar uma conta Stripe Express para receber pagamentos online. O valor pago pelo cliente será dividido automaticamente (95% para si / 5% comissão Glamzo) e transferido para o seu banco conforme o calendário de transferências configurado no Stripe.
                               </p>
                             </div>
@@ -4312,10 +4312,10 @@ export default function Dashboard() {
                         </div>
 
                         {/* Direct manual key-in box for testing if needed */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-left space-y-3">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-3">
                           <div className="space-y-1">
-                            <h4 className="font-bold text-xs text-white uppercase tracking-wide">Ou Associe ID Connect Existente</h4>
-                            <p className="text-[10px] text-slate-400 leading-normal font-sans font-medium">
+                            <h4 className="font-bold text-xs text-slate-900 uppercase tracking-wide">Ou Associe ID Connect Existente</h4>
+                            <p className="text-[10px] text-slate-500 leading-normal font-sans font-medium">
                               Se já possui uma conta Connect Express configurada, introduza o seu ID abaixo:
                             </p>
                           </div>
@@ -4325,12 +4325,12 @@ export default function Dashboard() {
                               value={manualStripeId}
                               onChange={(e) => setManualStripeId(e.target.value)}
                               placeholder="acct_1OuX..."
-                              className="grow bg-slate-950 text-white border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-amber-500 transition"
+                              className="grow bg-white text-slate-900 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-amber-500 transition"
                             />
                             <button
                               onClick={handleSaveManualStripe}
                               disabled={savingManualStripe || !manualStripeId.trim()}
-                              className="text-xs font-bold bg-slate-850 hover:bg-slate-750 text-slate-100 border border-slate-805 hover:border-slate-700 px-4 py-2 rounded-xl transition shrink-0 disabled:opacity-50"
+                              className="text-xs font-bold bg-slate-100 hover:bg-slate-100 text-slate-800 border border-slate-200 hover:border-slate-300 px-4 py-2 rounded-xl transition shrink-0 disabled:opacity-50"
                             >
                               {savingManualStripe ? 'A Guardar...' : 'Salvar ID'}
                             </button>
@@ -4341,21 +4341,21 @@ export default function Dashboard() {
                   </div>
 
                   {/* Transaction Ledger List with Automated Receipts Explanation */}
-                  <div className="bg-slate-900 border border-slate-850 rounded-3xl p-5 sm:p-6 space-y-4 text-left font-sans">
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-850">
+                  <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4 text-left font-sans">
+                    <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                       <div>
-                        <h4 className="font-extrabold text-sm text-white">Transações & Faturação de Clientes</h4>
-                        <p className="text-[10px] text-slate-450 text-slate-400 mt-0.5 font-medium">Histórico de liquidações e processos de faturação automática integrada via Stripe.</p>
+                        <h4 className="font-extrabold text-sm text-slate-900">Transações & Faturação de Clientes</h4>
+                        <p className="text-[10px] text-slate-500 text-slate-500 mt-0.5 font-medium">Histórico de liquidações e processos de faturação automática integrada via Stripe.</p>
                       </div>
                     </div>
 
-                    <div className="bg-slate-950/40 p-4 border border-slate-850 rounded-2xl text-[11px] leading-relaxed text-slate-400 space-y-2">
-                      <p className="text-white font-extrabold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-indigo-400" /> Faturação 100% Automatizada e Integrada</p>
+                    <div className="bg-white/40 p-4 border border-slate-200 rounded-2xl text-[11px] leading-relaxed text-slate-500 space-y-2">
+                      <p className="text-slate-900 font-extrabold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-indigo-400" /> Faturação 100% Automatizada e Integrada</p>
                       <p>
-                        No ambiente de produção da Glamzo, <span className="text-slate-200 font-bold">não necessita de preencher SAF-T manuais nem de emitir PDFs temporários</span>. 
+                        No ambiente de produção da Glamzo, <span className="text-slate-700 font-bold">não necessita de preencher SAF-T manuais nem de emitir PDFs temporários</span>. 
                       </p>
                       <p>
-                        No exato momento em que um cliente final efetua o pagamento de uma marcação via Stripe Checkout, o <span className="text-white">Stripe emite e envia automaticamente o recibo oficial e termo de faturação correspondente</span> diretamente para o email do cliente. O histórico fiscal fica arquivado na sua conta bancária Stripe Connect e no e-mail do cliente, cumprindo todas as diretrizes regulatórias e fiscais aplicáveis.
+                        No exato momento em que um cliente final efetua o pagamento de uma marcação via Stripe Checkout, o <span className="text-slate-900">Stripe emite e envia automaticamente o recibo oficial e termo de faturação correspondente</span> diretamente para o email do cliente. O histórico fiscal fica arquivado na sua conta bancária Stripe Connect e no e-mail do cliente, cumprindo todas as diretrizes regulatórias e fiscais aplicáveis.
                       </p>
                     </div>
 
@@ -4367,26 +4367,26 @@ export default function Dashboard() {
                         const txDate = new Date(item.created_at || new Date()).toLocaleDateString('pt-PT');
 
                         return (
-                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-900 gap-3 text-xs">
+                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 gap-3 text-xs">
                             <div className="space-y-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-mono text-slate-200 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-[9px]">
+                                <span className="font-mono text-slate-700 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-[9px]">
                                   TX-{String(item.id).substring(0,8).toUpperCase()}
                                 </span>
-                                <span className="text-[10px] text-slate-400">{txDate}</span>
+                                <span className="text-[10px] text-slate-500">{txDate}</span>
                                 <span className="px-1.5 py-0.2 bg-emerald-950/50 text-emerald-400 border border-emerald-900/35 rounded text-[8px] font-mono tracking-wider uppercase font-black">
                                   Faturado por Stripe
                                 </span>
                               </div>
-                              <div className="text-slate-400 text-[11px] font-medium leading-normal font-mono">
-                                Total Pago: <span className="text-white font-bold">{originalPrice.toFixed(2)}€</span> • 
+                              <div className="text-slate-500 text-[11px] font-medium leading-normal font-mono">
+                                Total Pago: <span className="text-slate-900 font-bold">{originalPrice.toFixed(2)}€</span> • 
                                 Comissão Glamzo (5%): <span className="text-rose-450 font-bold">-{platformFee.toFixed(2)}€</span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-3 justify-between sm:justify-end text-right">
                               <div>
-                                <span className="text-[9px] uppercase font-mono text-slate-400 block font-bold">Teu Lucro Líquido</span>
+                                <span className="text-[9px] uppercase font-mono text-slate-500 block font-bold">Teu Lucro Líquido</span>
                                 <span className="text-[11px] font-black text-emerald-400 font-mono">{merchantProfit.toFixed(2)} €</span>
                               </div>
                             </div>
@@ -4407,21 +4407,21 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'campanhas' && (
                 <div id="view-campanhas" className="space-y-6 animate-fade-in max-w-2xl">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Campanhas & Cupões</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Promova promoções, atraia clientes em dias de menor afluência e defina cupões promocionais reais.</p>
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Campanhas & Cupões</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Promova promoções, atraia clientes em dias de menor afluência e defina cupões promocionais reais.</p>
                   </div>
 
                   {/* Coupon Creator & List */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start text-left">
                     
                     {/* LEFT CONTAINER: List of active coupons */}
-                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-6 space-y-4">
-                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                    <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-5 sm:p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 leading-none">
                         <Tag className="w-4.5 h-4.5 text-rose-500" />
                         <span>Cupões no Checkout Real</span>
                       </h4>
-                      <p className="text-[10px] text-slate-400 leading-normal">
+                      <p className="text-[10px] text-slate-500 leading-normal">
                         Os clientes introduzem estes códigos dinamicamente no checkout da Glamzo para aplicar descontos reais.
                       </p>
 
@@ -4440,7 +4440,7 @@ export default function Dashboard() {
                             : 'Sem expiração';
 
                           return (
-                            <div key={cp.id || idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-950 rounded-2xl border border-slate-900 gap-3 text-xs">
+                            <div key={cp.id || idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 gap-3 text-xs">
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="font-mono bg-rose-950/60 border border-rose-900/40 px-2.5 py-0.5 rounded text-rose-400 font-extrabold select-all uppercase text-[10px] tracking-wide">
@@ -4451,19 +4451,19 @@ export default function Dashboard() {
                                     className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase transition-all cursor-pointer ${
                                       cp.is_active 
                                         ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/40' 
-                                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                                        : 'bg-slate-50 text-slate-500 border border-slate-200'
                                     }`}
                                   >
                                     {cp.is_active ? 'Ativo' : 'Inativo'}
                                   </button>
                                 </div>
-                                <p className="text-[11px] font-bold text-white leading-normal">{discountStr}</p>
+                                <p className="text-[11px] font-bold text-slate-900 leading-normal">{discountStr}</p>
                                 <p className="text-[10px] text-slate-550 text-slate-500 leading-normal font-medium">{expiryStr}</p>
                               </div>
 
                               <button
                                 onClick={() => handleDeleteCoupon(cp.id)}
-                                className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-950/25 border border-transparent hover:border-rose-900/40 rounded-xl transition cursor-pointer self-end sm:self-center"
+                                className="p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-950/25 border border-transparent hover:border-rose-900/40 rounded-xl transition cursor-pointer self-end sm:self-center"
                                 title="Eliminar Cupão"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -4473,8 +4473,8 @@ export default function Dashboard() {
                         })}
 
                         {coupons.length === 0 && (
-                          <div className="text-center py-10 border border-dashed border-slate-855 rounded-2xl bg-slate-950/20">
-                            <p className="text-xs text-slate-350 font-bold">Sem cupões promocionais criados.</p>
+                          <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl bg-white/20">
+                            <p className="text-xs text-slate-500 font-bold">Sem cupões promocionais criados.</p>
                             <p className="text-[10px] text-slate-500 mt-1">Crie códigos de desconto no formulário ao lado para oferecer promoções especiais aos seus clientes.</p>
                           </div>
                         )}
@@ -4482,60 +4482,60 @@ export default function Dashboard() {
                     </div>
 
                     {/* RIGHT CONTAINER: Creator card */}
-                    <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-5 sm:p-6 space-y-4">
-                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                    <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-5 sm:p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 leading-none">
                         <Plus className="w-4.5 h-4.5 text-purple-400" />
                         <span>Criar Código Promocional</span>
                       </h4>
-                      <p className="text-[10px] text-slate-400 leading-normal">
+                      <p className="text-[10px] text-slate-500 leading-normal">
                         Configure um novo código promocional específico para atrair e fidelizar a sua clientela.
                       </p>
 
                       <form onSubmit={handleCreateCoupon} className="space-y-4 text-xs font-semibold">
                         <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1.5">Código Único (Letras/Números)</label>
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Código Único (Letras/Números)</label>
                           <input 
                             type="text" required 
                             value={couponForm.code}
                             onChange={e => setCouponForm(prev => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s+/g, '') }))}
                             placeholder="EX: GLAMZO10"
-                            className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
+                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 font-mono text-xs outline-none focus:border-rose-600"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Desconto Percentual (%)</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Desconto Percentual (%)</label>
                             <input 
                               type="number" min={1} max={100}
                               value={couponForm.discount_percent}
                               onChange={e => setCouponForm(prev => ({ ...prev, discount_percent: e.target.value, discount_value: '' }))}
                               placeholder="Ex: 15"
                               disabled={!!couponForm.discount_value}
-                              className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Desconto Fixo (€)</label>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Desconto Fixo (€)</label>
                             <input 
                               type="number" min={1} max={500}
                               value={couponForm.discount_value}
                               onChange={e => setCouponForm(prev => ({ ...prev, discount_value: e.target.value, discount_percent: '' }))}
                               placeholder="Ex: 5"
                               disabled={!!couponForm.discount_percent}
-                              className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 font-mono text-xs outline-none focus:border-rose-600 disabled:opacity-40"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-[10px] font-mono uppercase text-slate-440 mb-1.5">Data de Validade (Opcional)</label>
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">Data de Validade (Opcional)</label>
                           <input 
                             type="date"
                             style={{ colorScheme: 'dark' }}
                             value={couponForm.valid_until}
                             onChange={e => setCouponForm(prev => ({ ...prev, valid_until: e.target.value }))}
-                            className="w-full bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-white font-mono text-xs outline-none focus:border-rose-600"
+                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 font-mono text-xs outline-none focus:border-rose-600"
                           />
                         </div>
 
@@ -4552,19 +4552,19 @@ export default function Dashboard() {
                   </div>
 
                   {/* Growth campaign simulation triggers */}
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <h4 className="font-black text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 sm:p-8 space-y-4">
+                    <h4 className="font-black text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                       <Gift className="w-4.5 h-4.5 text-amber-500" />
                       <span>Disparar Automação de WhatsApp (Fidelizados)</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400 leading-normal font-sans">
+                    <p className="text-[11px] text-slate-500 leading-normal font-sans">
                       Selecione um lote de clientes com mais de 3 meses de inatividade e dispare uma notificação automática apelando ao retorno.
                     </p>
                     <button 
                       onClick={() => {
                         notifyTerminal("🚀 Campanha Iniciada!", "A sua notificação automática foi disparada e enviada via SMS/WhatsApp para 15 destinatários.");
                       }}
-                      className="px-4 py-2 bg-slate-950 border border-slate-800 hover:border-amber-950 hover:text-amber-400 hover:bg-slate-900 rounded-xl text-xs font-bold font-mono uppercase tracking-wider transition-all cursor-pointer text-nowrap block text-center"
+                      className="px-4 py-2 bg-white border border-slate-200 hover:border-amber-950 hover:text-amber-400 hover:bg-slate-50 rounded-xl text-xs font-bold font-mono uppercase tracking-wider transition-all cursor-pointer text-nowrap block text-center"
                     >
                       Avançar com Notificações Automáticas
                     </button>
@@ -4577,29 +4577,29 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'loja' && (
                 <div id="view-loja" className="space-y-6 animate-fade-in max-w-5xl">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-purple-900/40 text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-md border border-purple-500/20">Website</span>
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-purple-100 text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-md border border-purple-500/20">Website</span>
                       Página Online & QR Code
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Gira o website do seu salão, personalize o endereço exclusivo e descarregue o seu QR Code oficial.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Gira o website do seu salão, personalize o endereço exclusivo e descarregue o seu QR Code oficial.</p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* LEFT PANEL: CONFIGURATION & EXCLUSIVE LINK (8 cols) */}
                     <div className="lg:col-span-7 space-y-6">
-                      <div className="bg-slate-900 border border-slate-900/50 rounded-3xl p-6 sm:p-7 space-y-5">
-                        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                      <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-6 sm:p-7 space-y-5">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                           <div>
-                            <h4 className="font-bold text-sm text-white">Status do Website</h4>
-                            <p className="text-[11px] text-slate-450 mt-0.5">Defina se a sua página está visível na internet.</p>
+                            <h4 className="font-bold text-sm text-slate-900">Status do Website</h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5">Defina se a sua página está visível na internet.</p>
                           </div>
                           <button
                             onClick={() => setPublicPageEnabled(!publicPageEnabled)}
                             className={`p-1.5 px-3 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
                               publicPageEnabled 
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' 
-                                : 'bg-slate-950 text-slate-400 border border-slate-800'
+                                : 'bg-white text-slate-500 border border-slate-200'
                             }`}
                           >
                             <span className={`w-1.5 h-1.5 rounded-full ${publicPageEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
@@ -4609,9 +4609,9 @@ export default function Dashboard() {
 
                         {/* URL Slug customization */}
                         <div className="space-y-2.5">
-                          <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-widest font-mono">Link Único Exclusivo (Slug)</label>
-                          <div className="relative bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-3.5 flex items-center text-xs text-slate-450 font-mono select-none overflow-hidden">
-                            <span className="opacity-60 text-slate-400">{window.location.origin.replace(/^https?:\/\//, '')}/</span>
+                          <label className="block text-xs font-extrabold text-slate-600 uppercase tracking-widest font-mono">Link Único Exclusivo (Slug)</label>
+                          <div className="relative bg-white border border-slate-200 rounded-xl px-3.5 py-3.5 flex items-center text-xs text-slate-500 font-mono select-none overflow-hidden">
+                            <span className="opacity-60 text-slate-500">{window.location.origin.replace(/^https?:\/\//, '')}/</span>
                             <input
                               type="text"
                               value={editSlugValue}
@@ -4619,7 +4619,7 @@ export default function Dashboard() {
                                 setEditSlugValue(e.target.value.toLowerCase().replace(/\s+/g, '-'));
                               }}
                               placeholder="oseunome"
-                              className="flex-1 bg-transparent border-none text-white font-bold outline-none pl-0.5 select-text font-mono placeholder-slate-650"
+                              className="flex-1 bg-transparent border-none text-slate-900 font-bold outline-none pl-0.5 select-text font-mono placeholder-slate-400"
                             />
                             {slugChecking && (
                               <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin shrink-0 ml-1.5" />
@@ -4644,7 +4644,7 @@ export default function Dashboard() {
                             </p>
                           )}
 
-                          <p className="text-[10px] text-slate-450 leading-normal">
+                          <p className="text-[10px] text-slate-500 leading-normal">
                             💡 Use um link focado na sua marca (ex: <span className="text-purple-400 select-all">hair-studio-lisboa</span>).
                             Evite maiúsculas, cedilhas ou caracteres especiais.
                           </p>
@@ -4673,20 +4673,20 @@ export default function Dashboard() {
                       </div>
 
                       {/* GOOGLE SEARCH PREVIEW ENGINE (SEO PREVIEW MOCK) */}
-                      <div className="bg-slate-900/50 border border-slate-900 rounded-3xl p-6 sm:p-7 space-y-4">
+                      <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 sm:p-7 space-y-4">
                         <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-extrabold">Pré-visualização SEO (Google)</span>
-                        <div className="space-y-1.5 bg-slate-950 border border-slate-900 p-4.5 rounded-2xl">
+                        <div className="space-y-1.5 bg-white border border-slate-100 p-4.5 rounded-2xl">
                           <div className="flex items-center gap-1.5">
                             <div className="w-5 h-5 bg-purple-950 border border-purple-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-purple-400 font-mono">G</div>
                             <div className="flex flex-col">
-                              <span className="text-[10px] text-slate-400 leading-tight">Glamzo Portugal</span>
+                              <span className="text-[10px] text-slate-500 leading-tight">Glamzo Portugal</span>
                               <span className="text-[9px] text-slate-500 leading-none font-mono">{window.location.origin.replace(/^https?:\/\//, '')}/{business?.slug}</span>
                             </div>
                           </div>
                           <h4 className="text-[#8ab4f8] text-sm font-semibold hover:underline cursor-pointer leading-tight pt-1">
                             {business?.name} | Agendamento Online no Glamzo
                           </h4>
-                          <p className="text-[11px] text-slate-400 leading-normal line-clamp-2">
+                          <p className="text-[11px] text-slate-500 leading-normal line-clamp-2">
                             {business?.description || `Marque o seu serviço de estética ou barbearia em ${business?.district}, ${business?.city}. Reservas automáticas no Glamzo com confirmação instantânea.`}
                           </p>
                         </div>
@@ -4695,12 +4695,12 @@ export default function Dashboard() {
 
                     {/* RIGHT PANEL: LIVE AUTOMATIC QR CODE CARD (5 cols) */}
                     <div className="lg:col-span-5 space-y-6">
-                      <div className="bg-slate-900 border border-slate-950/40 rounded-3xl p-6 sm:p-7 text-center flex flex-col items-center justify-center">
+                      <div className="bg-slate-50 border border-slate-200/40 rounded-3xl p-6 sm:p-7 text-center flex flex-col items-center justify-center">
                         <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-black mb-1.5 leading-none">QR Code de Alta Definição</span>
-                        <h4 className="font-extrabold text-xs text-white uppercase tracking-wider mb-5">Digitalizar para Reservar</h4>
+                        <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-5">Digitalizar para Reservar</h4>
 
                         {/* Interactive Canvas frame with professional safety bounding & max sizes */}
-                        <div className="p-5 bg-slate-950 border border-slate-800/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
+                        <div className="p-5 bg-white border border-slate-200/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
                           <div className="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-inner">
                             <canvas 
                               ref={qrCanvasRef} 
@@ -4708,7 +4708,7 @@ export default function Dashboard() {
                               className="select-none"
                             />
                           </div>
-                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-450 text-slate-400 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
+                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-500 text-slate-500 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
                             <span>Integrado com Logo Glamzo</span>
                           </div>
@@ -4718,28 +4718,28 @@ export default function Dashboard() {
                         <div className="w-full grid grid-cols-2 gap-2 pt-6">
                           <button
                             onClick={handleDownloadPNG}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-950 border border-slate-850 hover:border-purple-650 hover:text-purple-400 text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>Código PNG</span>
                           </button>
                           <button
                             onClick={handleDownloadSVG}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-950 border border-slate-850 hover:border-purple-650 hover:text-purple-400 text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>Código SVG</span>
                           </button>
                           <button
                             onClick={handlePrintQRCode}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-950 border border-slate-850 hover:border-purple-650 hover:text-purple-400 text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
                           >
                             <Printer className="w-3.5 h-3.5" />
                             <span>Imprimir QR</span>
                           </button>
                           <button
                             onClick={handleShareStore}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-950 border border-slate-850 hover:border-purple-650 hover:text-purple-400 text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
                           >
                             <Share2 className="w-3.5 h-3.5" />
                             <span>{websiteLinkCopied ? 'Copiado!' : 'Partilhar'}</span>
@@ -4753,9 +4753,9 @@ export default function Dashboard() {
                               setWebsiteLinkCopied(true);
                               setTimeout(() => setWebsiteLinkCopied(false), 2000);
                             }}
-                            className="w-full flex items-center justify-between px-4 py-3 bg-slate-950 border border-slate-850 hover:border-slate-800 rounded-2xl text-[11px] font-bold text-slate-400 hover:text-white transition-all cursor-pointer"
+                            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 hover:border-slate-200 rounded-2xl text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all cursor-pointer"
                           >
-                            <span className="font-mono truncate mr-2 text-slate-300 select-all">{window.location.origin.replace(/^https?:\/\//, '')}/{business?.slug}</span>
+                            <span className="font-mono truncate mr-2 text-slate-600 select-all">{window.location.origin.replace(/^https?:\/\//, '')}/{business?.slug}</span>
                             <div className="flex items-center gap-1 uppercase tracking-wider text-[9px] text-purple-400 font-mono shrink-0">
                               <Copy className="w-3 h-3" />
                               <span>{websiteLinkCopied ? 'Copiado' : 'Copiar'}</span>
@@ -4766,7 +4766,7 @@ export default function Dashboard() {
                             href={`/${business?.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full block py-3 text-center bg-slate-950 border border-slate-850 hover:bg-slate-900 border-purple-900/30 text-purple-300 hover:text-purple-200 hover:border-purple-500 rounded-2xl text-[11px] font-bold transition-all cursor-pointer"
+                            className="w-full block py-3 text-center bg-white border border-slate-200 hover:bg-slate-50 border-purple-900/30 text-purple-300 hover:text-purple-200 hover:border-purple-500 rounded-2xl text-[11px] font-bold transition-all cursor-pointer"
                           >
                             <span className="flex items-center justify-center gap-1.5">
                               <span>Abrir Página Pública Oficial</span>
@@ -4781,49 +4781,49 @@ export default function Dashboard() {
                   {/* BOTTOM BENTO GRAPHIC: VISISTS & SCANS STATS (Part 5) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                     {/* Stat 1: Visitas de página */}
-                    <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Visitas Página</span>
-                        <span className="text-2xl font-black text-slate-400 font-mono">0</span>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">Visitas Página</span>
+                        <span className="text-2xl font-black text-slate-500 font-mono">0</span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none">Sem visitas disponíveis</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-slate-500 border border-slate-800">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-500 border border-slate-200">
                         <Eye className="w-5 h-5" />
                       </div>
                     </div>
 
                     {/* Stat 2: Favoritos */}
-                    <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Favoritos</span>
-                        <span className="text-2xl font-black text-slate-400 font-mono">0</span>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">Favoritos</span>
+                        <span className="text-2xl font-black text-slate-500 font-mono">0</span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none">Sem favoritos guardados</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-slate-500 border border-slate-800">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-500 border border-slate-200">
                         <Heart className="w-5 h-5 text-slate-500" />
                       </div>
                     </div>
 
                     {/* Stat 3: Leituras de QR Code */}
-                    <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Leituras QR Code</span>
-                        <span className="text-2xl font-black text-white font-mono">{business?.qr_scans_count || 0}</span>
-                        <p className="text-[9px] text-slate-400 font-bold font-mono">Leituras físicas ao balcão</p>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">Leituras QR Code</span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">{business?.qr_scans_count || 0}</span>
+                        <p className="text-[9px] text-slate-500 font-bold font-mono">Leituras físicas ao balcão</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
                         <QrCode className="w-5 h-5 text-purple-405" />
                       </div>
                     </div>
 
                     {/* Stat 4: Reservas via QR */}
-                    <div className="bg-slate-900 p-5 rounded-3xl border border-slate-950/40 relative overflow-hidden flex items-center justify-between">
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-450 uppercase tracking-wider font-extrabold block text-slate-400">Reservas via QR</span>
-                        <span className="text-2xl font-black text-white font-mono">{Math.round((business?.qr_scans_count || 0) * 0.18)}</span>
-                        <p className="text-[9px] text-slate-400 font-bold font-mono">Conversão estimada: 18%</p>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">Reservas via QR</span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">{Math.round((business?.qr_scans_count || 0) * 0.18)}</span>
+                        <p className="text-[9px] text-slate-500 font-bold font-mono">Conversão estimada: 18%</p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-950/40 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
                         <Calendar className="w-5 h-5 text-purple-405" />
                       </div>
                     </div>
@@ -4836,29 +4836,29 @@ export default function Dashboard() {
               {/* ==================================================== */}
               {activeTab === 'terminal' && (
                 <div id="view-terminal" className="space-y-6 animate-fade-in max-w-2xl">
-                  <div className="border-b border-slate-900 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Terminal de Balcão (Estação Desk)</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Visor de balcão otimizado para acompanhamento rápido e Alertas Sonoros em tempo real no salão.</p>
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Terminal de Balcão (Estação Desk)</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Visor de balcão otimizado para acompanhamento rápido e Alertas Sonoros em tempo real no salão.</p>
                   </div>
 
                   {/* Device Specification */}
-                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-6">
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 sm:p-8 space-y-6">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
-                      <div className="w-20 h-20 bg-slate-950 rounded-2xl flex items-center justify-center border border-slate-800 shrink-0 text-amber-500 shadow-xl">
+                      <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center border border-slate-200 shrink-0 text-amber-500 shadow-xl">
                         <Smartphone className="w-10 h-10 animate-pulse" />
                       </div>
                       <div className="space-y-1.5 text-left md:text-left text-xs">
                         <span className="text-[10px] font-mono uppercase font-bold text-amber-400">Equipamento de Apoio</span>
-                        <h4 className="font-extrabold text-sm text-white">Ecrã de Balcão Glamzo Desk</h4>
-                        <p className="text-slate-400 leading-normal text-[11px] font-medium font-sans max-w-md">
+                        <h4 className="font-extrabold text-sm text-slate-900">Ecrã de Balcão Glamzo Desk</h4>
+                        <p className="text-slate-500 leading-normal text-[11px] font-medium font-sans max-w-md">
                           Estação para balcão de receção com som de alta amplificação, para pings e confirmações de reservas na chegada dos clientes.
                         </p>
                       </div>
                     </div>
 
                     {/* Operational Details Grid */}
-                    <div className="grid grid-cols-2 gap-4 border-t border-slate-950 pt-5 text-xs">
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-900 space-y-1">
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-5 text-xs">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 space-y-1">
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black">Estado de Comodato</span>
                         <span className="font-extrabold text-emerald-400 flex items-center gap-1.5 mt-1 leading-none uppercase text-[10px] font-mono">
                           <Check className="w-3.5 h-3.5 border border-emerald-900/60 rounded-full bg-emerald-950/25" />
@@ -4866,27 +4866,27 @@ export default function Dashboard() {
                         </span>
                       </div>
 
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-900 space-y-1">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 space-y-1">
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black">Caução (Segurança)</span>
-                        <span className="font-extrabold text-white block mt-1 leading-none font-mono">150.00 € <span className="text-[10px] text-slate-500 font-sans ml-1">(Isento)</span></span>
+                        <span className="font-extrabold text-slate-900 block mt-1 leading-none font-mono">150.00 € <span className="text-[10px] text-slate-500 font-sans ml-1">(Isento)</span></span>
                       </div>
 
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-900 space-y-1">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 space-y-1">
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black">Logística / Entrega</span>
-                        <span className="font-extrabold text-slate-200 flex items-center gap-1.5 mt-1 leading-none font-mono text-[10px] uppercase">
+                        <span className="font-extrabold text-slate-700 flex items-center gap-1.5 mt-1 leading-none font-mono text-[10px] uppercase">
                           <Truck className="w-3.5 h-3.5 text-amber-500" />
                           <span>Enviado via CTT</span>
                         </span>
                       </div>
 
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-900 space-y-1">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 space-y-1">
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black">Identificador de LAN</span>
-                        <span className="font-extrabold text-slate-400 block mt-1 leading-none font-mono select-all">GZ-TERM-90218-W</span>
+                        <span className="font-extrabold text-slate-500 block mt-1 leading-none font-mono select-all">GZ-TERM-90218-W</span>
                       </div>
                     </div>
 
                     {/* Real-time Operations Console for Tablet Mode */}
-                    <div className="border-t border-slate-950 pt-5 space-y-4 text-xs">
+                    <div className="border-t border-slate-200 pt-5 space-y-4 text-xs">
                       <span className="block text-[10px] font-mono text-slate-500 uppercase font-black">Consola Operacional de Balcão</span>
                       
                       <div className="flex flex-wrap gap-2">
@@ -4896,7 +4896,7 @@ export default function Dashboard() {
                             playTerminalChime();
                             notifyTerminal("🔊 Teste de Sirene", "Sinal sonoro de volume amplificado disparado na estação física.");
                           }}
-                          className="px-4 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl font-bold flex items-center gap-1.5 transition-all text-[11px] cursor-pointer text-slate-350 hover:text-white"
+                          className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl font-bold flex items-center gap-1.5 transition-all text-[11px] cursor-pointer text-slate-500 hover:text-slate-900"
                         >
                           <Play className="w-3.5 h-3.5 text-rose-500" />
                           <span>Testar Chime Sonoro</span>
@@ -4905,9 +4905,9 @@ export default function Dashboard() {
                     </div>
 
                     {/* Check-in Clientes (Today's physical queue) */}
-                    <div className="border-t border-slate-950 pt-5 space-y-3">
-                      <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase font-black">Fila de Check-in (Chegadas Hoje)</span>
+                    <div className="border-t border-slate-200 pt-5 space-y-3">
+                      <div className="flex justify-between items-center bg-white p-2.5 rounded-lg">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase font-black">Fila de Check-in (Chegadas Hoje)</span>
                         <span className="text-[9px] font-mono bg-rose-950/20 text-rose-400 px-1.5 pb-0.5 rounded">Tempo Real</span>
                       </div>
 
@@ -4917,12 +4917,12 @@ export default function Dashboard() {
                             .filter(b => b.booking_status !== 'completed' && b.booking_status !== 'cancelled')
                             .slice(0, 3)
                             .map(bk => (
-                              <div key={bk.id} className="p-3 bg-slate-950 rounded-2xl border border-slate-900 flex items-center justify-between text-xs transition">
+                              <div key={bk.id} className="p-3 bg-white rounded-2xl border border-slate-100 flex items-center justify-between text-xs transition">
                                 <div className="space-y-0.5">
-                                  <div className="font-extrabold text-white text-[12px]">
+                                  <div className="font-extrabold text-slate-900 text-[12px]">
                                     {bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                                  <div className="text-[10px] text-slate-500 flex items-center gap-1">
                                     <span>⏱ {bk.start_time}</span>
                                     <span>•</span>
                                     <span>💈 {bk.service?.name}</span>
@@ -4942,14 +4942,14 @@ export default function Dashboard() {
                               </div>
                             ))
                         ) : (
-                          <div className="py-6 text-center text-slate-500 font-mono text-[10px] border border-dashed border-slate-900 rounded-2xl">
+                          <div className="py-6 text-center text-slate-500 font-mono text-[10px] border border-dashed border-slate-100 rounded-2xl">
                             Sem clientes pendentes de check-in na fila hoje.
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <p className="text-[10px] text-slate-500 leading-normal font-sans italic text-center pt-2 border-t border-slate-950">
+                    <p className="text-[10px] text-slate-500 leading-normal font-sans italic text-center pt-2 border-t border-slate-200">
                        A sirene sonora e toque de recepção estão sincronizados localmente com o barramento do browser.
                     </p>
                   </div>
@@ -4967,11 +4967,11 @@ export default function Dashboard() {
             const hasDiscount = feeAmount < (baseAmount * 0.05); // means Glamzo fee absorbed the coupon discount
             
             return (
-              <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-[#0c1122] text-slate-200 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-800 text-left">
+              <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-slate-100 text-slate-700 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200 text-left">
                   
                   {/* Invoice Certificate Header */}
-                  <div className="bg-[#070b16] text-white p-5 flex justify-between items-center border-b border-slate-900">
+                  <div className="bg-white text-slate-900 p-5 flex justify-between items-center border-b border-slate-100">
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -4981,17 +4981,17 @@ export default function Dashboard() {
                     </div>
                     <button 
                       onClick={() => setSelectedInvoice(null)}
-                      className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center hover:bg-slate-800 hover:text-white transition cursor-pointer text-xs"
+                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer text-xs"
                     >
                       ✕
                     </button>
                   </div>
 
                   {/* Printable Invoice Container */}
-                  <div className="p-6 space-y-5 flex-grow overflow-auto scrollbar-thin text-xs text-slate-300">
+                  <div className="p-6 space-y-5 flex-grow overflow-auto scrollbar-thin text-xs text-slate-600">
                     
                     {/* Visual watermark or seal */}
-                    <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+                    <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                       <div>
                         <h2 className="font-black text-[#8B5CF6] tracking-tight text-lg leading-none">GLAMZO SA</h2>
                         <span className="text-[10px] text-slate-500">Plataforma de Intermediação de Beleza & Bem-Estar</span>
@@ -4999,45 +4999,45 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right">
                         <span className="font-extrabold text-[10px] block uppercase text-purple-400">Prestador do Serviço:</span>
-                        <p className="font-sans font-bold text-white">{business?.name || 'Salão Parceiro'}</p>
+                        <p className="font-sans font-bold text-slate-900">{business?.name || 'Salão Parceiro'}</p>
                         <p className="text-[9px] text-slate-500">{business?.city || 'Portugal'}</p>
                       </div>
                     </div>
 
                     {/* Audit Compliance Label */}
-                    <div className="bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl flex items-center gap-3">
+                    <div className="bg-white/60 border border-slate-200/80 p-3 rounded-xl flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-emerald-950/60 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-900/30">
                         <CheckCircle className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div>
-                        <span className="font-bold text-slate-200 text-[10px] uppercase block">Assinatura Digital AT / SAF-T</span>
+                        <span className="font-bold text-slate-700 text-[10px] uppercase block">Assinatura Digital AT / SAF-T</span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none">Processado por Programa Certificado Glamzo Pay v10.4</p>
                       </div>
                     </div>
 
                     {/* Line Items of Receipt */}
                     <div className="space-y-3 pt-2">
-                      <h4 className="font-bold text-purple-400 uppercase tracking-wider text-[9px] border-b border-slate-800 pb-1.5">Artigos e Serviços Intermediados</h4>
+                      <h4 className="font-bold text-purple-400 uppercase tracking-wider text-[9px] border-b border-slate-200 pb-1.5">Artigos e Serviços Intermediados</h4>
                       
                       <div className="flex justify-between items-start">
                         <div>
-                          <span className="font-bold text-white">Marcação Eletrónica Real</span>
-                          <p className="text-[10px] text-slate-405 text-slate-400 mt-0.5">Disponibilização da infraestrutura de reservas táticas e assessoria Glamzo.</p>
+                          <span className="font-bold text-slate-900">Marcação Eletrónica Real</span>
+                          <p className="text-[10px] text-slate-500 text-slate-500 mt-0.5">Disponibilização da infraestrutura de reservas táticas e assessoria Glamzo.</p>
                         </div>
-                        <span className="font-mono text-white font-bold">{baseAmount.toFixed(2)} €</span>
+                        <span className="font-mono text-slate-900 font-bold">{baseAmount.toFixed(2)} €</span>
                       </div>
 
                       {/* Commission calculation with safe business protection display */}
-                      <div className="border-t border-slate-800 pt-3 space-y-1.5">
-                        <div className="flex justify-between items-center text-slate-400">
+                      <div className="border-t border-slate-200 pt-3 space-y-1.5">
+                        <div className="flex justify-between items-center text-slate-500">
                           <span>Subtotal Bruto Cobrado</span>
-                          <span className="font-mono text-white">{baseAmount.toFixed(2)} €</span>
+                          <span className="font-mono text-slate-900">{baseAmount.toFixed(2)} €</span>
                         </div>
 
-                        <div className="flex justify-between items-center text-slate-400">
+                        <div className="flex justify-between items-center text-slate-500">
                           <span className="flex items-center gap-1.5">
                             <span>Taxa de Intermediação Glamzo</span>
-                            <span className="text-[9px] bg-slate-950 text-purple-300 border border-slate-850 px-1.5 py-0.5 rounded-sm">Plano PRO 5%</span>
+                            <span className="text-[9px] bg-white text-purple-300 border border-slate-200 px-1.5 py-0.5 rounded-sm">Plano PRO 5%</span>
                           </span>
                           <span className="font-mono text-purple-300">-{feeAmount.toFixed(2)} €</span>
                         </div>
@@ -5050,7 +5050,7 @@ export default function Dashboard() {
                       </div>
 
                       {/* Highlighted Net Earned block */}
-                      <div className="bg-slate-950/60 p-3 rounded-2xl flex justify-between items-center border border-slate-800/80 mt-4">
+                      <div className="bg-white/60 p-3 rounded-2xl flex justify-between items-center border border-slate-200/80 mt-4">
                         <div>
                           <span className="font-black text-purple-400 uppercase text-[9px] block">Rendimento Líquido Creditado</span>
                           <span className="text-[9px] text-slate-500 font-medium font-sans">Lançado no saldo disponível do Stripe Connect</span>
@@ -5060,7 +5060,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Bottom Legal Disclaimer */}
-                    <div className="text-[9px] text-slate-500 leading-normal text-center pt-3 border-t border-slate-800 space-y-0.5">
+                    <div className="text-[9px] text-slate-500 leading-normal text-center pt-3 border-t border-slate-200 space-y-0.5">
                       <p>Este documento eletrónico serve de fatura simplificada conforme o Artigo 40º do CIVA.</p>
                       <p className="font-mono uppercase text-[8px] tracking-wider text-slate-600">Código CHASH: GZ-PAY-SAF-T-{selectedInvoice.id.substring(0,8).toUpperCase()}</p>
                     </div>
@@ -5068,7 +5068,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Action Trigger Buttons inside receipt modal */}
-                  <div className="p-4 bg-slate-950 flex gap-3 border-t border-slate-850 shrink-0">
+                  <div className="p-4 bg-white flex gap-3 border-t border-slate-200 shrink-0">
                     <button
                       type="button"
                       onClick={() => alert("As faturas SAF-T reais são exportadas eletronicamente na sua faturação oficial.")}
@@ -5079,7 +5079,7 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => setSelectedInvoice(null)}
-                      className="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all"
+                      className="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all"
                     >
                       Fechar
                     </button>
@@ -5094,18 +5094,18 @@ export default function Dashboard() {
       {/* MODAL: REGISTAR MARCAÇÃO MANUAL / BLOQUEIO DE HORÁRIO */}
       {/* ==================================================== */}
       {isManualBookingOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-slate-100 max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-slate-800 max-h-[90vh]">
             
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+            <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white/50">
               <div>
-                <h3 className="font-extrabold text-lg text-white font-sans">Gestão Manual de Agenda</h3>
-                <p className="text-xs text-slate-400 mt-0.5 font-sans">Reserve um horário para clientes habituais ou bloqueie indisponibilidades.</p>
+                <h3 className="font-extrabold text-lg text-slate-900 font-sans">Gestão Manual de Agenda</h3>
+                <p className="text-xs text-slate-500 mt-0.5 font-sans">Reserve um horário para clientes habituais ou bloqueie indisponibilidades.</p>
               </div>
               <button 
                 type="button"
                 onClick={() => setIsManualBookingOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -5114,14 +5114,14 @@ export default function Dashboard() {
             <form onSubmit={handleSaveManualBooking} className="flex-1 overflow-y-auto p-6 space-y-5">
               
               {/* Selector: Booking vs Block */}
-              <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+              <div className="grid grid-cols-2 p-1 bg-white rounded-xl border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setManualBookingType('booking')}
                   className={`py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer font-sans ${
                     manualBookingType === 'booking' 
                       ? 'bg-rose-600 text-white shadow' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   📅 Reserva Manual
@@ -5131,8 +5131,8 @@ export default function Dashboard() {
                   onClick={() => setManualBookingType('block')}
                   className={`py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer font-sans ${
                     manualBookingType === 'block' 
-                      ? 'bg-slate-800 text-amber-400 border border-slate-700 shadow' 
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-slate-100 text-amber-400 border border-slate-300 shadow' 
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   🛑 Bloquear Horário
@@ -5143,24 +5143,24 @@ export default function Dashboard() {
               {manualBookingType === 'booking' ? (
                 <>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Nome do Cliente</label>
+                    <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Nome do Cliente</label>
                     <input 
                       type="text"
                       required
                       placeholder="Ex: Maria Silva (Telefone / Habitual)" 
                       value={manualClientName}
                       onChange={(e) => setManualClientName(e.target.value)}
-                      className="w-full bg-slate-955 bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white"
+                      className="w-full bg-white bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Escolher Serviço</label>
+                      <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Escolher Serviço</label>
                       <select
                         value={manualServiceId}
                         onChange={(e) => setManualServiceId(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                        className="w-full bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
                       >
                         {services.map(s => (
                           <option key={s.id} value={s.id}>
@@ -5171,11 +5171,11 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Profissional (Staff)</label>
+                      <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Profissional (Staff)</label>
                       <select
                         value={manualStaffId}
                         onChange={(e) => setManualStaffId(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                        className="w-full bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
                       >
                         <option value="">Selecione Profissional...</option>
                         {staff.map(st => (
@@ -5191,23 +5191,23 @@ export default function Dashboard() {
                 /* Block Fields */
                 <>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Motivo do Bloqueio</label>
+                    <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Motivo do Bloqueio</label>
                     <input 
                       type="text"
                       required
                       placeholder="Ex: Almoço, Reunião de Equipa, Folga ou Formação" 
                       value={manualReason}
                       onChange={(e) => setManualReason(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-white"
+                      className="w-full bg-white border border-slate-200 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Duração Estimada</label>
+                    <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Duração Estimada</label>
                     <select
                       value={manualServiceId}
                       onChange={(e) => setManualServiceId(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer"
+                      className="w-full bg-white border border-slate-200 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
                     >
                       {services.map(s => (
                         <option key={s.id} value={s.id}>
@@ -5223,23 +5223,23 @@ export default function Dashboard() {
               {/* Shared Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Data do Evento</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Data do Evento</label>
                   <input 
                     type="date"
                     style={{ colorScheme: 'dark' }}
                     required
                     value={manualDate}
                     onChange={(e) => setManualDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-white cursor-pointer animate-none"
+                    className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 cursor-pointer animate-none"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Hora de Início</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Hora de Início</label>
                   <select
                     value={manualStartTime}
                     onChange={(e) => setManualStartTime(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-white appearance-none cursor-pointer text-left"
+                    className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer text-left"
                   >
                     {['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'].map(t => (
                       <option key={t} value={t}>{t}</option>
@@ -5250,21 +5250,21 @@ export default function Dashboard() {
 
               {manualBookingType === 'booking' && (
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Observações / Notas Extras</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Observações / Notas Extras</label>
                   <textarea 
                     placeholder="Ex: Corte habitual degrade com caracol, trouxe cupão de papel..." 
                     value={manualNotes}
                     onChange={(e) => setManualNotes(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-white h-20"
+                    className="w-full bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 h-20"
                   />
                 </div>
               )}
 
-              <div className="pt-4 border-t border-slate-800 flex gap-3">
+              <div className="pt-4 border-t border-slate-200 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setIsManualBookingOpen(false)}
-                  className="flex-1 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition"
+                  className="flex-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition"
                 >
                   Cancelar
                 </button>
