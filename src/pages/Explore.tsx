@@ -301,7 +301,7 @@ export default function Explore() {
     // Exclude partners manually suspended by administration
     if (b.subscription_status === 'suspended') return false;
 
-    // Enforce Stripe card subscription added to show on public marketplace list (demo seeds bypass this)
+    // Enforce Glamzo Pay card subscription added to show on public marketplace list (demo seeds bypass this)
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
     if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
       return false;
@@ -761,7 +761,7 @@ export default function Explore() {
             {loading ? (
               <div className="min-h-[45vh] flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
                 <Loader2 className="w-9 h-9 text-purple-500 animate-spin" />
-                <span className="text-xs text-slate-400 font-mono">Buscando espaços reais no Supabase...</span>
+                <span className="text-xs text-slate-400 font-mono">A procurar o teu lugar ideal...</span>
               </div>
             ) : errorMsg ? (
               <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm">

@@ -359,7 +359,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                     Sugerimos criar uma promoção para {suggestedPromoDay.toLowerCase()} à tarde.
                   </p>
                   <p className="text-[11px] text-slate-550 text-slate-500 font-normal leading-relaxed">
-                    Criar um cupão recorrente (ex: <strong className="text-purple-600 select-all tracking-wider font-mono uppercase">{suggestedPromoDay.substring(0, 3).toUpperCase()}_GLAM_15</strong>) com 15% de desconto para marcações especificadas para {suggestedPromoDay.toLowerCase()} após as 14h ajudará a catalisar lucros ociosos no Stripe.
+                    Criar um cupão recorrente (ex: <strong className="text-purple-600 select-all tracking-wider font-mono uppercase">{suggestedPromoDay.substring(0, 3).toUpperCase()}_GLAM_15</strong>) com 15% de desconto para marcações especificadas para {suggestedPromoDay.toLowerCase()} após as 14h ajudará a catalisar lucros ociosos no Glamzo Pay.
                   </p>
                 </div>
               </div>

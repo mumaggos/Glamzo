@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import SecurityBadge from './SecurityBadge';
 import { 
   X, Calendar, Clock, User, CreditCard, Check, 
   ChevronRight, ArrowLeft, Loader2, Sparkles, Smile, ShieldCheck, AlertCircle 
@@ -175,7 +176,7 @@ export default function BookingModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successBooking, setSuccessBooking] = useState<any | null>(null);
 
-  // Credit Card mock inputs for Stripe payment option
+  // Credit Card mock inputs for Glamzo Pay payment option
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -499,7 +500,7 @@ export default function BookingModal({
         } catch (_) {}
       }
 
-      // 4. Handle Stripe Redirection
+      // 4. Handle Glamzo Pay Redirection
       if (paymentMethod === 'stripe') {
         try {
           const res = await fetch('/api/create-checkout-session', {
@@ -529,7 +530,7 @@ export default function BookingModal({
 
           const checkoutData = await res.json();
           if (checkoutData?.url) {
-            // Real Redirect to Stripe Checkout (breakout of standard iframe sandbox if necessary)
+            // Real Redirect to Glamzo Pay Checkout (breakout of standard iframe sandbox if necessary)
             try {
               if (window.self !== window.top) {
                 const opened = window.open(checkoutData.url, '_blank');
@@ -556,7 +557,7 @@ export default function BookingModal({
           }
         } catch (stripeErr: any) {
           console.error('Stripe redirect exception:', stripeErr);
-          throw new Error(stripeErr.message || 'Serviço Stripe indisponível no momento. Por favor tente agendar selecionando "Pagar diretamente no local".');
+          throw new Error(stripeErr.message || 'Serviço Glamzo Pay indisponível no momento. Por favor tente agendar selecionando "Pagar diretamente no local".');
         }
       }
 
@@ -963,7 +964,7 @@ export default function BookingModal({
                       </div>
                     </div>
 
-                    {/* Pay with Stripe REAL */}
+                    {/* Pay with Glamzo Pay REAL */}
                     {business?.charges_enabled && business?.payouts_enabled ? (
                       <div 
                         onClick={() => setPaymentMethod('stripe')}
@@ -979,8 +980,8 @@ export default function BookingModal({
                               <CreditCard className="w-5 h-5" />
                             </div>
                             <div>
-                              <h4 className="text-xs font-black text-slate-800">Pagar Online Seguro (Stripe)</h4>
-                              <p className="text-[10px] text-slate-400 mt-0.5">Pagamento online imediato e seguro processado pela Stripe.</p>
+                              <h4 className="text-xs font-black text-slate-800">Pagamento Online 100% Seguro</h4>
+                              <p className="text-[10px] text-slate-400 mt-0.5">Pagamento online imediato e seguro processado pela Glamzo Pay.</p>
                             </div>
                           </div>
                           
@@ -993,7 +994,7 @@ export default function BookingModal({
                           <div className="p-3 bg-white/70 backdrop-blur-xs border border-rose-100 rounded-xl space-y-2 mt-1">
                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                              <span>Stripe Checkout Ativo</span>
+                              <span>Pagamento 100% Seguro Protegido</span>
                             </div>
                             <p className="text-[10px] text-slate-500 leading-normal">
                               Será redirecionado de forma 100% segura para efetuar o pagamento. São suportados cartões, <strong>MBWay</strong>, <strong>Apple Pay</strong> e <strong>Google Pay</strong>.
@@ -1009,7 +1010,7 @@ export default function BookingModal({
                           </div>
                           <div className="text-left">
                             <h4 className="text-xs font-black text-slate-500">Pagar Online Seguro (Indisponível)</h4>
-                            <p className="text-[10px] text-rose-650 text-rose-450 mt-0.5 font-sans">Este espaço ainda não completou a verificação operacional da sua conta Stripe Connect.</p>
+                            <p className="text-[10px] text-rose-650 text-rose-450 mt-0.5 font-sans">Este espaço ainda não completou a verificação operacional da sua conta Glamzo Pay Connect.</p>
                           </div>
                         </div>
                       </div>
@@ -1087,7 +1088,7 @@ export default function BookingModal({
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Forma de Pagamento</span>
                         <span className="font-bold text-slate-800 bg-slate-100/60 px-2 py-0.5 rounded text-[11px]">
-                          {paymentMethod === 'stripe' ? '💳 Cartão de Crédito (Stripe)' : '💸 Pagar no Estabelecimento'}
+                          {paymentMethod === 'stripe' ? '💳 Pagamento 100% Seguro' : '💸 Pagar no Estabelecimento'}
                         </span>
                       </div>
 
@@ -1111,6 +1112,9 @@ export default function BookingModal({
                           {Math.max(0, totalServicesPrice - couponDiscount).toFixed(2)} €
                         </span>
                       </div>
+                    </div>
+                    <div className="mt-4">
+                      <SecurityBadge className="w-full justify-center" />
                     </div>
                   </div>
 

@@ -48,7 +48,7 @@ export default function Dashboard() {
   const [verifyingText, setVerifyingText] = useState('');
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
 
-  // State variables for manually connecting an existing/pre-built Stripe Connect / Merchant Account ID
+  // State variables for manually connecting an existing/pre-built Glamzo Pay Connect / Merchant Account ID
   const [manualStripeId, setManualStripeId] = useState('');
   const [savingManualStripe, setSavingManualStripe] = useState(false);
 
@@ -404,7 +404,7 @@ export default function Dashboard() {
       setEditSlugValue(bData.slug || '');
       setPublicPageEnabled(bData.public_page_enabled !== false);
 
-      // Fetch dynamic Stripe Account status from Stripe API if it exists
+      // Fetch dynamic Glamzo Pay Account status from Glamzo Pay API if it exists
       if (bData?.stripe_account_id) {
         try {
           const sRes = await fetch(`/api/stripe/account-status?businessId=${bData.id}`);
@@ -413,7 +413,7 @@ export default function Dashboard() {
             setStripeStatus(sPayload);
           }
         } catch (sErr) {
-          console.warn("Failed to fetch fresh Stripe account status:", sErr);
+          console.warn("Failed to fetch fresh Glamzo Pay account status:", sErr);
         }
       } else {
         setStripeStatus(null);
@@ -828,7 +828,7 @@ export default function Dashboard() {
 
   const [connectingStripe, setConnectingStripe] = useState(false);
 
-  // Handle Stripe Standard Connect success callback parameter capture
+  // Handle Glamzo Pay Standard Connect success callback parameter capture
   useEffect(() => {
     const status = searchParams.get('status');
     const stripeAcct = searchParams.get('stripe_acct');
@@ -836,7 +836,7 @@ export default function Dashboard() {
     if (status === 'connect_success' && stripeAcct && user) {
       const syncStripeConnection = async () => {
         try {
-          // 1. Update Stripe account id in database with active flags
+          // 1. Update Glamzo Pay account id in database with active flags
           const { error } = await supabase
             .from('businesses')
             .update({ 
@@ -851,8 +851,8 @@ export default function Dashboard() {
           // 2. Play subtle sound + show alert
           playTerminalChime();
           notifyTerminal(
-            "🎉 Conta Stripe Ligada!",
-            "O seu salão de beleza está agora ligado ao Stripe Standard Connect para split de pagamentos automatizado!"
+            "🎉 Conta Glamzo Pay Ligada!",
+            "O seu salão de beleza está agora ligado ao Glamzo Pay Standard Connect para split de pagamentos automatizado!"
           );
 
           // 3. Clean search params to keep URL pristine
@@ -861,7 +861,7 @@ export default function Dashboard() {
           // 4. Force reload data
           await loadTerminalData();
         } catch (syncErr: any) {
-          console.error('Error syncing Stripe Connect status:', syncErr);
+          console.error('Error syncing Glamzo Pay Connect status:', syncErr);
         }
       };
       
@@ -871,11 +871,11 @@ export default function Dashboard() {
     if (status === 'success_pro' && user) {
       const handleSubscriptionSuccessCheck = async () => {
         setIsVerifyingSub(true);
-        setVerifyingText("A comunicar com os servidores Stripe... ⌛");
+        setVerifyingText("A comunicar com os servidores Glamzo Pay... ⌛");
         console.log("[Stripe Debug] Callback success captured. user_id:", user.id);
         notifyTerminal(
           "⌛ Verificando Pagamento...",
-          "A aguardar confirmação segura do pagamento da subscrição com os servidores do Stripe... (Isto pode levar alguns segundos)"
+          "A aguardar confirmação segura do pagamento da subscrição com os servidores do Glamzo Pay... (Isto pode levar alguns segundos)"
         );
 
         const sessionId = searchParams.get('session_id');
@@ -911,7 +911,7 @@ export default function Dashboard() {
             });
 
             const timeoutPromise = new Promise<never>((_, reject) => {
-              setTimeout(() => reject(new Error("Timeout de rede: Stripe webhook demorou mais que o esperado.")), 12000);
+              setTimeout(() => reject(new Error("Timeout de rede: Glamzo Pay webhook demorou mais que o esperado.")), 12000);
             });
 
             const vResult = await Promise.race([verifyCall, timeoutPromise]);
@@ -1035,12 +1035,12 @@ export default function Dashboard() {
         if (found) {
           notifyTerminal(
             "🎉 Plano PRO Ativado!",
-            "Pagamento confirmado com sucesso pelo Stripe! O seu salão de beleza está agora no plano Glamzo PRO."
+            "Pagamento confirmado com sucesso! O seu salão de beleza está agora no plano Glamzo PRO."
           );
         } else {
           notifyTerminal(
             "⚠️ Sincronização em Curso",
-            "A sua conta Stripe foi conectada. A base de dados será atualizada automaticamente via webhook nos próximos instantes."
+            "A sua conta Glamzo Pay foi conectada. A base de dados será atualizada automaticamente via webhook nos próximos instantes."
           );
         }
 
@@ -1135,12 +1135,12 @@ export default function Dashboard() {
       if (resData.url) {
         safeStripeRedirect(resData.url);
       } else {
-        throw new Error(resData.error || 'Erro ao obter link Stripe.');
+        throw new Error(resData.error || 'Erro ao obter link Glamzo Pay.');
       }
     } catch (err: any) {
       console.error(err);
       notifyTerminal(
-        "❌ Erro ao Ligar Stripe Connect",
+        "❌ Erro ao Ligar Glamzo Pay Connect",
         err.message || "Não foi possível gerar a ligação. Tente novamente."
       );
     } finally {
@@ -1162,20 +1162,20 @@ export default function Dashboard() {
 
       playTerminalChime();
       notifyTerminal(
-        "🎉 Conta Stripe Ligada!",
-        "ID de Conta Stripe Connect atualizado com sucesso no seu perfil!"
+        "🎉 Conta Glamzo Pay Ligada!",
+        "ID de Conta Glamzo Pay Connect atualizado com sucesso no seu perfil!"
       );
       setManualStripeId('');
       await loadTerminalData();
     } catch (err: any) {
       console.error(err);
-      notifyTerminal("❌ Erro ao Salvar ID Stripe", err.message || "Tente novamente.");
+      notifyTerminal("❌ Erro ao Ligar Conta Bancária", err.message || "Tente novamente.");
     } finally {
       setSavingManualStripe(false);
     }
   };
 
-  // Launch or open the Stripe Customer Billing Portal for subscriptions management
+  // Launch or open the Glamzo Pay Customer Billing Portal for subscriptions management
   const handleOpenBillingPortal = async () => {
     if (!business) return;
     try {
@@ -1200,11 +1200,11 @@ export default function Dashboard() {
     handleSubscribePro();
   };
 
-  // Launch a Stripe checkout recurring subscription with 14 days of trial
+  // Launch a Glamzo Pay checkout recurring subscription with 14 days of trial
   const handleSubscribePro = async () => {
     if (!business) return;
     try {
-      notifyTerminal("💳 Iniciar Checkout", "A preparar o seu Stripe Checkout do Plano PRO...");
+      notifyTerminal("💳 Iniciar Checkout", "A preparar o seu Glamzo Pay Checkout do Plano PRO...");
       const response = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
         headers: {
@@ -1224,14 +1224,14 @@ export default function Dashboard() {
       if (response.ok && resData?.success && resData?.url) {
         safeStripeRedirect(resData.url);
       } else {
-        const errorMsg = resData?.error || "Falha ao gerar o link do Stripe Checkout.";
-        notifyTerminal("❌ Erro Stripe", errorMsg);
-        alert(`Não foi possível iniciar o checkout Stripe: ${errorMsg}`);
+        const errorMsg = resData?.error || "Falha ao gerar o link do Glamzo Pay Checkout.";
+        notifyTerminal("❌ Erro", errorMsg);
+        alert(`Não foi possível iniciar o checkout: ${errorMsg}`);
       }
     } catch (err: any) {
       console.error('Falha ao iniciar checkout da subscrição:', err);
       notifyTerminal("❌ Erro Técnico", err.message || "Falha na ligação ao servidor.");
-      alert(`Erro técnico ao ligar ao Stripe: ${err.message || "Tente novamente."}`);
+      alert(`Erro técnico ao processar pagamento: ${err.message || "Tente novamente."}`);
     }
   };
 
@@ -1245,7 +1245,7 @@ export default function Dashboard() {
 
     try {
       setCancelingSubscription(true);
-      notifyTerminal("🚫 Cancelar Subscrição", "A comunicar desativação e paragem ao Stripe...");
+      notifyTerminal("🚫 Cancelar Subscrição", "A comunicar desativação e paragem ao Glamzo Pay...");
       
       const response = await fetch('/api/stripe/cancel-subscription', {
         method: 'POST',
@@ -1286,6 +1286,19 @@ export default function Dashboard() {
   };
 
   // Update status of actual customer booking
+  
+  const isPastBooking = (dateStr: string, timeStr: string) => {
+    try {
+      if (!dateStr || !timeStr) return false;
+      const [hour, minute] = timeStr.split(':').map(Number);
+      const bDate = new Date(dateStr);
+      bDate.setHours(hour, minute, 0, 0);
+      return new Date() > bDate;
+    } catch {
+      return false;
+    }
+  };
+
   const handleUpdateBookingStatus = async (id: string, newStatus: BookingStatus) => {
     try {
       const { error } = await supabase
@@ -1709,7 +1722,7 @@ export default function Dashboard() {
       setGlobalSuccess("Logótipo carregado com sucesso!");
     } catch (err: any) {
       console.error("Logo upload failed:", err);
-      setGlobalError(`Erro no upload da imagem: ${err.message}. Verifique as políticas de storage no seu dashboard Supabase.`);
+      setGlobalError(`Erro no upload da imagem: ${err.message}. Tente novamente mais tarde.`);
     } finally {
       setUploadingLogo(false);
     }
@@ -1751,7 +1764,7 @@ export default function Dashboard() {
       setGlobalSuccess("Foto de capa carregada com sucesso!");
     } catch (err: any) {
       console.error("Cover upload failed:", err);
-      setGlobalError(`Erro no upload da imagem de capa: ${err.message}. Verifique as políticas de storage no seu dashboard Supabase.`);
+      setGlobalError(`Erro no upload da imagem de capa: ${err.message}. Tente novamente mais tarde.`);
     } finally {
       setUploadingCover(false);
     }
@@ -1851,7 +1864,7 @@ export default function Dashboard() {
   // Real Net earnings representing partner's profit (Lucro Líquido Global - Cash and Online combined)
   const totalReceivedVolume = ledgers.reduce((sum, item) => sum + Number(item.business_amount || item.amount_total || item.amount || 0), 0);
   
-  // Real-time digital received volume that accumulated online via Stripe and can be withdrawn online
+  // Real-time digital received volume that accumulated online via Glamzo Pay and can be withdrawn online
   const totalReceivedVolumeOnline = ledgers
     .filter(item => item.payment_method === 'stripe')
     .reduce((sum, item) => sum + Number(item.business_amount || item.amount_total || item.amount || 0), 0);
@@ -1947,10 +1960,10 @@ export default function Dashboard() {
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-lg font-black text-slate-900">Sincronização Stripe PRO</h3>
+                <h3 className="text-lg font-black text-slate-900">Sincronização Glamzo Pay PRO</h3>
                 <p className="text-xs text-rose-400 font-mono font-bold animate-pulse">{verifyingText}</p>
                 <p className="text-[11px] text-slate-500 leading-relaxed pt-2">
-                  Não feche esta página. Estamos a confirmar de forma automática o estado da sua subscrição com os servidores do Stripe e a atualizar a base de dados em tempo real.
+                  Não feche esta página. Estamos a confirmar de forma automática o estado da sua subscrição com os servidores do Glamzo Pay e a atualizar a base de dados em tempo real.
                 </p>
               </div>
             </div>
@@ -2017,7 +2030,7 @@ export default function Dashboard() {
                   </div>
 
                   <p className="text-[11px] text-slate-500 pt-1 leading-normal">
-                    Será feita apenas uma verificação segura do cartão via Stripe.
+                    Será feita apenas uma verificação segura do cartão via Glamzo Pay.
                   </p>
 
                   <div className="text-left space-y-1.5 bg-indigo-50 p-4 rounded-2xl border border-indigo-500/10">
@@ -2046,7 +2059,7 @@ export default function Dashboard() {
                   <div className="space-y-2">
                     <h2 className="text-xl font-black text-slate-900">Período de Teste Expirado (PRO)</h2>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      O seu período de teste gratuito de 14 dias para o plano <span className="text-rose-500 font-extrabold">Glamzo PRO</span> expirou. Para reativar o seu salão e continuar a receber marcações, configure a sua subscrição de forma segura via Stripe.
+                      O seu período de teste gratuito de 14 dias para o plano <span className="text-rose-500 font-extrabold">Glamzo PRO</span> expirou. Para reativar o seu salão e continuar a receber marcações, configure a sua subscrição de forma segura via Glamzo Pay.
                     </p>
                   </div>
                 </div>
@@ -2059,7 +2072,7 @@ export default function Dashboard() {
                     <span className="text-rose-400 font-bold">19.90€ / mês</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-normal font-sans">
-                    Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Stripe e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
+                    Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Glamzo Pay e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
                   </p>
                 </div>
               )}
@@ -2074,8 +2087,8 @@ export default function Dashboard() {
                     {subBlockReason === 'active_trial_requires_card'
                       ? 'COMEÇAR TESTE GRATUITO'
                       : subBlockReason === 'onboarding'
-                      ? 'Continuar para Stripe'
-                      : 'Ativar Plano PRO (Stripe Checkout)'}
+                      ? 'Continuar para pagamento'
+                      : 'Ativar Plano PRO'}
                   </span>
                 </button>
 
@@ -2373,7 +2386,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="font-extrabold text-slate-900 leading-normal">⚠️ O seu salão está ocultado do Marketplace Glamzo!</p>
-                  <p className="text-[11px] text-amber-450 leading-normal">O seu período de teste PRO de 14 dias está ativo, mas para que a sua loja apareça nos resultados de pesquisa e na página de início, precisa de adicionar um cartão de pagamento seguro. O Stripe só efetuará cobranças automáticas no fim do teste.</p>
+                  <p className="text-[11px] text-amber-450 leading-normal">O seu período de teste PRO de 14 dias está ativo, mas para que a sua loja apareça nos resultados de pesquisa e na página de início, precisa de adicionar um cartão de pagamento seguro. O Glamzo Pay só efetuará cobranças automáticas no fim do teste.</p>
                 </div>
               </div>
               <button 
@@ -2415,7 +2428,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="font-extrabold text-slate-900 leading-normal">Aviso de Cobrança — Subscrição Pendente</p>
-                  <p className="text-[11px] text-rose-400 leading-normal">A última tentativa de cobrança automática da sua mensalidade falhou. Por favor, regularize os seus dados de pagamento usando o Stripe Billing Portal.</p>
+                  <p className="text-[11px] text-rose-400 leading-normal">A última tentativa de cobrança automática da sua mensalidade falhou. Por favor, regularize os seus dados de pagamento usando o Glamzo Pay Billing Portal.</p>
                 </div>
               </div>
               <button 
@@ -2427,7 +2440,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Stripe Connect Pending Alert Banner */}
+          {/* Glamzo Pay Connect Pending Alert Banner */}
           {!isBillingBlocked && (!business?.stripe_account_id || !stripeStatus?.charges_enabled || !stripeStatus?.payouts_enabled) && (
             <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/40 to-yellow-950/40 border border-amber-500/20 text-amber-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/15 animate-fade-in text-left">
               <div className="flex items-center gap-3">
@@ -2436,7 +2449,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="font-extrabold text-slate-900 leading-normal">Ative os pagamentos para receber reservas online.</p>
-                  <p className="text-[11px] text-amber-450 leading-normal">Configure a sua conta Stripe Express (IBAN e verificação) para receber pagamentos de marcações diretamente na sua conta bancária de forma segura pelas marcações online.</p>
+                  <p className="text-[11px] text-amber-450 leading-normal">Configure a sua conta Glamzo Pay Express (IBAN e verificação) para receber pagamentos de marcações diretamente na sua conta bancária de forma segura pelas marcações online.</p>
                 </div>
               </div>
               <button 
@@ -2479,7 +2492,7 @@ export default function Dashboard() {
           {loading ? (
             <div className="h-96 flex flex-col items-center justify-center text-slate-500 gap-2.5 animate-pulse">
               <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
-              <span className="text-xs font-mono select-none">A recolher dados reais de reservas do Supabase...</span>
+              <span className="text-xs font-mono select-none">A recolher dados reais de reservas...</span>
             </div>
           ) : (
             <>
@@ -2706,33 +2719,45 @@ export default function Dashboard() {
                                             </div>
 
                                             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 pl-2">
-                                              {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && (
-                                                <div className="flex items-center gap-1.5">
-                                                  <button 
-                                                    type="button"
-                                                    onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
-                                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
-                                                  >
-                                                    Concluir
-                                                  </button>
-                                                  <button 
-                                                    type="button"
-                                                    onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-                                                    className="px-3.5 py-2 bg-white hover:bg-rose-95 border border-slate-200 text-slate-500 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
-                                                  >
-                                                    Mover/Cancelar
-                                                  </button>
-                                                </div>
-                                              )}
-                                              <span className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider ${
-                                                bk.booking_status === 'completed' 
-                                                  ? 'bg-slate-50 text-slate-500 border border-slate-200' 
-                                                  : bk.booking_status === 'cancelled'
-                                                  ? 'bg-rose-950/40 text-rose-400 border border-rose-900'
-                                                  : 'bg-indigo-950/40 text-indigo-400 border border-indigo-900'
-                                              }`}>
-                                                {bk.booking_status === 'completed' ? 'concluída' : bk.booking_status}
-                                              </span>
+                                              {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && bk.booking_status !== 'no_show' && (
+  <div className="flex items-center gap-1.5">
+    {!isPastBooking(bk.booking_date, bk.end_time || bk.start_time) ? (
+      <>
+        <button 
+          type="button"
+          onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
+          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
+        >
+          Concluir
+        </button>
+        <button 
+          type="button"
+          onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
+          className="px-3.5 py-2 bg-white hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
+        >
+          Mover/Cancelar
+        </button>
+      </>
+    ) : (
+      <button 
+        type="button"
+        onClick={() => handleUpdateBookingStatus(bk.id, 'no_show')}
+        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-200 rounded-xl text-[10px] font-extrabold font-mono cursor-pointer uppercase tracking-wider transition-all"
+      >
+        Reclamar: Falta de Comparência
+      </button>
+    )}
+  </div>
+)}
+                                              <span className={"px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider " + (
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'bg-slate-50 text-slate-500 border border-slate-200' :
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'cancelled' ? 'bg-rose-50 text-rose-400 border border-rose-200' :
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'bg-orange-50 text-orange-500 border border-orange-200' : 'bg-indigo-50 text-indigo-400 border border-indigo-200'
+      )}>
+        {(((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'concluída' :
+         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'Falta de Comparência' : 
+         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status)}
+      </span>
                                             </div>
                                           </div>
                                         );
@@ -3114,38 +3139,49 @@ export default function Dashboard() {
                                 </td>
 
                                 <td className="py-4 px-4 text-center">
-                                  <span className={`inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-bold font-mono uppercase ${
-                                    bk.booking_status === 'confirmed'
-                                      ? 'bg-rose-950/30 text-rose-450 border-rose-500/20 text-rose-400'
-                                      : bk.booking_status === 'completed'
-                                      ? 'bg-emerald-950 border-emerald-900/60 text-emerald-400'
-                                      : bk.booking_status === 'cancelled'
-                                      ? 'bg-white border-slate-200 text-slate-500 text-slate-500 border-slate-200'
-                                      : 'bg-amber-950/45 border-amber-900 text-amber-500 text-amber-400'
-                                  }`}>
-                                    {bk.booking_status === 'no_show' ? 'Falta' : bk.booking_status === 'confirmed' ? 'Confirmado' : bk.booking_status}
-                                  </span>
+                                  <span className={"inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-bold font-mono uppercase " + (
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'confirmed' ? 'bg-rose-50 text-rose-500 border-rose-200' :
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' :
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'cancelled' ? 'bg-white border-slate-200 text-slate-500' :
+        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'bg-orange-50 border-orange-200 text-orange-500' : 'bg-amber-50 border-amber-200 text-amber-500'
+      )}>
+        {(((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'Falta' :
+         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'confirmed' ? 'Confirmado' :
+         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'Concluído' :
+         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status)}
+      </span>
                                 </td>
 
                                 <td className="py-4 px-6 text-right space-x-1">
-                                  {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' ? (
-                                    <>
-                                      <button 
-                                        onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
-                                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-[9px] font-mono rounded-lg uppercase transition-all cursor-pointer"
-                                      >
-                                        Concluir
-                                      </button>
-                                      <button 
-                                        onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-                                        className="px-2 py-1 bg-rose-950 border border-rose-900 text-rose-400 hover:bg-rose-900 transition-colors text-[9px] font-mono rounded-lg uppercase cursor-pointer"
-                                      >
-                                        Malsucedido
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <span className="text-[10px] text-slate-650 text-slate-500 font-mono">-</span>
-                                  )}
+                                  {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && bk.booking_status !== 'no_show' ? (
+  <>
+    {!isPastBooking(bk.booking_date, bk.end_time || bk.start_time) ? (
+      <>
+        <button 
+          onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
+          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9px] font-mono rounded-lg uppercase transition-all cursor-pointer inline-block mx-0.5"
+        >
+          Concluir
+        </button>
+        <button 
+          onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
+          className="px-2 py-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-[9px] font-mono rounded-lg uppercase cursor-pointer inline-block mx-0.5"
+        >
+          Mover / Malsucedido
+        </button>
+      </>
+    ) : (
+      <button 
+        onClick={() => handleUpdateBookingStatus(bk.id, 'no_show')}
+        className="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-500 hover:bg-rose-100 transition-colors text-[9px] font-mono rounded-lg uppercase cursor-pointer inline-block mx-0.5"
+      >
+        Reclamar (Falta)
+      </button>
+    )}
+  </>
+) : (
+  <span className="text-[10px] text-slate-500 font-mono">-</span>
+)}
                                 </td>
 
                               </tr>
@@ -3731,7 +3767,7 @@ export default function Dashboard() {
                 <div id="view-analytics" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-100 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Gráficos de Desempenho</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">Analise o crescimento do seu negócio com dados transparentes originando do Stripe e faturas da base.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Analise o crescimento do seu negócio com dados transparentes originando do Glamzo Pay e faturas da base.</p>
                   </div>
 
                   {/* Operational Cards Grid */}
@@ -4104,7 +4140,7 @@ export default function Dashboard() {
                 <div id="view-financeiro" className="space-y-6 max-w-3xl animate-fade-in">
                   <div className="border-b border-slate-100 pb-5 text-left">
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Subscrição e Faturação</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Stripe Connect.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Acompanhe a sua subscrição Glamzo Pro, consulte as suas faturas reais e verifique o estado do Glamzo Pay Connect.</p>
                   </div>
 
                   {/* Operational Metrics Grid */}
@@ -4151,7 +4187,7 @@ export default function Dashboard() {
                       <div className="space-y-1">
                         <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
                         <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span></span>
-                        <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Stripe.</span>
+                        <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Glamzo Pay.</span>
                       </div>
                     </div>
 
@@ -4162,7 +4198,7 @@ export default function Dashboard() {
                       </p>
                       {trialEndsAt && (
                         <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
-                          ⏳ Fim do período/Renovação Stripe: {new Date(trialEndsAt).toLocaleDateString('pt-PT')} ({trialDaysRemaining} dias restantes)
+                          ⏳ Fim do período/Renovação: {new Date(trialEndsAt).toLocaleDateString('pt-PT')} ({trialDaysRemaining} dias restantes)
                         </p>
                       )}
                     </div>
@@ -4175,7 +4211,7 @@ export default function Dashboard() {
                             className="bg-slate-100 hover:bg-slate-100 text-slate-700 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                           >
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                            <span>Gerir faturas no portal Stripe</span>
+                            <span>Gerir faturas no portal de pagamentos</span>
                           </button>
                           <button
                             onClick={handleCancelSubscription}
@@ -4188,26 +4224,26 @@ export default function Dashboard() {
                       ) : (
                         <div className="space-y-3 w-full">
                           <p className="text-[11px] text-amber-400 leading-normal bg-amber-950/10 border border-amber-500/20 p-3.5 rounded-xl">
-                            ⚠️ Atualmente, a sua parceria está ativa apenas em teste local ou sem cartão registado no Stripe. Para garantir a visibilidade do estabelecimento no Marketplace, ative a sua assinatura abaixo:
+                            ⚠️ Atualmente, a sua parceria está ativa apenas em teste local ou sem cartão registado no Glamzo Pay. Para garantir a visibilidade do estabelecimento no Marketplace, ative a sua assinatura abaixo:
                           </p>
                           <button
                             onClick={handleSubscribePro}
                             className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-slate-900 text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />
-                            <span>Ativar Glamzo PRO (Stripe Checkout)</span>
+                            <span>Ativar Glamzo PRO (Pagamento online)</span>
                           </button>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Dynamic Stripe Express Connect Manager */}
+                  {/* Dynamic Glamzo Pay Express Connect Manager */}
                   <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
                     <div className="border-b border-slate-200 pb-2 text-left">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">Definições de Recebimentos (Stripe Connect)</h4>
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">Definições de Recebimentos</h4>
                       <p className="text-[10px] text-slate-500 mt-0.5 leading-normal">
-                        Configure a sua conta Stripe Express obrigatória para receber pagamentos de marcações diretamente na sua conta bancária.
+                        Configure a sua conta Glamzo Pay Express obrigatória para receber pagamentos de marcações diretamente na sua conta bancária.
                       </p>
                     </div>
 
@@ -4223,7 +4259,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="space-y-1 grow">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS ATIVA</h4>
+                                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA DE PAGAMENTOS ATIVA</h4>
                                     <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PRONTO</span>
                                   </div>
                                   <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
@@ -4231,7 +4267,7 @@ export default function Dashboard() {
                                   </p>
                                   <div className="bg-white/40 rounded-xl p-3 border border-slate-100 text-[10px] space-y-1 mt-2">
                                     <p className="text-emerald-400 font-bold">✓ Split de Fundos Ativo: Loja recebe 95% do valor; Plataforma retém comissão de 5%.</p>
-                                    <p className="text-slate-500 text-slate-500 font-sans">✓ Transferências Automáticas: Processadas pelo Stripe diretamente para o seu IBAN associado de acordo com a sua calendarização no parceiro de pagamentos.</p>
+                                    <p className="text-slate-500 text-slate-500 font-sans">✓ Transferências Automáticas: Processadas pelo Glamzo Pay diretamente para o seu IBAN associado de acordo com a sua calendarização no parceiro de pagamentos.</p>
                                   </div>
                                 </div>
                               </div>
@@ -4244,11 +4280,11 @@ export default function Dashboard() {
                                   </div>
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONEXÃO STRIPE INCOMPLETA</h4>
+                                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONEXÃO BANCÁRIA INCOMPLETA</h4>
                                       <span className="px-1.5 py-0.2 bg-amber-950 text-amber-400 border border-amber-900 rounded text-[8px] font-mono tracking-wider font-bold uppercase leading-none">PENDENTE</span>
                                     </div>
                                     <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-                                      O seu ID de conta <span className="text-slate-900 font-mono text-[10px] bg-white border border-slate-100 px-1 py-0.5 rounded">{business.stripe_account_id}</span> foi associado, mas ainda precisa completar o fluxo de onboarding no Stripe para ativar cobranças e transferências.
+                                      O seu ID de conta <span className="text-slate-900 font-mono text-[10px] bg-white border border-slate-100 px-1 py-0.5 rounded">{business.stripe_account_id}</span> foi associado, mas ainda precisa completar o fluxo de onboarding para ativar cobranças e transferências.
                                     </p>
                                   </div>
                                 </div>
@@ -4257,7 +4293,7 @@ export default function Dashboard() {
                                   disabled={connectingStripe}
                                   className="text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2.5 rounded-xl shrink-0 font-sans transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-amber-600"
                                 >
-                                  {connectingStripe ? 'A carregar...' : 'Completar Cadastro no Stripe'}
+                                  {connectingStripe ? 'A carregar...' : 'Completar Cadastro'}
                                 </button>
                               </div>
                             )}
@@ -4286,9 +4322,9 @@ export default function Dashboard() {
                               <AlertTriangle className="w-5 h-5 animate-pulse" />
                             </div>
                             <div className="space-y-0.5 grow">
-                              <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA STRIPE EXPRESS REQUERIDA</h4>
+                              <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">CONTA BANCÁRIA REQUERIDA</h4>
                               <p className="text-[11px] text-slate-500 leading-normal font-sans">
-                                É necessário interligar uma conta Stripe Express para receber pagamentos online. O valor pago pelo cliente será dividido automaticamente (95% para si / 5% comissão Glamzo) e transferido para o seu banco conforme o calendário de transferências configurado no Stripe.
+                                É necessário interligar uma conta Glamzo Pay Express para receber pagamentos online. O valor pago pelo cliente será dividido automaticamente (95% para si / 5% comissão Glamzo) e transferido para o seu banco conforme o calendário de transferências configurado no Glamzo Pay.
                               </p>
                             </div>
                           </div>
@@ -4305,7 +4341,7 @@ export default function Dashboard() {
                             ) : (
                               <>
                                 <Building className="w-3.5 h-3.5" />
-                                <span>Ligar Stripe Connect</span>
+                                <span>Ligar Glamzo Pay Connect</span>
                               </>
                             )}
                           </button>
@@ -4345,7 +4381,7 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                       <div>
                         <h4 className="font-extrabold text-sm text-slate-900">Transações & Faturação de Clientes</h4>
-                        <p className="text-[10px] text-slate-500 text-slate-500 mt-0.5 font-medium">Histórico de liquidações e processos de faturação automática integrada via Stripe.</p>
+                        <p className="text-[10px] text-slate-500 text-slate-500 mt-0.5 font-medium">Histórico de liquidações e processos de faturação automática integrada via Glamzo Pay.</p>
                       </div>
                     </div>
 
@@ -4355,7 +4391,7 @@ export default function Dashboard() {
                         No ambiente de produção da Glamzo, <span className="text-slate-700 font-bold">não necessita de preencher SAF-T manuais nem de emitir PDFs temporários</span>. 
                       </p>
                       <p>
-                        No exato momento em que um cliente final efetua o pagamento de uma marcação via Stripe Checkout, o <span className="text-slate-900">Stripe emite e envia automaticamente o recibo oficial e termo de faturação correspondente</span> diretamente para o email do cliente. O histórico fiscal fica arquivado na sua conta bancária Stripe Connect e no e-mail do cliente, cumprindo todas as diretrizes regulatórias e fiscais aplicáveis.
+                        No exato momento em que um cliente final efetua o pagamento de uma marcação via Glamzo Pay Checkout, a <span className="text-slate-900">plataforma emite e envia automaticamente o recibo oficial e termo de faturação correspondente</span> diretamente para o email do cliente. O histórico fiscal fica arquivado na sua conta bancária conectada e no e-mail do cliente, cumprindo todas as diretrizes regulatórias e fiscais aplicáveis.
                       </p>
                     </div>
 
@@ -4375,7 +4411,7 @@ export default function Dashboard() {
                                 </span>
                                 <span className="text-[10px] text-slate-500">{txDate}</span>
                                 <span className="px-1.5 py-0.2 bg-emerald-950/50 text-emerald-400 border border-emerald-900/35 rounded text-[8px] font-mono tracking-wider uppercase font-black">
-                                  Faturado por Stripe
+                                  Faturado digitalmente
                                 </span>
                               </div>
                               <div className="text-slate-500 text-[11px] font-medium leading-normal font-mono">
@@ -4912,36 +4948,36 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        {bookings.filter(b => b.booking_status !== 'completed' && b.booking_status !== 'cancelled').length > 0 ? (
-                          bookings
-                            .filter(b => b.booking_status !== 'completed' && b.booking_status !== 'cancelled')
-                            .slice(0, 3)
-                            .map(bk => (
-                              <div key={bk.id} className="p-3 bg-white rounded-2xl border border-slate-100 flex items-center justify-between text-xs transition">
-                                <div className="space-y-0.5">
-                                  <div className="font-extrabold text-slate-900 text-[12px]">
-                                    {bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}
-                                  </div>
-                                  <div className="text-[10px] text-slate-500 flex items-center gap-1">
-                                    <span>⏱ {bk.start_time}</span>
-                                    <span>•</span>
-                                    <span>💈 {bk.service?.name}</span>
-                                  </div>
-                                </div>
+                        {bookings.filter(b => b.booking_status !== 'completed' && b.booking_status !== 'cancelled' && b.booking_status !== 'no_show' && !isPastBooking(b.booking_date, b.end_time || b.start_time)).length > 0 ? (
+  bookings
+    .filter(b => b.booking_status !== 'completed' && b.booking_status !== 'cancelled' && b.booking_status !== 'no_show' && !isPastBooking(b.booking_date, b.end_time || b.start_time))
+    .slice(0, 3)
+    .map(bk => (
+      <div key={bk.id} className="p-3 bg-white rounded-2xl border border-slate-100 flex items-center justify-between text-xs transition">
+        <div className="space-y-0.5">
+          <div className="font-extrabold text-slate-900 text-[12px]">
+            {bk.customer?.full_name || bk.customer_profile?.full_name || 'Particular'}
+          </div>
+          <div className="text-[10px] text-slate-500 flex items-center gap-1">
+            <span>⏱ {bk.start_time}</span>
+            <span>•</span>
+            <span>💈 {bk.service?.name}</span>
+          </div>
+        </div>
 
-                                <button
-                                  onClick={async () => {
-                                    playTerminalChime();
-                                    await handleUpdateBookingStatus(bk.id, 'completed');
-                                    notifyTerminal("✅ Check-in Efetuado", `O cliente ${bk.customer?.full_name || 'Particular'} deu entrada física no salão!`);
-                                  }}
-                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-black text-[10px] uppercase font-mono tracking-wider rounded-lg transition cursor-pointer"
-                                >
-                                  Fazer Check-in
-                                </button>
-                              </div>
-                            ))
-                        ) : (
+        <button
+          onClick={async () => {
+            playTerminalChime();
+            await handleUpdateBookingStatus(bk.id, 'completed');
+            notifyTerminal("✅ Check-in Efetuado", `O cliente ${bk.customer?.full_name || 'Particular'} deu entrada física no salão!`);
+          }}
+          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase font-mono tracking-wider rounded-lg transition cursor-pointer"
+        >
+          Fazer Check-in
+        </button>
+      </div>
+    ))
+) : (
                           <div className="py-6 text-center text-slate-500 font-mono text-[10px] border border-dashed border-slate-100 rounded-2xl">
                             Sem clientes pendentes de check-in na fila hoje.
                           </div>
@@ -4959,141 +4995,76 @@ export default function Dashboard() {
           )}
 
           {/* PROFESSIONAL AT-COMPLIANT INVOICE MODAL OVERLAY (SISTEMA DE FATURAÇÃO REAL GLAMZO) */}
-          {selectedInvoice && (() => {
-            const invoiceRef = `FT_GZ_${selectedInvoice.id.substring(0,8).toUpperCase()}`;
-            const baseAmount = Number(selectedInvoice.amount_total || selectedInvoice.amount || 0);
-            const feeAmount = Number(selectedInvoice.glamzo_fee || 0);
-            const netProfit = Number(selectedInvoice.business_amount || 0);
-            const hasDiscount = feeAmount < (baseAmount * 0.05); // means Glamzo fee absorbed the coupon discount
-            
-            return (
-              <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-slate-100 text-slate-700 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200 text-left">
-                  
-                  {/* Invoice Certificate Header */}
-                  <div className="bg-white text-slate-900 p-5 flex justify-between items-center border-b border-slate-100">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-black">Fatura Simpli-Certificada</span>
-                      </div>
-                      <h3 className="text-sm font-black mt-1 font-mono">{invoiceRef}</h3>
-                    </div>
-                    <button 
-                      onClick={() => setSelectedInvoice(null)}
-                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer text-xs"
-                    >
-                      ✕
-                    </button>
-                  </div>
+          {selectedInvoice && (
+  <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-100 text-slate-700 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200 text-left">
+      <div className="bg-white text-slate-900 p-5 flex justify-between items-center border-b border-slate-100">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-black">Fatura Simpli-Certificada</span>
+          </div>
+          <h3 className="text-sm font-black mt-1 font-mono">{`FT_GZ_${selectedInvoice.id.substring(0,8).toUpperCase()}`}</h3>
+        </div>
+        <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">
+          <span className="font-bold text-slate-400">X</span>
+        </button>
+      </div>
 
-                  {/* Printable Invoice Container */}
-                  <div className="p-6 space-y-5 flex-grow overflow-auto scrollbar-thin text-xs text-slate-600">
-                    
-                    {/* Visual watermark or seal */}
-                    <div className="flex justify-between items-start border-b border-slate-200 pb-4">
-                      <div>
-                        <h2 className="font-black text-[#8B5CF6] tracking-tight text-lg leading-none">GLAMZO SA</h2>
-                        <span className="text-[10px] text-slate-500">Plataforma de Intermediação de Beleza & Bem-Estar</span>
-                        <p className="text-[9px] text-slate-500 font-mono mt-1">NIF: PT 509 231 411 • Av. da Liberdade, Lisboa</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-extrabold text-[10px] block uppercase text-purple-400">Prestador do Serviço:</span>
-                        <p className="font-sans font-bold text-slate-900">{business?.name || 'Salão Parceiro'}</p>
-                        <p className="text-[9px] text-slate-500">{business?.city || 'Portugal'}</p>
-                      </div>
-                    </div>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-end">
+          <div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Cliente</p>
+            <p className="text-xs font-semibold text-slate-800">{selectedInvoice.customer?.full_name || 'Consumidor Final'}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Data de Emissão</p>
+            <p className="text-xs font-semibold text-slate-800">{new Date(selectedInvoice.created_at).toLocaleDateString('pt-PT')}</p>
+          </div>
+        </div>
 
-                    {/* Audit Compliance Label */}
-                    <div className="bg-white/60 border border-slate-200/80 p-3 rounded-xl flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-950/60 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-900/30">
-                        <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div>
-                        <span className="font-bold text-slate-700 text-[10px] uppercase block">Assinatura Digital AT / SAF-T</span>
-                        <p className="text-[9px] text-slate-500 font-mono leading-none">Processado por Programa Certificado Glamzo Pay v10.4</p>
-                      </div>
-                    </div>
+        <div className="bg-white border text-left border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="flex justify-between text-xs font-semibold text-slate-600">
+            <span>Subtotal (Serviços)</span>
+            <span>{Number(selectedInvoice.amount_total || selectedInvoice.amount || 0).toFixed(2)} €</span>
+          </div>
+          
+          {(Number(selectedInvoice.glamzo_fee || 0) < (Number(selectedInvoice.amount_total || selectedInvoice.amount || 0) * 0.05)) && (
+            <div className="flex justify-between text-xs font-bold text-rose-500">
+              <span>Cupão / Desconto Glamzo aplicado</span>
+              <span>- {(Number(selectedInvoice.amount_total || selectedInvoice.amount || 0) * 0.05).toFixed(2)} €</span>
+            </div>
+          )}
 
-                    {/* Line Items of Receipt */}
-                    <div className="space-y-3 pt-2">
-                      <h4 className="font-bold text-purple-400 uppercase tracking-wider text-[9px] border-b border-slate-200 pb-1.5">Artigos e Serviços Intermediados</h4>
-                      
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-bold text-slate-900">Marcação Eletrónica Real</span>
-                          <p className="text-[10px] text-slate-500 text-slate-500 mt-0.5">Disponibilização da infraestrutura de reservas táticas e assessoria Glamzo.</p>
-                        </div>
-                        <span className="font-mono text-slate-900 font-bold">{baseAmount.toFixed(2)} €</span>
-                      </div>
+          <div className="flex justify-between text-xs font-semibold text-slate-600">
+            <span>Taxa Glamzo (Absorvida)</span>
+            <span className="text-emerald-500">0.00 €</span>
+          </div>
+          <div className="border-t border-slate-100 pt-3 flex justify-between font-black text-slate-900">
+            <span>TOTAL LIQUIDADO (SEU LUCRO)</span>
+            <span>{Number(selectedInvoice.business_amount || 0).toFixed(2)} €</span>
+          </div>
+        </div>
 
-                      {/* Commission calculation with safe business protection display */}
-                      <div className="border-t border-slate-200 pt-3 space-y-1.5">
-                        <div className="flex justify-between items-center text-slate-500">
-                          <span>Subtotal Bruto Cobrado</span>
-                          <span className="font-mono text-slate-900">{baseAmount.toFixed(2)} €</span>
-                        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex gap-3 text-left">
+          <div className="text-[9px] text-slate-500 leading-relaxed font-mono">
+            Este documento serve como prova de liquidação do serviço via Glamzo Pay. O IVA está incluído à taxa legal em vigor quando aplicável.
+            Os pagamentos são processados de forma 100% segura.
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+        <button onClick={() => setSelectedInvoice(null)} className="px-5 py-2 hover:bg-slate-200 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl transition-all cursor-pointer">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-                        <div className="flex justify-between items-center text-slate-500">
-                          <span className="flex items-center gap-1.5">
-                            <span>Taxa de Intermediação Glamzo</span>
-                            <span className="text-[9px] bg-white text-purple-300 border border-slate-200 px-1.5 py-0.5 rounded-sm">Plano PRO 5%</span>
-                          </span>
-                          <span className="font-mono text-purple-300">-{feeAmount.toFixed(2)} €</span>
-                        </div>
+{isManualBookingOpen && (
 
-                        {hasDiscount && (
-                          <div className="bg-emerald-950/40 text-emerald-305 text-emerald-350 border border-emerald-900/30 p-2.5 rounded-xl text-[10px] font-medium leading-relaxed mt-1">
-                            ☘ **Campanha absorvida pela Glamzo**: O desconto do utilizador foi instruído e integralmente subsidiado pela Glamzo. Recebe o seu rendimento original garantido!
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Highlighted Net Earned block */}
-                      <div className="bg-white/60 p-3 rounded-2xl flex justify-between items-center border border-slate-200/80 mt-4">
-                        <div>
-                          <span className="font-black text-purple-400 uppercase text-[9px] block">Rendimento Líquido Creditado</span>
-                          <span className="text-[9px] text-slate-500 font-medium font-sans">Lançado no saldo disponível do Stripe Connect</span>
-                        </div>
-                        <span className="text-base font-black text-emerald-400 font-mono">{netProfit.toFixed(2)} €</span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Legal Disclaimer */}
-                    <div className="text-[9px] text-slate-500 leading-normal text-center pt-3 border-t border-slate-200 space-y-0.5">
-                      <p>Este documento eletrónico serve de fatura simplificada conforme o Artigo 40º do CIVA.</p>
-                      <p className="font-mono uppercase text-[8px] tracking-wider text-slate-600">Código CHASH: GZ-PAY-SAF-T-{selectedInvoice.id.substring(0,8).toUpperCase()}</p>
-                    </div>
-
-                  </div>
-
-                  {/* Action Trigger Buttons inside receipt modal */}
-                  <div className="p-4 bg-white flex gap-3 border-t border-slate-200 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => alert("As faturas SAF-T reais são exportadas eletronicamente na sua faturação oficial.")}
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl cursor-pointer text-center transition-all shadow-md shadow-purple-950/30 font-sans"
-                    >
-                      Exportar PDF / SAF-T
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedInvoice(null)}
-                      className="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all"
-                    >
-                      Fechar
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            );
-          })()}
-
-      {/* ==================================================== */}
-      {/* MODAL: REGISTAR MARCAÇÃO MANUAL / BLOQUEIO DE HORÁRIO */}
-      {/* ==================================================== */}
-      {isManualBookingOpen && (
         <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-slate-800 max-h-[90vh]">
             

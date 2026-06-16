@@ -458,7 +458,7 @@ export default function Home() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
                 <ShieldCheck className="w-5 h-5 stroke-[2]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Checkout Seguro Stripe</h3>
+              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Checkout Seguro</h3>
               <p className="text-slate-500 text-xs mt-2 leading-relaxed">
                 Pague as suas marcações de forma ultra-segura no checkout da plataforma e desfrute de uma experiência VIP e fluida no salão parceiro.
               </p>
@@ -469,7 +469,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. SaaS Partner Portal CTA - Stripe Inspired */}
+      {/* 4. SaaS Partner Portal CTA - Glamzo Pay Inspired */}
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
         <div className="bg-[#f8fafc] border border-slate-200/50 rounded-3xl p-8 sm:p-14 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
           <div className="absolute inset-0 bg-radial-[circle_at_left_bottom] from-purple-100/20 via-transparent to-transparent pointer-events-none" />
@@ -478,7 +478,7 @@ export default function Home() {
             <span className="text-[9px] font-mono font-bold text-purple-600 uppercase tracking-widest block mb-2 leading-none">PARA SALÕES, CLÍNICAS & PROFISSIONAIS</span>
             <h2 className="text-xl sm:text-3xl font-display font-medium text-slate-900 leading-snug tracking-tight">Organize a sua agenda, receba pagamentos e faça crescer o seu salão</h2>
             <p className="text-slate-500 text-xs mt-3 leading-relaxed">
-              Ative pagamentos imediatos através do Stripe, automatize confirmações de reserva e faça a gestão integral da sua equipa na melhor plataforma para cabeleireiros e estética.
+              Ative pagamentos imediatos, automatize confirmações de reserva e faça a gestão integral da sua equipa na melhor plataforma para cabeleireiros e estética.
             </p>
           </div>
 

@@ -6,6 +6,7 @@ import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
 import { startChatSession, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
 import { useAuth } from '../hooks/useAuth';
 import BookingModal from '../components/BookingModal';
+import SecurityBadge from '../components/SecurityBadge';
 import { 
   toggleFavorite, 
   isFavorite, 
@@ -632,6 +633,9 @@ export default function BusinessDetail() {
                       <span className="text-slate-500 italic">Sem avaliações</span>
                     </>
                   )}
+                </div>
+                <div className="mt-4 flex justify-center sm:justify-start">
+                  <SecurityBadge />
                 </div>
               </div>
             </div>
@@ -1264,7 +1268,7 @@ export default function BusinessDetail() {
                     {[
                       { text: 'Sugira horários livres', query: 'Quais os melhores horários livres hoje para corte/estética?' },
                       { text: 'Serviços populares', query: 'Quais os vossos serviços de beleza mais populares e os preços?' },
-                      { text: 'Fidelidade & Cupons', query: 'Como posso usar o meu cupão de fidelidade Stripe?' }
+                      { text: 'Fidelidade & Cupons', query: 'Como posso usar o meu cupão de fidelidade?' }
                     ].map((chip, idx) => (
                       <button
                         key={idx}
