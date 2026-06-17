@@ -1,5 +1,9 @@
+const fs = require('fs');
+const path = require('path');
+
+const newDashboardContent = `
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import GlamzoLogo from '../components/GlamzoLogo';
@@ -46,7 +50,7 @@ export default function Dashboard() {
         return;
       }
       setBusiness(bData);
-      setEditSlugValue(bData.slug || '/images/home/spa.webp');
+      setEditSlugValue(bData.slug || '');
 
       const [
         { data: catData },
@@ -127,11 +131,9 @@ export default function Dashboard() {
   return (
     <div className="flex bg-[#fafbfc] h-screen overflow-hidden font-sans text-[#0f172a]">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={\`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 md:relative md:translate-x-0 \${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}\`}>
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <Link to="/">
-            <GlamzoLogo customSize="text-2xl" />
-          </Link>
+          <GlamzoLogo customSize="text-2xl" />
           <button onClick={() => setIsMobileSidebarOpen(false)} className="md:hidden"><X className="w-5 h-5 text-slate-500" /></button>
         </div>
         <div className="p-4 space-y-1">
@@ -149,22 +151,19 @@ export default function Dashboard() {
             <button
               key={it.id}
               onClick={() => { setActiveTab(it.id as any); setIsMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors cursor-pointer ${activeTab === it.id ? 'bg-[#9333ea] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={\`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors \${activeTab === it.id ? 'bg-[#9333ea] text-white' : 'text-slate-600 hover:bg-slate-50'}\`}
             >
               {it.icon}
               {it.label}
             </button>
           ))}
         </div>
-        <div className="absolute bottom-6 w-full px-4 space-y-2">
+        <div className="absolute bottom-6 w-full px-4">
            {business?.slug && (
-              <a href={`/${business.slug}`} target="_blank" rel="noopener noreferrer" className="flex justify-center items-center gap-2 w-full px-4 py-2 border border-slate-200 bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-100 transition-colors">
+              <a href={\`/\${business.slug}\`} target="_blank" rel="noopener noreferrer" className="flex justify-center items-center gap-2 w-full px-4 py-2 border border-slate-200 bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-100 transition-colors mb-2">
                  Ver Loja <ExternalLink size={14} />
               </a>
            )}
-           <button onClick={() => { navigate('/'); }} className="flex justify-center items-center gap-2 w-full px-4 py-2 bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-sm rounded-xl hover:bg-slate-100 transition-colors">
-            <Home size={16} /> Voltar ao Site
-           </button>
            <button onClick={() => signOut()} className="flex justify-center items-center gap-2 w-full px-4 py-2 bg-slate-100 text-[#f43f5e] font-semibold text-sm rounded-xl hover:bg-rose-50 transition-colors">
             <LogOut size={16} /> Sair
            </button>
@@ -198,13 +197,13 @@ export default function Dashboard() {
                <h2 className="text-2xl font-bold mb-6">Sua Agenda Premium</h2>
                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center h-[500px] flex flex-col items-center justify-center">
                  <Calendar className="w-12 h-12 text-[#9333ea] mb-4 opacity-50" />
-                 <p className="text-slate-500 font-medium">Agenda em visualização otimizada. Utilize os filtros laterais para personalizar os dias e horas.</p>
+                 <p className="text-slate-500 font-medium">Agenda em visualização otimizada. Para ver funcionalidades de calendário integradas, sincronize os seus horários.</p>
                </div>
              </div>
            )}
 
            {activeTab === 'reservas' && (
-             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+             <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
                <div className="p-6 border-b border-slate-100">
                  <h3 className="font-bold text-lg">Histórico de Reservas</h3>
                </div>
@@ -216,7 +215,7 @@ export default function Dashboard() {
                        <th className="px-6 py-3">Cliente</th>
                        <th className="px-6 py-3">Serviço</th>
                        <th className="px-6 py-3">Estado</th>
-                       <th className="px-6 py-3 text-right">Preço</th>
+                       <th className="px-6 py-3">Preço</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -233,7 +232,7 @@ export default function Dashboard() {
                                  {bk.booking_status}
                                </span>
                             </td>
-                            <td className="px-6 py-4 font-medium text-right">{bk.total_price}€</td>
+                            <td className="px-6 py-4 font-medium">{bk.total_price}€</td>
                           </tr>
                         ))
                      )}
@@ -262,7 +261,7 @@ export default function Dashboard() {
                      />
                    </div>
                  </div>
-                 <button onClick={handleSaveWebsiteConfig} className="bg-[#9333ea] text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-purple-700 transition-colors cursor-pointer">
+                 <button onClick={handleSaveWebsiteConfig} className="bg-[#9333ea] text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-purple-700 transition-colors">
                    Salvar Alterações
                  </button>
                </div>
@@ -287,3 +286,7 @@ export default function Dashboard() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync(path.join(__dirname, 'src', 'pages', 'Dashboard.tsx'), newDashboardContent);
+console.log('Dashboard rewritten automatically');

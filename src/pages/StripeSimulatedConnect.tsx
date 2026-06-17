@@ -12,7 +12,7 @@ export default function StripeSimulatedConnect() {
   const [success, setSuccess] = useState(false);
 
   // Input parameters
-  const businessId = searchParams.get('businessId') || '';
+  const businessId = searchParams.get('businessId') || '/images/home/spa.webp';
 
   const handleConnect = () => {
     setLoading(true);

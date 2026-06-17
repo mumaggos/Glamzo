@@ -367,12 +367,12 @@ export default function Account() {
 
   useEffect(() => {
     if (profile) {
-      setFullName(profile.full_name || '');
-      setAvatarUrl(profile.avatar_url || '');
-      setPhone(profile.phone || '');
+      setFullName(profile.full_name || '/images/home/spa.webp');
+      setAvatarUrl(profile.avatar_url || '/images/home/spa.webp');
+      setPhone(profile.phone || '/images/home/spa.webp');
     }
     if (user) {
-      setEmail(user.email || '');
+      setEmail(user.email || '/images/home/spa.webp');
     }
   }, [profile, user]);
 
@@ -578,7 +578,7 @@ export default function Account() {
                         <div className="text-[10px] text-slate-600 flex items-center gap-1.5 mt-0.5">
                           <span>📍 {bk.business?.city || 'Localidade'}</span>
                           <span>•</span>
-                          <span>📞 {bk.business?.phone || ''}</span>
+                          <span>📞 {bk.business?.phone || '/images/home/spa.webp'}</span>
                         </div>
                       </td>
 

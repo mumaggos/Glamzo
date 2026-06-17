@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Footer from '../components/Footer';
 import { 
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, ArrowRight 
@@ -153,11 +154,11 @@ export default function Partner() {
             <div className="group bg-white rounded-2xl border border-slate-100 p-8 flex flex-col justify-between hover:border-purple-300 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_rgba(15,23,42,0.04)] -translate-y-0 hover:-translate-y-1 transition-all duration-300">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center mb-6">
-                  <BrainCircuit className="w-6 h-6" />
+                  <Megaphone className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Otimização IA</h3>
+                <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Estatísticas Poderosas</h3>
                 <p className="text-slate-500 text-xs mt-3 leading-relaxed">
-                  A nossa tecnologia analisa as horas de maior movimento para sugerir as melhores opções e promover campanhas rápidas focadas no preenchimento de horários vazios.
+                  A nossa tecnologia permite-lhe verificar as métricas de maior movimento ao vivo, facilitando as campanhas focadas na atração de clientes.
                 </p>
               </div>
               <span className="text-[10px] text-purple-600 font-bold uppercase tracking-wider mt-6 block">Estatísticas Reais</span>
@@ -270,6 +271,7 @@ export default function Partner() {
         </div>
       </section>
 
+      <Footer />
     </div>
   );
 }

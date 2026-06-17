@@ -196,15 +196,7 @@ export default function GlamzoMessenger() {
     
     // Refresh list
     setChatMessages(prev => [...prev, msg]);
-    setIsAiAnswering(true);
-
-    // Wait for auto-reply
-    setTimeout(async () => {
-      const updatedMsgs = await fetchMessagesForSession(selectedSession.id);
-      setChatMessages(updatedMsgs);
-      setIsAiAnswering(false);
-      loadCustomerConversations();
-    }, 5500);
+    loadCustomerConversations();
   };
 
   const startNewChatWithBusiness = async (biz: any) => {

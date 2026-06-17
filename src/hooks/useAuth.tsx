@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string, currentUserEmail: string): Promise<UserProfile | null> => {
     if (!isSupabaseConfigured) return null;
 
-    const emailSafe = currentUserEmail || '';
+    const emailSafe = currentUserEmail || '/images/home/spa.webp';
     const nameFallback = emailSafe ? emailSafe.split('@')[0] : 'Utilizador';
 
     try {
@@ -239,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         lastUserId = session.user.id;
         setUser(session.user);
-        fetchProfile(session.user.id, session.user.email || '').then((prof) => {
+        fetchProfile(session.user.id, session.user.email || '/images/home/spa.webp').then((prof) => {
           if (mounted) {
             setProfile(prof);
             if (fallbackTimeout) clearTimeout(fallbackTimeout);
@@ -280,7 +280,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         setUser(session.user);
         try {
-          const p = await fetchProfile(session.user.id, session.user.email || '');
+          const p = await fetchProfile(session.user.id, session.user.email || '/images/home/spa.webp');
           if (mounted) {
             setProfile(p);
             if (fallbackTimeout) clearTimeout(fallbackTimeout);
