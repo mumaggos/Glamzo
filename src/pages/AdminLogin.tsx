@@ -90,7 +90,7 @@ export default function AdminLogin() {
         <h2 className="text-3xl font-extrabold tracking-tight text-white">
           Glamzo Admin Console
         </h2>
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-slate-600">
           Acesso restrito para administração global da plataforma e monitorização das lojas parceiras.
         </p>
       </div>
@@ -113,7 +113,7 @@ export default function AdminLogin() {
           <form className="space-y-5" onSubmit={handleAdminLogin}>
             
             <div>
-              <label htmlFor="admin-email" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <label htmlFor="admin-email" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 E-mail Admin
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -133,7 +133,7 @@ export default function AdminLogin() {
             </div>
 
             <div>
-              <label htmlFor="admin-pass" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <label htmlFor="admin-pass" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 Código de Acesso
               </label>
               <div className="relative rounded-xl shadow-sm">

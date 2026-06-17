@@ -150,7 +150,7 @@ export default function StripeSimulatedCheckout() {
       <div className="flex-1 bg-slate-950 p-6 md:p-12 lg:p-16 flex flex-col justify-between border-r border-slate-800">
         <div>
           {/* Logo Stripe Secure checkout header */}
-          <div className="flex items-center gap-2 mb-10 text-slate-400">
+          <div className="flex items-center gap-2 mb-10 text-slate-600">
             <BadgeEuro className="w-6 h-6 text-rose-500 animate-pulse" />
             <span className="text-white font-extrabold text-sm tracking-widest uppercase">Glamzo Pay</span>
             <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-900/50 px-2 py-0.5 rounded font-mono">Modo Seguro</span>
@@ -158,7 +158,7 @@ export default function StripeSimulatedCheckout() {
 
           <button
             onClick={handleCancel}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-all cursor-pointer mb-8"
+            className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-white transition-all cursor-pointer mb-8"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Voltar ao site Glamzo</span>
@@ -170,14 +170,14 @@ export default function StripeSimulatedCheckout() {
             
             {type === 'booking_payment' && (
               <div className="space-y-3">
-                <span className="text-slate-400 text-sm block">Agendamento de Serviço de Beleza</span>
+                <span className="text-slate-600 text-sm block">Agendamento de Serviço de Beleza</span>
                 <h1 className="text-3xl font-extrabold text-white leading-tight">
                   {serviceName}
                 </h1>
-                <p className="text-xs text-slate-400 font-medium">Estúdio: <span className="text-white font-bold">{businessName}</span></p>
+                <p className="text-xs text-slate-600 font-medium">Estúdio: <span className="text-white font-bold">{businessName}</span></p>
                 {customerEmail && <p className="text-xs text-slate-500 font-mono italic">Contacto: {customerEmail}</p>}
                 
-                <div className="pt-4 border-t border-slate-900 text-xs text-slate-400 space-y-2">
+                <div className="pt-4 border-t border-slate-900 text-xs text-slate-600 space-y-2">
                   <div className="flex justify-between">
                     <span>Preço de Catálogo</span>
                     <span className="text-white">{(amount - 1.50).toFixed(2)}€</span>
@@ -194,7 +194,7 @@ export default function StripeSimulatedCheckout() {
               <div className="space-y-2">
                 <span className="text-rose-400 font-mono tracking-wider text-[11px] font-bold">Subscrição Profissional</span>
                 <h1 className="text-3xl font-black text-white">Glamzo {planName}</h1>
-                <span className="text-xs text-slate-400">Acesso ilimitado à plataforma, agenda física e comissões reduzidas de 5%</span>
+                <span className="text-xs text-slate-600">Acesso ilimitado à plataforma, agenda física e comissões reduzidas de 5%</span>
               </div>
             )}
 
@@ -202,7 +202,7 @@ export default function StripeSimulatedCheckout() {
               <div className="space-y-2">
                 <span className="text-indigo-400 font-mono tracking-wider text-[11px] font-bold">Créditos de Marketing</span>
                 <h1 className="text-3xl font-black text-white">+{creditAmount} Créditos</h1>
-                <p className="text-xs text-slate-400">Pacote promocional: <span className="text-indigo-200 font-bold">{packageLabel}</span></p>
+                <p className="text-xs text-slate-600">Pacote promocional: <span className="text-indigo-200 font-bold">{packageLabel}</span></p>
               </div>
             )}
           </div>
@@ -211,7 +211,7 @@ export default function StripeSimulatedCheckout() {
         {/* Amount to pay display */}
         <div className="mt-8 pt-6 border-t border-slate-800 space-y-4">
           <div className="flex justify-between items-baseline">
-            <span className="text-sm font-bold text-slate-400">Total a pagar</span>
+            <span className="text-sm font-bold text-slate-600">Total a pagar</span>
             <span className="text-4xl font-black text-white tracking-tight">{amount.toFixed(2)}€</span>
           </div>
 
@@ -230,7 +230,7 @@ export default function StripeSimulatedCheckout() {
               <CheckCircle2 className="w-10 h-10 animate-bounce" />
             </div>
             <h2 className="text-2xl font-black text-white">Pagamento Confirmado!</h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600">
               {paymentType === 'mbway' 
                 ? 'A transação via MB WAY foi autorizada pelo seu telemóvel com sucesso.' 
                 : 'A transação via cartão de crédito foi validada e registada com sucesso na rede Stripe.'}
@@ -249,7 +249,7 @@ export default function StripeSimulatedCheckout() {
                   <ShieldCheck className="w-5 h-5 text-rose-500 animate-pulse" />
                   <span>Método de Pagamento Seguro</span>
                 </h2>
-                <p className="text-xs text-slate-400">Escolha como gostaria de efetuar este pagamento.</p>
+                <p className="text-xs text-slate-600">Escolha como gostaria de efetuar este pagamento.</p>
               </div>
 
               {/* High-Fidelity Selector Tabs */}
@@ -260,7 +260,7 @@ export default function StripeSimulatedCheckout() {
                   className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition cursor-pointer ${
                     paymentType === 'card' 
                       ? 'bg-gradient-to-tr from-[#8B5CF6] to-[#6366F1] text-white font-black shadow shadow-indigo-950' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-white'
                   }`}
                 >
                   <CreditCard className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function StripeSimulatedCheckout() {
                   className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition cursor-pointer ${
                     paymentType === 'mbway' 
                       ? 'bg-gradient-to-tr from-[#42dca3] to-[#10b981] text-slate-950 font-black shadow shadow-emerald-950' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-white'
                   }`}
                 >
                   <span className="w-4 h-4 bg-slate-900 border border-white/20 text-[#42dca3] font-mono flex items-center justify-center shrink-0 rounded text-[9px] font-extrabold leading-none">MB</span>
@@ -293,7 +293,7 @@ export default function StripeSimulatedCheckout() {
                 {/* Card inputs grid */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wiest">Card number</label>
+                    <label className="text-[10px] font-mono text-slate-600 uppercase font-black tracking-wiest">Card number</label>
                     <span className="text-[9px] font-mono text-[#8B5CF6] font-bold">Stripe Sandbox (Real)</span>
                   </div>
                   <div className="relative">
@@ -313,7 +313,7 @@ export default function StripeSimulatedCheckout() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wiest">Expires</label>
+                    <label className="text-[10px] font-mono text-slate-600 uppercase font-black tracking-wiest">Expires</label>
                     <input
                       type="text"
                       required
@@ -324,7 +324,7 @@ export default function StripeSimulatedCheckout() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wiest">CVC Code</label>
+                    <label className="text-[10px] font-mono text-slate-600 uppercase font-black tracking-wiest">CVC Code</label>
                     <input
                       type="password"
                       required
@@ -337,7 +337,7 @@ export default function StripeSimulatedCheckout() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wiest">Cardholder Name</label>
+                  <label className="text-[10px] font-mono text-slate-600 uppercase font-black tracking-wiest">Cardholder Name</label>
                   <input
                     type="text"
                     required
@@ -366,7 +366,7 @@ export default function StripeSimulatedCheckout() {
                     <span className="w-6 h-6 bg-slate-950 border border-emerald-500/30 text-[#42dca3] font-mono flex items-center justify-center shrink-0 rounded text-xs font-extrabold leading-none">MB</span>
                     <div>
                       <h4 className="text-xs font-bold text-[#42dca3]">Pagamento Via MB WAY</h4>
-                      <p className="text-[10px] text-slate-400">Insira o seu número de telemóvel registado.</p>
+                      <p className="text-[10px] text-slate-600">Insira o seu número de telemóvel registado.</p>
                     </div>
                   </div>
                   <p className="text-[10px] text-slate-300 leading-relaxed font-sans mt-1">
@@ -375,9 +375,9 @@ export default function StripeSimulatedCheckout() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wiest">Telemóvel Nacional (Portugal)</label>
+                  <label className="text-[10px] font-mono text-slate-600 uppercase font-black tracking-wiest">Telemóvel Nacional (Portugal)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-3 text-slate-400 font-bold font-mono text-xs">+351</span>
+                    <span className="absolute left-4 top-3 text-slate-600 font-bold font-mono text-xs">+351</span>
                     <input
                       type="tel"
                       required
@@ -438,7 +438,7 @@ export default function StripeSimulatedCheckout() {
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full text-center text-xs text-slate-500 hover:text-slate-400 cursor-pointer transition py-2"
+              className="w-full text-center text-xs text-slate-500 hover:text-slate-600 cursor-pointer transition py-2"
             >
               Cancelar e Voltar para a área de cliente
             </button>

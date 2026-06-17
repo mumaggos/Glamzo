@@ -15,18 +15,18 @@ const replacement = "{selectedInvoice && (\n" +
 "          <h3 className=\"text-sm font-black mt-1 font-mono\">{`FT_GZ_${selectedInvoice.id.substring(0,8).toUpperCase()}`}</h3>\n" +
 "        </div>\n" +
 "        <button onClick={() => setSelectedInvoice(null)} className=\"p-2 hover:bg-slate-100 rounded-xl transition-all cursor-pointer\">\n" +
-"          <span className=\"font-bold text-slate-400\">X</span>\n" +
+"          <span className=\"font-bold text-slate-600\">X</span>\n" +
 "        </button>\n" +
 "      </div>\n" +
 "\n" +
 "      <div className=\"p-6 space-y-6\">\n" +
 "        <div className=\"flex justify-between items-end\">\n" +
 "          <div>\n" +
-"            <p className=\"text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1\">Cliente</p>\n" +
+"            <p className=\"text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1\">Cliente</p>\n" +
 "            <p className=\"text-xs font-semibold text-slate-800\">{selectedInvoice.customer?.full_name || 'Consumidor Final'}</p>\n" +
 "          </div>\n" +
 "          <div className=\"text-right\">\n" +
-"            <p className=\"text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1\">Data de Emissão</p>\n" +
+"            <p className=\"text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1\">Data de Emissão</p>\n" +
 "            <p className=\"text-xs font-semibold text-slate-800\">{new Date(selectedInvoice.created_at).toLocaleDateString('pt-PT')}</p>\n" +
 "          </div>\n" +
 "        </div>\n" +

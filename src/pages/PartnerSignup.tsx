@@ -207,13 +207,13 @@ export default function PartnerSignup() {
           {/* Progress Bar / Steps indicator */}
           <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-5">
             <div className="flex items-center gap-2">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
-              <span className={`text-xs font-semibold ${step === 1 ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>Conta de Acesso</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'}`}>1</span>
+              <span className={`text-xs font-semibold ${step === 1 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Conta de Acesso</span>
             </div>
             <div className="w-12 h-[1px] bg-slate-100 flex-1 mx-3" />
             <div className="flex items-center gap-2">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
-              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>Dados do Negócio</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'}`}>2</span>
+              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Dados do Negócio</span>
             </div>
           </div>
 
@@ -281,7 +281,7 @@ export default function PartnerSignup() {
                   Nome Completo do Responsável
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                     <User className="w-4 h-4" />
                   </span>
                   <input
@@ -289,7 +289,7 @@ export default function PartnerSignup() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="ex. Profissional Responsável"
                   />
                 </div>
@@ -300,7 +300,7 @@ export default function PartnerSignup() {
                   E-mail Comercial de Acesso
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                     <Mail className="w-4 h-4" />
                   </span>
                   <input
@@ -308,7 +308,7 @@ export default function PartnerSignup() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="geral@oseunegocio.com"
                   />
                 </div>
@@ -325,13 +325,13 @@ export default function PartnerSignup() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                      className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                       placeholder="Mín. 6 letras"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-650"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-slate-650"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -347,7 +347,7 @@ export default function PartnerSignup() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="Repita a senha"
                   />
                 </div>
@@ -372,7 +372,7 @@ export default function PartnerSignup() {
                     Nome do Estabelecimento
                   </label>
                   <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                       <Store className="w-4 h-4" />
                     </span>
                     <input
@@ -380,7 +380,7 @@ export default function PartnerSignup() {
                       required
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                       placeholder="ex. Glamour Studio"
                     />
                   </div>
@@ -390,7 +390,7 @@ export default function PartnerSignup() {
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Categoria Principal
                   </label>
-                  <select
+                  <select aria-label="Selecione uma opção"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
@@ -407,7 +407,7 @@ export default function PartnerSignup() {
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Distrito / Região
                   </label>
-                  <select
+                  <select aria-label="Selecione uma opção"
                     value={district}
                     onChange={(e) => {
                       const nextDist = e.target.value;
@@ -428,7 +428,7 @@ export default function PartnerSignup() {
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Cidade
                   </label>
-                  <select
+                  <select aria-label="Selecione uma opção"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
@@ -445,7 +445,7 @@ export default function PartnerSignup() {
                   Morada / Nome da Rua *
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                     <MapPin className="w-4 h-4" />
                   </span>
                   <input
@@ -453,7 +453,7 @@ export default function PartnerSignup() {
                     required
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="Rua das Flores"
                   />
                 </div>
@@ -469,7 +469,7 @@ export default function PartnerSignup() {
                     required
                     value={doorNumber}
                     onChange={(e) => setDoorNumber(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="ex. 12C, 3º Esq"
                   />
                 </div>
@@ -482,7 +482,7 @@ export default function PartnerSignup() {
                     required
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="ex. 1000-100"
                   />
                 </div>
@@ -494,7 +494,7 @@ export default function PartnerSignup() {
                     Telefone de Contacto
                   </label>
                   <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                       <Phone className="w-4 h-4" />
                     </span>
                     <input
@@ -502,7 +502,7 @@ export default function PartnerSignup() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                       placeholder="Contacto comercial"
                     />
                   </div>
@@ -516,7 +516,7 @@ export default function PartnerSignup() {
                     type="text"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="ex. +351900000000"
                   />
                 </div>
@@ -527,14 +527,14 @@ export default function PartnerSignup() {
                   Breve Descrição do Negócio
                 </label>
                 <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-400">
+                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-600">
                     <FileText className="w-4 h-4" />
                   </span>
                   <textarea
                     rows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
                     placeholder="Introduza uma breve apresentação do seu espaço e serviços especialidades..."
                   />
                 </div>

@@ -255,7 +255,7 @@ export default function GlamzoMessenger() {
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-850 rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 hover:bg-slate-100 text-slate-600 hover:text-slate-850 rounded-xl transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -292,18 +292,18 @@ export default function GlamzoMessenger() {
             {activeTab === 'faq' && !selectedSession && (
               <div className="space-y-4 flex flex-col h-full">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-600" />
                   <input 
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Pesquisar ajuda..."
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-2.5 rounded-2xl text-xs placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-colors"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-2.5 rounded-2xl text-xs placeholder:text-slate-600 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-colors"
                   />
                 </div>
 
                 <div className="flex-1 space-y-2">
-                  <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Dúvidas Frequentes</span>
+                  <span className="text-[10px] font-bold font-mono text-slate-600 uppercase tracking-widest block">Dúvidas Frequentes</span>
                   {filteredFaqs.length > 0 ? (
                     filteredFaqs.map((faq, idx) => (
                       <div key={idx} className="bg-slate-50/50 border border-slate-150 rounded-2xl overflow-hidden transition-all">
@@ -322,7 +322,7 @@ export default function GlamzoMessenger() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-slate-400 text-xs">
+                    <div className="text-center py-8 text-slate-600 text-xs">
                       Nenhuma dúvida encontrada para "{searchQuery}".
                     </div>
                   )}
@@ -341,7 +341,7 @@ export default function GlamzoMessenger() {
               <div className="flex-1 flex flex-col space-y-4">
                 {currentBusiness ? (
                   <div className="space-y-4">
-                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Estabelecimento</span>
+                    <span className="text-[10px] font-bold font-mono text-slate-600 uppercase tracking-widest block">Estabelecimento</span>
                     
                     <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3.5">
                       <div className="flex items-center gap-3">
@@ -401,7 +401,7 @@ export default function GlamzoMessenger() {
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                    <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400">
+                    <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-600">
                       <Info className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
@@ -422,7 +422,7 @@ export default function GlamzoMessenger() {
                 {/* 1. Conversations List (If No Session Selected) */}
                 {!selectedSession ? (
                   <div className="space-y-3 flex-1">
-                    <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest block">Mensagens Ativas</span>
+                    <span className="text-[10px] font-bold font-mono text-slate-600 uppercase tracking-widest block">Mensagens Ativas</span>
                     {sessions.length > 0 ? (
                       <div className="space-y-2">
                         {sessions.map(sess => (
@@ -437,7 +437,7 @@ export default function GlamzoMessenger() {
                               </div>
                               <div className="overflow-hidden">
                                 <span className="block font-bold text-xs text-slate-700 group-hover:text-purple-600 transition-colors uppercase tracking-tight truncate">{sess.business_name}</span>
-                                <span className="block text-[10px] text-slate-400 truncate mt-0.5 font-medium">{sess.last_message || 'Início da conversa'}</span>
+                                <span className="block text-[10px] text-slate-600 truncate mt-0.5 font-medium">{sess.last_message || 'Início da conversa'}</span>
                               </div>
                             </div>
                             <span className="text-[9px] font-mono text-slate-500 block shrink-0">
@@ -447,7 +447,7 @@ export default function GlamzoMessenger() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12 text-slate-400 text-xs flex-1 flex flex-col items-center justify-center space-y-2">
+                      <div className="text-center py-12 text-slate-600 text-xs flex-1 flex flex-col items-center justify-center space-y-2">
                         <MessageSquare className="w-8 h-8 text-slate-300" />
                         <p className="max-w-[220px] text-[11px] leading-relaxed">
                           Ainda não iniciou nenhuma conversa. Escolha um estabelecimento para falar em direto.
@@ -484,7 +484,7 @@ export default function GlamzoMessenger() {
                               key={msg.id}
                               className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${isMe ? 'ml-auto' : 'mr-auto'}`}
                             >
-                              <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-400 mb-0.5">
+                              <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-600 mb-0.5">
                                 <span>{msg.sender_name}</span>
                                 <span className="opacity-60">•</span>
                                 <span>{new Date(msg.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -507,7 +507,7 @@ export default function GlamzoMessenger() {
                           );
                         })
                       ) : (
-                        <div className="text-center py-6 text-[10px] text-slate-400 font-mono italic">
+                        <div className="text-center py-6 text-[10px] text-slate-600 font-mono italic">
                           Começo da conversa privada e segura...
                         </div>
                       )}
@@ -529,12 +529,12 @@ export default function GlamzoMessenger() {
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder="Escreva ao estabelecimento..."
-                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 placeholder:text-slate-400"
+                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-purple-500 placeholder:text-slate-600"
                       />
                       <button
                         type="submit"
                         disabled={isAiAnswering || !chatInput.trim()}
-                        className="bg-purple-650 hover:bg-purple-700 text-white p-2.5 px-3 rounded-xl disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer transition-colors"
+                        className="bg-purple-650 hover:bg-purple-700 text-white p-2.5 px-3 rounded-xl disabled:bg-slate-100 disabled:text-slate-600 cursor-pointer transition-colors"
                       >
                         <Send className="w-4 h-4" />
                       </button>

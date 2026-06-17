@@ -52,7 +52,7 @@ export default function Navbar() {
             {/* Middle Links - Desktop */}
             <div className="hidden md:flex items-center gap-6">
               {isPartnerPage ? (
-                <Link to="/" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-all tracking-wide`}>
+                <Link to="/" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-all tracking-wide`}>
                   Ver Marketplace Clientes
                 </Link>
               ) : (
@@ -88,7 +88,7 @@ export default function Navbar() {
                   {/* Badge */}
                   <span className={`hidden sm:inline-block text-[9px] font-mono px-2 py-0.5 rounded-md border ${
                     isDarkNavbar 
-                      ? 'border-slate-800 bg-slate-900 text-slate-400 font-extrabold' 
+                      ? 'border-slate-800 bg-slate-900 text-slate-600 font-extrabold' 
                       : 'border-slate-200 bg-slate-50 text-slate-500 font-bold'
                   } uppercase tracking-wider`}>
                     {profile?.role || 'user'}
@@ -123,8 +123,8 @@ export default function Navbar() {
                     onClick={handleSignOut}
                     className={`p-1.5 rounded-xl border border-transparent transition-all ${
                       isDarkNavbar 
-                        ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 hover:border-rose-900/40' 
-                        : 'text-slate-400 hover:text-rose-600 hover:bg-rose-550/10 hover:border-rose-100'
+                        ? 'text-slate-600 hover:text-rose-400 hover:bg-rose-950/30 hover:border-rose-900/40' 
+                        : 'text-slate-600 hover:text-rose-600 hover:bg-rose-550/10 hover:border-rose-100'
                     }`}
                     title="Terminar Sessão"
                   >
@@ -170,7 +170,7 @@ export default function Navbar() {
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
                 location.pathname === '/' 
                   ? 'text-purple-400 scale-[1.02]' 
-                  : isDarkNavbar ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                  : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <HomeIcon className="w-5 h-5 stroke-[2]" />
@@ -184,7 +184,7 @@ export default function Navbar() {
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
                 location.pathname === '/explore' 
                   ? 'text-purple-400 scale-[1.02]' 
-                  : isDarkNavbar ? 'text-slate-400 hover:text-white' : 'text-slate-550 hover:text-slate-900'
+                  : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-550 hover:text-slate-900'
               }`}
             >
               <Search className="w-5 h-5 stroke-[2]" />
@@ -207,7 +207,7 @@ export default function Navbar() {
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
                 location.pathname === '/favorites'
                   ? 'text-purple-400 scale-[1.02]' 
-                  : isDarkNavbar ? 'text-slate-400 hover:text-white' : 'text-slate-555 hover:text-slate-900'
+                  : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-555 hover:text-slate-900'
               }`}
             >
               <Heart className="w-5 h-5 stroke-[2]" />
@@ -221,7 +221,7 @@ export default function Navbar() {
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
                 location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner') || location.pathname === '/account'
                   ? 'text-purple-400 scale-[1.02]' 
-                  : isDarkNavbar ? 'text-slate-400 hover:text-white' : 'text-slate-555 hover:text-slate-900'
+                  : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-555 hover:text-slate-900'
               }`}
             >
               <User className="w-5 h-5 stroke-[2]" />

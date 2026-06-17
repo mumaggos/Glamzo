@@ -303,7 +303,7 @@ export default function Onboarding() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Distrito *</label>
-                <select
+                <select aria-label="Selecione uma opção"
                   value={district}
                   onChange={(e) => {
                     const nextDist = e.target.value;
@@ -322,7 +322,7 @@ export default function Onboarding() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Cidade / Concelho *</label>
-                <select
+                <select aria-label="Selecione uma opção"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800 cursor-pointer"
@@ -383,7 +383,7 @@ export default function Onboarding() {
             <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Contactos de Atendimento</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Telefone Comercial *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">Telefone Comercial *</label>
                 <input
                   type="text"
                   required
@@ -395,7 +395,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Link Whatsapp</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">Link Whatsapp</label>
                 <input
                   type="url"
                   value={whatsapp}
@@ -406,7 +406,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">E-mail Comercial (Opcional)</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">E-mail Comercial (Opcional)</label>
                 <input
                   type="email"
                   value={email}
@@ -417,7 +417,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">@ Instagram</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">@ Instagram</label>
                 <input
                   type="text"
                   value={instagram}
@@ -440,7 +440,7 @@ export default function Onboarding() {
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center gap-4 justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-700">Logo do Negócio (Proporção 1:1)</h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Formatos suportados: PNG, JPG ou WEBP.</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">Formatos suportados: PNG, JPG ou WEBP.</p>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function Onboarding() {
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center gap-4 justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-700">Imagem de Capa (Proporção 16:9)</h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Exibida no topo da página de detalhes do salão.</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">Exibida no topo da página de detalhes do salão.</p>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -483,7 +483,7 @@ export default function Onboarding() {
               {/* Direct URLs Fallbacks in case storage uploads fail or need explicit images */}
               <div className="border-t border-slate-100 pt-3 space-y-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">URL Direta do Logo (Opcional)</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">URL Direta do Logo (Opcional)</label>
                   <input
                     type="url"
                     value={logoUrl}
@@ -493,7 +493,7 @@ export default function Onboarding() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">URL Direta da Capa (Opcional)</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">URL Direta da Capa (Opcional)</label>
                   <input
                     type="url"
                     value={coverUrl}

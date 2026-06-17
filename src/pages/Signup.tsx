@@ -141,7 +141,7 @@ export default function Signup() {
                 Nome Completo
               </label>
               <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                   <User className="w-4 h-4" />
                 </div>
                 <input
@@ -162,7 +162,7 @@ export default function Signup() {
                 Endereço de E-mail
               </label>
               <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -196,7 +196,7 @@ export default function Signup() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -246,7 +246,7 @@ export default function Signup() {
                 <div className="w-full border-t border-slate-100" />
                </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-2 bg-white text-slate-400 font-medium">Ou registar com</span>
+                <span className="px-2 bg-white text-slate-600 font-medium">Ou registar com</span>
               </div>
             </div>
 
@@ -270,7 +270,7 @@ export default function Signup() {
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p className="mt-6 text-center text-xs text-slate-600">
             Deseja entrar em uma de suas contas?{' '}
             <Link to="/login" className="font-bold text-rose-600 hover:text-rose-700">
               Iniciar sessão

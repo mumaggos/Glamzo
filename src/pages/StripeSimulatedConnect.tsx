@@ -53,7 +53,7 @@ export default function StripeSimulatedConnect() {
               <CheckCircle2 className="w-8 h-8 animate-bounce text-emerald-400" />
             </div>
             <h2 className="text-xl font-black text-white">Conexão Autorizada!</h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600">
               Integração registada com sucesso. Redirecionando para o painel Glamzo...
             </p>
             <div className="inline-flex items-center gap-1.5 text-[10px] text-indigo-400 bg-indigo-950/40 px-3 py-1.5 rounded-full">
@@ -67,7 +67,7 @@ export default function StripeSimulatedConnect() {
               <h1 className="text-2xl font-black text-white leading-tight">
                 Vincule o seu salão ao Stripe Connect Standard
               </h1>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 O Glamzo utiliza o Stripe para processar pagamentos de clientes e transferir fundos diretamente para a sua conta bancária a cada sexta-feira, com comissão fixa de apenas 5%.
               </p>
             </div>
@@ -77,7 +77,7 @@ export default function StripeSimulatedConnect() {
                 <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-white">Split Automatizado</h4>
-                  <p className="text-[11px] text-slate-400 leading-normal">
+                  <p className="text-[11px] text-slate-600 leading-normal">
                     Fique com 95% do valor cobrado aos clientes em tempo real, sem papelada ou atrasos.
                   </p>
                 </div>
@@ -87,7 +87,7 @@ export default function StripeSimulatedConnect() {
                 <BadgeEuro className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-white">Faturamento Conforme Normas</h4>
-                  <p className="text-[11px] text-slate-400 leading-normal">
+                  <p className="text-[11px] text-slate-600 leading-normal">
                     Todas as transações acompanham disputas automatizadas e faturamento legal europeu integrado.
                   </p>
                 </div>
@@ -116,7 +116,7 @@ export default function StripeSimulatedConnect() {
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="w-full text-center text-xs text-slate-500 hover:text-slate-400 cursor-pointer transition py-1"
+                className="w-full text-center text-xs text-slate-500 hover:text-slate-600 cursor-pointer transition py-1"
               >
                 Voltar sem conectar de momento
               </button>

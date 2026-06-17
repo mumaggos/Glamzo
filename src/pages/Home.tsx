@@ -200,10 +200,10 @@ export default function Home() {
           >
             {/* Find Service */}
             <div className="md:col-span-4 relative">
-              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 pl-1">O que procura?</label>
+              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">O que procura?</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-450">
-                  <Search className="w-4 h-4 text-slate-400" />
+                  <Search className="w-4 h-4 text-slate-600" />
                 </span>
                 <input 
                   type="text"
@@ -217,12 +217,12 @@ export default function Home() {
 
             {/* Select Distrito */}
             <div className="md:col-span-3 relative">
-              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Escolher Distrito</label>
+              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Escolher Distrito</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-purple-600">
                   <MapPin className="w-4 h-4" />
                 </span>
-                <select
+                <select aria-label="Selecione uma opção"
                   value={selectedDistrict}
                   onChange={(e) => {
                     const nextVal = e.target.value;
@@ -241,12 +241,12 @@ export default function Home() {
 
             {/* Select Cidade */}
             <div className="md:col-span-3 relative">
-              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Escolher Cidade</label>
+              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Escolher Cidade</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-450">
-                  <Compass className="w-4 h-4 text-slate-400" />
+                  <Compass className="w-4 h-4 text-slate-600" />
                 </span>
-                <select
+                <select aria-label="Selecione uma opção"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   disabled={selectedDistrict === 'All'}
@@ -496,7 +496,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-100 py-8 mt-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-400 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-600 font-mono">
           <div>Glamzo Premium Marketplace © 2026. Todos os direitos reservados.</div>
           <div className="flex gap-4">
             <Link to="/explore" className="hover:text-purple-600 transition-colors">Explorar Salões</Link>

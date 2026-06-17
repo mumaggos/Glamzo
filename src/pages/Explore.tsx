@@ -528,7 +528,7 @@ export default function Explore() {
 
             {/* Keyword Search Input */}
             <div>
-              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2 pl-0.5">Nome / Palavra-chave</label>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Nome / Palavra-chave</label>
               <div className="relative">
                 <input
                   type="text"
@@ -537,14 +537,14 @@ export default function Explore() {
                   placeholder="Ex: Glam, Barber, Lash..."
                   className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-400"
                 />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                <Search className="w-3.5 h-3.5 text-slate-600 absolute left-3 top-3.5" />
               </div>
             </div>
 
             {/* Geolocation Section */}
             <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-2">
-                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-0.5">Proximidade Física</span>
+                <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider pl-0.5">Proximidade Física</span>
                 <button
                   type="button"
                   onClick={handleNearMeToggle}
@@ -560,7 +560,7 @@ export default function Explore() {
               </div>
 
               {geoLocating ? (
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 py-2">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-600 py-2">
                   <Loader2 className="w-3 h-3 text-purple-600 animate-spin" />
                   <span>A obter coordenadas GPS...</span>
                 </div>
@@ -600,8 +600,8 @@ export default function Explore() {
                 <div className="space-y-3">
                   {/* Select District dropdown with automatic cities filter */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-0.5">Distrito</label>
-                    <select
+                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">Distrito</label>
+                    <select aria-label="Selecione uma opção"
                       value={selectedDistrict}
                       onChange={(e) => {
                         setSelectedDistrict(e.target.value);
@@ -616,8 +616,8 @@ export default function Explore() {
 
                   {/* Select City dependent dropdown */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-0.5">Cidade</label>
-                    <select
+                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">Cidade</label>
+                    <select aria-label="Selecione uma opção"
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
                       disabled={selectedDistrict === 'All'}
@@ -635,7 +635,7 @@ export default function Explore() {
 
             {/* Review Ratings Index */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 pl-0.5">Avaliação Mínima</label>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 pl-0.5">Avaliação Mínima</label>
               <div className="flex items-center gap-1.5">
                 {[0, 4, 4.5, 4.8].map((score) => (
                   <button
@@ -656,7 +656,7 @@ export default function Explore() {
 
             {/* Price Levels range select */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 pl-0.5">Preço Inicial</label>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 pl-0.5">Preço Inicial</label>
               <div className="flex gap-1.5">
                 {[
                   { key: 'All', label: 'Todos' },
@@ -682,7 +682,7 @@ export default function Explore() {
 
             {/* Checkboxes parameters list (Home service, Availability, instant reservation) */}
             <div className="pt-2 border-t border-slate-100 space-y-3.5">
-              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-0.5">Atendimento</span>
+              <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">Atendimento</span>
               
               {/* Home service */}
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
@@ -761,7 +761,7 @@ export default function Explore() {
             {loading ? (
               <div className="min-h-[45vh] flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
                 <Loader2 className="w-9 h-9 text-purple-500 animate-spin" />
-                <span className="text-xs text-slate-400 font-mono">A procurar o teu lugar ideal...</span>
+                <span className="text-xs text-slate-600 font-mono">A procurar o teu lugar ideal...</span>
               </div>
             ) : errorMsg ? (
               <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm">
@@ -835,10 +835,10 @@ export default function Explore() {
                               e.stopPropagation();
                               handleToggleFavorite(b.id);
                             }}
-                            className="absolute bottom-4 right-4 w-9 h-9 rounded-full bg-white/95 shadow-md hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer text-slate-400 hover:text-rose-500 z-20 border border-slate-100"
+                            className="absolute bottom-4 right-4 w-9 h-9 rounded-full bg-white/95 shadow-md hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer text-slate-600 hover:text-rose-500 z-20 border border-slate-100"
                             title="Guardar nos Favoritos"
                           >
-                            <Heart className={`w-4 h-4 transition-colors ${userFavorites.includes(b.id) ? 'fill-rose-550 text-rose-500 text-rose-550 fill-rose-500' : 'text-slate-400'}`} />
+                            <Heart className={`w-4 h-4 transition-colors ${userFavorites.includes(b.id) ? 'fill-rose-550 text-rose-500 text-rose-550 fill-rose-500' : 'text-slate-600'}`} />
                           </button>
                         </div>
 
@@ -897,7 +897,7 @@ export default function Explore() {
                                   <span className="text-slate-500">({b.reviewsCount} {b.reviewsCount === 1 ? 'avaliação' : 'avaliações'})</span>
                                 </>
                               ) : (
-                                <span className="text-slate-400 font-medium">Sem avaliações ainda</span>
+                                <span className="text-slate-600 font-medium">Sem avaliações ainda</span>
                               )}
                             </div>
 
@@ -908,7 +908,7 @@ export default function Explore() {
                             {/* Service-oriented Listings on the Explore Page */}
                             {services.filter(s => s.business_id === b.id).length > 0 && (
                               <div className="mt-4 pt-3 border-t border-slate-100">
-                                <span className="text-[9px] font-bold text-slate-400 block mb-2 uppercase tracking-wider">Menu de Serviços</span>
+                                <span className="text-[9px] font-bold text-slate-600 block mb-2 uppercase tracking-wider">Menu de Serviços</span>
                                 <div className="space-y-1.5">
                                   {services
                                     .filter(s => s.business_id === b.id)
@@ -920,7 +920,7 @@ export default function Explore() {
                                       </div>
                                     ))}
                                   {services.filter(s => s.business_id === b.id).length > 3 && (
-                                    <div className="text-[10px] text-slate-400 font-semibold italic">
+                                    <div className="text-[10px] text-slate-600 font-semibold italic">
                                       +{services.filter(s => s.business_id === b.id).length - 3} outro(s) serviço(s) no menu completo
                                     </div>
                                   )}
@@ -942,7 +942,7 @@ export default function Explore() {
                       {/* Card bottom bar */}
                       <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">A partir de</span>
+                          <span className="text-[9px] text-slate-600 font-bold uppercase tracking-wider leading-none">A partir de</span>
                           <span className="text-lg font-bold text-slate-900 font-mono mt-0.5">{(b.startPrice ?? 25)}€</span>
                         </div>
                         
@@ -966,7 +966,7 @@ export default function Explore() {
                     >
                       Carregar Mais Estabelecimentos
                     </button>
-                    <p className="text-[10px] text-slate-400 mt-2 font-mono">
+                    <p className="text-[10px] text-slate-600 mt-2 font-mono">
                       Exibindo {paginatedBusinesses.length} de {sortedBusinesses.length} registados em Portugal.
                     </p>
                   </div>
@@ -979,7 +979,7 @@ export default function Explore() {
                   <Store className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800">Nenhum estúdio comercial correspondente</h3>
-                <p className="text-xs sm:text-sm text-slate-400 max-w-sm mt-3 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 max-w-sm mt-3 leading-relaxed">
                   Não existem estúdios de beleza ou bem-estar ativos que cumpram os filtros avançados definidos neste momento.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -1025,7 +1025,7 @@ export default function Explore() {
                 </h2>
                 <button 
                   onClick={() => setIsDrawerOpen(false)}
-                  className="p-1 text-slate-400 hover:text-slate-900 transition-colors"
+                  className="p-1 text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -1036,7 +1036,7 @@ export default function Explore() {
                 
                 {/* Keyword */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-0.5">Palavra-chave</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">Palavra-chave</label>
                   <input
                     type="text"
                     value={localSearchQuery}
@@ -1084,8 +1084,8 @@ export default function Explore() {
                 {!useNearMe && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Distrito</label>
-                      <select
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Distrito</label>
+                      <select aria-label="Selecione uma opção"
                         value={selectedDistrict}
                         onChange={(e) => {
                           setSelectedDistrict(e.target.value);
@@ -1098,8 +1098,8 @@ export default function Explore() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Cidade</label>
-                      <select
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade</label>
+                      <select aria-label="Selecione uma opção"
                         value={selectedCity}
                         onChange={(e) => setSelectedCity(e.target.value)}
                         disabled={selectedDistrict === 'All'}
@@ -1116,7 +1116,7 @@ export default function Explore() {
 
                 {/* Rating selection mobile */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2 pl-0.5">Classificação Mínima</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-2 pl-0.5">Classificação Mínima</label>
                   <div className="grid grid-cols-4 gap-1.5">
                     {[0, 4, 4.5, 4.8].map((score) => (
                       <button
@@ -1135,7 +1135,7 @@ export default function Explore() {
 
                 {/* Checklist options mobile */}
                 <div className="space-y-4 pt-4 border-t border-slate-150">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Outras Preferências</span>
+                  <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Outras Preferências</span>
                   
                   <label className="flex items-center gap-3 text-xs font-semibold text-slate-600 cursor-pointer">
                     <input

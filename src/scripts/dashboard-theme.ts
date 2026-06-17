@@ -22,7 +22,7 @@ content = content.replace(/border-slate-800\/80/g, 'border-slate-200');
 
 content = content.replace(/text-slate-200/g, 'text-slate-700');
 content = content.replace(/text-slate-300/g, 'text-slate-600');
-content = content.replace(/text-slate-400/g, 'text-slate-500');
+content = content.replace(/text-slate-600/g, 'text-slate-500');
 content = content.replace(/text-slate-450/g, 'text-slate-500');
 content = content.replace(/text-slate-500/g, 'text-slate-500');
 content = content.replace(/text-slate-100/g, 'text-slate-800');

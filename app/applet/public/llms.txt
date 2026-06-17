@@ -1,0 +1,6 @@
+# Glamzo
+Glamzo é a plataforma líder em agendamentos de beleza em Portugal.
+- [Início](https://glamzo.pt)
+- [Explorar Salões](https://glamzo.pt/explorar)
+- [Para Parceiros](https://glamzo.pt/parceiros)
+- [Entrar](https://glamzo.pt/login)

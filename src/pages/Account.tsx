@@ -516,7 +516,7 @@ export default function Account() {
         {loadingBookings ? (
           <div className="py-12 text-center space-y-2">
             <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto" />
-            <p className="text-xs text-slate-400 font-mono">Carregando seus agendamentos reais em tempo de execução...</p>
+            <p className="text-xs text-slate-600 font-mono">Carregando seus agendamentos reais em tempo de execução...</p>
           </div>
         ) : bookings.length === 0 ? (
           <div className="py-12 text-center space-y-3">
@@ -524,7 +524,7 @@ export default function Account() {
               <Calendar className="w-6 h-6" />
             </div>
             <h4 className="text-sm font-bold text-slate-800">Você ainda não possui reservas.</h4>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+            <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
               Explore os estabelecimentos no marketplace digital Glamzo, selecione um serviço com profissionais qualificados e marque o seu horário real!
             </p>
             <a href="/explore" className="inline-block px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer mt-2 text-center">
@@ -535,7 +535,7 @@ export default function Account() {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-left">
               <thead>
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <tr className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                   <th className="pb-3.5 pl-2">Salão / Estabelecimento</th>
                   <th className="pb-3.5">Serviço Adquirido</th>
                   <th className="pb-3.5">Data & Hora</th>
@@ -575,7 +575,7 @@ export default function Account() {
                       {/* Business */}
                       <td className="py-4 pl-2">
                         <div className="font-bold text-slate-850">{bk.business?.name || 'Estabelecimento Excluído'}</div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <div className="text-[10px] text-slate-600 flex items-center gap-1.5 mt-0.5">
                           <span>📍 {bk.business?.city || 'Localidade'}</span>
                           <span>•</span>
                           <span>📞 {bk.business?.phone || ''}</span>
@@ -585,7 +585,7 @@ export default function Account() {
                       {/* Service */}
                       <td className="py-4">
                         <span className="font-semibold text-slate-700">{bk.service?.name || 'Serviço Excluído'}</span>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">⏱ {bk.service?.duration_minutes || '0'} min</div>
+                        <div className="text-[10px] text-slate-600 font-mono mt-0.5">⏱ {bk.service?.duration_minutes || '0'} min</div>
                       </td>
 
                       {/* Date & Time */}
@@ -598,7 +598,7 @@ export default function Account() {
                       <td className="py-4">
                         <span className="text-slate-600">{bk.staff?.full_name || 'Qualquer profissional'}</span>
                         {bk.staff?.role_title && (
-                          <div className="text-[10px] text-slate-400">{bk.staff.role_title}</div>
+                          <div className="text-[10px] text-slate-600">{bk.staff.role_title}</div>
                         )}
                       </td>
 
@@ -683,7 +683,7 @@ export default function Account() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center">
                 <User className="w-10 h-10" />
               </div>
             )}
@@ -701,37 +701,37 @@ export default function Account() {
             </label>
           </div>
 
-          <p className="text-xs text-slate-400 mb-4 font-mono leading-relaxed">
+          <p className="text-xs text-slate-600 mb-4 font-mono leading-relaxed">
             Clique na câmera para fazer upload real via Supabase Storage.
           </p>
 
           <div className="w-full border-t border-slate-100 pt-4 text-left space-y-3.5">
             <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">E-mail de Login</span>
+              <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">E-mail de Login</span>
               <div className="flex items-center gap-1.5 text-slate-600 text-xs font-semibold">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
+                <Mail className="w-3.5 h-3.5 text-slate-600" />
                 <span className="truncate">{user.email}</span>
               </div>
             </div>
 
             <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Nível de Conta (Role)</span>
+              <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">Nível de Conta (Role)</span>
               <span className="bg-purple-50 text-purple-850 text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded-full border border-purple-100 inline-block mt-1">
                 {profile?.role || 'customer'}
               </span>
             </div>
 
             <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Pontuação Glamzo</span>
+              <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">Pontuação Glamzo</span>
               <span className="bg-purple-50 text-purple-750 text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-full border border-purple-100 inline-block mt-1 animate-pulse">
                 ⭐ {currentPointsBalance} PONTOS
               </span>
             </div>
 
             <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Membro desde</span>
+              <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">Membro desde</span>
               <div className="flex items-center gap-1.5 text-slate-600 text-xs">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <Calendar className="w-3.5 h-3.5 text-slate-600" />
                 <span>{new Date(user.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
@@ -779,7 +779,7 @@ export default function Account() {
                 E-mail de Contacto
               </label>
               <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -800,7 +800,7 @@ export default function Account() {
                 Número de Telemóvel / Telefone
               </label>
               <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                   <Phone className="w-4 h-4" />
                 </div>
                 <input
@@ -842,7 +842,7 @@ export default function Account() {
               <span>Glamzo VIP Loyalty Club</span>
             </div>
             <h3 className="text-xl font-black text-slate-800">Clube de Fidelidade & Recompensa</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Acumule pontos em cada reserva paga online diretamente na aplicação e converta-os em vouchers de desconto!</p>
+            <p className="text-xs text-slate-600 mt-0.5">Acumule pontos em cada reserva paga online diretamente na aplicação e converta-os em vouchers de desconto!</p>
           </div>
           
           <div className="bg-slate-900 text-white rounded-2xl px-5 py-4 flex items-center gap-4 shrink-0 shadow">
@@ -850,7 +850,7 @@ export default function Account() {
               <Gift className="w-5.5 h-5.5" />
             </div>
             <div>
-              <span className="block text-[9px] font-mono text-slate-400 uppercase font-black leading-none">Teu Saldo de Pontos</span>
+              <span className="block text-[9px] font-mono text-slate-600 uppercase font-black leading-none">Teu Saldo de Pontos</span>
               <span className="text-xl font-black text-white mt-1.5 block font-mono">{currentPointsBalance} PTS</span>
             </div>
           </div>
@@ -897,7 +897,7 @@ export default function Account() {
 
             {/* Informação sobre como obter pontos de fidelidade reais */}
             <div className="border-t border-slate-200 pt-4">
-              <span className="block text-[9px] font-semibold text-slate-400 uppercase tracking-widest leading-none">Como Ganhar Pontos</span>
+              <span className="block text-[9px] font-semibold text-slate-600 uppercase tracking-widest leading-none">Como Ganhar Pontos</span>
               <p className="text-[10px] text-slate-500 font-sans mt-1.5 leading-relaxed">
                 Ganhe <strong className="text-slate-700">1 ponto por cada 1€ gasto</strong> em reservas pagas online diretamente na aplicação. Pagamentos efetuados nas lojas parceiras não acumulam pontos.
               </p>
@@ -923,20 +923,20 @@ export default function Account() {
                           navigator.clipboard.writeText(rw.code);
                           alert("Código copiado para a Área de Transferência!");
                         }}
-                        className="text-slate-400 hover:text-slate-600 transition"
+                        className="text-slate-600 hover:text-slate-600 transition"
                         title="Copiar código"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-medium block mt-1 leading-none">
+                    <span className="text-[10px] text-slate-600 font-medium block mt-1 leading-none">
                       Desconto de {rw.value}.00 € • Expira em {new Date(rw.expires_at).toLocaleDateString('pt-PT')}
                     </span>
                   </div>
                   
                   <span className={`px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase self-start sm:self-auto ${
                     rw.used 
-                      ? 'bg-slate-100 text-slate-400 border-slate-200' 
+                      ? 'bg-slate-100 text-slate-600 border-slate-200' 
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   }`}>
                     {rw.used ? 'Utilizado' : 'Ativo'}
@@ -945,7 +945,7 @@ export default function Account() {
               ))}
 
               {rewardsList.length === 0 && (
-                <p className="text-[10px] text-slate-400 font-mono text-center py-6">Não possui nenhum código de recompensa ativo no momento.</p>
+                <p className="text-[10px] text-slate-600 font-mono text-center py-6">Não possui nenhum código de recompensa ativo no momento.</p>
               )}
             </div>
           </div>
@@ -958,7 +958,7 @@ export default function Account() {
           <MessageSquare className="w-5 h-5 text-purple-600 animate-bounce" />
           <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Meus Comentários Realistas</h3>
         </div>
-        <p className="text-xs text-slate-400">As avaliações e classificações de serviços que submeteu diretamente para os salões de beleza.</p>
+        <p className="text-xs text-slate-600">As avaliações e classificações de serviços que submeteu diretamente para os salões de beleza.</p>
         
         <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto scrollbar-thin">
           {userReviews.length > 0 ? (
@@ -969,7 +969,7 @@ export default function Account() {
                     <span className="font-extrabold text-slate-800 text-sm">
                       {rev.service_name}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">
+                    <span className="text-[10px] text-slate-600 font-mono">
                       {new Date(rev.created_at).toLocaleDateString('pt-PT')}
                     </span>
                   </div>
@@ -1007,7 +1007,7 @@ export default function Account() {
           ) : (
             <div className="text-center py-8">
               <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 font-mono">Ainda não escreveu nenhum comentário. Conclua marcações para poder avaliar os serviços!</p>
+              <p className="text-xs text-slate-600 font-mono">Ainda não escreveu nenhum comentário. Conclua marcações para poder avaliar os serviços!</p>
             </div>
           )}
         </div>
@@ -1022,7 +1022,7 @@ export default function Account() {
               <span>Glamzo Apoio Técnico</span>
             </div>
             <h3 className="text-xl font-black text-slate-800">Ajuda & Contacto</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Esclareça as suas dúvidas de imediato ou submeta pedidos de intervenção humana.</p>
+            <p className="text-xs text-slate-600 mt-0.5">Esclareça as suas dúvidas de imediato ou submeta pedidos de intervenção humana.</p>
           </div>
         </div>
 
@@ -1055,7 +1055,7 @@ export default function Account() {
                 <details key={idx} className="group bg-slate-50 border border-slate-100 rounded-2xl p-4 transition-all duration-300 [&_summary::-webkit-details-marker]:hidden">
                   <summary className="flex items-center justify-between cursor-pointer focus:outline-none select-none">
                     <span className="text-xs font-bold text-slate-700">{faq.q}</span>
-                    <span className="shrink-0 transition duration-300 group-open:-rotate-180 text-slate-400">
+                    <span className="shrink-0 transition duration-300 group-open:-rotate-180 text-slate-600">
                       ▼
                     </span>
                   </summary>
@@ -1126,7 +1126,7 @@ export default function Account() {
                   {userTickets.map((tk) => (
                     <div key={tk.id} className="bg-white border p-3 rounded-xl space-y-1.5 text-[11px]">
                       <div className="flex justify-between items-center">
-                        <span className="font-mono text-slate-400 text-[10px]">#{tk.id.substring(0,6)}</span>
+                        <span className="font-mono text-slate-600 text-[10px]">#{tk.id.substring(0,6)}</span>
                         <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold ${
                           tk.status === 'resolved' ? 'bg-slate-100 text-slate-500' : 'bg-amber-100 text-amber-800'
                         }`}>{tk.status}</span>
@@ -1166,7 +1166,7 @@ export default function Account() {
               
               {/* Star selection rating */}
               <div className="space-y-2">
-                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400 pl-0.5">
+                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-600 pl-0.5">
                   Pontuação das Estrelas
                 </label>
                 <div className="flex items-center gap-2 py-1 font-sans">
@@ -1194,7 +1194,7 @@ export default function Account() {
 
               {/* Text comment */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400 pl-0.5">
+                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-600 pl-0.5">
                   Comentário Escrito (Real)
                 </label>
                 <textarea
@@ -1247,7 +1247,7 @@ export default function Account() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200 text-left">
             <button
               onClick={() => setDisputeModalOpen(false)}
-              className="absolute top-5 right-5 p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+              className="absolute top-5 right-5 p-1 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1264,10 +1264,10 @@ export default function Account() {
             <form onSubmit={handleSubmitDispute} className="space-y-4">
               
               <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400 pl-0.5">
+                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-600 pl-0.5">
                   Motivo Principal
                 </label>
-                <select
+                <select aria-label="Selecione uma opção"
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:border-purple-500 focus:outline-none text-xs rounded-xl text-slate-800 font-sans"
@@ -1280,7 +1280,7 @@ export default function Account() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400 pl-0.5">
+                <label className="block text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-600 pl-0.5">
                   Descrição dos Factos (Privado para o Suporte)
                 </label>
                 <textarea

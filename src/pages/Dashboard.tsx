@@ -523,6 +523,38 @@ export default function Dashboard() {
           );
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `business_id=eq.${business.id}`
+        },
+        async (payload) => {
+          console.log('Real-time update captured on bookings:', payload);
+          
+          await loadTerminalData(); // Always refresh dashboard data
+
+          if (payload.new.status === 'completed' && payload.old.status !== 'completed') {
+            playTerminalChime();
+            notifyTerminal(
+              "✅ Marcação Concluída",
+              "A marcação foi registada como concluída com sucesso. Os dados e relatórios foram atualizados."
+            );
+          } else if (payload.new.status === 'cancelled' && payload.old.status !== 'cancelled') {
+             notifyTerminal(
+              "❌ Marcação Cancelada",
+              "Uma marcação foi cancelada e removida da agenda."
+            );
+          } else if (payload.new.status === 'confirmed' && payload.old.status !== 'confirmed') {
+             notifyTerminal(
+              "📅 Marcação Confirmada",
+              "Uma marcação foi confirmada na agenda."
+            );
+          }
+        }
+      )
       .subscribe();
 
     return () => {
@@ -3348,7 +3380,7 @@ export default function Dashboard() {
 
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">Categoria Associada</label>
-                            <select
+                            <select aria-label="Selecione uma opção"
                               value={serviceForm.category_id}
                               onChange={e => setServiceForm(prev => ({ ...prev, category_id: e.target.value }))}
                               className="w-full bg-white border border-slate-200 p-2.5 pr-8 rounded-xl text-slate-600 text-xs outline-none focus:border-rose-600 transition-all appearance-none"
@@ -3620,7 +3652,7 @@ export default function Dashboard() {
                                 {/* Aperture Select */}
                                 <div className="flex items-center gap-2">
                                   <label className="text-[10px] text-slate-500 uppercase font-bold font-mono">Abertura</label>
-                                  <select
+                                  <select aria-label="Selecione uma opção"
                                     disabled={isClosed}
                                     value={currentOpen}
                                     onChange={e => handleUpdateHours(idx, 'open_time', e.target.value)}
@@ -3635,7 +3667,7 @@ export default function Dashboard() {
                                 {/* Closing Select */}
                                 <div className="flex items-center gap-2">
                                   <label className="text-[10px] text-slate-500 uppercase font-bold font-mono">Fecho</label>
-                                  <select
+                                  <select aria-label="Selecione uma opção"
                                     disabled={isClosed}
                                     value={currentClose}
                                     onChange={e => handleUpdateHours(idx, 'close_time', e.target.value)}
@@ -5007,18 +5039,18 @@ export default function Dashboard() {
           <h3 className="text-sm font-black mt-1 font-mono">{`FT_GZ_${selectedInvoice.id.substring(0,8).toUpperCase()}`}</h3>
         </div>
         <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">
-          <span className="font-bold text-slate-400">X</span>
+          <span className="font-bold text-slate-600">X</span>
         </button>
       </div>
 
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Cliente</p>
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1">Cliente</p>
             <p className="text-xs font-semibold text-slate-800">{selectedInvoice.customer?.full_name || 'Consumidor Final'}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Data de Emissão</p>
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1">Data de Emissão</p>
             <p className="text-xs font-semibold text-slate-800">{new Date(selectedInvoice.created_at).toLocaleDateString('pt-PT')}</p>
           </div>
         </div>
@@ -5128,7 +5160,7 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Escolher Serviço</label>
-                      <select
+                      <select aria-label="Selecione uma opção"
                         value={manualServiceId}
                         onChange={(e) => setManualServiceId(e.target.value)}
                         className="w-full bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
@@ -5143,7 +5175,7 @@ export default function Dashboard() {
 
                     <div className="space-y-2">
                       <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Profissional (Staff)</label>
-                      <select
+                      <select aria-label="Selecione uma opção"
                         value={manualStaffId}
                         onChange={(e) => setManualStaffId(e.target.value)}
                         className="w-full bg-white border border-slate-200 focus:border-rose-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
@@ -5175,7 +5207,7 @@ export default function Dashboard() {
 
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Duração Estimada</label>
-                    <select
+                    <select aria-label="Selecione uma opção"
                       value={manualServiceId}
                       onChange={(e) => setManualServiceId(e.target.value)}
                       className="w-full bg-white border border-slate-200 focus:border-amber-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer"
@@ -5207,7 +5239,7 @@ export default function Dashboard() {
 
                 <div className="space-y-2">
                   <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider font-sans">Hora de Início</label>
-                  <select
+                  <select aria-label="Selecione uma opção"
                     value={manualStartTime}
                     onChange={(e) => setManualStartTime(e.target.value)}
                     className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:outline-none rounded-xl p-3 text-xs text-slate-900 appearance-none cursor-pointer text-left"

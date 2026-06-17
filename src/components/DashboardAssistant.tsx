@@ -224,7 +224,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
               <p className="text-[11px] text-slate-650 text-slate-600 leading-relaxed font-semibold">
                 Tem vários horários livres na próxima {lowOccupancyDay.toLowerCase()}. Considere criar uma promoção exclusiva para preencher esses períodos e atrair novos clientes na vizinhança.
               </p>
-              <div className="text-[9.5px] font-bold text-slate-400 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="text-[9.5px] font-bold text-slate-600 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
                 <span>Dia Alvo:</span>
                 <span className="text-purple-600 font-extrabold">{lowOccupancyDay}</span>
               </div>
@@ -245,7 +245,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   : `O volume de rendimento atual requer atenção de forma a revitalizar a procura do seu catálogo de serviços. Recomendamos criar campanhas.`
                 }
               </p>
-              <div className="text-[9.5px] font-bold text-slate-400 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="text-[9.5px] font-bold text-slate-600 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
                 <span>Desempenho:</span>
                 <span className={`font-extrabold ${revenueChangePercent !== null && revenueChangePercent >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {revenueChangePercent !== null && revenueChangePercent >= 0 ? 'Crescimento ↑' : 'Estável •'}
@@ -268,7 +268,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   : `Excelente retenção! Todos os seus clientes habituais têm regressado ao salão para desfrutar do seu catálogo de beleza premium nos últimos 60 dias.`
                 }
               </p>
-              <div className="text-[9.5px] font-bold text-slate-400 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="text-[9.5px] font-bold text-slate-600 font-mono uppercase bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between">
                 <span>Clientes Inativos:</span>
                 <span className="text-amber-600 font-extrabold">{inactiveClientsCount} e-mails</span>
               </div>
@@ -278,7 +278,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
 
           {/* SECÇÃO 2: DETALHES DE OPERAÇÃO OPERACIONAL */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest font-mono">
+            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest font-mono">
               Estatísticas Reais Analisadas
             </h4>
             
@@ -290,7 +290,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   <Clock className="w-5 h-5 line-clamp-1" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Ocupação Horária</span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider font-mono block">Ocupação Horária</span>
                   <p className="text-xs font-extrabold text-slate-800 leading-snug">
                     {lowOccupancyDay} entre as 14h e as 17h apresenta baixa ocupação estrutural.
                   </p>
@@ -306,7 +306,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   <Award className="w-5 h-5 line-clamp-1" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Serviço de Elite</span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider font-mono block">Serviço de Elite</span>
                   <p className="text-xs font-extrabold text-slate-800 leading-snug">
                     O serviço mais reservado esta semana foi {topService}.
                   </p>
@@ -322,7 +322,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   <TrendingUp className="w-5 h-5 line-clamp-1" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Faturação Comercial</span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider font-mono block">Faturação Comercial</span>
                   <p className="text-xs font-extrabold text-slate-800 leading-snug">
                     {revenueChangeText}
                   </p>
@@ -338,7 +338,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   <Calendar className="w-5 h-5 line-clamp-1" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Disponibilidade de Agenda</span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider font-mono block">Disponibilidade de Agenda</span>
                   <p className="text-xs font-extrabold text-slate-800 leading-snug">
                     {tomorrowAgendaText}
                   </p>
@@ -354,7 +354,7 @@ export default function DashboardAssistant({ business, bookings, services, hours
                   <Percent className="w-5 h-5 line-clamp-1" />
                 </div>
                 <div className="space-y-1 flex-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono block font-extrabold">Campanha Recomendada</span>
+                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider font-mono block font-extrabold">Campanha Recomendada</span>
                   <p className="text-xs font-extrabold text-slate-800 leading-snug">
                     Sugerimos criar uma promoção para {suggestedPromoDay.toLowerCase()} à tarde.
                   </p>

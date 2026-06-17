@@ -778,7 +778,7 @@ export default function BusinessDetail() {
 
                     <div>
                       <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Serviço Realizado</label>
-                      <select 
+                      <select aria-label="Selecione uma opção" 
                         required
                         value={newReviewService}
                         onChange={(e) => setNewReviewService(e.target.value)}
@@ -1343,7 +1343,7 @@ export default function BusinessDetail() {
 
               <div>
                 <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 font-mono">Motivo Principal do Litígio</label>
-                <select
+                <select aria-label="Selecione uma opção"
                   required
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}

@@ -886,7 +886,7 @@ export default function Admin() {
         <div className="max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-4">
           <ShieldAlert className="w-14 h-14 text-rose-500 mx-auto" />
           <h2 className="text-2xl font-black text-white">Console Administrativo Exclusivo</h2>
-          <p className="text-sm text-slate-400 leading-relaxed">
+          <p className="text-sm text-slate-600 leading-relaxed">
             Área de administração global regulada por chave mestra de produção. Apenas credenciais homologadas podem aceder virtualmente ao Painel.
           </p>
           <a href="/admin/login" className="inline-block mt-4 px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all font-mono uppercase">
@@ -973,7 +973,7 @@ export default function Admin() {
               </div>
               <button 
                 onClick={() => setIsMobileAdminSidebarOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
                 title="Fechar Menu"
               >
                 <X className="w-5 h-5" />
@@ -1012,7 +1012,7 @@ export default function Admin() {
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-tight rounded-xl transition-all cursor-pointer text-left ${
                       isActive 
                         ? 'bg-purple-600 text-white shadow shadow-purple-950/30' 
-                        : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                        : 'text-slate-600 hover:bg-slate-900 hover:text-white'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -1080,7 +1080,7 @@ export default function Admin() {
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs rounded-xl font-bold transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-purple-600 text-white shadow shadow-purple-950' 
-                      : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                      : 'text-slate-600 hover:bg-slate-900 hover:text-white'
                   }`}
                 >
                   <Icon className="w-4.5 h-4.5 shrink-0" />
@@ -1172,11 +1172,11 @@ export default function Admin() {
                         <span>Gestão Integrada de Parceiros</span>
                         <span className="text-xs bg-purple-950 text-purple-300 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">👑 PRO Control</span>
                       </h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.</p>
                     </div>
 
                     <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Search className="w-4 h-4 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input 
                         type="text"
                         value={searchTerm}
@@ -1269,7 +1269,7 @@ export default function Admin() {
                               {/* Stripe Connect stats */}
                               <div className="mt-4 p-3.5 bg-slate-950/40 rounded-xl border border-white/5 space-y-1.5 text-[11px]">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-slate-400 font-bold">Stripe Connect ID:</span>
+                                  <span className="text-slate-600 font-bold">Stripe Connect ID:</span>
                                   <span className="font-mono text-slate-300 select-all">{sal.stripe_account_id || 'Não configurado'}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
@@ -1317,7 +1317,7 @@ export default function Admin() {
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-slate-950 hover:bg-rose-950/20 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
+                                    className="py-2.5 px-3 bg-slate-950 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-800 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
                                   >
                                     Remover PRO
                                   </button>
@@ -1386,7 +1386,7 @@ export default function Admin() {
                   <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-white">Utilizadores & Atribuição de Créditos</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
                     </div>
 
                     <div className="relative w-full sm:max-w-xs">
@@ -1418,7 +1418,7 @@ export default function Admin() {
                         <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl cursor-pointer">
                           Acrescentar Pontos à Conta
                         </button>
-                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-400 hover:underline">Cancelar</button>
+                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">Cancelar</button>
                       </div>
                     </div>
                   )}
@@ -1446,7 +1446,7 @@ export default function Admin() {
                                 <span className="truncate max-w-[150px]">{p.full_name || '-'}</span>
                               </td>
 
-                              <td className="py-2.1 py-4 px-4 text-slate-400 font-mono select-all">
+                              <td className="py-2.1 py-4 px-4 text-slate-600 font-mono select-all">
                                 {p.email}
                               </td>
 
@@ -1456,7 +1456,7 @@ export default function Admin() {
                                     ? 'bg-purple-950 border-purple-900 text-purple-400'
                                     : p.role === 'business'
                                     ? 'bg-amber-950 border-amber-900 text-amber-400'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400'
+                                    : 'bg-slate-950 border-slate-800 text-slate-600'
                                 }`}>
                                   {p.role}
                                 </span>
@@ -1474,7 +1474,7 @@ export default function Admin() {
 
                               <td className="py-4 px-6 text-right">
                                 <div className="flex items-center justify-end gap-2.5">
-                                  <select
+                                  <select aria-label="Selecione uma opção"
                                     value={p.role}
                                     onChange={e => handleChangeRole(p.id, e.target.value as any)}
                                     className="bg-slate-950 border border-slate-800 p-1.5 rounded-lg text-xs hover:border-purple-650 outline-none text-slate-300 cursor-pointer"
@@ -1520,11 +1520,11 @@ export default function Admin() {
                   <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-white">Lojas & Salões de Beleza Parceiros</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Controle a homologação das lojas, aprovação de novas inscrições e atribuição de selo verificado.</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Controle a homologação das lojas, aprovação de novas inscrições e atribuição de selo verificado.</p>
                     </div>
 
                     <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-550 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Search className="w-4 h-4 text-slate-550 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
                       <input 
                         type="text"
                         value={searchTerm}
@@ -1541,7 +1541,7 @@ export default function Admin() {
                       <div key={sal.id} className="bg-slate-900 border border-slate-900/60 p-5 rounded-3xl hover:border-purple-900/40 transition-all space-y-4 flex flex-col justify-between">
                         <div onClick={() => setSelectedSalon(sal)} className="cursor-pointer group">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono uppercase bg-slate-950 p-1 rounded font-bold text-slate-400 leading-none">{sal.category}</span>
+                            <span className="text-[10px] font-mono uppercase bg-slate-950 p-1 rounded font-bold text-slate-600 leading-none">{sal.category}</span>
                             <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
                               sal.is_verified 
                                 ? 'bg-purple-950/45 text-purple-400 border-purple-900/50' 
@@ -1555,7 +1555,7 @@ export default function Admin() {
                             <span>{sal.name}</span>
                             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all text-purple-400" />
                           </h4>
-                          <p className="text-[11px] text-slate-400 mt-2 font-medium">📍 {sal.address}, {sal.city}</p>
+                          <p className="text-[11px] text-slate-600 mt-2 font-medium">📍 {sal.address}, {sal.city}</p>
                           <p className="text-[11px] text-slate-500 font-mono mt-1">📞 {sal.phone}</p>
                         </div>
 
@@ -1608,7 +1608,7 @@ export default function Admin() {
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white">Transferências Stripe & Definição de Planos</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
                   </div>
 
                   {/* Partition payouts list and parameters definition */}
@@ -1775,7 +1775,7 @@ export default function Admin() {
                 <div id="admin-support" className="space-y-6 animate-fade-in max-w-2xl">
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white">Disputas Bancárias & Suporte</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Avalie reclamações de clientes da cadeira e conflitos de cobrança relacionados ao Stripe.</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Avalie reclamações de clientes da cadeira e conflitos de cobrança relacionados ao Stripe.</p>
                   </div>
 
                   {/* Disputes segment */}
@@ -1812,7 +1812,7 @@ export default function Admin() {
                                     setDisputes(financeService.getDisputes());
                                     setSuccessMsg("Disputa rejeitada. Comissão do lojista salvaguardada legalmente.");
                                   }}
-                                  className="px-2 py-1 bg-slate-800 text-slate-400 rounded text-[9px] cursor-pointer hover:bg-slate-700"
+                                  className="px-2 py-1 bg-slate-800 text-slate-600 rounded text-[9px] cursor-pointer hover:bg-slate-700"
                                 >
                                   Rejeitar Reivindicação
                                 </button>
@@ -1859,7 +1859,7 @@ export default function Admin() {
                                     Ticket #{tc.id}
                                   </span>
                                   <span className="text-slate-700 font-mono">•</span>
-                                  <span className="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px]">
+                                  <span className="text-[9px] text-slate-600 font-bold uppercase truncate max-w-[150px]">
                                     De: {tc.customer_name || 'Utilizador'} ({tc.business_name || 'Geral'})
                                   </span>
                                   {tc.priority === 'high' && !isResolved && (
@@ -1913,7 +1913,7 @@ export default function Admin() {
                 <div id="admin-terminal" className="space-y-6 animate-fade-in max-w-2xl">
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white">Logística de CTT Glamzo Terminal</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Gerencie os pedidos de tablets táteis das lojas, envie com código de rastreio e confira cauções.</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Gerencie os pedidos de tablets táteis das lojas, envie com código de rastreio e confira cauções.</p>
                   </div>
 
                   <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
@@ -1927,7 +1927,7 @@ export default function Admin() {
                         <div key={idx} className="p-4 bg-slate-950 rounded-2xl border border-slate-910 border-slate-900 flex justify-between items-center text-xs">
                           <div>
                             <span className="font-black text-white">{tr.salon}</span>
-                            <span className="text-[10px] text-slate-450 text-slate-400 block mt-0.5">Destino: {tr.city} • Serie: {tr.serial}</span>
+                            <span className="text-[10px] text-slate-450 text-slate-600 block mt-0.5">Destino: {tr.city} • Serie: {tr.serial}</span>
                           </div>
 
                           <div className="space-x-1.5">
@@ -1959,7 +1959,7 @@ export default function Admin() {
                 <div id="admin-analytics" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-900 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-white">Volume de Negócios Central (Stripe Integrado)</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
                   </div>
 
                   {/* Summary aggregate cards */}
@@ -2052,7 +2052,7 @@ export default function Admin() {
                   <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-white mb-1">CMS de Gestão da Homepage</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">Gerencie os cartões de destaques da página inicial diretamente da base de dados e com uploads otimizados.</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Gerencie os cartões de destaques da página inicial diretamente da base de dados e com uploads otimizados.</p>
                     </div>
                     <button
                       onClick={fetchHomepageCards}
@@ -2068,7 +2068,7 @@ export default function Admin() {
                     <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs uppercase tracking-wider font-mono">
                       <span>🗄️ Query SQL para criar o Bucket "avatars" no Supabase Storage:</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
                       Se você presenciar falhas de upload ou erros de "bucket não encontrado" ao definir fotos de equipe, imagens do CMS, ou avatares de perfis, copie o script abaixo e execute-o no seu painel <strong>SQL Editor</strong> do Supabase. Ele cria o bucket <code>avatars</code> e define as regras RLS corretas:
                     </p>
                     <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed scrollbar-thin">
@@ -2121,7 +2121,7 @@ create policy "Permitir delete em avatars"
                       
                       {cmsError.includes("tabela 'homepage_cards'") && (
                         <div className="space-y-2 mt-4">
-                          <span className="block text-[10px] text-slate-400 uppercase font-mono font-black">Query SQL para criar a tabela no Supabase editor:</span>
+                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a tabela no Supabase editor:</span>
                           <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
 {`-- Criar tabela homepage_cards para o CMS da Homepage da Glamzo
 create table if not exists public.homepage_cards (
@@ -2164,8 +2164,8 @@ create policy "Allow admins full operations on homepage_cards"
                       </h4>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Categoria Alvo / Título do Cartão</label>
-                        <select
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Categoria Alvo / Título do Cartão</label>
+                        <select aria-label="Selecione uma opção"
                           required
                           value={cmsTitle}
                           onChange={(e) => {
@@ -2188,7 +2188,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                         <div className="sm:col-span-8">
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Emoji / Ícone</label>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Emoji / Ícone</label>
                           <input
                             type="text"
                             value={cmsEmoji}
@@ -2198,7 +2198,7 @@ create policy "Allow admins full operations on homepage_cards"
                           />
                         </div>
                         <div className="sm:col-span-4">
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Ordem</label>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Ordem</label>
                           <input
                             type="number"
                             value={cmsDisplayOrder}
@@ -2209,7 +2209,7 @@ create policy "Allow admins full operations on homepage_cards"
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">Subtítulo / Descrição Breve</label>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Subtítulo / Descrição Breve</label>
                         <textarea
                           required
                           rows={2}
@@ -2221,7 +2221,7 @@ create policy "Allow admins full operations on homepage_cards"
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Imagem do Cartão (Otimizado/Conversão recomendada)</label>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Imagem do Cartão (Otimizado/Conversão recomendada)</label>
                         
                         {/* File selector input */}
                         <div className="mt-1.5 mb-2.5">
@@ -2335,7 +2335,7 @@ create policy "Allow admins full operations on homepage_cards"
                       ) : homepageCards.length === 0 ? (
                         <div className="p-8 text-center bg-[#0a0515]/30 rounded-2xl border border-dashed border-slate-800">
                           <HelpCircle className="w-8 h-8 text-slate-705 text-slate-700 mx-auto mb-2" />
-                          <p className="text-slate-400 font-medium">Nenhum cartão dinâmico encontrado na base de dados.</p>
+                          <p className="text-slate-600 font-medium">Nenhum cartão dinâmico encontrado na base de dados.</p>
                           <p className="text-slate-600 text-[11px] mt-1">A página inicial exibirá as categorias estáticas como fallback seguro de performance.</p>
                         </div>
                       ) : (
@@ -2363,7 +2363,7 @@ create policy "Allow admins full operations on homepage_cards"
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 leading-normal">{card.subtitle}</p>
+                                  <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 leading-normal">{card.subtitle}</p>
                                   <div className="flex items-center gap-3 text-[9px] font-mono text-slate-500 mt-1 align-middle">
                                     <span className="text-purple-400 font-bold">Ordem: {card.display_order}</span>
                                     <span>•</span>
@@ -2379,7 +2379,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     disabled={idx === 0}
                                     type="button"
                                     title="Subir Ordem"
-                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
+                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▲
                                   </button>
@@ -2388,7 +2388,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     disabled={idx === homepageCards.length - 1}
                                     type="button"
                                     title="Descer Ordem"
-                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
+                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▼
                                   </button>
@@ -2455,7 +2455,7 @@ create policy "Allow admins full operations on homepage_cards"
               {/* Close Button badge */}
               <button 
                 onClick={() => setSelectedSalon(null)}
-                className="absolute top-4 right-4 bg-slate-950/80 hover:bg-slate-900 border border-slate-850 p-2 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="absolute top-4 right-4 bg-slate-950/80 hover:bg-slate-900 border border-slate-850 p-2 rounded-xl text-slate-600 hover:text-white transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2494,7 +2494,7 @@ create policy "Allow admins full operations on homepage_cards"
                 
                 {/* Description card */}
                 <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl">
-                  <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-900 pb-2 mb-2.5">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2 mb-2.5">
                     Descrição da Marca
                   </h4>
                   <p className="text-slate-300 leading-normal whitespace-pre-line text-[11px]">
@@ -2504,7 +2504,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                 {/* Contacts & Links card */}
                 <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3">
-                  <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-900 pb-2 mb-1">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2 mb-1">
                     Sistemas de Contacto & Redes
                   </h4>
                   
@@ -2521,7 +2521,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Donatário / Owner ID</span>
-                      <span className="text-white font-mono select-all text-[10px] text-slate-400">{selectedSalon.owner_id}</span>
+                      <span className="text-white font-mono select-all text-[10px] text-slate-600">{selectedSalon.owner_id}</span>
                     </div>
 
                     <div className="border-t border-slate-900 pt-2.5 grid grid-cols-2 gap-2">
@@ -2563,7 +2563,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                 {/* Geography Map details card */}
                 <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-2.5">
-                  <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-900 pb-2">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2">
                     Localização & Morada Real
                   </h4>
                   <div>
@@ -2600,7 +2600,7 @@ create policy "Allow admins full operations on homepage_cards"
                   <>
                     {/* Catalog: Services List block */}
                     <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-wider border-b border-slate-900 pb-2.5">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Catálogo de Serviços Registados ({selectedSalonServices.length})
                       </h4>
                       
@@ -2609,7 +2609,7 @@ create policy "Allow admins full operations on homepage_cards"
                           <div key={srv.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
                             <div>
                               <span className="font-black text-white block">{srv.name}</span>
-                              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-600">
                                 <span>⏱️ {srv.duration_minutes} min</span>
                                 {srv.category?.name && (
                                   <>
@@ -2631,7 +2631,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                     {/* Team Staff List block */}
                     <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-wider border-b border-slate-900 pb-2.5">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Membros da Equipa Cadastrados ({selectedSalonStaff.length})
                       </h4>
                       
@@ -2668,7 +2668,7 @@ create policy "Allow admins full operations on homepage_cards"
 
                     {/* Operating hours list block */}
                     <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-400 uppercase tracking-wider border-b border-slate-900 pb-2.5">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Horário de Funcionamento Cadastrado
                       </h4>
                       
@@ -2705,7 +2705,7 @@ create policy "Allow admins full operations on homepage_cards"
             <div className="bg-slate-950 px-6 py-4.5 border-t border-slate-850 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${selectedSalon.is_verified ? 'bg-purple-500' : 'bg-slate-600'}`} />
-                <span className="text-[11px] text-slate-400 font-bold">
+                <span className="text-[11px] text-slate-600 font-bold">
                   Selo de Verificação de Integridade Física: {selectedSalon.is_verified ? 'Atribuído / Aprovado' : 'Não Atribuído / Pendente'}
                 </span>
               </div>
@@ -2737,7 +2737,7 @@ create policy "Allow admins full operations on homepage_cards"
                 </button>
                 <button 
                   onClick={() => setSelectedSalon(null)}
-                  className="px-4.5 py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-[10px] font-mono tracking-wider font-extrabold uppercase transition-all cursor-pointer"
+                  className="px-4.5 py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-600 hover:text-white rounded-xl text-[10px] font-mono tracking-wider font-extrabold uppercase transition-all cursor-pointer"
                 >
                   Fechar
                 </button>
@@ -2754,7 +2754,7 @@ create policy "Allow admins full operations on homepage_cards"
           <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-scale-up space-y-4">
             <button 
               onClick={() => setEditingUser(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2764,12 +2764,12 @@ create policy "Allow admins full operations on homepage_cards"
                 <Settings className="w-5 h-5 text-purple-400" />
                 <span>Editar Utilizador {editingUser.email?.split('@')[0]}</span>
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Modifique o cadastro base de utilizador na base de dados.</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">Modifique o cadastro base de utilizador na base de dados.</p>
             </div>
 
             <form onSubmit={handleSaveEditUser} className="space-y-4 text-xs font-semibold">
               <div>
-                <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome Completo</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome Completo</label>
                 <input 
                   type="text" 
                   value={editUserName}
@@ -2780,7 +2780,7 @@ create policy "Allow admins full operations on homepage_cards"
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço de E-mail</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço de E-mail</label>
                 <input 
                   type="email" 
                   value={editUserEmail}
@@ -2791,8 +2791,8 @@ create policy "Allow admins full operations on homepage_cards"
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nível de Privilégios (Função)</label>
-                <select 
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nível de Privilégios (Função)</label>
+                <select aria-label="Selecione uma opção" 
                   value={editUserRole}
                   onChange={e => setEditUserRole(e.target.value as any)}
                   className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 cursor-pointer"
@@ -2829,7 +2829,7 @@ create policy "Allow admins full operations on homepage_cards"
           <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg p-6 relative shadow-2xl animate-scale-up space-y-4 my-8">
             <button 
               onClick={() => setEditingSalon(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2839,13 +2839,13 @@ create policy "Allow admins full operations on homepage_cards"
                 <Settings className="w-5 h-5 text-indigo-400" />
                 <span>Editar Estabelecimento: {editingSalon.name}</span>
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Altere as informações exibidas da loja comercial no ecossistema.</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">Altere as informações exibidas da loja comercial no ecossistema.</p>
             </div>
 
             <form onSubmit={handleSaveEditSalon} className="space-y-4 text-xs font-semibold max-h-[70vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome do Salão</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome do Salão</label>
                   <input 
                     type="text" 
                     value={editSalonName}
@@ -2855,8 +2855,8 @@ create policy "Allow admins full operations on homepage_cards"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Categoria Principal</label>
-                  <select 
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Categoria Principal</label>
+                  <select aria-label="Selecione uma opção" 
                     value={editSalonCategory}
                     onChange={e => setEditSalonCategory(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 cursor-pointer"
@@ -2873,7 +2873,7 @@ create policy "Allow admins full operations on homepage_cards"
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Contacto Telefónico</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Contacto Telefónico</label>
                   <input 
                     type="text" 
                     value={editSalonPhone}
@@ -2884,7 +2884,7 @@ create policy "Allow admins full operations on homepage_cards"
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Concelho / Distrito</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Concelho / Distrito</label>
                   <input 
                     type="text" 
                     value={editSalonDistrict}
@@ -2898,7 +2898,7 @@ create policy "Allow admins full operations on homepage_cards"
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Cidade / Localidade</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Cidade / Localidade</label>
                   <input 
                     type="text" 
                     value={editSalonCity}
@@ -2909,7 +2909,7 @@ create policy "Allow admins full operations on homepage_cards"
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço Físico</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço Físico</label>
                   <input 
                     type="text" 
                     value={editSalonAddress}
@@ -2921,7 +2921,7 @@ create policy "Allow admins full operations on homepage_cards"
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Breve Descrição Institucional</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Breve Descrição Institucional</label>
                 <textarea 
                   value={editSalonDescription}
                   onChange={e => setEditSalonDescription(e.target.value)}
@@ -2960,7 +2960,7 @@ create policy "Allow admins full operations on homepage_cards"
                 setDeleteAccountTarget(null);
                 setDeleteAccountDoubleConfirmText('');
               }}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2977,7 +2977,7 @@ create policy "Allow admins full operations on homepage_cards"
                 <p className="text-[10px] text-rose-300 font-bold leading-relaxed">
                   ⚠️ AVISO MASTER: Esta operação executa uma limpeza em cascata integral e irreversível de:
                 </p>
-                <ul className="list-disc pl-4 text-[10px] text-slate-400 font-semibold mt-1.5 space-y-1">
+                <ul className="list-disc pl-4 text-[10px] text-slate-600 font-semibold mt-1.5 space-y-1">
                   <li>Todas as marcações e históricos (bookings, payments)</li>
                   <li>Dados operacionais (services, staff, business hours, locations)</li>
                   <li>Recursos de fidelidade e marketing (loyalty, campaigns)</li>
@@ -2988,7 +2988,7 @@ create policy "Allow admins full operations on homepage_cards"
             </div>
 
             <div className="space-y-3.5 pt-2">
-              <p className="text-[10px] text-slate-400 text-center font-bold">
+              <p className="text-[10px] text-slate-600 text-center font-bold">
                 Para prosseguir com o apagamento definitivo, escreva <span className="text-rose-400 select-all font-mono">ELIMINAR</span> abaixo:
               </p>
 
@@ -3016,7 +3016,7 @@ create policy "Allow admins full operations on homepage_cards"
                     setDeleteAccountTarget(null);
                     setDeleteAccountDoubleConfirmText('');
                   }}
-                  className="flex-1 bg-slate-950 text-slate-400 hover:text-white py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-slate-950 text-slate-600 hover:text-white py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Cancelar
                 </button>

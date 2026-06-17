@@ -549,7 +549,7 @@ create policy "Permitir delete em avatars"
               PASSO IMPORTANTE
             </span>
             <h1 className="text-2xl font-bold tracking-tight mt-2 text-white">Configuração do Supabase pendente</h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-600 text-sm mt-1">
               A Glamzo precisa estar conectada a uma instância real do Supabase para funcionar sem autenticações falsas ou simulações.
             </p>
           </div>
@@ -565,7 +565,7 @@ create policy "Permitir delete em avatars"
             <p className="text-slate-300 text-xs leading-relaxed">
               Abra as Configurações de Segredos (<strong>Secrets / Environment Variables</strong>) no painel do AI Studio e insira as seguintes variáveis com os valores do seu projeto Supabase:
             </p>
-            <div className="mt-3 font-mono text-xs bg-slate-900 p-3 rounded border border-slate-800/80 space-y-1 text-slate-400 select-all">
+            <div className="mt-3 font-mono text-xs bg-slate-900 p-3 rounded border border-slate-800/80 space-y-1 text-slate-600 select-all">
               <div>VITE_SUPABASE_URL="https://sua-url-do-projeto.supabase.co"</div>
               <div>VITE_SUPABASE_ANON_KEY="sua-chave-anonima-aqui"</div>
             </div>
@@ -609,7 +609,7 @@ create policy "Permitir delete em avatars"
             <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold block mb-0.5 text-sky-300">Autenticação com Google OAuth</span>
-              <p className="text-slate-400">
+              <p className="text-slate-600">
                 Se você habilitar o Google no Supabase (Authentication &gt; Providers &gt; Google), os usuários serão direcionados para o seu fluxo real. O trigger inserido acima cuidará do profile <code>customer</code> automaticamente!
               </p>
             </div>
@@ -618,7 +618,7 @@ create policy "Permitir delete em avatars"
           {/* Quick Sandbox Bypass Option */}
           <div className="p-5 bg-rose-950/20 border border-rose-900/30 rounded-xl text-center mt-6">
             <h3 className="text-sm font-bold text-rose-400">Pretende testar ou avaliar agora?</h3>
-            <p className="text-xs text-slate-400 mt-1 mb-4">
+            <p className="text-xs text-slate-600 mt-1 mb-4">
               Explore o ecossistema Glamzo instantaneamente utilizando o nosso barramento de comunicação local e mock persistent em tempo real (Fase 13).
             </p>
             <button
@@ -638,7 +638,7 @@ create policy "Permitir delete em avatars"
             href="https://supabase.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-1 text-slate-600 hover:text-white transition-colors"
           >
             <span>Ir para o painel do Supabase</span>
             <ExternalLink className="w-3.5 h-3.5" />

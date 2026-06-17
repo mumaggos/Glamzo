@@ -610,7 +610,7 @@ export default function BookingModal({
         {loadingMetadata && (
           <div className="flex-1 py-16 flex flex-col items-center justify-center gap-3 bg-white">
             <Loader2 className="w-8 h-8 text-rose-600 animate-spin" />
-            <span className="text-xs text-slate-400 font-mono">Consultando base de dados da loja...</span>
+            <span className="text-xs text-slate-600 font-mono">Consultando base de dados da loja...</span>
           </div>
         )}
 
@@ -631,21 +631,21 @@ export default function BookingModal({
             {/* Receipt Summary card */}
             <div className="w-full max-w-sm bg-slate-50 border border-slate-100 rounded-2xl p-4 text-left text-xs space-y-2.5 font-sans">
               <div className="flex justify-between">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Serviço</span>
+                <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Serviço</span>
                 <span className="text-slate-800 font-bold">{successBooking.service?.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Profissional</span>
+                <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Profissional</span>
                 <span className="text-slate-800 font-semibold">{successBooking.staff?.full_name || 'Qualquer Profissional'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Data da Visita</span>
+                <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Data da Visita</span>
                 <span className="text-slate-800 font-mono font-bold">
                   {new Date(successBooking.booking_date).toLocaleDateString('pt', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Horário</span>
+                <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Horário</span>
                 <span className="text-rose-600 font-mono font-bold">{successBooking.start_time} - {successBooking.end_time}</span>
               </div>
               <div className="flex justify-between border-t border-slate-200/60 pt-2 shadow-2xs">
@@ -686,7 +686,7 @@ export default function BookingModal({
 
               {/* Progress Steps Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
-                <span className="text-xs text-slate-400 font-bold font-mono">Fase {step} de 6</span>
+                <span className="text-xs text-slate-600 font-bold font-mono">Fase {step} de 6</span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5, 6].map(s => (
                     <div 
@@ -703,14 +703,14 @@ export default function BookingModal({
               {step === 1 && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Menu de Serviços do Estabelecimento</p>
+                    <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Menu de Serviços do Estabelecimento</p>
                     {selectedServices.length > 0 && (
                       <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-full border border-rose-100">
                         {selectedServices.length} {selectedServices.length === 1 ? 'serviço selecionado' : 'serviços selecionados'} ({totalServicesPrice.toFixed(2)} €)
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed -mt-2">Pode selecionar múltiplos serviços para realizar todos os tratamentos no mesmo dia e com o mesmo profissional.</p>
+                  <p className="text-[10px] text-slate-600 leading-relaxed -mt-2">Pode selecionar múltiplos serviços para realizar todos os tratamentos no mesmo dia e com o mesmo profissional.</p>
                   <div className="grid grid-cols-1 gap-3">
                     {services.map(srv => {
                       const isSelected = selectedServices.some(s => s.id === srv.id);
@@ -757,8 +757,8 @@ export default function BookingModal({
                                 />
                                 {srv.name}
                               </h4>
-                              <p className="text-[10px] text-slate-400 leading-normal max-w-sm line-clamp-2 mt-0.5">{srv.description || 'Tratamento premium de assinatura'}</p>
-                              <span className="text-[10px] font-mono text-slate-400 block mt-1">⏱ {srv.duration_minutes} minutos de duração</span>
+                              <p className="text-[10px] text-slate-600 leading-normal max-w-sm line-clamp-2 mt-0.5">{srv.description || 'Tratamento premium de assinatura'}</p>
+                              <span className="text-[10px] font-mono text-slate-600 block mt-1">⏱ {srv.duration_minutes} minutos de duração</span>
                             </div>
                           </div>
                           
@@ -780,7 +780,7 @@ export default function BookingModal({
               {/* STEP 2: STAFF SELECTION */}
               {step === 2 && (
                 <div className="space-y-4">
-                  <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Selecione o seu Profissional</p>
+                  <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Selecione o seu Profissional</p>
                   
                   {/* Any Staff option */}
                   <div 
@@ -799,13 +799,13 @@ export default function BookingModal({
                     </div>
                     <div>
                       <h4 className="text-xs font-black text-slate-800">Qualquer profissional disponível</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Selecione esta opção para obter a máxima disponibilidade de agendas vazias.</p>
+                      <p className="text-[10px] text-slate-600 mt-0.5">Selecione esta opção para obter a máxima disponibilidade de agendas vazias.</p>
                     </div>
                   </div>
 
                   {/* Staff List */}
                   {staff.length === 0 ? (
-                    <p className="text-xs text-slate-400 bg-slate-50 p-3 rounded-xl inline-block mt-2">Nenhum profissional cadastrado. A reserva usará a agenda geral.</p>
+                    <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl inline-block mt-2">Nenhum profissional cadastrado. A reserva usará a agenda geral.</p>
                   ) : (
                     <div className="grid grid-cols-1 gap-2.5">
                       {staff.map(s => {
@@ -834,7 +834,7 @@ export default function BookingModal({
                             />
                             <div>
                               <h4 className="text-xs font-black text-slate-850">{s.full_name}</h4>
-                              <p className="text-[10px] text-slate-400">{s.role_title || 'Estilista de Beleza'}</p>
+                              <p className="text-[10px] text-slate-600">{s.role_title || 'Estilista de Beleza'}</p>
                             </div>
                           </div>
                         );
@@ -848,8 +848,8 @@ export default function BookingModal({
               {step === 3 && (
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Selecione o Dia para Visita</p>
-                    <p className="text-[10px] text-slate-400">Pode antecipar o agendamento até um prazo de look-ahead de 30 dias na base de dados.</p>
+                    <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Selecione o Dia para Visita</p>
+                    <p className="text-[10px] text-slate-600">Pode antecipar o agendamento até um prazo de look-ahead de 30 dias na base de dados.</p>
                   </div>
 
                   {/* Horizontally scrolling Dates list */}
@@ -877,12 +877,12 @@ export default function BookingModal({
                                 : 'border-slate-200 hover:border-slate-350 bg-white text-slate-700 cursor-pointer shadow-xs'
                           }`}
                         >
-                          <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{getWeekdayName(date)}</span>
+                          <span className="block text-[10px] uppercase tracking-wider text-slate-600 font-semibold">{getWeekdayName(date)}</span>
                           <span className="block text-lg font-black font-mono leading-none my-1">{date.getDate()}</span>
                           <span className="block text-[10px] text-slate-500">{getMonthName(date)}</span>
                           
                           {isClosed && (
-                            <span className="block text-[8px] font-bold text-slate-400 mt-1">FECHADO</span>
+                            <span className="block text-[8px] font-bold text-slate-600 mt-1">FECHADO</span>
                           )}
                         </div>
                       );
@@ -895,7 +895,7 @@ export default function BookingModal({
               {step === 4 && (
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Escolha um Horário Disponível</p>
+                    <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Escolha um Horário Disponível</p>
                     {selectedDate && (
                       <p className="text-[11px] text-slate-500 font-semibold font-mono">
                         🗓 {selectedDate.toLocaleDateString('pt', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -905,9 +905,9 @@ export default function BookingModal({
 
                   {availableSlots.length === 0 ? (
                     <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                      <Clock className="w-8 h-8 text-slate-400 mx-auto" />
+                      <Clock className="w-8 h-8 text-slate-600 mx-auto" />
                       <h5 className="text-xs font-bold text-slate-700">Agenda Ocupada ou Indisponível</h5>
-                      <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                      <p className="text-[11px] text-slate-600 max-w-sm mx-auto">
                         Todos os horários programados já foram totalmente preenchidos por outros agendamentos ou o salão encontra-se indisponível nesta data. Selecione uma data alternativa!
                       </p>
                     </div>
@@ -937,7 +937,7 @@ export default function BookingModal({
               {/* STEP 5: PAYMENT ENGINE METHOD */}
               {step === 5 && (
                 <div className="space-y-4">
-                  <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Método para Resgate e Pagamento</p>
+                  <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Método para Resgate e Pagamento</p>
                   
                   <div className="grid grid-cols-1 gap-3">
                     
@@ -956,7 +956,7 @@ export default function BookingModal({
                         </div>
                         <div>
                           <h4 className="text-xs font-black text-slate-800">Pagar diretamente no Local</h4>
-                          <p className="text-[10px] text-slate-400 mt-0.5">Dinheiro, cartões multibanco/crédito ou MBWay na recepção do salão.</p>
+                          <p className="text-[10px] text-slate-600 mt-0.5">Dinheiro, cartões multibanco/crédito ou MBWay na recepção do salão.</p>
                         </div>
                       </div>
                       <div className="shrink-0 h-5 w-5 rounded-full border border-slate-300 flex items-center justify-center">
@@ -981,7 +981,7 @@ export default function BookingModal({
                             </div>
                             <div>
                               <h4 className="text-xs font-black text-slate-800">Pagamento Online 100% Seguro</h4>
-                              <p className="text-[10px] text-slate-400 mt-0.5">Pagamento online imediato e seguro processado pela Glamzo Pay.</p>
+                              <p className="text-[10px] text-slate-600 mt-0.5">Pagamento online imediato e seguro processado pela Glamzo Pay.</p>
                             </div>
                           </div>
                           
@@ -1003,9 +1003,9 @@ export default function BookingModal({
                         )}
                       </div>
                     ) : (
-                      <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 text-slate-400 cursor-not-allowed flex items-center justify-between">
+                      <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 text-slate-600 cursor-not-allowed flex items-center justify-between">
                         <div className="flex gap-3.5 items-center">
-                          <div className="p-2.5 bg-slate-100 text-slate-400 rounded-xl">
+                          <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl">
                             <CreditCard className="w-5 h-5" />
                           </div>
                           <div className="text-left">
@@ -1023,7 +1023,7 @@ export default function BookingModal({
               {/* STEP 6: CONFIRM RESERVATION AND NOTES */}
               {step === 6 && (
                 <div className="space-y-4">
-                  <p className="text-xs text-slate-400 font-bold tracking-wider uppercase">Reveja as Informações da Marcação</p>
+                  <p className="text-xs text-slate-600 font-bold tracking-wider uppercase">Reveja as Informações da Marcação</p>
                   
                   {/* Detailed receipt container */}
                   <div className="border border-slate-150 rounded-2xl overflow-hidden shadow-2xs">
@@ -1049,44 +1049,44 @@ export default function BookingModal({
                     <div className="p-4 bg-slate-50/50 space-y-3 text-xs leading-relaxed text-slate-750">
                       
                       <div className="flex flex-col gap-1">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Serviços de Beleza Selecionados</span>
+                        <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Serviços de Beleza Selecionados</span>
                         <div className="space-y-1.5 mt-1 bg-white p-2.5 rounded-xl border border-slate-100">
                           {selectedServices.map(s => (
                             <div key={s.id} className="flex justify-between items-center">
                               <span className="font-bold text-slate-800">{s.name}</span>
                               <div className="text-right font-mono text-[11px] text-slate-550">
                                 <span>{Number(s.price).toFixed(2)} €</span>
-                                <span className="text-slate-400 text-[10px] ml-1.5 font-sans">({s.duration_minutes} min)</span>
+                                <span className="text-slate-600 text-[10px] ml-1.5 font-sans">({s.duration_minutes} min)</span>
                               </div>
                             </div>
                           ))}
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium block mt-1">⏱ Duração total estimada: {totalServicesDuration} minutos</span>
+                        <span className="text-[10px] text-slate-600 font-medium block mt-1">⏱ Duração total estimada: {totalServicesDuration} minutos</span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Profissional Associado</span>
+                        <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Profissional Associado</span>
                         <span className="font-bold text-slate-800">
                           {selectedStaff === 'any' ? 'Qualquer profissional disponível (Auto-atribuição)' : selectedStaff.full_name}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Data da Marcação</span>
+                        <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Data da Marcação</span>
                         <span className="font-bold text-slate-800 font-sans">
                           {selectedDate?.toLocaleDateString('pt', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Horário</span>
+                        <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Horário</span>
                         <span className="font-bold font-mono text-rose-600 border border-thin px-2 py-0.5 rounded-md bg-rose-50 text-xs">
                           {selectedTime} h
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Forma de Pagamento</span>
+                        <span className="text-slate-600 font-bold uppercase tracking-wider text-[9px]">Forma de Pagamento</span>
                         <span className="font-bold text-slate-800 bg-slate-100/60 px-2 py-0.5 rounded text-[11px]">
                           {paymentMethod === 'stripe' ? '💳 Pagamento 100% Seguro' : '💸 Pagar no Estabelecimento'}
                         </span>

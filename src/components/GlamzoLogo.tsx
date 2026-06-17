@@ -21,12 +21,13 @@ export default function GlamzoLogo({
   const customStyles = (
     <style dangerouslySetInnerHTML={{ __html: `
       @keyframes glamzoPulseTech {
-        0% { filter: drop-shadow(0 0 4px rgba(168,85,247,0.3)); stroke-dashoffset: 0; }
-        50% { filter: drop-shadow(0 0 10px rgba(168,85,247,0.8)); stroke-dashoffset: -100; }
-        100% { filter: drop-shadow(0 0 4px rgba(168,85,247,0.3)); stroke-dashoffset: -200; }
+        0% { transform: rotate(0deg); opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { transform: rotate(360deg); opacity: 0.8; }
       }
       .anim-tech-pulse {
         animation: glamzoPulseTech 4s linear infinite;
+        transform-origin: center;
       }
       @keyframes neonGlow {
         0%, 100% { box-shadow: 0 0 10px rgba(139,92,246,0.3), inset 0 0 10px rgba(139,92,246,0.3); }
