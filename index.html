@@ -28,8 +28,6 @@
     <link rel="canonical" href="https://glamzo.pt" />
 
     <!-- Performance Preconnections -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://fkpywjkatsxkgrmboald.supabase.co" crossorigin>
 
     <!-- Dynamic high-fidelity SVG favicon of Glamzo Logo -->
@@ -37,6 +35,11 @@
     
   </head>
   <body>
+    <!-- LCP estático para renderização instantânea -->
+    <div id="static-lcp" style="position: absolute; left: -9999px;">
+      <h1 class="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900">O seu momento de beleza, marcado num instante.</h1>
+    </div>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>

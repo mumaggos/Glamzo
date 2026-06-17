@@ -501,7 +501,7 @@ export default function Home() {
           <div className="flex gap-4">
             <Link to="/explore" className="hover:text-purple-600 transition-colors">Explorar Salões</Link>
             <Link to="/partner" className="hover:text-purple-600 transition-colors">Área do Parceiro</Link>
-            <Link to="/admin/login" className="hover:text-purple-600 transition-colors opacity-55 hover:opacity-100">• Painel Admin</Link>
+            <Link to="/admin/login" className="hover:text-purple-600 transition-colors">• Painel Admin</Link>
           </div>
         </div>
       </footer>
