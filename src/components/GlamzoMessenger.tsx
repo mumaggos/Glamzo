@@ -177,7 +177,7 @@ export default function GlamzoMessenger() {
   };
 
   return (
-    <div id="glamzo-messenger-widget" className="fixed bottom-6 right-6 z-40 font-sans">
+    <div id="glamzo-messenger-widget" className="fixed bottom-[88px] md:bottom-6 right-6 z-40 font-sans pointer-events-auto">
       {!isOpen ? (
         <button
           onClick={() => { setIsOpen(true); playPingChime(); }}
