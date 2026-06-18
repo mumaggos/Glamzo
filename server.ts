@@ -1331,8 +1331,14 @@ async function startServer() {
     app.use('/assets', express.static(path.join(distPath, 'assets'), {
       maxAge: '1y',
       immutable: true,
-      fallthrough: false
+      fallthrough: true
     }));
+
+    // 1.1 Explicitly 404 for missing assets to avoid falling through to index.html
+    // This triggers ChunkLoadError on the client which forces a clean SW wipe and reload
+    app.use('/assets', (req, res) => {
+      res.status(404).send('Asset not found');
+    });
 
     // 2. Optimized caching for fallback root directory static assets
     app.use(express.static(distPath, {

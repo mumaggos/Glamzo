@@ -6,6 +6,9 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import ScrollToTop from './components/ScrollToTop';
+
+console.log("router loaded");
+
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
 const Home = React.lazy(() => import('./pages/Home'));
 const Login = React.lazy(() => import('./pages/Login'));

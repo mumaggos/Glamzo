@@ -3,6 +3,8 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
+console.log("main loaded");
+
 // Highly optimized Safari / iOS WebKit identification for hardware-safe styling overrides
 try {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
