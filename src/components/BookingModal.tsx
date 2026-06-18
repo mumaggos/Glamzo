@@ -738,7 +738,7 @@ export default function BookingModal({
                           <div className="flex gap-3.5 items-start">
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-150 shrink-0">
                               <img 
-                                src={srv.image_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=70'} 
+                                src={srv.image_url || '/images/home/spa.webp'} 
                                 alt="Service logo" 
                                 loading="lazy"
                                 decoding="async"
@@ -824,7 +824,7 @@ export default function BookingModal({
                             }`}
                           >
                             <img 
-                              src={s.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=70'} 
+                              src={s.avatar_url || '/images/home/spa.webp'} 
                               alt={s.full_name} 
                               loading="lazy"
                               decoding="async"
@@ -1031,7 +1031,7 @@ export default function BookingModal({
                     {/* Salon header in card */}
                     <div className="bg-slate-900 text-white p-4 flex gap-3 items-center">
                       <img 
-                        src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=100&q=70'} 
+                        src={business.logo_url || '/images/home/spa.webp'} 
                         alt="Logo" 
                         loading="lazy"
                         decoding="async"

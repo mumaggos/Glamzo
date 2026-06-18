@@ -148,7 +148,7 @@ export default function Admin() {
     const payload = {
       title: cmsTitle.trim(),
       subtitle: cmsSubtitle.trim(),
-      image_url: cmsImageUrl.trim() || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70',
+      image_url: cmsImageUrl.trim() || '/images/home/spa.webp',
       display_order: Number(cmsDisplayOrder),
       active: cmsActive,
       emoji: cmsEmoji.trim() || '✨',
@@ -190,9 +190,9 @@ export default function Admin() {
 
   const handleEditCmsCard = (card: any) => {
     setEditingCardId(card.id);
-    setCmsTitle(card.title || '');
-    setCmsSubtitle(card.subtitle || '');
-    setCmsImageUrl(card.image_url || '');
+    setCmsTitle(card.title || '/images/home/spa.webp');
+    setCmsSubtitle(card.subtitle || '/images/home/spa.webp');
+    setCmsImageUrl(card.image_url || '/images/home/spa.webp');
     setCmsDisplayOrder(card.display_order || 1);
     setCmsActive(card.active !== false);
     setCmsEmoji(card.emoji || '✨');
@@ -712,8 +712,8 @@ export default function Admin() {
   // Start editing user info
   const handleStartEditUser = (profile: UserProfile) => {
     setEditingUser(profile);
-    setEditUserName(profile.full_name || '');
-    setEditUserEmail(profile.email || '');
+    setEditUserName(profile.full_name || '/images/home/spa.webp');
+    setEditUserEmail(profile.email || '/images/home/spa.webp');
     setEditUserRole(profile.role || 'customer');
   };
 
@@ -793,7 +793,7 @@ export default function Admin() {
     setEditSalonCity(salon.city);
     setEditSalonDistrict(salon.district || 'Lisboa');
     setEditSalonAddress(salon.address);
-    setEditSalonDescription(salon.description || '');
+    setEditSalonDescription(salon.description || '/images/home/spa.webp');
   };
 
   // Save changes to salon info
@@ -900,7 +900,7 @@ export default function Admin() {
   // Filter datasets based on universal search term
   const filteredProfiles = profiles.filter(p => {
     const term = searchTerm.toLowerCase();
-    return (p.email || '').toLowerCase().includes(term) || (p.full_name || '').toLowerCase().includes(term);
+    return (p.email || '/images/home/spa.webp').toLowerCase().includes(term) || (p.full_name || '/images/home/spa.webp').toLowerCase().includes(term);
   });
 
   const filteredSalons = salons.filter(s => {
@@ -1192,7 +1192,7 @@ export default function Admin() {
                     {salons
                       .filter(sal => {
                         const term = searchTerm.toLowerCase();
-                        return sal.name.toLowerCase().includes(term) || sal.city.toLowerCase().includes(term) || (sal.email || '').toLowerCase().includes(term);
+                        return sal.name.toLowerCase().includes(term) || sal.city.toLowerCase().includes(term) || (sal.email || '/images/home/spa.webp').toLowerCase().includes(term);
                       })
                       .map(sal => {
                         const ownerProfile = profiles.find(p => p.id === sal.owner_id);
