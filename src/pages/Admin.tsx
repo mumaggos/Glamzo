@@ -1,4 +1,5 @@
-setPageDraftContent(existingData?.content || PAGE_FALLBACKS[page.id] || '');import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
@@ -11,7 +12,7 @@ import {
   Shield, Users, Search, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
-  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText
+  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
 } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -33,6 +34,12 @@ const PAGE_FALLBACKS: Record<string, string> = {
 
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   // Active sub-tab configuration
   const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages'>('users');
@@ -1048,13 +1055,13 @@ export default function Admin() {
           {/* Drawer content */}
           <div className="relative flex flex-col w-72 max-w-xs h-full bg-slate-50 border-r border-slate-200 p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
             <div className="flex items-center justify-between pb-4 border-b border-purple-100 mb-4 shrink-0">
-              <div className="flex items-center gap-2.5">
+              <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity">
                 <GlamzoLogo size={28} glow={true} />
                 <div>
                   <span className="font-extrabold text-slate-900 text-xs tracking-widest block leading-none">GLAMZO LOGO</span>
                   <span className="text-[8px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Admin</span>
                 </div>
-              </div>
+              </button>
               <button 
                 onClick={() => setIsMobileAdminSidebarOpen(false)}
                 className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
@@ -1118,6 +1125,13 @@ export default function Admin() {
                   <span className="block text-[9px] text-slate-500 font-mono truncate">{user?.email}</span>
                 </div>
               </div>
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Terminar Sessão
+              </button>
             </div>
           </div>
         </div>
@@ -1127,13 +1141,13 @@ export default function Admin() {
       <aside className="hidden lg:flex w-64 border-r border-slate-200 bg-slate-50 flex-col justify-between shrink-0 h-full">
         <div>
           {/* Header Title branding */}
-          <div className="h-16 border-b border-slate-200 flex items-center px-6 gap-3">
+          <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="h-16 border-b border-slate-200 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-100 transition-colors cursor-pointer">
             <GlamzoLogo size={32} glow={true} />
             <div>
               <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs">GLAMZO LOGO</span>
               <span className="text-[9px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Administração</span>
             </div>
-          </div>
+          </button>
 
           <div className="p-4 mx-4 my-2.5 bg-purple-950/20 border border-purple-900/35 rounded-xl text-xs">
             <span className="block text-[9px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">Status de Conectividade</span>
@@ -1179,15 +1193,22 @@ export default function Admin() {
 
         {/* Admin profile view bottom */}
         <div className="p-4 border-t border-slate-200 bg-slate-50/80">
-          <div className="flex items-center gap-2.5 mb-2">
+          <div className="flex items-center gap-2.5 mb-3">
             <div className="w-8 h-8 rounded-full bg-purple-900 text-purple-200 flex items-center justify-center font-mono font-bold text-xs">
               AD
             </div>
             <div>
               <span className="block text-xs font-black text-slate-900">Administrador</span>
-              <span className="block text-[10px] text-slate-500 font-mono">{user?.email || 'admin@gmail.com'}</span>
+              <span className="block text-[10px] text-slate-500 font-mono truncate max-w-[150px]">{user?.email || 'admin@gmail.com'}</span>
             </div>
           </div>
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Terminar Sessão
+          </button>
         </div>
       </aside>
 
@@ -2604,7 +2625,7 @@ $$;`}
                               onClick={() => {
                                 setEditingPageSlug(page.id);
                                 setPageDraftTitle(existingData?.title || page.name);
-                                setPageDraftContent(existingData?.content || '');
+                                setPageDraftContent(existingData?.content || PAGE_FALLBACKS[page.id] || '');
                               }}
                               className={`text-left px-4 py-3 rounded-xl text-xs font-semibold transition-all ${editingPageSlug === page.id ? 'bg-purple-900/40 text-purple-200 border border-purple-800' : 'bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent'}`}
                             >
