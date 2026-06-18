@@ -115,12 +115,16 @@ export async function submitMessage(
     // Determine the corresponding session
     const currentSession = sessions.find(s => s.id === sessionId);
     if (currentSession && !sessionId.startsWith('glamzo-support-')) {
-      // Remover a inteligência artificial. Enviar mensagem de ausência automática simulando status offline da loja.
-      setTimeout(async () => {
-        // Here we could check if the shop recently read the message. For now, auto-reply.
-        const msg = `Olá! A receção do ${currentSession.business_name} recebeu a sua mensagem. Responderemos o mais breve possível.`;
-        await submitMessage(sessionId, 'ai', currentSession.business_name, msg);
-      }, 5000); // 5 sec delay
+      // Avoid sending multiple system alerts consecutively
+      const sessionMsgs = await fetchMessagesForSession(sessionId);
+      const isRecentSystemReply = sessionMsgs.some(m => m.sender_type === 'system' && new Date(m.created_at).getTime() > Date.now() - 1000 * 60 * 30); // in last 30 minutes
+      
+      if (!isRecentSystemReply) {
+        setTimeout(async () => {
+          const msg = `Mensagem enviada. O salão responderá em breve. Poderá visualizar a resposta aqui.`;
+          await submitMessage(sessionId, 'system', 'Sistema de Notificações', msg);
+        }, 1500); 
+      }
     }
   }
 
