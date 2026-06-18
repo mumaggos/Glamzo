@@ -11,7 +11,7 @@ import {
   Shield, Users, Search, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
-  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu
+  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText
 } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -22,7 +22,7 @@ export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -131,9 +131,60 @@ export default function Admin() {
     }
   };
 
+  const fetchPlatformPages = async () => {
+    setPagesError(null);
+    try {
+      const { data, error } = await supabase
+        .from('platform_pages')
+        .select('*');
+      if (error) {
+        if (error.code === '42P01') { 
+          setPagesError("A tabela 'platform_pages' ainda não existe na base de dados. Execute o setup no SQL Editor.");
+        } else {
+          setPagesError(error.message);
+        }
+      } else {
+        setPlatformPages(data || []);
+      }
+    } catch (err: any) {
+      setPagesError(err.message || "Erro de conexão ao carregar páginas.");
+    }
+  };
+
+  const handleSavePage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPageSlug || !pageDraftTitle || !pageDraftContent) return;
+    
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('platform_pages')
+        .upsert({
+          slug: editingPageSlug,
+          title: pageDraftTitle,
+          content: pageDraftContent,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      setSuccessMsg("Página atualizada com sucesso!");
+      setEditingPageSlug(null);
+      setPageDraftTitle('');
+      setPageDraftContent('');
+      fetchPlatformPages();
+    } catch (err: any) {
+      setErrorMsg(`Erro ao guardar página: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'cms') {
       fetchHomepageCards();
+    }
+    if (activeTab === 'pages') {
+      fetchPlatformPages();
     }
   }, [activeTab]);
 
@@ -315,6 +366,12 @@ export default function Admin() {
   }, [selectedSalon]);
 
   // Sync and fetch actual admin dashboards from database
+  const [platformPages, setPlatformPages] = useState<any[]>([]);
+  const [editingPageSlug, setEditingPageSlug] = useState<string | null>(null);
+  const [pageDraftTitle, setPageDraftTitle] = useState('');
+  const [pageDraftContent, setPageDraftContent] = useState('');
+  const [pagesError, setPagesError] = useState<string | null>(null);
+
   const syncAdminDatasets = async () => {
     setLoading(true);
     setErrorMsg(null);
@@ -601,42 +658,49 @@ export default function Admin() {
       setErrorMsg(null);
       setSuccessMsg(null);
 
-      const queries = [
-        { table: 'bookings', eq: 'business_id' },
-        { table: 'services', eq: 'business_id' },
-        { table: 'business_hours', eq: 'business_id' },
-        { table: 'staff', eq: 'business_id' },
-        { table: 'payments', eq: 'business_id' },
-        { table: 'payouts', eq: 'business_id' },
-        { table: 'subscriptions', eq: 'business_id' },
-        { table: 'reviews', eq: 'business_id' },
-        { table: 'loyalty_cards', eq: 'business_id' },
-        { table: 'loyalty_history', eq: 'business_id' },
-        { table: 'marketing_campaigns', eq: 'business_id' },
-        { table: 'leads', eq: 'business_id' }
-      ];
+      // We call the custom RPC function that definitively wipes out auth.users
+      const { error: rpcErr } = await supabase.rpc('admin_delete_user', { target_user_id: ownerId });
+      
+      if (rpcErr) {
+        // Fallback to local cascading if RPC doesn't exist
+        console.warn("RPC admin_delete_user not found or failed, falling back to local dataset wipe", rpcErr);
+        const queries = [
+          { table: 'bookings', eq: 'business_id' },
+          { table: 'services', eq: 'business_id' },
+          { table: 'business_hours', eq: 'business_id' },
+          { table: 'staff', eq: 'business_id' },
+          { table: 'payments', eq: 'business_id' },
+          { table: 'payouts', eq: 'business_id' },
+          { table: 'subscriptions', eq: 'business_id' },
+          { table: 'reviews', eq: 'business_id' },
+          { table: 'loyalty_cards', eq: 'business_id' },
+          { table: 'loyalty_history', eq: 'business_id' },
+          { table: 'marketing_campaigns', eq: 'business_id' },
+          { table: 'leads', eq: 'business_id' }
+        ];
 
-      for (const q of queries) {
-        try {
-          await supabase.from(q.table).delete().eq(q.eq, businessId);
-        } catch (e) {
-          console.warn(`Deleting from ${q.table} skipped:`, e);
+        for (const q of queries) {
+          try {
+            await supabase.from(q.table).delete().eq(q.eq, businessId);
+          } catch (e) {
+            console.warn(`Deleting from ${q.table} skipped:`, e);
+          }
         }
+
+        const { error: destBizErr } = await supabase
+          .from('businesses')
+          .delete()
+          .eq('id', businessId);
+        if (destBizErr && destBizErr.code !== '42P01') throw destBizErr;
+
+        const { error: destProfErr } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', ownerId);
+        if (destProfErr && destProfErr.code !== '42P01') throw destProfErr;
       }
 
-      const { error: destBizErr } = await supabase
-        .from('businesses')
-        .delete()
-        .eq('id', businessId);
-      if (destBizErr) throw destBizErr;
-
-      const { error: destProfErr } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', ownerId);
-      if (destProfErr) throw destProfErr;
-
-      setSuccessMsg("Conta e dados de parceiro INTEGRALMENTE eliminados com sucesso!");
+      setSuccessMsg("Conta (Logins e Dados) eliminada e desativada definitivamente com sucesso!");
       setDeleteAccountModalOpen(false);
       setDeleteAccountTarget(null);
       setDeleteAccountDoubleConfirmText('');
@@ -998,7 +1062,8 @@ export default function Admin() {
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
-                { id: 'cms', label: 'Gestão da Homepage', icon: Globe }
+                { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+                { id: 'pages', label: 'Páginas do Site', icon: FileText }
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1069,6 +1134,7 @@ export default function Admin() {
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
               { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+              { id: 'pages', label: 'Páginas da Plataforma', icon: FileText },
               { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -2419,6 +2485,178 @@ create policy "Allow admins full operations on homepage_cards"
                       )}
                     </div>
 
+                  </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION 8: PLATFORM PAGES CMS                      */}
+              {/* ==================================================== */}
+              {activeTab === 'pages' && (
+                <div id="admin-pages" className="space-y-6 animate-fade-in font-sans">
+                  <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white mb-1">Páginas da Plataforma</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Edite os termos legais, políticas de privacidade e informações de apoio.</p>
+                    </div>
+                    <button
+                      onClick={fetchPlatformPages}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-300 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Sincronizar</span>
+                    </button>
+                  </div>
+
+                  {pagesError && (
+                    <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
+                      <div className="flex items-center gap-2 text-purple-400 font-bold">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>AVISO / INFORMAÇÃO OPERACIONAL</span>
+                      </div>
+                      <p>{pagesError}</p>
+                      
+                      {pagesError.includes("platform_pages") && (
+                        <div className="space-y-2 mt-4">
+                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a funcionalidade CMS e RPC Apagar Contas:</span>
+                          <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
+{`-- 1. CMS de Plataforma
+create table if not exists public.platform_pages (
+  slug text primary key,
+  title text not null,
+  content text not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.platform_pages enable row level security;
+
+create policy "Allow public read access on platform_pages" 
+  on public.platform_pages for select using (true);
+
+create policy "Allow admins full operations on platform_pages" 
+  on public.platform_pages for all 
+  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')) 
+  with check (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+
+-- 2. Sistema Definitivo de Remoção de Uso (auth.users via backend admin)
+create or replace function public.admin_delete_user(target_user_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
+    raise exception 'Unauthorised';
+  end if;
+
+  delete from public.businesses where owner_id = target_user_id;
+  delete from public.profiles where id = target_user_id;
+  delete from auth.users where id = target_user_id;
+end;
+$$;`}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* PAGES LISTING */}
+                    <div className="lg:col-span-4 bg-slate-900 border border-slate-900 rounded-3xl p-4 sm:p-5 space-y-4">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono border-b border-slate-850 pb-3">Páginas de Sistema</h4>
+                      
+                      <div className="flex flex-col gap-2">
+                        {[
+                          { id: 'termos-e-condicoes', name: 'Termos e Condições' },
+                          { id: 'politica-de-privacidade', name: 'Política de Privacidade' },
+                          { id: 'politica-de-cookies', name: 'Política de Cookies' },
+                          { id: 'politica-de-cancelamentos', name: 'Can. e Reembolsos' },
+                          { id: 'politica-de-pagamentos', name: 'Política de Pagamentos' },
+                          { id: 'seguranca-e-protecao-de-dados', name: 'Segurança / Dados' },
+                          { id: 'faq-cliente', name: 'FAQ do Cliente' },
+                          { id: 'faq-parceiro', name: 'FAQ do Parceiro' },
+                          { id: 'sobre-nos', name: 'Sobre a Glamzo' }
+                        ].map(page => {
+                          const existingData = platformPages.find(p => p.slug === page.id);
+                          return (
+                            <button
+                              key={page.id}
+                              onClick={() => {
+                                setEditingPageSlug(page.id);
+                                setPageDraftTitle(existingData?.title || page.name);
+                                setPageDraftContent(existingData?.content || '');
+                              }}
+                              className={`text-left px-4 py-3 rounded-xl text-xs font-semibold transition-all ${editingPageSlug === page.id ? 'bg-purple-900/40 text-purple-200 border border-purple-800' : 'bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'}`}
+                            >
+                              <div className="flex justify-between items-center">
+                                <span>{page.name}</span>
+                                {existingData && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* EDITOR */}
+                    {editingPageSlug ? (
+                      <div className="lg:col-span-8 bg-[#0a0515]/30 border border-slate-850 rounded-3xl p-5 sm:p-6 shadow-2xl">
+                        <form onSubmit={handleSavePage} className="space-y-5">
+                          <div className="flex justify-between items-end">
+                            <h4 className="font-extrabold text-xs text-purple-400 uppercase tracking-wider font-mono">Editor de Markup da Página</h4>
+                            <span className="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-slate-500 font-mono">/{editingPageSlug}</span>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Título da Página (H1)</label>
+                            <input
+                              type="text"
+                              value={pageDraftTitle}
+                              onChange={e => setPageDraftTitle(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors placeholder:text-slate-700"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between items-end mb-1.5">
+                              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide">Conteúdo (Suporta HTML Básico)</label>
+                            </div>
+                            <textarea
+                              value={pageDraftContent}
+                              onChange={e => setPageDraftContent(e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors placeholder:text-slate-700 font-mono h-[400px] resize-y leading-relaxed"
+                              required
+                              placeholder="<p>Escreva aqui o seu texto legal ou de ajuda...</p>\n<h2>Títulos 2</h2>"
+                            />
+                            <p className="text-[10px] text-slate-600 mt-2">Dica: Use &lt;h2&gt; ou &lt;h3&gt; para cabeçalhos e &lt;p&gt; para parágrafos. Tags como &lt;strong&gt; e &lt;ul&gt; &lt;li&gt; também são seguras.</p>
+                          </div>
+
+                          <div className="flex items-center gap-3 pt-2">
+                            <button
+                              type="submit"
+                              disabled={loading}
+                              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
+                            >
+                              {loading ? 'A Gravar...' : 'Gravar Alterações'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingPageSlug(null)}
+                              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
+                            >
+                              Fechar
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    ) : (
+                      <div className="lg:col-span-8 bg-slate-900/30 border border-slate-900 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
+                        <FileText className="w-12 h-12 text-slate-800 mb-4" />
+                        <h4 className="text-slate-500 font-bold mb-2">Editor de Conteúdo Estático</h4>
+                        <p className="text-slate-600 text-xs">Selecione uma página no painel lateral à esquerda para iniciar a edição do seu conteúdo em direto na plataforma.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

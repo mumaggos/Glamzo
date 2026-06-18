@@ -24,6 +24,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<UserRole>('customer'); // default 'customer'
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Status indicators
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,11 @@ export default function Signup() {
 
     if (password !== confirmPassword) {
       setErrorMsg('As palavras-passe digitadas não coincidem.');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
       return;
     }
 
@@ -217,6 +223,28 @@ export default function Signup() {
                 className="block w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all text-slate-800"
                 placeholder="Introduza novamente a palavra-passe"
               />
+            </div>
+
+            {/* Checkbox Terms */}
+            <div className="flex items-start gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500"
+              />
+              <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed px-1">
+                Li e aceito os{' '}
+                <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                  Termos e Condições
+                </Link>{' '}
+                e a{' '}
+                <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                  Política de Privacidade
+                </Link>
+                .
+              </label>
             </div>
 
             {/* Submit button */}

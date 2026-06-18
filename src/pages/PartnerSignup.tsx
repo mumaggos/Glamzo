@@ -34,6 +34,7 @@ export default function PartnerSignup() {
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [description, setDescription] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Auxiliary states
   const [loading, setLoading] = useState(false);
@@ -79,6 +80,11 @@ export default function PartnerSignup() {
 
     if (!businessName.trim() || !city.trim() || !address.trim() || !phone.trim()) {
       setErrorMsg('Preencha os dados obrigatórios do estabelecimento (Nome, Cidade, Morada e Telefone).');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
       return;
     }
 
@@ -538,6 +544,28 @@ export default function PartnerSignup() {
                     placeholder="Introduza uma breve apresentação do seu espaço e serviços especialidades..."
                   />
                 </div>
+              </div>
+
+              {/* Checkbox Terms */}
+              <div className="flex items-start gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="terms-partner"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500"
+                />
+                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1">
+                  Li e aceito os{' '}
+                  <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                    Termos para Parceiros
+                  </Link>{' '}
+                  e a{' '}
+                  <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                    Política de Privacidade e Tratamento GDPR
+                  </Link>
+                  .
+                </label>
               </div>
 
               <div className="flex gap-4 pt-4">

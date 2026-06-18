@@ -6,6 +6,8 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import ScrollToTop from './components/ScrollToTop';
+import Footer from './components/Footer';
+import CookieBanner from './components/CookieBanner';
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
 const Home = React.lazy(() => import('./pages/Home'));
 const Login = React.lazy(() => import('./pages/Login'));
@@ -23,6 +25,16 @@ const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
 const Favorites = React.lazy(() => import('./pages/Favorites'));
+const Termos = React.lazy(() => import('./pages/legal/Termos'));
+const Privacidade = React.lazy(() => import('./pages/legal/Privacidade'));
+const Cookies = React.lazy(() => import('./pages/legal/Cookies'));
+const Cancelamentos = React.lazy(() => import('./pages/legal/Cancelamentos'));
+const Pagamentos = React.lazy(() => import('./pages/legal/Pagamentos'));
+const Seguranca = React.lazy(() => import('./pages/legal/Seguranca'));
+const FaqCliente = React.lazy(() => import('./pages/info/FaqCliente'));
+const FaqParceiro = React.lazy(() => import('./pages/info/FaqParceiro'));
+const Sobre = React.lazy(() => import('./pages/info/Sobre'));
+const Contactos = React.lazy(() => import('./pages/info/Contactos'));
 const GlamzoMessenger = React.lazy(() => import('./components/GlamzoMessenger'));
 
 function RouteLoader() {
@@ -93,6 +105,18 @@ export default function App() {
                 <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
                 <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
                 <Route path="/favorites" element={<Favorites />} />
+                
+                {/* Information & Legal Routes */}
+                <Route path="/termos-e-condicoes" element={<Termos />} />
+                <Route path="/politica-de-privacidade" element={<Privacidade />} />
+                <Route path="/politica-de-cookies" element={<Cookies />} />
+                <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
+                <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
+                <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
+                <Route path="/faq-cliente" element={<FaqCliente />} />
+                <Route path="/faq-parceiro" element={<FaqParceiro />} />
+                <Route path="/sobre-nos" element={<Sobre />} />
+                <Route path="/contactos" element={<Contactos />} />
 
                 {/* /onboarding: Partner Wizard - Restricted to authenticated members */}
                 <Route
@@ -142,6 +166,9 @@ export default function App() {
               </Routes>
             </Suspense>
           </main>
+          
+          <Footer />
+          <CookieBanner />
 
           {/* Floating Live Realtime Messenger Overlay is loaded under user idle states */}
           {loadMessenger && (

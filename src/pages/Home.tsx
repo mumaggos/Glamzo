@@ -493,19 +493,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 mt-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-600 font-mono">
-          <div>Glamzo Premium Marketplace © 2026. Todos os direitos reservados.</div>
-          <div className="flex gap-4">
-            <Link to="/explore" className="hover:text-purple-600 transition-colors">Explorar Salões</Link>
-            <Link to="/partner" className="hover:text-purple-600 transition-colors">Área do Parceiro</Link>
-            <Link to="/admin/login" className="hover:text-purple-600 transition-colors opacity-55 hover:opacity-100">• Painel Admin</Link>
-          </div>
-        </div>
-      </footer>
-
     </div>
   );
 }
