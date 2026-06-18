@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || '/images/home/spa.webp';
-const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '/images/home/spa.webp';
+const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
 
 // Check if actual env vars are configured and not just placeholder strings
 export const isSupabaseConfigured = !!(

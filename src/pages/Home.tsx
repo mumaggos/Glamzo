@@ -9,8 +9,6 @@ import {
   Smile, Star, ShieldCheck, Check, Compass, Home as HomeIcon, Heart
 } from 'lucide-react';
 
-import Footer from '../components/Footer';
-
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -108,7 +106,7 @@ export default function Home() {
 
   // Unified helper to map card title keywords into standard primary category filters
   const getMatchingCategoryName = (title: string): string => {
-    const t = (title || '/images/home/spa.webp').toLowerCase().trim();
+    const t = (title || '').toLowerCase().trim();
     if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
       return 'Noivas & Eventos';
     }
@@ -131,7 +129,7 @@ export default function Home() {
   };
 
   const getBestUnsplashCategoryFallback = (title: string): string => {
-    const t = (title || '/images/home/spa.webp').toLowerCase().trim();
+    const t = (title || '').toLowerCase().trim();
     if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
       return '/images/home/haircut.webp';
     }
@@ -322,7 +320,7 @@ export default function Home() {
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.onerror = null; // Prevent infinite loop
-                    const lower = (cat.name || '/images/home/spa.webp').toLowerCase();
+                    const lower = (cat.name || '').toLowerCase();
                     if (lower.includes('noiva') || lower.includes('event') || lower.includes('casam') || lower.includes('brid')) {
                       e.currentTarget.src = '/images/home/haircut.webp';
                     } else if (lower.includes('cabel') || lower.includes('barb')) {
@@ -511,7 +509,16 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <footer className="border-t border-slate-100 py-8 mt-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-600 font-mono">
+          <div>Glamzo Premium Marketplace © 2026. Todos os direitos reservados.</div>
+          <div className="flex gap-4">
+            <Link to="/explore" className="hover:text-purple-600 transition-colors">Explorar Salões</Link>
+            <Link to="/partner" className="hover:text-purple-600 transition-colors">Área do Parceiro</Link>
+            <Link to="/admin/login" className="hover:text-purple-600 transition-colors">• Painel Admin</Link>
+          </div>
+        </div>
+      </footer>
       </>
       )}
     </div>

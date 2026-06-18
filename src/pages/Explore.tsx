@@ -11,7 +11,6 @@ import {
   fetchCustomerFavorites, 
   getPromotionStatus 
 } from '../utils/marketingHelper';
-import Footer from '../components/Footer';
 import { 
   Search, MapPin, Grid, Store, Sparkles, SlidersHorizontal, 
   CheckCircle2, Loader2, ArrowRight, X, Phone, Compass, AtSign,
@@ -32,8 +31,8 @@ export default function Explore() {
   const [promotions, setPromotions] = useState<Record<string, { is_promoted: boolean }>>({});
 
   // Search Parameters from URL or Local State
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '/images/home/spa.webp');
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get('q') || '/images/home/spa.webp');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get('q') || '');
 
   // Debounce search query updates to avoid lagging/stuttering typing (UX Premium and Instant Rendering)
   useEffect(() => {
@@ -312,14 +311,14 @@ export default function Explore() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchName = b.name.toLowerCase().includes(q);
-      const matchDesc = (b.description || '/images/home/spa.webp').toLowerCase().includes(q);
-      const matchAddress = (b.address || '/images/home/spa.webp').toLowerCase().includes(q);
+      const matchDesc = (b.description || '').toLowerCase().includes(q);
+      const matchAddress = (b.address || '').toLowerCase().includes(q);
       const matchCat = b.category.toLowerCase().includes(q);
       
       // Real-time Service matching: Glamzo search functions by services!
       const matchServices = services.some(s => 
         s.business_id === b.id && 
-        (s.name.toLowerCase().includes(q) || (s.description || '/images/home/spa.webp').toLowerCase().includes(q))
+        (s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q))
       );
       
       if (!matchName && !matchDesc && !matchAddress && !matchCat && !matchServices) return false;
@@ -334,7 +333,7 @@ export default function Explore() {
 
     // 3. Subcategories matching
     if (selectedSubcategory !== 'All') {
-      const bDesc = (b.description || '/images/home/spa.webp').toLowerCase();
+      const bDesc = (b.description || '').toLowerCase();
       const subLower = selectedSubcategory.toLowerCase();
       // Look for custom subcategory keyword in category, description, website
       if (!bDesc.includes(subLower) && !b.category.toLowerCase().includes(subLower)) {
@@ -371,7 +370,7 @@ export default function Explore() {
 
     // 8. At home "Ao domicílio" (matches category "Ao domicílio" or matches keywords)
     if (filterHomeService) {
-      const isDomicil = b.category === 'Ao domicílio' || (b.description || '/images/home/spa.webp').toLowerCase().includes('domicílio') || (b.description || '/images/home/spa.webp').toLowerCase().includes('casa');
+      const isDomicil = b.category === 'Ao domicílio' || (b.description || '').toLowerCase().includes('domicílio') || (b.description || '').toLowerCase().includes('casa');
       if (!isDomicil) return false;
     }
 
@@ -786,7 +785,7 @@ export default function Explore() {
                         {/* Premium Cover block with badge overlays styled like Uber / Fresha */}
                         <div className="h-52 bg-slate-100 relative overflow-hidden">
                           <img
-                            src={b.cover_url || '/images/home/spa.webp'}
+                            src={b.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70'}
                             alt={b.name}
                             loading="lazy"
                             decoding="async"
@@ -848,7 +847,7 @@ export default function Explore() {
                           {/* Circle Logo absolute badge */}
                           <div className="w-14 h-14 rounded-2xl overflow-hidden border-4 border-white bg-slate-50 shadow-md absolute -mt-14 left-6 z-10 hover:rotate-2 transition-transform select-none">
                             <img
-                              src={b.logo_url || '/images/home/spa.webp'}
+                              src={b.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=64&q=70'}
                               alt="logo"
                               loading="lazy"
                               decoding="async"
@@ -930,7 +929,7 @@ export default function Explore() {
                             )}
 
                             {/* Home Service badge */}
-                            {(b.category === 'Ao domicílio' || (b.description || '/images/home/spa.webp').toLowerCase().includes('domicílio') || (b.description || '/images/home/spa.webp').toLowerCase().includes('casa')) && (
+                            {(b.category === 'Ao domicílio' || (b.description || '').toLowerCase().includes('domicílio') || (b.description || '').toLowerCase().includes('casa')) && (
                               <div className="mt-3 inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 border border-purple-100 rounded-md text-[9px] font-bold text-purple-600 uppercase tracking-wider">
                                 <Home className="w-3 h-3 text-purple-500" />
                                 <span>Atendimento ao Domicílio</span>
@@ -1191,7 +1190,6 @@ export default function Explore() {
         </div>
       )}
 
-      <Footer />
     </div>
   );
 }

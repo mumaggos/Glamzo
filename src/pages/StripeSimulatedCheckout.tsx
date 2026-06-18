@@ -27,14 +27,14 @@ export default function StripeSimulatedCheckout() {
   const type = searchParams.get('type') || 'booking_payment';
   const amount = Number(searchParams.get('amount') || 0);
   const bookingId = searchParams.get('bookingId');
-  const businessId = searchParams.get('businessId') || '/images/home/spa.webp';
-  const planName = searchParams.get('planName') || '/images/home/spa.webp';
+  const businessId = searchParams.get('businessId') || '';
+  const planName = searchParams.get('planName') || '';
   const creditAmount = Number(searchParams.get('creditAmount') || 0);
-  const packageLabel = searchParams.get('packageLabel') || '/images/home/spa.webp';
-  const customerEmail = searchParams.get('customerEmail') || '/images/home/spa.webp';
+  const packageLabel = searchParams.get('packageLabel') || '';
+  const customerEmail = searchParams.get('customerEmail') || '';
   const businessName = searchParams.get('businessName') || 'Glamzo Partner';
   const serviceName = searchParams.get('serviceName') || 'Serviço de Estética';
-  const couponUsed = searchParams.get('couponUsed') || '/images/home/spa.webp';
+  const couponUsed = searchParams.get('couponUsed') || '';
   
   const rawSuccessUrl = searchParams.get('successUrl');
   const rawCancelUrl = searchParams.get('cancelUrl');

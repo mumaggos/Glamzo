@@ -114,8 +114,8 @@ export default function PartnerSignup() {
         whatsapp: whatsapp.trim() || null,
         email: email,
         description: description.trim() || null,
-        logo_url: '',
-        cover_url: ''
+        logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
+        cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
       };
 
       let { data: insertedBiz, error: bizErr } = await supabase

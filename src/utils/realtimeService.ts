@@ -265,7 +265,7 @@ export const realtimeService = {
     const tickets: SupportTicket[] = JSON.parse(list);
     const tIdx = tickets.findIndex(t => t.id === ticketId);
     if (tIdx !== -1) {
-      const currentHistory = tickets[tIdx].chat_history || '/images/home/spa.webp';
+      const currentHistory = tickets[tIdx].chat_history || '';
       const formattedSender = isFromAdmin ? '👑 Suporte Glamzo' : 'Membro';
       const entry = `[${new Date().toLocaleTimeString('pt-PT')}] ${formattedSender}: ${replyMessage}\n`;
       tickets[tIdx].chat_history = currentHistory + entry;
@@ -284,7 +284,7 @@ export const realtimeService = {
     const tIdx = tickets.findIndex(t => t.id === ticketId);
     if (tIdx !== -1) {
       tickets[tIdx].status = 'resolved';
-      const currentHistory = tickets[tIdx].chat_history || '/images/home/spa.webp';
+      const currentHistory = tickets[tIdx].chat_history || '';
       tickets[tIdx].chat_history = currentHistory + `[${new Date().toLocaleTimeString('pt-PT')}] 👑 Suporte Glamzo: ${adminReply}\n[Ticket Resolvido]\n`;
       tickets[tIdx].updated_at = new Date().toISOString();
       

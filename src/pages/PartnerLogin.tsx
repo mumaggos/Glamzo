@@ -18,7 +18,7 @@ export default function PartnerLogin() {
 
   const [email, setEmail] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('email') || '/images/home/spa.webp';
+    return params.get('email') || '';
   });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
