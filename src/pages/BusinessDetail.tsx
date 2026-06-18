@@ -261,7 +261,7 @@ export default function BusinessDetail() {
       await createDispute({
         booking_id: activeBookingId,
         customer_id: user.id,
-        business_id: business?.id || '/images/home/spa.webp',
+        business_id: business?.id || '',
         opened_by: 'customer',
         reason: disputeReason,
         description: disputeDesc.trim()
@@ -504,7 +504,7 @@ export default function BusinessDetail() {
       {/* Upper Cover Banner Area */}
       <div className="h-64 sm:h-80 w-full relative bg-slate-50 overflow-hidden border-b border-slate-100">
         <img
-          src={business.cover_url || '/images/home/spa.webp'}
+          src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=75'}
           alt={business.name}
           decoding="async"
           width="800"
@@ -563,7 +563,7 @@ export default function BusinessDetail() {
               {/* Overlapping logo image */}
               <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-100 shadow-2xl bg-white shrink-0">
                 <img
-                  src={business.logo_url || '/images/home/spa.webp'}
+                  src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                   alt="logo"
                   loading="lazy"
                   decoding="async"
@@ -679,7 +679,7 @@ export default function BusinessDetail() {
                       <div className="flex gap-3.5 items-start">
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-200">
                           <img
-                            src={srv.image_url || '/images/home/spa.webp'}
+                            src={srv.image_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                             alt={srv.name}
                             loading="lazy"
                             decoding="async"

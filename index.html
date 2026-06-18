@@ -15,19 +15,21 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Glamzo | Plataforma & Agendamentos de Beleza Premium" />
     <meta property="og:description" content="Encontre e agende serviços de beleza com os melhores profissionais da sua região. Prático, rápido e seguro com suporte Stripe (MBWay, Cartões, e mais)." />
-    <meta property="og:image" content="/images/home/spa.webp" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=630&q=80" />
     <meta property="og:site_name" content="Glamzo" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Glamzo | Plataforma & Agendamentos de Beleza Premium" />
     <meta name="twitter:description" content="Encontre e agende serviços de beleza com os melhores profissionais em segundos. Rápido, seguro e disponível 24/7." />
-    <meta name="twitter:image" content="/images/home/spa.webp" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=630&q=80" />
     
     <!-- Link Canonical -->
     <link rel="canonical" href="https://glamzo.pt" />
 
     <!-- Performance Preconnections -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://fkpywjkatsxkgrmboald.supabase.co" crossorigin>
 
     <!-- Dynamic high-fidelity SVG favicon of Glamzo Logo -->
@@ -35,12 +37,13 @@
     
   </head>
   <body>
-    <!-- LCP estático para renderização instantânea -->
-    <div id="static-lcp" style="position: absolute; left: -9999px;">
-      <h1 class="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900">O seu momento de beleza, marcado num instante.</h1>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 20vh; font-family: sans-serif; background-color: #0f172a;">
+        <h1 style="color: white; font-size: 2.5rem; text-align: center; font-weight: 900; max-width: 800px; padding: 0 1rem;">
+          O seu momento de beleza, marcado num instante.
+        </h1>
+      </div>
     </div>
-    
-    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

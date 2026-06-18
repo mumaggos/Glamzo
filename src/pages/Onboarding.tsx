@@ -168,8 +168,8 @@ export default function Onboarding() {
         door_number: doorNumber || null,
         latitude,
         longitude,
-        logo_url: logoUrl || '/images/home/spa.webp', // Elegant default icon fallback
-        cover_url: coverUrl || '/images/home/spa.webp', // Elegant header fallback
+        logo_url: logoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&h=150&q=70', // Elegant default icon fallback
+        cover_url: coverUrl || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=400&q=75', // Elegant header fallback
         whatsapp: whatsapp || null,
         instagram: instagram || null,
         website: website || null,

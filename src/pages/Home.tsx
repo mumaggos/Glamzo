@@ -3,13 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { PORTUGAL_GEO } from '../utils/geoData';
 import { MAIN_CATEGORIES } from '../utils/categoriesData';
+import { supabase } from '../lib/supabase';
 import { getPromotionStatus } from '../utils/marketingHelper';
 import { 
   Sparkles, Search, MapPin, ArrowRight,
   Smile, Star, ShieldCheck, Check, Compass, Home as HomeIcon, Heart
 } from 'lucide-react';
-
-import Footer from '../components/Footer';
 
 export default function Home() {
   const { user } = useAuth();
@@ -23,92 +22,79 @@ export default function Home() {
   // Promoted Campaigns state
   const [promotedShops, setPromotedShops] = useState<any[]>([]);
   const [dynamicCards, setDynamicCards] = useState<any[]>([]);
-  const [renderBelowFold, setRenderBelowFold] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setRenderBelowFold(true);
-      // Lazy load supabase to remove it from critical UI path
-      const { supabase } = await import('../lib/supabase');
-      // 1. Load promoted campaigns with instant SessionStorage cache fallback for 100ms render speeds
-      const cachedShops = sessionStorage.getItem('glamzo_promoted_shops');
-      if (cachedShops) {
+    // 1. Load promoted campaigns with instant SessionStorage cache fallback for 100ms render speeds
+    const cachedShops = sessionStorage.getItem('glamzo_promoted_shops');
+    if (cachedShops) {
+      try {
+        setPromotedShops(JSON.parse(cachedShops));
+      } catch (e) {
+        console.warn("Failed to parse cached shops:", e);
+      }
+    }
+
+    supabase.from('businesses').select('*').limit(30).then(({ data }) => {
+      if (data) {
         try {
-          setPromotedShops(JSON.parse(cachedShops));
+          const now = Date.now();
+          const filtered = data.filter((b: any) => {
+            if (b.subscription_status === 'suspended') {
+              return false;
+            }
+            // Enforce card added for real shops to appear in the public list
+            const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
+            if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
+              return false;
+            }
+            const isPromoted = !!b.is_promoted;
+            const endsAt = b.promotion_ends_at;
+            if (isPromoted && endsAt && new Date(endsAt).getTime() < now) {
+              return false;
+            }
+            return isPromoted;
+          }).slice(0, 3);
+          setPromotedShops(filtered);
+          sessionStorage.setItem('glamzo_promoted_shops', JSON.stringify(filtered));
         } catch (e) {
-          console.warn("Failed to parse cached shops:", e);
+          console.error(e);
+        }
+      }
+    });
+
+    // 2. Load custom CMS homepage cards with instant SessionStorage caching
+    const loadDynamicCards = async () => {
+      const cachedCards = sessionStorage.getItem('glamzo_homepage_cards');
+      if (cachedCards) {
+        try {
+          setDynamicCards(JSON.parse(cachedCards));
+        } catch (e) {
+          console.warn("Failed to parse cached dynamic cards:", e);
         }
       }
 
-      supabase.from('businesses').select('*').limit(30).then(({ data }) => {
-        if (data) {
-          try {
-            const now = Date.now();
-            const filtered = data.filter((b: any) => {
-              if (b.subscription_status === 'suspended') {
-                return false;
-              }
-              // Enforce card added for real shops to appear in the public list
-              const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(b.slug);
-              if (!isDemo && (!b.stripe_subscription_id || b.stripe_subscription_id.trim() === '')) {
-                return false;
-              }
-              const isPromoted = !!b.is_promoted;
-              const endsAt = b.promotion_ends_at;
-              if (isPromoted && endsAt && new Date(endsAt).getTime() < now) {
-                return false;
-              }
-              return isPromoted;
-            }).slice(0, 3);
-            setPromotedShops(filtered);
-            sessionStorage.setItem('glamzo_promoted_shops', JSON.stringify(filtered));
-          } catch (e) {
-            console.error(e);
-          }
+      try {
+        const { data, error } = await supabase
+          .from('homepage_cards')
+          .select('*')
+          .eq('active', true)
+          .order('display_order', { ascending: true });
+        if (error) {
+          console.warn("Could not query dynamic homepage_cards:", error.message);
+        } else if (data && data.length > 0) {
+          setDynamicCards(data);
+          sessionStorage.setItem('glamzo_homepage_cards', JSON.stringify(data));
         }
-      });
-
-      // 2. Load custom CMS homepage cards with instant SessionStorage caching
-      const loadDynamicCards = async () => {
-        const cachedCards = sessionStorage.getItem('glamzo_homepage_cards');
-        if (cachedCards) {
-          try {
-            setDynamicCards(JSON.parse(cachedCards));
-          } catch (e) {
-            console.warn("Failed to parse cached dynamic cards:", e);
-          }
-        }
-
-        try {
-          const { data, error } = await supabase
-            .from('homepage_cards')
-            .select('*')
-            .eq('active', true)
-            .order('display_order', { ascending: true });
-          if (error) {
-            console.warn("Could not query dynamic homepage_cards:", error.message);
-          } else if (data && data.length > 0) {
-            setDynamicCards(data);
-            sessionStorage.setItem('glamzo_homepage_cards', JSON.stringify(data));
-          }
-        } catch (err) {
-          console.warn("Error loadDynamicCards:", err);
-        }
-      };
-      loadDynamicCards();
+      } catch (err) {
+        console.warn("Error loadDynamicCards:", err);
+      }
     };
-
-    // Use requestIdleCallback or setTimeout to defer fetching
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(() => fetchData());
-    } else {
-      setTimeout(fetchData, 500);
-    }
+    loadDynamicCards();
   }, []);
 
   // Unified helper to map card title keywords into standard primary category filters
   const getMatchingCategoryName = (title: string): string => {
-    const t = (title || '/images/home/spa.webp').toLowerCase().trim();
+    const t = (title || '').toLowerCase().trim();
     if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
       return 'Noivas & Eventos';
     }
@@ -131,26 +117,26 @@ export default function Home() {
   };
 
   const getBestUnsplashCategoryFallback = (title: string): string => {
-    const t = (title || '/images/home/spa.webp').toLowerCase().trim();
+    const t = (title || '').toLowerCase().trim();
     if (t.includes('noiva') || t.includes('event') || t.includes('casam') || t.includes('brid') || t.includes('wed')) {
-      return '/images/home/haircut.webp';
+      return 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('cabel') || t.includes('barb') || t.includes('pente') || t.includes('hair') || t.includes('cut')) {
-      return '/images/home/beard.webp';
+      return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('nail') || t.includes('unh') || t.includes('pest') || t.includes('sobr') || t.includes('maqu') || t.includes('beauty') || t.includes('make')) {
-      return '/images/home/nails.webp';
+      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('estét') || t.includes('pele') || t.includes('corpo') || t.includes('laser') || t.includes('depil') || t.includes('skin')) {
-      return '/images/home/makeup.webp';
+      return 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('well') || t.includes('mass') || t.includes('spa') || t.includes('reik') || t.includes('terap') || t.includes('relax')) {
-      return '/images/home/massage.webp';
+      return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600';
     }
     if (t.includes('domicíl') || t.includes('casa') || t.includes('home')) {
-      return '/images/home/spa.webp';
+      return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
     }
-    return '/images/home/spa.webp';
+    return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
   };
 
   // Memoize rendered categories so that input keystrokes do not trigger complete mapping loops
@@ -291,9 +277,7 @@ export default function Home() {
       </section>
 
       {/* 2. Visual Categories Grid - Airbnb Style */}
-      {renderBelowFold && (
-        <>
-          <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center md:text-left mb-12">
           <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] font-bold uppercase text-purple-600 tracking-widest mb-3">
             <span>Explorar Serviços</span>
@@ -322,13 +306,13 @@ export default function Home() {
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.onerror = null; // Prevent infinite loop
-                    const lower = (cat.name || '/images/home/spa.webp').toLowerCase();
+                    const lower = (cat.name || '').toLowerCase();
                     if (lower.includes('noiva') || lower.includes('event') || lower.includes('casam') || lower.includes('brid')) {
-                      e.currentTarget.src = '/images/home/haircut.webp';
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600';
                     } else if (lower.includes('cabel') || lower.includes('barb')) {
-                      e.currentTarget.src = '/images/home/beard.webp';
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600';
                     } else {
-                      e.currentTarget.src = '/images/home/spa.webp';
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
                     }
                   }}
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 grayscale-[10%] group-hover:grayscale-0"
@@ -511,9 +495,17 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <Footer />
-      </>
-      )}
+      <footer className="border-t border-slate-100 py-8 mt-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-600 font-mono">
+          <div>Glamzo Premium Marketplace © 2026. Todos os direitos reservados.</div>
+          <div className="flex gap-4">
+            <Link to="/explore" className="hover:text-purple-600 transition-colors">Explorar Salões</Link>
+            <Link to="/partner" className="hover:text-purple-600 transition-colors">Área do Parceiro</Link>
+            <Link to="/admin/login" className="hover:text-purple-600 transition-colors opacity-55 hover:opacity-100">• Painel Admin</Link>
+          </div>
+        </div>
+      </footer>
+
     </div>
   );
 }
