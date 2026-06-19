@@ -76,7 +76,7 @@ interface AISolutionResponse {
 
 export async function submitMessage(
   sessionId: string,
-  senderType: 'customer' | 'business' | 'ai' | 'support',
+  senderType: 'customer' | 'business' | 'ai' | 'support' | 'system',
   senderName: string,
   messageText: string
 ): Promise<ChatMessage> {

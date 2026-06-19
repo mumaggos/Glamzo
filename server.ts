@@ -5,6 +5,7 @@ import compression from 'compression';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from '@google/genai';
+import { EmailService } from './src/services/EmailService';
 
 // Configuration helper
 const PORT = 3000;
@@ -110,11 +111,46 @@ app.post('/api/realtime/broadcast', (req, res) => {
   res.json({ success: true, sseClientsCount: sseClients.length });
 });
 
-// Simulated Resend outbox logger endpoint
-app.post('/api/emails/send', (req, res) => {
-  const emailLog = req.body;
-  console.log(`[Resend Engine] Simulating/Logging outbound enterprise email:`, emailLog);
-  res.json({ success: true, messageId: emailLog.id });
+// Real Email Dispatch endpoint
+app.post('/api/emails/send', async (req, res) => {
+  try {
+    const { type, to, data } = req.body;
+    console.log(`[EmailService] Attempting to send ${type} to ${to}`);
+    
+    switch (type) {
+      case 'verification':
+        await EmailService.sendVerificationEmail(to, data.userName, data.confirmationLink);
+        break;
+      case 'password_reset':
+        await EmailService.sendPasswordResetEmail(to, data.resetLink);
+        break;
+      case 'booking_confirmation':
+        await EmailService.sendBookingConfirmationEmail(to, data);
+        break;
+      case 'booking_cancelled':
+        await EmailService.sendBookingCancelledEmail(to, data);
+        break;
+      case 'new_booking':
+        await EmailService.sendNewBookingEmail(to, data);
+        break;
+      case 'subscription_activated':
+        await EmailService.sendSubscriptionActivatedEmail(to, data);
+        break;
+      case 'invoice':
+        await EmailService.sendInvoiceEmail(to, data);
+        break;
+      case 'payment_failed':
+        await EmailService.sendPaymentFailedEmail(to, data);
+        break;
+      default:
+        return res.status(400).json({ error: 'Unknown email type' });
+    }
+    
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error(`[EmailService] Failed to send email:`, err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 
@@ -1044,6 +1080,26 @@ const handleStripeWebhook = async (req: any, res: any) => {
             console.error('[Webhook Update Sub Record DB Err]:', subUpsertErr.message);
           } else {
             console.log(`[Webhook SaaS Success] SUBSCRIPTION UPDATED SUCCESSFULLY for salon business ${businessId}`);
+            
+            // EMAIL VERIFICATION - SUBSCRIPTION
+            try {
+              const { data: business } = await db.from('businesses').select('email, owner_id').eq('id', businessId).maybeSingle();
+              if (business) {
+                const { data: owner } = await db.from('profiles').select('email').eq('id', business.owner_id).maybeSingle();
+                const ownerEmail = business.email || (owner && owner.email);
+                
+                if (ownerEmail) {
+                  await EmailService.sendSubscriptionActivatedEmail(ownerEmail, {
+                    planName: 'Glamzo PRO',
+                    activationDate: new Intl.DateTimeFormat('pt-PT').format(new Date()),
+                    nextBillingDate: new Intl.DateTimeFormat('pt-PT').format(new Date(expiresAt)),
+                    dashboardUrl: 'https://glamzo.pt/dashboard'
+                  });
+                }
+              }
+            } catch (err: any) {
+              console.error('[Webhook Email Trigger Error]:', err.message);
+            }
           }
         }
       } else {
@@ -1300,6 +1356,52 @@ const handleStripeWebhook = async (req: any, res: any) => {
             console.error('[Webhook Payout DB Log Insertion Err]:', payoutLogErr.message);
           } else {
             console.log(`[Webhook Payout Log Completed] Recorded payout item of ${transRealAmount}EUR, status aligned: ${targetStatus} for business ${business.id}`);
+          }
+        }
+      }
+    }
+
+    // --- EVENT TYPE: invoice.paid / invoice.payment_failed ---
+    if (event.type === 'invoice.paid' || event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const stripeSubId = (invoice as any).subscription as string;
+      const amountPaid = (invoice.amount_paid / 100).toFixed(2);
+      const invoiceNum = invoice.number || 'N/A';
+      const invoicePdf = invoice.hosted_invoice_url || invoice.invoice_pdf || '#';
+
+      if (stripeSubId) {
+        const { data: business } = await db
+          .from('businesses')
+          .select('id, email, owner_id')
+          .eq('stripe_subscription_id', stripeSubId)
+          .maybeSingle();
+
+        if (business) {
+          const { data: owner } = await db.from('profiles').select('email').eq('id', business.owner_id).maybeSingle();
+          const pEmail = business.email || (owner && owner.email);
+          
+          if (pEmail) {
+            try {
+              if (event.type === 'invoice.paid') {
+                await EmailService.sendInvoiceEmail(pEmail, {
+                  amount: `${amountPaid} €`,
+                  date: new Intl.DateTimeFormat('pt-PT').format(new Date()),
+                  invoiceNumber: invoiceNum,
+                  downloadUrl: invoicePdf
+                });
+                console.log(`[Webhook SaaS Email] Sent invoice email to ${pEmail}`);
+              } else if (event.type === 'invoice.payment_failed') {
+                const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                await EmailService.sendPaymentFailedEmail(pEmail, {
+                  explanation: 'O método de pagamento associado à subscrição foi recusado pelo banco ou expirou.',
+                  updatePaymentUrl: 'https://glamzo.pt/dashboard',
+                  suspensionDate: new Intl.DateTimeFormat('pt-PT').format(nextWeek)
+                });
+                console.log(`[Webhook SaaS Email] Sent payment failed email to ${pEmail}`);
+              }
+            } catch (emailErr: any) {
+              console.error('[Webhook Email Dispatch Error]:', emailErr.message);
+            }
           }
         }
       }
