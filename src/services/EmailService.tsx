@@ -4,6 +4,7 @@ import { render } from '@react-email/render';
 
 import {
   VerificationEmail,
+  VerificationCodeEmail,
   PasswordResetEmail,
   BookingConfirmationEmail,
   BookingCancelledEmail,
@@ -20,6 +21,18 @@ const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@glamzo.pt';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export const EmailService = {
+  async sendVerificationCodeEmail(to: string, userName: string, code: string) {
+    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+    
+    const html = await render(<VerificationCodeEmail userName={userName} code={code} />);
+    return resend.emails.send({
+      from: EMAIL_FROM,
+      to,
+      subject: 'Código de Verificação - Glamzo',
+      html
+    });
+  },
+
   async sendVerificationEmail(to: string, userName: string, confirmationLink: string) {
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
     

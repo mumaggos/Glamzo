@@ -42,6 +42,10 @@ export default function PartnerSignup() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSignUpProcessActive, setIsSignUpProcessActive] = useState(false);
 
+  // Verification
+  const [verificationCode, setVerificationCode] = useState('');
+  const [enteredCode, setEnteredCode] = useState('');
+
   const categories = [
     'Cabelo & Barbearia',
     'Nails & Beauty',
@@ -73,7 +77,7 @@ export default function PartnerSignup() {
     setStep(2);
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSendVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -88,6 +92,44 @@ export default function PartnerSignup() {
       return;
     }
 
+    setLoading(true);
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setVerificationCode(code);
+
+    try {
+      await fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'verification_code',
+          to: email,
+          data: { 
+            userName: fullName,
+            code: code
+          }
+        })
+      });
+      setStep(3);
+      setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
+    } catch (err: any) {
+      console.error('Failed to trigger verification email', err);
+      setErrorMsg('Não foi possível enviar o e-mail de verificação. Tente novamente mais tarde.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (enteredCode !== verificationCode) {
+      setErrorMsg('Código de verificação inválido.');
+      return;
+    }
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
     setIsSignUpProcessActive(true);
 
@@ -163,25 +205,7 @@ export default function PartnerSignup() {
         throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
       }
 
-      setSuccessMsg('Registo concluído com sucesso! Redirecionando para o seu terminal para ativar o seu período experimental...');
-
-      // Dispatch validation email
-      try {
-        await fetch('/api/emails/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'verification',
-            to: email,
-            data: { 
-              userName: ownerName, 
-              confirmationLink: `${window.location.origin}/partner/login` 
-            }
-          })
-        });
-      } catch (e) {
-        console.error('Failed to trigger verification email', e);
-      }
+      setSuccessMsg('Registo concluído com sucesso e e-mail verificado! Redirecionando...');
 
       // Update database with default inactive state - requires card trial registration to unlock
       await supabase
@@ -389,7 +413,7 @@ export default function PartnerSignup() {
 
           {/* Step 2: Business details form */}
           {step === 2 && (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleSendVerification} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
@@ -604,11 +628,70 @@ export default function PartnerSignup() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>A registar salão...</span>
+                      <span>A enviar...</span>
                     </>
                   ) : (
                     <>
-                      <span>Criar Conta e Começar Teste</span>
+                      <span>Avançar</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {step === 3 && (
+            <form className="space-y-4 animate-fade-in" onSubmit={handleRegister}>
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full mb-4">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Verifique o seu e-mail</h3>
+                <p className="text-sm text-slate-500 mt-2">
+                  Enviámos um código de 6 dígitos para o e-mail: <strong className="text-slate-800">{email}</strong>
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="verify-code" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 text-center">
+                  Código de Verificação
+                </label>
+                <input
+                  id="verify-code"
+                  type="text"
+                  required
+                  value={enteredCode}
+                  onChange={(e) => setEnteredCode(e.target.value)}
+                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading || enteredCode.length !== 6}
+                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>A verificar...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Criar Conta</span>
                       <Check className="w-4 h-4" />
                     </>
                   )}

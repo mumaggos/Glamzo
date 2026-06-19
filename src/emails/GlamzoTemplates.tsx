@@ -64,6 +64,32 @@ const footerStyles = {
 };
 
 // 1. Verificação de Email
+export const VerificationCodeEmail = ({ userName, code }: { userName: string, code: string }) => (
+  <Html>
+    <Head />
+    <Preview>O teu código de verificação Glamzo</Preview>
+    <Body style={mainStyles}>
+      <Container style={containerStyles}>
+        <Heading style={{...headingStyles, color: PRIMARY_COLOR}}>Glamzo</Heading>
+        <Heading style={headingStyles}>Bem-vindo(a), {userName}!</Heading>
+        <Text style={textStyles}>
+          Obrigado por te registares na Glamzo. Para garantirmos a segurança da tua conta e poderes continuar com o registo, introduz o seguinte código de verificação:
+        </Text>
+        <div style={{ background: '#f3f4f6', padding: '16px', borderRadius: '8px', textAlign: 'center', margin: '24px 0' }}>
+          <Text style={{ fontSize: '32px', fontWeight: 'bold', letterSpacing: '8px', margin: '0', color: PRIMARY_COLOR }}>
+            {code}
+          </Text>
+        </div>
+        <Text style={{...textStyles, fontSize: '14px', color: '#6b7280'}}>
+          Este código é válido apenas para o processo de registo atual.
+        </Text>
+        <Hr style={hrStyles} />
+        <Text style={footerStyles}>A equipa Glamzo</Text>
+      </Container>
+    </Body>
+  </Html>
+);
+
 export const VerificationEmail = ({ userName, confirmationLink }: { userName: string, confirmationLink: string }) => (
   <Html>
     <Head />

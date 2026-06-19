@@ -118,6 +118,9 @@ app.post('/api/emails/send', async (req, res) => {
     console.log(`[EmailService] Attempting to send ${type} to ${to}`);
     
     switch (type) {
+      case 'verification_code':
+        await EmailService.sendVerificationCodeEmail(to, data.userName, data.code);
+        break;
       case 'verification':
         await EmailService.sendVerificationEmail(to, data.userName, data.confirmationLink);
         break;
