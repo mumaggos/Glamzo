@@ -289,7 +289,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {renderedCategories.map((cat) => (
+          {renderedCategories.map((cat, index) => (
             <Link 
               key={cat.id || cat.name}
               to={`/explore?category=${encodeURIComponent(getMatchingCategoryName(cat.name))}`}
@@ -299,7 +299,8 @@ export default function Home() {
                 <img 
                   src={cat.imageUrl} 
                   alt={cat.name} 
-                  loading="lazy"
+                  loading={index < 3 ? "eager" : "lazy"}
+                  fetchPriority={index < 3 ? "high" : "auto"}
                   decoding="async"
                   width="400"
                   height="192"
