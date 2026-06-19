@@ -4,12 +4,13 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
-import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
+import Home from './pages/Home';
+
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
-const Home = React.lazy(() => import('./pages/Home'));
+const SupabaseSetupHelper = React.lazy(() => import('./components/SupabaseSetupHelper'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Account = React.lazy(() => import('./pages/Account'));
@@ -73,7 +74,11 @@ export default function App() {
 
   // 1. If Supabase keys are not set yet, present the SQL and variable Setup Assistant
   if (!isSupabaseConfigured) {
-    return <SupabaseSetupHelper />;
+    return (
+      <Suspense fallback={<RouteLoader />}>
+        <SupabaseSetupHelper />
+      </Suspense>
+    );
   }
 
   return (

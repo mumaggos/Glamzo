@@ -165,6 +165,24 @@ export default function PartnerSignup() {
 
       setSuccessMsg('Registo concluído com sucesso! Redirecionando para o seu terminal para ativar o seu período experimental...');
 
+      // Dispatch validation email
+      try {
+        await fetch('/api/emails/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'verification',
+            to: email,
+            data: { 
+              userName: ownerName, 
+              confirmationLink: `${window.location.origin}/partner/login` 
+            }
+          })
+        });
+      } catch (e) {
+        console.error('Failed to trigger verification email', e);
+      }
+
       // Update database with default inactive state - requires card trial registration to unlock
       await supabase
         .from('businesses')

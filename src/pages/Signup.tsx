@@ -62,7 +62,25 @@ export default function Signup() {
       // Call authentication signup
       await signUp(email, password, fullName, role);
       
-      setSuccessMsg('Conta criada com sucesso! Caso seja necessário confirmar o e-mail, verifique a sua caixa de entrada.');
+      // Dispatch validation email
+      try {
+        await fetch('/api/emails/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'verification',
+            to: email,
+            data: { 
+              userName: fullName, 
+              confirmationLink: `${window.location.origin}/login` 
+            }
+          })
+        });
+      } catch (e) {
+        console.error('Failed to trigger verification email', e);
+      }
+      
+      setSuccessMsg('Conta criada com sucesso! Verifique a sua caixa de entrada para confirmar o e-mail.');
       
       setTimeout(() => {
         const params = new URLSearchParams(window.location.search);
