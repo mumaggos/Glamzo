@@ -74,7 +74,14 @@ export default function PartnerLogin() {
 
     } catch (err: any) {
       console.error('Partner Login Error:', err);
-      setErrorMsg(err.message || 'Falha ao autenticar. Confirme suas credenciais.');
+      if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+        setErrorMsg('Por favor, verificar a conta primeiro utilizando o código que enviámos por e-mail.');
+        setTimeout(() => {
+          navigate(`/partner/signup?email=${encodeURIComponent(email)}&step=verify`);
+        }, 1500);
+      } else {
+        setErrorMsg(err.message || 'Falha ao autenticar. Confirme suas credenciais.');
+      }
     } finally {
       setLoading(false);
     }

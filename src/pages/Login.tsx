@@ -76,7 +76,17 @@ export default function Login() {
       navigate(redirect || '/account', { replace: true });
     } catch (err: any) {
       console.error('Login Error:', err.message);
-      setErrorMsg(err.message || 'Falha ao autenticar. Verifique suas credenciais.');
+      if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+        // Redirecionar para a página de verificação de conta
+        setErrorMsg('Por favor, verifique a sua conta primeiro introduzindo o código de segurança.');
+        setTimeout(() => {
+          // If they were trying to go to dashboard, assume business signup maybe?
+          // For safety, let's just send them to signup page with verify step.
+          navigate(`/signup?email=${encodeURIComponent(email)}&step=verify`);
+        }, 1500);
+      } else {
+        setErrorMsg(err.message || 'Falha ao autenticar. Verifique suas credenciais.');
+      }
     } finally {
       setLoading(false);
     }

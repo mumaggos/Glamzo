@@ -14,11 +14,17 @@ export default function PartnerSignup() {
   const navigate = useNavigate();
 
   // Multi-step form step (1: Account info, 2: Business info)
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('step') === 'verify' ? 3 : 1;
+  });
 
   // Form states - Step 1
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('email') || '';
+  });
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -77,6 +83,92 @@ export default function PartnerSignup() {
     setStep(2);
   };
 
+  const createBusinessProfile = async (authUser: any, currentEmail: string) => {
+    // 2. Generate unique business URL slug
+    const businessSlug = await generateUniqueSlug(businessName);
+    const { latitude, longitude } = getCoordinatesForCity(district, city);
+
+    // Update user's profile to business explicitly to satisfy any possible DB checks
+    await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
+
+    const businessPayload = {
+      owner_id: authUser.id,
+      name: businessName,
+      slug: businessSlug,
+      category,
+      district,
+      city,
+      address,
+      door_number: doorNumber.trim() || null,
+      postal_code: postalCode.trim() || null,
+      latitude,
+      longitude,
+      phone,
+      whatsapp: whatsapp.trim() || null,
+      email: currentEmail,
+      description: description.trim() || null,
+      logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
+      cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
+    };
+
+    // Now insert safely into businesses
+    let { data: insertedBiz, error: bizErr } = await supabase
+      .from('businesses')
+      .insert(businessPayload)
+      .select('id')
+      .maybeSingle();
+
+    if (bizErr) {
+      const isColumnErr = bizErr.code === '42703' || bizErr.message?.includes('column');
+      if (isColumnErr) {
+        console.warn('Geo or door number columns not available in table schema. Retrying fallback insertion...');
+        const fallbackPayload = { ...businessPayload };
+        delete (fallbackPayload as any).latitude;
+        delete (fallbackPayload as any).longitude;
+        delete (fallbackPayload as any).door_number;
+        delete (fallbackPayload as any).postal_code;
+
+        const retryResult = await supabase
+          .from('businesses')
+          .insert(fallbackPayload)
+          .select('id')
+          .maybeSingle();
+        bizErr = retryResult.error;
+        if (!bizErr && retryResult.data) {
+          insertedBiz = retryResult.data;
+        }
+      }
+    }
+
+    if (bizErr) {
+      console.error('Error inserting business profile:', bizErr);
+      throw new Error('Conta criada/verificada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
+    }
+
+    const businessId = insertedBiz?.id;
+    if (!businessId) {
+      throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
+    }
+
+    setSuccessMsg('Registo concluído com sucesso! Redirecionando...');
+
+    // Update database with default inactive state - requires card trial registration to unlock
+    await supabase
+      .from('businesses')
+      .update({
+        subscription_status: 'inactive',
+        subscription_active: false,
+        trial_ends_at: null,
+        status: 'setup',
+        trial_used: false
+      })
+      .eq('id', businessId);
+
+    setTimeout(() => {
+      navigate('/setup', { replace: true });
+    }, 2000);
+  };
+
   const handleSendVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -95,20 +187,28 @@ export default function PartnerSignup() {
     setLoading(true);
 
     try {
-      // Create authentication credential & profile with role 'business'
-      // This will trigger Supabase to send the 6-digit confirmation email automatically
-      // if Confirm Email is enabled in the dashboard.
-      const authResult = await signUp(email, password, fullName, 'business');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If user is already authenticated (e.g. came back to step 2 after verifying email from login)
+      if (session?.user) {
+        setIsSignUpProcessActive(true);
+        await createBusinessProfile(session.user, email || session.user.email || '');
+      } else {
+        // Normal flow: Create authentication credential & profile with role 'business'
+        // This will trigger Supabase to send the confirmation email
+        const authResult = await signUp(email, password, fullName, 'business');
 
-      setStep(3);
-      setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
+        setStep(3);
+        setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
+      }
     } catch (err: any) {
-      console.error('Failed to trigger verification email', err);
-      let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente um e-mail diferente.';
+      console.error('Failed to trigger verification email or create profile', err);
+      let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente novamente mais tarde.';
       if (err.message?.includes('already registered')) {
         userFriendlyMessage = 'Este e-mail já está em uso. Por favor, use um e-mail diferente ou faça login.';
       }
       setErrorMsg(userFriendlyMessage);
+      setIsSignUpProcessActive(false);
     } finally {
       setLoading(false);
     }
@@ -117,7 +217,7 @@ export default function PartnerSignup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (enteredCode.length !== 6) {
+    if (enteredCode.length !== 8) {
       setErrorMsg('Código de verificação inválido.');
       return;
     }
@@ -140,101 +240,23 @@ export default function PartnerSignup() {
       }
       
       const authUser = verifyData.user;
-      const activeSession = verifyData.session;
 
-      // 2. Generate unique business URL slug
-      const businessSlug = await generateUniqueSlug(businessName);
-      const { latitude, longitude } = getCoordinatesForCity(district, city);
-
-      // Now we have a session! Just to be sure, update user's profile to business explicitly to satisfy any possible DB checks
-      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-
-
-      const businessPayload = {
-        owner_id: authUser.id,
-        name: businessName,
-        slug: businessSlug,
-        category,
-        district,
-        city,
-        address,
-        door_number: doorNumber.trim() || null,
-        postal_code: postalCode.trim() || null,
-        latitude,
-        longitude,
-        phone,
-        whatsapp: whatsapp.trim() || null,
-        email: email,
-        description: description.trim() || null,
-        logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
-        cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
-      };
-
-      // Now insert safely into businesses
-      let { data: insertedBiz, error: bizErr } = await supabase
-        .from('businesses')
-        .insert(businessPayload)
-        .select('id')
-        .maybeSingle();
-
-      if (bizErr) {
-        const isColumnErr = bizErr.code === '42703' || bizErr.message?.includes('column');
-        if (isColumnErr) {
-          console.warn('Geo or door number columns not available in table schema. Retrying fallback insertion...');
-          const fallbackPayload = { ...businessPayload };
-          delete (fallbackPayload as any).latitude;
-          delete (fallbackPayload as any).longitude;
-          delete (fallbackPayload as any).door_number;
-          delete (fallbackPayload as any).postal_code;
-
-          const retryResult = await supabase
-            .from('businesses')
-            .insert(fallbackPayload)
-            .select('id')
-            .maybeSingle();
-          bizErr = retryResult.error;
-          if (!bizErr && retryResult.data) {
-            insertedBiz = retryResult.data;
-          }
-        }
+      // 2. Decide next steps based on whether they filled out business info yet
+      if (!businessName.trim() || !address.trim() || !phone.trim()) {
+        // They came from a direct link / login and just verified their email, now they need to build their store profile
+        setSuccessMsg('E-mail verificado com sucesso! Por favor continue o registo indicando os dados da sua loja.');
+        setTimeout(() => {
+          setSuccessMsg(null);
+          setStep(2); // Go to Business Info step
+        }, 2000);
+      } else {
+        // They were following the normal flow step 1 -> step 2 -> step 3
+        await createBusinessProfile(authUser, email);
       }
-
-      if (bizErr) {
-        console.error('Error inserting business profile:', bizErr);
-        // If profile creation failed for other reasons, keep session clean
-        throw new Error('Conta criada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
-      }
-
-      const businessId = insertedBiz?.id;
-      if (!businessId) {
-        throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
-      }
-
-      setSuccessMsg('Registo concluído com sucesso e e-mail verificado! Redirecionando...');
-
-      // Update database with default inactive state - requires card trial registration to unlock
-      await supabase
-        .from('businesses')
-        .update({
-          subscription_status: 'inactive',
-          subscription_active: false,
-          trial_ends_at: null,
-          status: 'setup',
-          trial_used: false
-        })
-        .eq('id', businessId);
-
-      setTimeout(() => {
-        navigate('/setup', { replace: true });
-      }, 2000);
-
     } catch (err: any) {
       setIsSignUpProcessActive(false);
       console.error('Partner Registration error:', err);
-      let userFriendlyMessage = err.message || 'Ocorreu um erro ao criar a conta de parceiro. Verifique os dados.';
-      if (err.message?.includes('already registered') || err.message?.includes('already exists') || err.message?.toLowerCase().includes('already')) {
-        userFriendlyMessage = 'Este e-mail já está registado na Glamzo. Por favor, utilize outro e-mail ou faça login com a sua conta existente.';
-      }
+      let userFriendlyMessage = err.message || 'Ocorreu um erro ao verificar a conta. Verifique os dados.';
       setErrorMsg(userFriendlyMessage);
     } finally {
       setLoading(false);
@@ -670,38 +692,66 @@ export default function PartnerSignup() {
                   required
                   value={enteredCode}
                   onChange={(e) => setEnteredCode(e.target.value)}
-                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                  placeholder="000000"
-                  maxLength={6}
+                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
+                  placeholder="00000000"
+                  maxLength={8}
                 />
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
-                </button>
+              <div className="flex flex-col gap-4 pt-4">
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Voltar</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={loading || enteredCode.length !== 8}
+                    className="w-2/3 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>A verificar...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Criar Conta</span>
+                        <Check className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 <button
-                  type="submit"
-                  disabled={loading || enteredCode.length !== 6}
-                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                  type="button"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    setErrorMsg(null);
+                    setSuccessMsg(null);
+                    try {
+                      const { error } = await supabase.auth.resend({
+                        type: 'signup',
+                        email: email,
+                      });
+                      if (error) throw error;
+                      setSuccessMsg('Novo código enviado! Verifique o seu e-mail.');
+                    } catch (err: any) {
+                      console.error('Resend error:', err);
+                      setErrorMsg('Falha ao reenviar código: ' + err.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="w-full py-2 text-sm text-slate-600 hover:text-slate-800 font-medium"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>A verificar...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Criar Conta</span>
-                      <Check className="w-4 h-4" />
-                    </>
-                  )}
+                  Não recebeu? Reenviar novo código
                 </button>
               </div>
             </form>

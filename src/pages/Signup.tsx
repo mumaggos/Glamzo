@@ -19,7 +19,10 @@ export default function Signup() {
 
   // Signup fields
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('email') || '';
+  });
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<UserRole>('customer'); // default 'customer'
@@ -32,7 +35,10 @@ export default function Signup() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Verification step state
-  const [step, setStep] = useState<'form' | 'verify'>('form');
+  const [step, setStep] = useState<'form' | 'verify'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('step') === 'verify' ? 'verify' : 'form';
+  });
   const [enteredCode, setEnteredCode] = useState('');
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -95,7 +101,7 @@ export default function Signup() {
         setLoading(false);
       }
     } else {
-      if (enteredCode.length !== 6) {
+      if (enteredCode.length !== 8) {
         setErrorMsg('Código de verificação inválido.');
         return;
       }
@@ -131,6 +137,25 @@ export default function Signup() {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+      if (error) throw error;
+      setSuccessMsg('Novo código enviado! Verifique o seu e-mail.');
+    } catch (err: any) {
+      console.error('Resend error:', err);
+      setErrorMsg('Falha ao reenviar código: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -326,16 +351,16 @@ export default function Signup() {
                   required
                   value={enteredCode}
                   onChange={(e) => setEnteredCode(e.target.value)}
-                  className="block w-full px-4 py-4 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all text-slate-800"
-                  placeholder="000000"
-                  maxLength={6}
+                  className="block w-full px-4 py-4 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all text-slate-800"
+                  placeholder="00000000"
+                  maxLength={8}
                 />
               </div>
 
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading || enteredCode.length !== 6}
+                  disabled={loading || enteredCode.length !== 8}
                   className="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 gap-2 items-center cursor-pointer shadow-md shadow-emerald-100"
                   id="btn-submit-verify"
                 >
@@ -348,13 +373,23 @@ export default function Signup() {
                     <span>Verificar e Entrar</span>
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setStep('form')}
-                  className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700"
-                >
-                  Voltar e tentar novamente
-                </button>
+                <div className="flex flex-col gap-2 mt-3">
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handleResendOtp}
+                    className="w-full py-2 text-sm text-slate-600 hover:text-slate-800 font-medium"
+                  >
+                    Reenviar novo código
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep('form')}
+                    className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 underline"
+                  >
+                    Voltar e tentar novamente
+                  </button>
+                </div>
               </div>
             </form>
           )}
