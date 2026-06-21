@@ -550,7 +550,11 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     if (!priceId || priceId.trim() === "") {
       priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem";
     }
-    console.log("Using Resolved price ID for Stripe Checkout:", priceId);
+
+    const isTerminal = planName === 'TERMINAL';
+    const terminalProductId = process.env.STRIPE_TERMINAL_PRODUCT_ID || 'prod_Uk3zSeOffcShqq';
+
+    console.log("Using Resolved price/product for Stripe Checkout. IsTerminal:", isTerminal);
 
     const db = getSupabaseAdmin();
 
@@ -606,22 +610,49 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         throw new Error("No Price ID defined in environment under STRIPE_PRO_PRICE_ID.");
       }
 
-      console.log(`Attempting Stripe session creation with priceId: '${priceId}'`);
-      session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: 'subscription',
-        line_items: [
+      let lineItems: any[] = [];
+
+      if (isTerminal) {
+        lineItems = [
+          {
+            price_data: {
+              currency: 'eur',
+              product: terminalProductId,
+              recurring: { interval: 'month' },
+              unit_amount: 2499,
+            },
+            quantity: 1,
+          },
+          {
+            price_data: {
+              currency: 'eur',
+              product: terminalProductId,
+              unit_amount: 999,
+            },
+            quantity: 1,
+          }
+        ];
+      } else {
+        lineItems = [
           {
             price: priceId,
             quantity: 1,
           },
-        ],
+        ];
+      }
+
+      console.log(`Attempting Stripe session creation for ${planName || 'PRO'} plan`);
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
           business_id: businessId,
           businessId: businessId,
           owner_id: business.owner_id,
-          type: 'pro_subscription'
+          type: 'pro_subscription',
+          plan_name: planName || 'PRO'
         },
         success_url: calculatedSuccessUrl,
         cancel_url: calculatedCancelUrl,
@@ -1053,14 +1084,18 @@ const handleStripeWebhook = async (req: any, res: any) => {
             .maybeSingle();
 
           let subUpsertErr = null;
+          const planNameMetadata = session.metadata?.plan_name || 'PRO';
+          const planDbName = planNameMetadata === 'TERMINAL' ? 'Glamzo PRO Terminal' : 'Glamzo PRO';
+          const planPrice = planNameMetadata === 'TERMINAL' ? 24.99 : 19.99;
+
           if (existingSub) {
             console.log(`[Webhook SaaS Sync] Existing subscription found for business ${businessId}. Updating to status '${subStatus}' and stripe_subscription_id '${subId}'...`);
             const { error: updErr } = await db
               .from('subscriptions')
               .update({
-                plan_name: 'PRO',
+                plan_name: planDbName,
                 status: subStatus,
-                monthly_price: 19.90,
+                monthly_price: planPrice,
                 expires_at: expiresAt,
                 stripe_subscription_id: subId
               })
@@ -1072,9 +1107,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
               .from('subscriptions')
               .insert({
                 business_id: businessId,
-                plan_name: 'PRO',
+                plan_name: planDbName,
                 status: subStatus,
-                monthly_price: 19.95,
+                monthly_price: planPrice,
                 started_at: new Date().toISOString(),
                 expires_at: expiresAt,
                 stripe_subscription_id: subId
@@ -1087,6 +1122,14 @@ const handleStripeWebhook = async (req: any, res: any) => {
           } else {
             console.log(`[Webhook SaaS Success] SUBSCRIPTION UPDATED SUCCESSFULLY for salon business ${businessId}`);
             
+            if (planNameMetadata === 'TERMINAL') {
+              console.log(`[Webhook Terminal] Marking tablet_order deposit as paid for business ${businessId}`);
+              await db.from('tablet_orders')
+                .update({ deposit_paid: true, status: 'processing' })
+                .eq('business_id', businessId)
+                .eq('status', 'pending');
+            }
+
             // EMAIL VERIFICATION - SUBSCRIPTION
             try {
               const { data: business } = await db.from('businesses').select('email, owner_id').eq('id', businessId).maybeSingle();
@@ -1238,9 +1281,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
             .from('subscriptions')
             .insert({
               business_id: businessId,
-              plan_name: 'PRO',
+              plan_name: 'Glamzo PRO', // Defaults to PRO if missed by checkout event
               status: syncedStatus,
-              monthly_price: 19.90,
+              monthly_price: 19.99,
               started_at: new Date().toISOString(),
               expires_at: syncedExpiry,
               stripe_subscription_id: stripeSubId

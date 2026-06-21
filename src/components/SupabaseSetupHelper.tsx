@@ -80,7 +80,9 @@ create table public.businesses (
   subscription_active boolean default false not null,
   trial_started_at timestamp with time zone,
   trial_ends_at timestamp with time zone,
+  trial_used boolean default false not null,
   is_verified boolean default false not null,
+  status text default 'setup' check (status in ('setup', 'active', 'suspended')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -103,6 +105,38 @@ create policy "Allow owners to update their businesses"
 create policy "Allow owners to delete their businesses"
   on public.businesses for delete
   using (auth.uid() = owner_id);
+
+-- Create tablet_orders table
+create table public.tablet_orders (
+  id uuid default gen_random_uuid() primary key,
+  business_id uuid references public.businesses(id) on delete cascade not null,
+  shipping_name text not null,
+  shipping_phone text not null,
+  shipping_address text not null,
+  shipping_postal_code text not null,
+  shipping_city text not null,
+  deposit_paid boolean default false not null,
+  deposit_amount numeric(10,2) not null,
+  carrier text,
+  tracking_code text,
+  status text default 'pending' check (status in ('pending', 'processing', 'shipped', 'delivered', 'returned')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.tablet_orders enable row level security;
+
+create policy "Allow owners to read their orders"
+  on public.tablet_orders for select
+  using (exists (select 1 from public.businesses b where b.id = tablet_orders.business_id and b.owner_id = auth.uid()));
+
+create policy "Allow owners to insert orders"
+  on public.tablet_orders for insert
+  with check (exists (select 1 from public.businesses b where b.id = tablet_orders.business_id and b.owner_id = auth.uid()));
+
+create policy "Allow admin full access to tablet_orders"
+  on public.tablet_orders for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
 
 -- 6. Create service_categories table
 create table public.service_categories (

@@ -402,12 +402,14 @@ export default function Admin() {
         { data: profData, error: profErr },
         { data: salData, error: salErr },
         { data: payData, error: payErr },
-        { data: billsData }
+        { data: billsData },
+        { data: tabletOrdersData }
       ] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').order('created_at', { ascending: false }),
         supabase.from('payouts').select('*, business:businesses(*)').order('created_at', { ascending: false }),
-        supabase.from('payments').select('*, business:businesses(*)')
+        supabase.from('payments').select('*, business:businesses(*)'),
+        supabase.from('tablet_orders').select('*, business:businesses(*)').order('created_at', { ascending: false })
       ]);
 
       if (profErr) throw profErr;
@@ -416,6 +418,15 @@ export default function Admin() {
 
       setProfiles(profData || []);
       setSalons(salData || []);
+      
+      if (tabletOrdersData) {
+        setTerminalRequests(tabletOrdersData.map((o: any) => ({
+          ...o,
+          salon: o.business?.name || 'Desconhecido',
+          city: o.shipping_city,
+          serial: o.tracking_code || '---'
+        })));
+      }
       
       // Merge with financeService localized requests
       const localRequests = financeService.getPayouts().filter(p => !payoutRequests.some(pr => pr.id === p.id));
@@ -2020,40 +2031,89 @@ export default function Admin() {
                 <div id="admin-terminal" className="space-y-6 animate-fade-in max-w-2xl">
                   <div className="border-b border-slate-200 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Logística de CTT Glamzo Terminal</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">Gerencie os pedidos de tablets táteis das lojas, envie com código de rastreio e confira cauções.</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Gerenciar pedidos de tablets táteis das lojas, enviar com código de rastreio e conferir cauções.</p>
                   </div>
 
                   <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <h4 className="font-extrabold text-xs text-slate-350 uppercase tracking-widest flex items-center gap-1.5">
+                    <h4 className="font-extrabold text-xs uppercase tracking-widest flex items-center gap-1.5">
                       <Smartphone className="w-5 h-5 text-purple-600 animate-pulse" />
                       <span>Encomendas e Despachos de Tablets Comodato</span>
                     </h4>
 
                     <div className="space-y-3.5">
                       {terminalRequests.map((tr, idx) => (
-                        <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-910 border-slate-200 flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-black text-slate-900">{tr.salon}</span>
-                            <span className="text-[10px] text-slate-450 text-slate-600 block mt-0.5">Destino: {tr.city} • Serie: {tr.serial}</span>
+                        <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col gap-3 text-xs">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-black text-slate-900 text-sm">{tr.salon}</span>
+                              <div className="text-slate-600 mt-1 space-y-0.5">
+                                <p><span className="font-semibold text-slate-800">Destinatário:</span> {tr.shipping_name || 'Desconhecido'}</p>
+                                <p><span className="font-semibold text-slate-800">Telefone:</span> {tr.shipping_phone || '---'}</p>
+                                <p><span className="font-semibold text-slate-800">Morada:</span> {tr.shipping_address || '---'}</p>
+                                <p><span className="font-semibold text-slate-800">CP / Cidade:</span> {tr.shipping_postal_code} - {tr.city}</p>
+                                <p className="mt-1">
+                                  <span className="font-semibold text-slate-800">Caução Fixa (9,99€):</span>{' '}
+                                  {tr.deposit_paid ? <span className="text-emerald-600 font-bold">Paga via Stripe</span> : <span className="text-amber-600 font-bold">Pendente Pagamento</span>}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-[9px] font-mono uppercase bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">{tr.status}</span>
                           </div>
 
-                          <div className="space-x-1.5">
-                            {tr.status === 'pending_deposit' ? (
-                              <button 
-                                onClick={() => {
-                                  setTerminalRequests(prev => prev.map(t => t.id === tr.id ? { ...t, status: 'shipped' } : t));
-                                  setSuccessMsg("Depósito caução e registo verificado. Status de despacho alterado para 'Enviado via CTT'.");
-                                }}
-                                className="px-2.5 py-1.5 bg-purple-650 bg-purple-600 hover:bg-purple-700 font-bold text-slate-900 text-[9px] font-mono rounded uppercase cursor-pointer"
-                              >
-                                Isentar Caução & Despachar
-                              </button>
-                            ) : (
-                              <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-600 border border-purple-900/60 px-2 py-0.5 rounded-full">Enviado via CTT</span>
-                            )}
+                          <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
+                             <div className="flex items-center gap-2">
+                               <input 
+                                  type="text" 
+                                  placeholder="Transportadora (e.g., CTT)"
+                                  defaultValue={tr.carrier || ''}
+                                  id={`carrier-${tr.id}`}
+                                  className="w-1/3 px-2 py-1.5 text-xs border border-slate-300 rounded focus:border-purple-500"
+                               />
+                               <input 
+                                  type="text" 
+                                  placeholder="Tracking Code"
+                                  defaultValue={tr.tracking_code || ''}
+                                  id={`tracking-${tr.id}`}
+                                  className="flex-1 px-2 py-1.5 text-xs border border-slate-300 rounded focus:border-purple-500"
+                               />
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <button 
+                                 onClick={async () => {
+                                   try {
+                                     const carrier = (document.getElementById(`carrier-${tr.id}`) as HTMLInputElement)?.value;
+                                     const tracking = (document.getElementById(`tracking-${tr.id}`) as HTMLInputElement)?.value;
+                                     await supabase.from('tablet_orders').update({
+                                        carrier, tracking_code: tracking, status: 'shipped'
+                                     }).eq('id', tr.id);
+                                     setSuccessMsg("Código guardado e Estado alterado para Enviado.");
+                                     // refresh list
+                                     syncAdminDatasets();
+                                   } catch(e: any) { alert(e.message) }
+                                 }}
+                                 className="px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 text-[10px] font-bold rounded uppercase flex-1"
+                               >
+                                 Marcar p/ Enviado
+                               </button>
+                               <button 
+                                 onClick={async () => {
+                                   try {
+                                     await supabase.from('tablet_orders').update({
+                                        status: 'delivered'
+                                     }).eq('id', tr.id);
+                                     setSuccessMsg("Estado alterado para Entregue.");
+                                     syncAdminDatasets();
+                                   } catch(e: any) { alert(e.message) }
+                                 }}
+                                 className="px-3 py-1.5 bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-bold rounded uppercase flex-1"
+                               >
+                                 Marcar Entregue
+                               </button>
+                             </div>
                           </div>
                         </div>
                       ))}
+                      {terminalRequests.length === 0 && <div className="text-center py-4 text-xs font-mono text-slate-500">Sem pedidos pendentes.</div>}
                     </div>
                   </div>
                 </div>

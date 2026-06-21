@@ -52,6 +52,8 @@ export default function Dashboard() {
   const [manualStripeId, setManualStripeId] = useState('');
   const [savingManualStripe, setSavingManualStripe] = useState(false);
 
+  const [tabletOrder, setTabletOrder] = useState<any>(null);
+  
   // Real database coupons state
   const [coupons, setCoupons] = useState<any[]>([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
@@ -400,6 +402,12 @@ export default function Dashboard() {
         navigate('/onboarding');
         return;
       }
+      
+      if (bData.status === 'setup') {
+        navigate('/setup');
+        return;
+      }
+      
       setBusiness(bData);
       setEditSlugValue(bData.slug || '');
       setPublicPageEnabled(bData.public_page_enabled !== false);
@@ -428,7 +436,8 @@ export default function Dashboard() {
         { data: bkData },
         { data: pyData },
         { data: poData },
-        { data: subData }
+        { data: subData },
+        { data: tabletData }
       ] = await Promise.all([
         supabase.from('service_categories').select('*'),
         supabase.from('services').select('*, category:service_categories(*)').eq('business_id', bData.id).order('created_at', { ascending: false }),
@@ -437,7 +446,8 @@ export default function Dashboard() {
         supabase.from('bookings').select('*, customer:profiles(*)').eq('business_id', bData.id).order('booking_date', { ascending: false }).order('start_time', { ascending: false }),
         supabase.from('payments').select('*').eq('business_id', bData.id),
         supabase.from('payouts').select('*').eq('business_id', bData.id).order('created_at', { ascending: false }),
-        supabase.from('subscriptions').select('*').eq('business_id', bData.id).order('created_at', { ascending: false })
+        supabase.from('subscriptions').select('*').eq('business_id', bData.id).order('created_at', { ascending: false }),
+        supabase.from('tablet_orders').select('*').eq('business_id', bData.id).maybeSingle()
       ]);
 
       setCategories(catData || []);
@@ -448,6 +458,7 @@ export default function Dashboard() {
       setLedgers(pyData || []);
       setPayouts(poData || []);
       setSubscriptions(subData || []);
+      setTabletOrder(tabletData || null);
 
       // Real coupons fetching
       let cpData: any[] = [];
@@ -2224,6 +2235,7 @@ export default function Dashboard() {
                 { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
                 { id: 'loja', label: 'Website & QR Code', icon: Globe },
                 { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
+                ...(tabletOrder ? [{ id: 'tablet', label: 'Terminal Glamzo', icon: Smartphone }] : []),
                 { id: 'configuracoes', label: 'Configurações', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -2327,6 +2339,7 @@ export default function Dashboard() {
               { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
               { id: 'loja', label: 'Website & QR Code', icon: Globe },
               { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
+              ...(tabletOrder ? [{ id: 'tablet', label: 'Terminal Glamzo', icon: Smartphone }] : []),
               { id: 'configuracoes', label: 'Configurações', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -3928,6 +3941,54 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-500 mt-0.5">Responda rapidamente aos seus clientes. Dê suporte direto via portal.</p>
                   </div>
                   {business && <DashboardMessages businessId={business.id} />}
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* VIEW 12: TABLET ORDER STATUS                         */}
+              {/* ==================================================== */}
+              {activeTab === 'tablet' && tabletOrder && (
+                <div id="view-tablet" className="space-y-6 animate-fade-in max-w-2xl">
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                       <Smartphone className="w-5 h-5 text-purple-600" /> Terminal Glamzo
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Acompanhe o estado do envio do seu equipamento PRO.</p>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white rounded-lg shadow flex items-center justify-center">
+                        <Truck className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Estado do Envio</span>
+                        <h4 className="font-bold text-slate-900 text-lg capitalize">{tabletOrder.status}</h4>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Transportadora</span>
+                        <h4 className="font-bold text-slate-900 mt-1">{tabletOrder.carrier || 'Aguardando envio'}</h4>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Tracking #</span>
+                        <h4 className="font-mono text-slate-900 mt-1 text-sm">{tabletOrder.tracking_code || '---'}</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold mb-2 block">Morada de Entrega</span>
+                      <p><strong>Nome:</strong> {tabletOrder.shipping_name}</p>
+                      <p><strong>Telefone:</strong> {tabletOrder.shipping_phone}</p>
+                      <p><strong>Morada:</strong> {tabletOrder.shipping_address}, {tabletOrder.shipping_postal_code} {tabletOrder.shipping_city}</p>
+                    </div>
+                    
+                    <button className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2">
+                       <HelpCircle className="w-4 h-4" /> Relatar problema de entrega
+                    </button>
+                  </div>
                 </div>
               )}
 

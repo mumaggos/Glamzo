@@ -213,12 +213,14 @@ export default function PartnerSignup() {
         .update({
           subscription_status: 'inactive',
           subscription_active: false,
-          trial_ends_at: null
+          trial_ends_at: null,
+          status: 'setup',
+          trial_used: false
         })
         .eq('id', businessId);
 
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
+        navigate('/setup', { replace: true });
       }, 2000);
 
     } catch (err: any) {
