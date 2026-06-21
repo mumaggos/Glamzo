@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types';
+import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, User, Mail, Sparkles, Loader2, Store, UserPlus } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
 

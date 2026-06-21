@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { slugify, generateUniqueSlug } from '../utils/slugify';
-import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import { 
-  Building2, ArrowRight, ArrowLeft, Check, Store, Sparkles, 
-  MapPin, Phone, Mail, FileText, Loader2, KeyRound, Eye, EyeOff, User 
+  Building2, ArrowRight, ArrowLeft, Check, Sparkles, 
+  Mail, Loader2, KeyRound, Eye, EyeOff, User 
 } from 'lucide-react';
 
 export default function PartnerSignup() {
-  const { signUp, signOut, user, profile } = useAuth();
+  const { signUp, signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Multi-step form step (1: Account info, 2: Business info)
@@ -29,17 +27,6 @@ export default function PartnerSignup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Form states - Step 2
-  const [businessName, setBusinessName] = useState('');
-  const [category, setCategory] = useState('Cabelo & Barbearia'); // Default to Cabelo & Barbearia
-  const [district, setDistrict] = useState('Lisboa');
-  const [city, setCity] = useState('Lisboa');
-  const [address, setAddress] = useState('');
-  const [doorNumber, setDoorNumber] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [phone, setPhone] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [description, setDescription] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Auxiliary states
@@ -52,16 +39,7 @@ export default function PartnerSignup() {
   const [verificationCode, setVerificationCode] = useState('');
   const [enteredCode, setEnteredCode] = useState('');
 
-  const categories = [
-    'Cabelo & Barbearia',
-    'Nails & Beauty',
-    'Estética',
-    'Wellness',
-    'Ao domicílio',
-    'Noivas & Eventos'
-  ];
-
-  const handleNextStep = (e: React.FormEvent) => {
+  const handleNextStep = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -80,105 +58,6 @@ export default function PartnerSignup() {
       return;
     }
 
-    setStep(2);
-  };
-
-  const createBusinessProfile = async (authUser: any, currentEmail: string) => {
-    // 2. Generate unique business URL slug
-    const businessSlug = await generateUniqueSlug(businessName);
-    const { latitude, longitude } = getCoordinatesForCity(district, city);
-
-    // Update user's profile to business explicitly to satisfy any possible DB checks
-    await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-
-    const businessPayload = {
-      owner_id: authUser.id,
-      name: businessName,
-      slug: businessSlug,
-      category,
-      district,
-      city,
-      address,
-      door_number: doorNumber.trim() || null,
-      postal_code: postalCode.trim() || null,
-      latitude,
-      longitude,
-      phone,
-      whatsapp: whatsapp.trim() || null,
-      email: currentEmail,
-      description: description.trim() || null,
-      logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
-      cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
-    };
-
-    // Now insert safely into businesses
-    let { data: insertedBiz, error: bizErr } = await supabase
-      .from('businesses')
-      .insert(businessPayload)
-      .select('id')
-      .maybeSingle();
-
-    if (bizErr) {
-      const isColumnErr = bizErr.code === '42703' || bizErr.message?.includes('column');
-      if (isColumnErr) {
-        console.warn('Geo or door number columns not available in table schema. Retrying fallback insertion...');
-        const fallbackPayload = { ...businessPayload };
-        delete (fallbackPayload as any).latitude;
-        delete (fallbackPayload as any).longitude;
-        delete (fallbackPayload as any).door_number;
-        delete (fallbackPayload as any).postal_code;
-
-        const retryResult = await supabase
-          .from('businesses')
-          .insert(fallbackPayload)
-          .select('id')
-          .maybeSingle();
-        bizErr = retryResult.error;
-        if (!bizErr && retryResult.data) {
-          insertedBiz = retryResult.data;
-        }
-      }
-    }
-
-    if (bizErr) {
-      console.error('Error inserting business profile:', bizErr);
-      throw new Error('Conta criada/verificada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
-    }
-
-    const businessId = insertedBiz?.id;
-    if (!businessId) {
-      throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
-    }
-
-    setSuccessMsg('Registo concluído com sucesso! Redirecionando...');
-
-    // Update database with default inactive state - requires card trial registration to unlock
-    await supabase
-      .from('businesses')
-      .update({
-        subscription_status: 'inactive',
-        subscription_active: false,
-        trial_ends_at: null,
-        status: 'setup',
-        trial_used: false
-      })
-      .eq('id', businessId);
-
-    setTimeout(() => {
-      navigate('/setup', { replace: true });
-    }, 2000);
-  };
-
-  const handleSendVerification = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    if (!businessName.trim() || !city.trim() || !address.trim() || !phone.trim()) {
-      setErrorMsg('Preencha os dados obrigatórios do estabelecimento (Nome, Cidade, Morada e Telefone).');
-      return;
-    }
-
     if (!acceptedTerms) {
       setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
       return;
@@ -187,20 +66,12 @@ export default function PartnerSignup() {
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // If user is already authenticated (e.g. came back to step 2 after verifying email from login)
-      if (session?.user) {
-        setIsSignUpProcessActive(true);
-        await createBusinessProfile(session.user, email || session.user.email || '');
-      } else {
-        // Normal flow: Create authentication credential & profile with role 'business'
-        // This will trigger Supabase to send the confirmation email
-        const authResult = await signUp(email, password, fullName, 'business');
+      // Normal flow: Create authentication credential & profile with role 'business'
+      // This will trigger Supabase to send the confirmation email
+      await signUp(email, password, fullName, 'business');
 
-        setStep(3);
-        setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
-      }
+      setStep(3);
+      setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
     } catch (err: any) {
       console.error('Failed to trigger verification email or create profile', err);
       let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente novamente mais tarde.';
@@ -240,19 +111,15 @@ export default function PartnerSignup() {
       }
       
       const authUser = verifyData.user;
+      
+      // Ensure the profile role is set to business
+      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
+      await refreshProfile();
 
-      // 2. Decide next steps based on whether they filled out business info yet
-      if (!businessName.trim() || !address.trim() || !phone.trim()) {
-        // They came from a direct link / login and just verified their email, now they need to build their store profile
-        setSuccessMsg('E-mail verificado com sucesso! Por favor continue o registo indicando os dados da sua loja.');
-        setTimeout(() => {
-          setSuccessMsg(null);
-          setStep(2); // Go to Business Info step
-        }, 2000);
-      } else {
-        // They were following the normal flow step 1 -> step 2 -> step 3
-        await createBusinessProfile(authUser, email);
-      }
+      setSuccessMsg('E-mail verificado com sucesso! Por favor continue para configurar o seu estabelecimento.');
+      setTimeout(() => {
+        navigate('/onboarding', { replace: true });
+      }, 2000);
     } catch (err: any) {
       setIsSignUpProcessActive(false);
       console.error('Partner Registration error:', err);
@@ -430,203 +297,16 @@ export default function PartnerSignup() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 mt-6 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-              >
-                <span>Inserir Dados do Estabelecimento</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          ) : null}
-
-          {/* Step 2: Business details form */}
-          {step === 2 && (
-            <form onSubmit={handleSendVerification} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Nome do Estabelecimento
-                  </label>
-                  <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
-                      <Store className="w-4 h-4" />
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                      placeholder="ex. Glamour Studio"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Categoria Principal
-                  </label>
-                  <select aria-label="Selecione uma opção"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Distrito / Região
-                  </label>
-                  <select aria-label="Selecione uma opção"
-                    value={district}
-                    onChange={(e) => {
-                      const nextDist = e.target.value;
-                      setDistrict(nextDist);
-                      if (PORTUGAL_GEO[nextDist] && PORTUGAL_GEO[nextDist].length > 0) {
-                        setCity(PORTUGAL_GEO[nextDist][0]);
-                      }
-                    }}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
-                  >
-                    {Object.keys(PORTUGAL_GEO).sort().map((dist) => (
-                      <option key={dist} value={dist}>{dist}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Cidade
-                  </label>
-                  <select aria-label="Selecione uma opção"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
-                  >
-                    {(PORTUGAL_GEO[district] || []).map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Morada / Nome da Rua *
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
-                    <MapPin className="w-4 h-4" />
-                  </span>
-                  <input
-                    type="text"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                    placeholder="Rua das Flores"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Porta / Andar *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={doorNumber}
-                    onChange={(e) => setDoorNumber(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                    placeholder="ex. 12C, 3º Esq"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Código Postal *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                    placeholder="ex. 1000-100"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Telefone de Contacto
-                  </label>
-                  <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
-                      <Phone className="w-4 h-4" />
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                      placeholder="Contacto comercial"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    WhatsApp (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                    placeholder="ex. +351900000000"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Breve Descrição do Negócio
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-600">
-                    <FileText className="w-4 h-4" />
-                  </span>
-                  <textarea
-                    rows={2}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                    placeholder="Introduza uma breve apresentação do seu espaço e serviços especialidades..."
-                  />
-                </div>
-              </div>
-
               {/* Checkbox Terms */}
-              <div className="flex items-start gap-2 pt-2">
+              <div className="flex items-start gap-2 pt-2 pb-2">
                 <input
                   type="checkbox"
                   id="terms-partner"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500"
+                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                 />
-                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1">
+                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
                   Li e aceito os{' '}
                   <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
                     Termos para Parceiros
@@ -639,37 +319,27 @@ export default function PartnerSignup() {
                 </label>
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>A enviar...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Avançar</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading || !acceptedTerms}
+                className="w-full flex items-center justify-center gap-2 mt-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>A processar...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Registar e Avançar</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             </form>
-          )}
+          ) : null}
 
+          {/* Step 3: Verify OTP form */}
           {step === 3 && (
             <form className="space-y-4 animate-fade-in" onSubmit={handleRegister}>
               <div className="text-center mb-6">
@@ -678,7 +348,7 @@ export default function PartnerSignup() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">Verifique o seu e-mail</h3>
                 <p className="text-sm text-slate-500 mt-2">
-                  Enviámos um código de 6 dígitos para o e-mail: <strong className="text-slate-800">{email}</strong>
+                  Enviámos um código de 8 dígitos para o e-mail: <strong className="text-slate-800">{email}</strong>
                 </p>
               </div>
 
@@ -702,7 +372,7 @@ export default function PartnerSignup() {
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(1)}
                     className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />

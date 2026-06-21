@@ -62,7 +62,7 @@ export default function Onboarding() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Re-hydrate any pending business data created by PartnerSignup that was blocked by email confirmation
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const pendingDataStr = localStorage.getItem('pending_business_payload');
       if (pendingDataStr) {
@@ -203,6 +203,7 @@ export default function Onboarding() {
         instagram: instagram || null,
         website: website || null,
         is_verified: false,
+        status: 'setup',
       };
 
       // 3. Write record into businesses table with fallback in case columns are missing
