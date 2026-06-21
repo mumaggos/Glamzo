@@ -1,10 +1,37 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
+
+function SessionGuard() {
+  const { user, profile, signOut } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (user && profile) {
+      if (profile.role === 'admin' || profile.role === 'business') {
+        const path = location.pathname;
+        const permittedAdmin = profile.role === 'admin' && path.startsWith('/admin');
+        const permittedBusiness = profile.role === 'business' && (
+          path.startsWith('/dashboard') || 
+          path.startsWith('/setup') || 
+          path.startsWith('/stripe') || 
+          path.startsWith('/onboarding')
+        );
+
+        if (!permittedAdmin && !permittedBusiness) {
+          console.log(`[SessionGuard] Force logout for ${profile.role} visiting public page: ${path}`);
+          signOut();
+        }
+      }
+    }
+  }, [location.pathname, user, profile, signOut]);
+
+  return null;
+}
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import Home from './pages/Home';
@@ -86,6 +113,7 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
+        <SessionGuard />
         <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
           {/* Elite subtle static top bar cue */}
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />

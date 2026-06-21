@@ -125,6 +125,49 @@ export default function Dashboard() {
     return bk.customer?.full_name || bk.customer_profile?.full_name || 'Cliente Particular';
   };
 
+  // Drag and Drop support
+  const handleDropBooking = async (bookingId: string, newStaffId: string | null, newStartTime: string) => {
+    try {
+      if (!user || !bookingId) return;
+      
+      const bkObj = bookings.find(b => b.id === bookingId);
+      if (!bkObj) return;
+
+      const duration = bkObj.service?.duration_minutes || 30;
+      const [startH, startM] = newStartTime.split(':').map(Number);
+      const totalMinutes = startH * 60 + startM + duration;
+      const endH = Math.floor(totalMinutes / 60) % 24;
+      const endM = totalMinutes % 60;
+      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+
+      // Optimistic update
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, staff_id: newStaffId, start_time: newStartTime, end_time: endTimeStr } : b));
+
+      const { error } = await supabase
+        .from('bookings')
+        .update({
+           staff_id: newStaffId,
+           start_time: newStartTime,
+           end_time: endTimeStr
+        })
+        .eq('id', bookingId);
+        
+      if (error) {
+         console.error('Error dragging booking', error);
+         alert('Erro ao guardar a reagendamento.');
+         // Reload list if error
+         // loadTerminalData();
+      } else {
+        notifyTerminal(
+          "Agenda Atualizada",
+          `Reserva arrastada para as ${newStartTime}.`
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleSaveManualBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !business) {
@@ -2614,7 +2657,7 @@ export default function Dashboard() {
                     {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
                     <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
                       
-                      {/* ==================== TODAY VIEW ==================== */}
+                      {/* ==================== TODAY VIEW (ADVANCED DRAG/DROP GRID) ==================== */}
                       {agendaMode === 'today' && (
                         <div className="space-y-4">
                           {/* Rich Interactive Date Selector and Scroller */}
@@ -2680,175 +2723,114 @@ export default function Dashboard() {
                             )}
                           </div>
 
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
-                            Fita Horária • Marcações Reais do Dia
-                          </span>
+                          <div className="relative mt-6 overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm font-sans">
+                            {/* Real-time horizontal red line */}
+                            {selectedAgendaDate === new Date().toISOString().split('T')[0] && (
+                              <div 
+                                className="absolute left-0 right-0 border-t-2 border-rose-500 z-30 pointer-events-none"
+                                style={{ top: `${Math.max(0, (new Date().getHours() - 8) * 80 + (new Date().getMinutes() / 60) * 80) + 64}px` }} 
+                              >
+                                <div className="absolute -top-1.5 left-2 w-3 h-3 rounded-full bg-rose-500 shadow-md"></div>
+                              </div>
+                            )}
 
-                          {/* Timeline Slots */}
-                          <div className="space-y-4 divide-y divide-slate-800/60">
-                            {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'].map((hourSlot) => {
-                              // Find any active booking corresponding roughly to slot
-                              const activeBookingsAtHour = bookings.filter(b => 
-                                b.booking_date === selectedAgendaDate && 
-                                b.start_time.startsWith(hourSlot.split(':')[0])
-                              );
+                            <div className="flex min-w-max">
+                              {/* Left axis - Times (8:00 to 20:00) */}
+                              <div className="w-16 shrink-0 border-r border-slate-100 bg-slate-50 relative pt-16">
+                                {['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].map(hour => (
+                                  <div key={hour} className="h-[80px] relative border-b border-slate-100 text-[10px] font-bold text-slate-400 text-center flex items-start justify-center pt-2">
+                                      {hour}:00
+                                  </div>
+                                ))}
+                              </div>
 
-                              return (
-                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row text-left">
-                                  {/* Left Hour Indicator */}
-                                  <div className="w-14 shrink-0 flex flex-col items-end pt-1 select-none">
-                                    <span className="text-xs font-mono font-bold text-slate-700 tracking-tight">{hourSlot}</span>
-                                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Slot</span>
+                              {/* Staff Columns */}
+                              {(staff.length > 0 ? staff : [{id: 'unassigned', full_name: 'Equipa', is_active: true} as any]).map(st => (
+                                <div key={st.id} className="flex-1 min-w-[220px] relative border-r border-slate-100">
+                                  {/* Staff Header */}
+                                  <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-center flex-col px-2 sticky top-0 z-20">
+                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs mb-1">
+                                      {st.full_name?.charAt(0) || 'E'}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-800 line-clamp-1">{st.full_name}</span>
                                   </div>
 
-                                  {/* Right Content */}
-                                  <div className="flex-1 min-h-[64px] space-y-3">
-                                    {activeBookingsAtHour.length > 0 ? (
-                                      activeBookingsAtHour.map((bk) => {
-                                        const isBlock = bk.notes?.startsWith('Bloqueio Agenda:');
-                                        const status = bk.booking_status;
-                                        
-                                        // Dynamic Left Accent Color Bar for Status
-                                        let borderColor = 'border-purple-800';
-                                        let leftBarColor = 'bg-purple-600';
-                                        let bgClass = 'bg-slate-50/90 border-slate-200';
-                                        
-                                        if (isBlock) {
-                                          borderColor = 'border-rose-900/30';
-                                          leftBarColor = 'bg-rose-500';
-                                          bgClass = 'bg-rose-50 border border-rose-900/30';
-                                        } else if (status === 'completed') {
-                                          borderColor = 'border-slate-200';
-                                          leftBarColor = 'bg-slate-600';
-                                          bgClass = 'bg-slate-50/50 border border-slate-200/80';
-                                        } else if (status === 'pending') {
-                                          borderColor = 'border-amber-900/60';
-                                          leftBarColor = 'bg-amber-500';
-                                          bgClass = 'bg-amber-50 border border-amber-900/40';
-                                        }
-
-                                        return (
-                                          <div 
-                                            key={bk.id} 
-                                            className={`relative overflow-hidden p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-colors hover:border-slate-300 ${bgClass}`}
-                                          >
-                                            {/* Status accent left bar */}
-                                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${leftBarColor}`} />
-
-                                            <div className="pl-2">
-                                              <div className="flex items-center gap-2">
-                                                <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">
-                                                  {getBookingDisplayName(bk)}
-                                                </h4>
-                                                {!isBlock && (
-                                                  <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-purple-95 border border-purple-800/50 text-purple-350">
-                                                    Atendimento
-                                                  </span>
-                                                )}
-                                              </div>
-                                              
-                                              {!isBlock ? (
-                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 leading-none">
-                                                  <span className="flex items-center gap-1">
-                                                    <span className="text-purple-400">💈</span> {bk.service?.name || 'Serviço'}
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="flex items-center gap-1">
-                                                    <span className="text-purple-405 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-600">
-                                                    ⏱ {bk.service?.duration_minutes || '0'} min
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="text-slate-900 font-extrabold text-xs">
-                                                    {bk.total_price}€
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-600">
-                                                    💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
-                                                  </span>
-                                                </div>
-                                              ) : (
-                                                <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-semibold text-rose-400 font-mono">
-                                                  <span>🛑 Slot Bloqueado (Intervalo / Indisponível)</span>
-                                                  <span>•</span>
-                                                  <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 pl-2">
-                                              {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && bk.booking_status !== 'no_show' && (
-  <div className="flex items-center gap-1.5">
-    {!isPastBooking(bk.booking_date, bk.end_time || bk.start_time) ? (
-      <>
-        <button 
-          type="button"
-          onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
-          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
-        >
-          Concluir
-        </button>
-        <button 
-          type="button"
-          onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-          className="px-3.5 py-2 bg-white hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
-        >
-          Mover/Cancelar
-        </button>
-      </>
-    ) : (
-      <button 
-        type="button"
-        onClick={() => handleUpdateBookingStatus(bk.id, 'no_show')}
-        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-200 rounded-xl text-[10px] font-extrabold font-mono cursor-pointer uppercase tracking-wider transition-all"
-      >
-        Reclamar: Falta de Comparência
-      </button>
-    )}
-  </div>
-)}
-                                              <span className={"px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider " + (
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'bg-slate-50 text-slate-500 border border-slate-200' :
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'cancelled' ? 'bg-rose-50 text-rose-400 border border-rose-200' :
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'bg-orange-50 text-orange-500 border border-orange-200' : 'bg-indigo-50 text-indigo-400 border border-indigo-200'
-      )}>
-        {(((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'concluída' :
-         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'Falta de Comparência' : 
-         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status)}
-      </span>
-                                            </div>
-                                          </div>
-                                        );
-                                      })
-                                    ) : (
-                                      /* Quick Book / Block Event placeholder button: Fresha style with premium Dark Look */
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setManualStartTime(hourSlot);
-                                          setManualBookingType('booking');
-                                          setManualDate(selectedAgendaDate);
-                                          setIsManualBookingOpen(true);
-                                          if (services.length > 0) setManualServiceId(services[0].id);
-                                          if (staff.length > 0) setManualStaffId(staff[0].id);
-                                        }}
-                                        className="w-full h-14 bg-white hover:bg-purple-50 border border-dashed border-slate-200 hover:border-purple-800/80 text-slate-500 hover:text-purple-400 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-lg font-bold font-mono opacity-65 group-hover:opacity-100 text-purple-400">+</span>
-                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase text-slate-500 group-hover:text-slate-900">Disponível</span>
+                                  {/* Hour Slots Container for Drag and Drop Dropzone */}
+                                  <div className="relative">
+                                    {['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].map(hour => {
+                                      const slotTime = `${hour}:00`;
+                                      return (
+                                        <div 
+                                          key={slotTime} 
+                                          className="h-[80px] border-b border-slate-100 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                          onDragOver={(e) => e.preventDefault()}
+                                          onDrop={(e) => {
+                                            e.preventDefault();
+                                            const bookingId = e.dataTransfer.getData('bookingId');
+                                            if (bookingId) handleDropBooking(bookingId, st.id === 'unassigned' ? null : st.id, slotTime);
+                                          }}
+                                          onClick={() => {
+                                              setManualStartTime(slotTime);
+                                              setManualBookingType('booking');
+                                              setManualDate(selectedAgendaDate);
+                                              setIsManualBookingOpen(true);
+                                              if (st.id !== 'unassigned') setManualStaffId(st.id);
+                                          }}
+                                        >
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-400 bg-white border border-slate-200 px-2 py-1 rounded-lg">
-                                          Reservar {hourSlot}
-                                        </span>
-                                      </button>
-                                    )}
+                                      );
+                                    })}
+
+                                    {/* Absolute positioned active bookings for this staff */}
+                                    {bookings.filter(b => b.booking_date === selectedAgendaDate && (b.staff_id === st.id || (!b.staff_id && st.id === 'unassigned'))).map(bk => {
+                                      const startH = parseInt(String(bk.start_time).split(':')[0] || '8');
+                                      const startM = parseInt(String(bk.start_time).split(':')[1] || '0');
+                                      if (startH < 8 || startH > 20) return null; // fallback bounds
+                                      
+                                      const duration = bk.service?.duration_minutes || 30;
+                                      const topPos = (startH - 8) * 80 + (startM / 60) * 80;
+                                      const height = Math.max(30, (duration / 60) * 80);
+                                      
+                                      let statusColors = 'bg-blue-50 border border-blue-200 text-blue-900 border-l-4 border-l-blue-500';
+                                      if (bk.booking_status === 'completed') statusColors = 'bg-amber-50 border border-amber-200 text-amber-900 border-l-4 border-l-amber-500';
+                                      else if (bk.booking_status === 'confirmed') statusColors = 'bg-purple-50 border border-purple-200 text-purple-900 border-l-4 border-l-purple-500';
+                                      else if (bk.booking_status === 'cancelled' || bk.booking_status === 'no_show' || bk.notes?.startsWith('Bloqueio')) {
+                                        statusColors = 'bg-rose-50 border border-rose-200 text-rose-900 border-l-4 border-l-rose-500';
+                                      }
+
+                                      return (
+                                        <div
+                                          key={bk.id}
+                                          draggable
+                                          onDragStart={(e) => {
+                                            e.dataTransfer.setData('bookingId', bk.id);
+                                          }}
+                                          className={`absolute left-1 right-1 rounded-md p-1.5 shadow-sm text-left overflow-hidden cursor-move transition-transform hover:z-30 hover:scale-[1.02] hover:shadow-md ${statusColors}`}
+                                          style={{ top: `${topPos}px`, height: `${height - 2}px` }}
+                                        >
+                                          <div className="text-[8px] font-bold opacity-70 leading-tight truncate">
+                                            {bk.start_time} - {bk.end_time}
+                                          </div>
+                                          <div className="text-[10px] font-black truncate mt-0.5 leading-tight">
+                                            {getBookingDisplayName(bk)}
+                                          </div>
+                                          {!bk.notes?.startsWith('Bloqueio') && (
+                                            <>
+                                              <div className="text-[9px] truncate opacity-90 leading-tight">
+                                                {bk.service?.name}
+                                              </div>
+                                              <div className="text-[8px] opacity-75 mt-0.5 font-mono">
+                                                {bk.booking_status === 'completed' ? 'CONCLUÍDA' : bk.booking_status === 'pending' ? 'PENDENTE' : 'CONFIRMADA'}
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
                         </div>
                       )}

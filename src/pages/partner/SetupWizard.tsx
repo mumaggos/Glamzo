@@ -374,23 +374,39 @@ export default function SetupWizard() {
                 </div>
               ))}
               
-              <div className="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
-                onClick={() => {
-                  const name = prompt('Nome do serviço (ex: Corte de Cabelo)');
-                  const price = prompt('Preço em € (ex: 15)');
-                  const duration = prompt('Duração em minutos (ex: 30)');
-                  if (name && price && duration) {
-                    supabase.from('services').insert({
-                      business_id: business.id,
-                      name, price: parseFloat(price), duration_minutes: parseInt(duration), is_active: true
-                    }).select().maybeSingle().then(({ data }) => setServices([...services, data]));
-                  }
-                }}
-              >
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-2 text-purple-600">
-                  <Scissors className="w-5 h-5" />
+              <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
+                <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Novo Serviço</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <input id="new-service-name" type="text" placeholder="Nome (ex: Corte)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-service-price" type="number" placeholder="Preço (€)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-service-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
-                <p className="text-sm font-bold text-slate-700">Adicionar Serviço</p>
+                <button 
+                  onClick={() => {
+                    const name = (document.getElementById('new-service-name') as HTMLInputElement).value;
+                    const price = parseFloat((document.getElementById('new-service-price') as HTMLInputElement).value);
+                    const duration = parseInt((document.getElementById('new-service-duration') as HTMLInputElement).value);
+                    
+                    if (name && !isNaN(price) && !isNaN(duration)) {
+                      supabase.from('services').insert({
+                        business_id: business.id,
+                        name, price, duration_minutes: duration, is_active: true
+                      }).select().maybeSingle().then(({ data }) => {
+                        if (data) {
+                          setServices([...services, data]);
+                          (document.getElementById('new-service-name') as HTMLInputElement).value = '';
+                          (document.getElementById('new-service-price') as HTMLInputElement).value = '';
+                          (document.getElementById('new-service-duration') as HTMLInputElement).value = '';
+                        }
+                      });
+                    } else {
+                      alert('Por favor, preencha todos os campos corretamente.');
+                    }
+                  }}
+                  className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
+                >
+                  Confirmar e Adicionar Serviço
+                </button>
               </div>
             </div>
           </div>
@@ -420,21 +436,28 @@ export default function SetupWizard() {
                 </div>
               ))}
 
-              <div className="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
-                onClick={() => {
-                  const full_name = prompt('Nome do Funcionário (ex: Maria Joana)');
-                  if (full_name) {
-                    supabase.from('staff').insert({
-                      business_id: business.id,
-                      full_name, is_active: true
-                    }).select().maybeSingle().then(({ data }) => setStaff([...staff, data]));
-                  }
-                }}
-              >
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-2 text-purple-600">
-                  <Users className="w-5 h-5" />
-                </div>
-                <p className="text-sm font-bold text-slate-700">Adicionar Funcionário</p>
+              <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
+                <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Funcionário</h4>
+                <input id="new-staff-name" type="text" placeholder="Nome (ex: Maria Joana)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                <button 
+                  onClick={() => {
+                    const full_name = (document.getElementById('new-staff-name') as HTMLInputElement).value;
+                    if (full_name) {
+                      supabase.from('staff').insert({
+                        business_id: business.id,
+                        full_name, is_active: true
+                      }).select().maybeSingle().then(({ data }) => {
+                        if (data) {
+                          setStaff([...staff, data]);
+                          (document.getElementById('new-staff-name') as HTMLInputElement).value = '';
+                        }
+                      });
+                    }
+                  }}
+                  className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
+                >
+                  Confirmar e Adicionar Funcionário
+                </button>
               </div>
             </div>
           </div>
