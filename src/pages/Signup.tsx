@@ -31,43 +31,45 @@ export default function Signup() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Verification step state
+  const [step, setStep] = useState<'form' | 'verify'>('form');
+  const [enteredCode, setEnteredCode] = useState('');
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setErrorMsg('Preencha todos os campos obrigatórios.');
-      return;
-    }
+    if (step === 'form') {
+      if (!fullName || !email || !password || !confirmPassword) {
+        setErrorMsg('Preencha todos os campos obrigatórios.');
+        return;
+      }
 
-    if (password.length < 6) {
-      setErrorMsg('A palavra-passe deve conter pelo menos 6 caracteres.');
-      return;
-    }
+      if (password.length < 6) {
+        setErrorMsg('A palavra-passe deve conter pelo menos 6 caracteres.');
+        return;
+      }
 
-    if (password !== confirmPassword) {
-      setErrorMsg('As palavras-passe digitadas não coincidem.');
-      return;
-    }
+      if (password !== confirmPassword) {
+        setErrorMsg('As palavras-passe digitadas não coincidem.');
+        return;
+      }
 
-    if (!acceptedTerms) {
-      setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
-      return;
-    }
+      if (!acceptedTerms) {
+        setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
+        return;
+      }
 
       setLoading(true);
       setErrorMsg(null);
       setSuccessMsg(null);
 
       try {
-        // Call authentication signup directly without secondary custom verification
         const authResult = await signUp(email, password, fullName, role);
         const requiresEmailConfirmation = !authResult?.session;
         
         if (requiresEmailConfirmation) {
-           setSuccessMsg('Registo concluído! Como a segurança está ativada, por favor verifique primeiro a sua caixa de e-mail para validar a conta antes de iniciar sessão.');
-           setTimeout(() => {
-             navigate('/login?message=Verifique o seu e-mail para completar o registo.');
-           }, 4500);
+           setStep('verify');
+           setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
         } else {
            setSuccessMsg('Conta criada com sucesso e e-mail confirmado!');
            setTimeout(() => {
@@ -86,12 +88,50 @@ export default function Signup() {
         console.error('Registration Error:', err);
         let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente um e-mail diferente.';
         if (err.message?.includes('already registered') || err.message?.includes('already exists') || err.message?.toLowerCase().includes('already')) {
-          userFriendlyMessage = 'Este endereço de e-mail já está associado a uma conta Glamzo. Por favor, utilize um e-mail diferente ou inicie sessão.';
+           userFriendlyMessage = 'Este endereço de e-mail já está associado a uma conta Glamzo. Por favor, utilize um e-mail diferente ou inicie sessão.';
         }
         setErrorMsg(userFriendlyMessage);
       } finally {
         setLoading(false);
       }
+    } else {
+      if (enteredCode.length !== 6) {
+        setErrorMsg('Código de verificação inválido.');
+        return;
+      }
+
+      setLoading(true);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+
+      try {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email,
+          token: enteredCode,
+          type: 'signup'
+        });
+        
+        if (error || !data.session) throw new Error('Código inválido ou expirado.');
+        
+        setSuccessMsg('Conta validada com sucesso!');
+        setTimeout(() => {
+           const params = new URLSearchParams(window.location.search);
+           const redirect = params.get('redirect');
+           if (redirect) {
+             navigate(redirect);
+           } else {
+             if (role === 'admin') navigate('/admin', { replace: true });
+             else if (role === 'business') navigate('/dashboard', { replace: true });
+             else navigate('/account', { replace: true });
+           }
+        }, 2000);
+      } catch (err: any) {
+        console.error('Verify error:', err);
+        setErrorMsg('Falha ao verificar conta: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleGoogleSignup = async () => {
@@ -146,7 +186,8 @@ export default function Signup() {
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={handleRegister}>
+          {step === 'form' ? (
+            <form className="space-y-4" onSubmit={handleRegister}>
                 
                 {/* Name input */}
                 <div>
@@ -273,6 +314,50 @@ export default function Signup() {
                   </button>
                 </div>
               </form>
+          ) : (
+            <form className="space-y-4" onSubmit={handleRegister}>
+              <div>
+                <label htmlFor="verify-code" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 text-center">
+                  Código de Verificação
+                </label>
+                <input
+                  id="verify-code"
+                  type="text"
+                  required
+                  value={enteredCode}
+                  onChange={(e) => setEnteredCode(e.target.value)}
+                  className="block w-full px-4 py-4 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all text-slate-800"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading || enteredCode.length !== 6}
+                  className="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 gap-2 items-center cursor-pointer shadow-md shadow-emerald-100"
+                  id="btn-submit-verify"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>A verificar...</span>
+                    </>
+                  ) : (
+                    <span>Verificar e Entrar</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep('form')}
+                  className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700"
+                >
+                  Voltar e tentar novamente
+                </button>
+              </div>
+            </form>
+          )}
 
               {/* Social Break-line */}
               <div className="mt-6">

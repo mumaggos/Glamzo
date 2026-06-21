@@ -94,27 +94,21 @@ export default function PartnerSignup() {
 
     setLoading(true);
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setVerificationCode(code);
-
     try {
-      await fetch('/api/emails/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'verification_code',
-          to: email,
-          data: { 
-            userName: fullName,
-            code: code
-          }
-        })
-      });
+      // Create authentication credential & profile with role 'business'
+      // This will trigger Supabase to send the 6-digit confirmation email automatically
+      // if Confirm Email is enabled in the dashboard.
+      const authResult = await signUp(email, password, fullName, 'business');
+
       setStep(3);
       setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
     } catch (err: any) {
       console.error('Failed to trigger verification email', err);
-      setErrorMsg('Não foi possível enviar o e-mail de verificação. Tente novamente mais tarde.');
+      let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente um e-mail diferente.';
+      if (err.message?.includes('already registered')) {
+        userFriendlyMessage = 'Este e-mail já está em uso. Por favor, use um e-mail diferente ou faça login.';
+      }
+      setErrorMsg(userFriendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -123,7 +117,7 @@ export default function PartnerSignup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (enteredCode !== verificationCode) {
+    if (enteredCode.length !== 6) {
       setErrorMsg('Código de verificação inválido.');
       return;
     }
@@ -134,24 +128,27 @@ export default function PartnerSignup() {
     setIsSignUpProcessActive(true);
 
     try {
-      // 1. Create authentication credential & profile with role 'business'
-      const authResult = await signUp(email, password, fullName, 'business');
-      const authUser = authResult?.user;
+      // 1. Verify the OTP code with Supabase
+      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        email: email,
+        token: enteredCode,
+        type: 'signup'
+      });
 
-      if (!authUser) {
-        throw new Error('Falha ao registar credenciais. Verifique os dados digitados.');
+      if (verifyError || !verifyData.user || !verifyData.session) {
+        throw new Error('O código inserido é inválido ou já expirou. Peça um novo código e tente novamente.');
       }
-
-      // Automatically sign in to get a valid token in the client so that RLS doesn't block the insert
-      let activeSession = authResult?.session;
-      if (!activeSession) {
-        const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
-        activeSession = loginData?.session || null;
-      }
+      
+      const authUser = verifyData.user;
+      const activeSession = verifyData.session;
 
       // 2. Generate unique business URL slug
       const businessSlug = await generateUniqueSlug(businessName);
       const { latitude, longitude } = getCoordinatesForCity(district, city);
+
+      // Now we have a session! Just to be sure, update user's profile to business explicitly to satisfy any possible DB checks
+      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
+
 
       const businessPayload = {
         owner_id: authUser.id,
@@ -172,22 +169,6 @@ export default function PartnerSignup() {
         logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
         cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
       };
-
-      // If Supabase STILL refuses to issue a session (e.g. Email Confirm is truly enforced by the DB)
-      // we must abort the insert, otherwise RLS will trigger and return an error.
-      if (!activeSession) {
-        console.warn('Authentication created but session missing. Caching business payload and redirecting to login.');
-        localStorage.setItem('pending_business_payload', JSON.stringify(businessPayload));
-        setSuccessMsg('Registo de credenciais concluído! Como a segurança está ativada, por favor verifique primeiro a sua caixa de e-mail para validar a conta antes de iniciar sessão e prosseguir.');
-        
-        setTimeout(() => {
-          navigate('/login?message=Por favor, inicie sessão para concluir a configuração da loja.');
-        }, 4500);
-        return;
-      }
-
-      // Now we have a session! Just to be sure, update user's profile to business explicitly to satisfy any possible DB checks
-      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
 
       // Now insert safely into businesses
       let { data: insertedBiz, error: bizErr } = await supabase
