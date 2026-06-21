@@ -142,7 +142,14 @@ export default function PartnerSignup() {
         throw new Error('Falha ao registar credenciais. Verifique os dados digitados.');
       }
 
-      // 2. Generate unique business URL slug and insert directly into public.businesses
+      // Automatically sign in to get a valid token in the client so that RLS doesn't block the insert
+      let activeSession = authResult?.session;
+      if (!activeSession) {
+        const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
+        activeSession = loginData?.session || null;
+      }
+
+      // 2. Generate unique business URL slug
       const businessSlug = await generateUniqueSlug(businessName);
       const { latitude, longitude } = getCoordinatesForCity(district, city);
 
@@ -166,6 +173,23 @@ export default function PartnerSignup() {
         cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
       };
 
+      // If Supabase STILL refuses to issue a session (e.g. Email Confirm is truly enforced by the DB)
+      // we must abort the insert, otherwise RLS will trigger and return an error.
+      if (!activeSession) {
+        console.warn('Authentication created but session missing. Caching business payload and redirecting to login.');
+        localStorage.setItem('pending_business_payload', JSON.stringify(businessPayload));
+        setSuccessMsg('Registo de credenciais concluído! Como a segurança está ativada, por favor verifique primeiro a sua caixa de e-mail para validar a conta antes de iniciar sessão e prosseguir.');
+        
+        setTimeout(() => {
+          navigate('/login?message=Por favor, inicie sessão para concluir a configuração da loja.');
+        }, 4500);
+        return;
+      }
+
+      // Now we have a session! Just to be sure, update user's profile to business explicitly to satisfy any possible DB checks
+      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
+
+      // Now insert safely into businesses
       let { data: insertedBiz, error: bizErr } = await supabase
         .from('businesses')
         .insert(businessPayload)
@@ -196,19 +220,6 @@ export default function PartnerSignup() {
 
       if (bizErr) {
         console.error('Error inserting business profile:', bizErr);
-        
-        // Check if error is related to RLS policies (which happens when Email Confirmation is required)
-        if (bizErr.message?.includes('row-level security') || bizErr.code === '42501') {
-          console.warn('RLS blocked anonymous insert. Caching business payload and requiring email confirmation login.');
-          localStorage.setItem('pending_business_payload', JSON.stringify(businessPayload));
-          setSuccessMsg('Registo concluído! Como a segurança está ativada, por favor verifique primeiro a sua caixa de e-mail para validar a conta.');
-          
-          setTimeout(() => {
-            navigate('/login?message=Por favor, confirme no seu e-mail antes de fazer o login.');
-          }, 4500);
-          return;
-        }
-
         // If profile creation failed for other reasons, keep session clean
         throw new Error('Conta criada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
       }
