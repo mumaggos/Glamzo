@@ -196,7 +196,20 @@ export default function PartnerSignup() {
 
       if (bizErr) {
         console.error('Error inserting business profile:', bizErr);
-        // If profile creation failed, keep session clean
+        
+        // Check if error is related to RLS policies (which happens when Email Confirmation is required)
+        if (bizErr.message?.includes('row-level security') || bizErr.code === '42501') {
+          console.warn('RLS blocked anonymous insert. Caching business payload and requiring email confirmation login.');
+          localStorage.setItem('pending_business_payload', JSON.stringify(businessPayload));
+          setSuccessMsg('Registo concluído! Como a segurança está ativada, por favor verifique primeiro a sua caixa de e-mail para validar a conta.');
+          
+          setTimeout(() => {
+            navigate('/login?message=Por favor, confirme no seu e-mail antes de fazer o login.');
+          }, 4500);
+          return;
+        }
+
+        // If profile creation failed for other reasons, keep session clean
         throw new Error('Conta criada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
       }
 
