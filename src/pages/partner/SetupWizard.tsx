@@ -86,6 +86,7 @@ export default function SetupWizard() {
           phone: '',
           address: '',
           city: '',
+          district: '', // Fix for not-null constraint
           postal_code: '',
           status: 'setup',
           slug: slug,
