@@ -106,11 +106,8 @@ export default function SetupWizard() {
           } else if (createErr.code === '42703' || createErr.message?.includes('column')) {
             // column fallback
             console.warn('Handling missing columns for business insert');
-            const fallbackPayload = {
-              owner_id: user.id,
-              name: '',
-              slug: slug,
-            };
+            const fallbackPayload = { ...payload };
+            delete (fallbackPayload as any).status;
             const { data: fbBiz, error: fbErr } = await supabase.from('businesses').insert(fallbackPayload).select().single();
             if (fbErr) {
               console.error('[PartnerSetup] Fallback insert failed:', fbErr);
