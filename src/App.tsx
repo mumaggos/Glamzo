@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
@@ -7,33 +7,48 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 
 function SessionGuard() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && profile) {
-      if (profile.role === 'admin' || profile.role === 'business') {
-        const path = location.pathname;
-        const permittedAdmin = profile.role === 'admin' && path.startsWith('/admin');
-        const permittedBusiness = profile.role === 'business' && (
-          path.startsWith('/dashboard') || 
-          path.startsWith('/setup') || 
-          path.startsWith('/stripe') || 
-          path.startsWith('/onboarding') ||
-          path.startsWith('/partner')
-        );
+    // Avoid running logic before auth resolves
+    if (loading || !user || !profile) return;
 
-        if (!permittedAdmin && !permittedBusiness) {
-          console.log(`[SessionGuard] Redirecting ${profile.role} to their default dashboard from: ${path}`);
-          if (profile.role === 'admin') {
-            window.location.replace('/admin');
-          } else if (profile.role === 'business') {
-            window.location.replace('/dashboard');
-          }
+    // We only enforce strict redirects for internal roles. Customer logic remains default.
+    if (profile.role === 'admin' || profile.role === 'business') {
+      const path = location.pathname;
+      const isAuthPage = path === '/login' || path === '/partner/login' || path === '/admin/login' || path === '/partner/signup';
+      const permittedAdmin = profile.role === 'admin' && path.startsWith('/admin');
+      const permittedBusiness = profile.role === 'business' && (
+        path.startsWith('/dashboard') || 
+        path.startsWith('/setup') || 
+        path.startsWith('/stripe') || 
+        path.startsWith('/onboarding') ||
+        path.startsWith('/partner')
+      );
+
+      // Prevent authenticated business users from sitting on auth pages
+      if (isAuthPage && profile.role === 'business') {
+        navigate('/setup', { replace: true });
+        return;
+      }
+      if (isAuthPage && profile.role === 'admin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+
+      // Force logout or redirect if visiting forbidden routes
+      if (!isAuthPage && !permittedAdmin && !permittedBusiness) {
+        console.log(`[SessionGuard] Redirecting ${profile.role} to their default dashboard from: ${path}`);
+        if (profile.role === 'admin') {
+          navigate('/admin', { replace: true });
+        } else if (profile.role === 'business') {
+          navigate('/setup', { replace: true });
         }
       }
     }
-  }, [location.pathname, user, profile, signOut]);
+  }, [location.pathname, user, profile, loading, navigate]);
 
   return null;
 }

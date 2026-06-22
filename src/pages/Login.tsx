@@ -12,7 +12,7 @@ export default function Login() {
   React.useEffect(() => {
     if (!authLoading && user && profile) {
       if (profile.role === 'admin') navigate('/admin', { replace: true });
-      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else if (profile.role === 'business') navigate('/setup', { replace: true });
       else navigate('/account', { replace: true });
     }
   }, [user, profile, authLoading, navigate]);

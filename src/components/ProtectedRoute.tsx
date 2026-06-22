@@ -52,7 +52,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
         case 'admin':
           return <Navigate to="/admin" replace />;
         case 'business':
-          return <Navigate to="/dashboard" replace />;
+          return <Navigate to="/setup" replace />;
         case 'customer':
         default:
           return <Navigate to="/account" replace />;

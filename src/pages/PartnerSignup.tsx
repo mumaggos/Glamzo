@@ -114,11 +114,18 @@ export default function PartnerSignup() {
       
       // Ensure the profile role is set to business
       await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-      await refreshProfile();
+      console.log('[PartnerOTP] código confirmado com sucesso. Atualizado profile para business.');
+      
+      const p = await refreshProfile();
+      console.log('[PartnerAuth] profile role=business carregado para user:', authUser.id);
+
+      const { resolvePartnerRoute } = await import('../utils/partnerRouting');
+      const route = await resolvePartnerRoute(authUser, 'business', supabase);
+      console.log('[PartnerRoute] redirect =>', route);
 
       setSuccessMsg('E-mail verificado com sucesso! Por favor continue para configurar o seu estabelecimento.');
       setTimeout(() => {
-        navigate('/setup', { replace: true });
+        navigate(route, { replace: true });
       }, 2000);
     } catch (err: any) {
       setIsSignUpProcessActive(false);
@@ -391,7 +398,7 @@ export default function PartnerSignup() {
                       </>
                     ) : (
                       <>
-                        <span>Criar Conta</span>
+                        <span>Confirmar código</span>
                         <Check className="w-4 h-4" />
                       </>
                     )}

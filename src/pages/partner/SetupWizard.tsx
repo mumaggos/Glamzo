@@ -315,6 +315,17 @@ export default function SetupWizard() {
     { title: 'Recebimentos Stripe', done: business?.charges_enabled || false }
   ];
 
+  if (loading && !business) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+          <p className="text-xs font-bold font-mono tracking-widest text-slate-500 uppercase">A preparar a sua área...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-purple-200 selection:text-purple-900 pb-20">
       {/* Header */}
