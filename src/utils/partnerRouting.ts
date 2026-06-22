@@ -1,15 +1,17 @@
 import { User } from '@supabase/supabase-js';
 
 export async function resolvePartnerRoute(user: User | null, profileRole: string | null, supabase: any): Promise<string> {
-  console.log('[PartnerRoute] resolving route for user:', user?.id, 'role:', profileRole);
+  console.log('[PartnerRoute] resolvendo rota. User:', user?.id, 'Role:', profileRole);
+  
+  // Caso 1: sem sessão
   if (!user) {
-    console.log('[PartnerRoute] no user -> /partner/login');
+    console.log('[PartnerRoute] redirect => /partner/login (sem sessão)');
     return '/partner/login';
   }
   
+  // Caso 2: sessão existe mas profile não é business
   if (profileRole !== 'business') {
-    console.log('[PartnerRoute] role is not business -> /login');
-    // We should probably log them out, but let's just send to general login for now, or block.
+    console.log('[PartnerRoute] redirect => /login (role não é business)');
     return '/login';
   }
 
@@ -19,26 +21,30 @@ export async function resolvePartnerRoute(user: User | null, profileRole: string
       .select('id, status')
       .eq('owner_id', user.id)
       .maybeSingle();
-      
+
     if (error && error.code !== 'PGRST116') {
-      console.error('[PartnerRoute] error fetching business:', error);
+      console.error('[PartnerRoute] Erro ao buscar business:', error);
+      // Fallback seguro em caso de erro (sem ser o not found)
       return '/setup';
     }
 
+    // Caso 3: não existe business associado
     if (!business) {
-      console.log('[PartnerRoute] no business found -> /setup');
+      console.log('[PartnerRoute] redirect => /setup (business não encontrado)');
       return '/setup';
     }
 
+    // Caso 4 & 6: business existe mas não está active
     if (business.status !== 'active') {
-      console.log('[PartnerRoute] business status is', business.status, '-> /setup');
+      console.log(`[PartnerRoute] redirect => /setup (status é ${business.status})`);
       return '/setup';
     }
 
-    console.log('[PartnerRoute] business is active -> /dashboard');
+    // Caso 5: business active
+    console.log('[PartnerRoute] redirect => /dashboard (status active)');
     return '/dashboard';
   } catch (err) {
-    console.error('[PartnerRoute] Exception resolving route:', err);
+    console.error('[PartnerRoute] Exceção:', err);
     return '/setup';
   }
 }

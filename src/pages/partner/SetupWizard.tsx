@@ -64,39 +64,93 @@ export default function SetupWizard() {
   const fetchBusiness = async () => {
     if (!user) return;
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('businesses')
         .select('*')
         .eq('owner_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (data) {
-        setBusiness(data);
-        if (data.status === 'active') {
-          navigate('/dashboard');
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      let biz = data;
+      
+      if (!biz) {
+        // Create initial placeholder business idempotently
+        console.log('[PartnerSetup] Nenhuma loja encontrada. A inicializar business para o dono...');
+        const slug = await generateUniqueSlug(`loja-${user.id.substring(0, 8)}`);
+        const payload = {
+          owner_id: user.id,
+          name: '',
+          email: user.email || '',
+          phone: '',
+          address: '',
+          city: '',
+          postal_code: '',
+          status: 'setup',
+          slug: slug,
+          category: 'Cabelo & Barbearia' // Default
+        };
+        
+        const { data: newBiz, error: createErr } = await supabase
+          .from('businesses')
+          .insert(payload)
+          .select()
+          .single();
+          
+        if (createErr) {
+          // If concurrent insert happened (duplicate key mapping on owner_id unicity or slug)
+          if (createErr.code === '23505') {
+            const { data: existingBiz } = await supabase.from('businesses').select('*').eq('owner_id', user.id).single();
+            biz = existingBiz;
+          } else if (createErr.code === '42703' || createErr.message?.includes('column')) {
+            // column fallback
+            console.warn('Handling missing columns for business insert');
+            const fallbackPayload = {
+              owner_id: user.id,
+              name: '',
+              status: 'setup',
+              slug: slug,
+            };
+            const { data: fbBiz, error: fbErr } = await supabase.from('businesses').insert(fallbackPayload).select().single();
+            if (fbErr) throw fbErr;
+            biz = fbBiz;
+          } else {
+             throw createErr;
+          }
+        } else {
+          biz = newBiz;
+        }
+      }
+
+      if (biz) {
+        console.log('[PartnerSetup] business encontrado status=', biz.status);
+        setBusiness(biz);
+        if (biz.status === 'active') {
+          console.log('[PartnerSetup] Loja já ativa, redirect => /dashboard');
+          navigate('/dashboard', { replace: true });
           return;
         }
         
-        setName(data.name || '');
-        setPhone(data.phone || '');
-        setEmail(data.email || '');
-        setAddress(data.address || '');
-        setCity(data.city || '');
-        setPostalCode(data.postal_code || '');
-        setLogoUrl(data.logo_url || '');
-        setCoverUrl(data.cover_url || '');
+        setName(biz.name || '');
+        setPhone(biz.phone || '');
+        setEmail(biz.email || '');
+        setAddress(biz.address || '');
+        setCity(biz.city || '');
+        setPostalCode(biz.postal_code || '');
+        setLogoUrl(biz.logo_url || '');
+        setCoverUrl(biz.cover_url || '');
 
         // Preload services
-        const { data: svcs } = await supabase.from('services').select('*').eq('business_id', data.id);
+        const { data: svcs } = await supabase.from('services').select('*').eq('business_id', biz.id);
         if (svcs) setServices(svcs);
         
         // Preload staff
-        const { data: stfs } = await supabase.from('staff').select('*').eq('business_id', data.id);
+        const { data: stfs } = await supabase.from('staff').select('*').eq('business_id', biz.id);
         if (stfs) setStaff(stfs);
         
         // Preload order if terminal
-        const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', data.id).maybeSingle();
+        const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', biz.id).maybeSingle();
         if (order) {
           setSelectedPlan('TERMINAL');
           setShippingName(order.shipping_name);
@@ -107,7 +161,8 @@ export default function SetupWizard() {
         }
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('[PartnerSetup] Erro ao carregar/criar loja:', err);
+      setErrorMsg('Erro ao preparar a configuração da loja: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -122,63 +177,27 @@ export default function SetupWizard() {
         setErrorMsg('Preencha os campos obrigatórios.');
         return;
       }
+      if (!business) {
+        setErrorMsg('Erro interno: a loja não foi inicializada corretamente. Atualize a página e tente novamente.');
+        return;
+      }
+      
       setLoading(true);
       
       try {
-        if (!business) {
-          // Check if slug exists, otherwise generate one
-          const slug = await generateUniqueSlug(name);
-          
-          let { latitude, longitude } = { latitude: 38.7223, longitude: -9.1393 }; // fallback Lisbon
-          try {
-            const coords = getCoordinatesForCity('Lisboa', city); // Defaulting district to Lisboa for basic setup
-            latitude = coords.latitude;
-            longitude = coords.longitude;
-          } catch(e) {}
-
-          const payload = {
-            owner_id: user.id,
-            name,
-            phone,
-            email,
-            address,
-            city,
-            postal_code: postalCode,
-            logo_url: logoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
-            cover_url: coverUrl || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop',
-            slug,
-            latitude,
-            longitude,
-            status: 'setup',
-            category: 'Cabelo & Barbearia' // Default
-          };
-          
-          let { data: newBiz, error } = await supabase.from('businesses').insert(payload).select().single();
-          
-          if (error) {
-            // column fallback
-            const isColumnErr = error.code === '42703' || error.message?.includes('column');
-            if (isColumnErr) {
-               const fallbackPayload = { ...payload };
-               delete (fallbackPayload as any).latitude;
-               delete (fallbackPayload as any).longitude;
-               const retryResult = await supabase.from('businesses').insert(fallbackPayload).select().single();
-               error = retryResult.error;
-               newBiz = retryResult.data;
-             }
-          }
-          
-          if (error) throw error;
-          setBusiness(newBiz);
-          
-          // Also check profile role
-          await supabase.from('profiles').update({ role: 'business' }).eq('id', user.id);
-        } else {
-          const { error } = await supabase.from('businesses').update({
-            name, phone, email, address, city, postal_code: postalCode, logo_url: logoUrl, cover_url: coverUrl
-          }).eq('id', business.id);
-          if (error) throw error;
+        let slug = business.slug;
+        // Se a entidade tinha slug temporario ('loja-xyz') e agora tem nome, cria um slug a sério
+        if (slug.startsWith('loja-') && name) {
+          slug = await generateUniqueSlug(name);
         }
+
+        const { error } = await supabase.from('businesses').update({
+          name, phone, email, address, city, postal_code: postalCode, logo_url: logoUrl, cover_url: coverUrl, slug
+        }).eq('id', business.id);
+        
+        if (error) throw error;
+        
+        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, logo_url: logoUrl, cover_url: coverUrl, slug });
         setStep(2);
       } catch (err: any) {
         setErrorMsg(err.message);

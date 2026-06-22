@@ -10,9 +10,17 @@ export default function PartnerLogin() {
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {
-      if (profile.role === 'admin') navigate('/admin', { replace: true });
-      else if (profile.role === 'business') navigate('/setup', { replace: true });
-      else navigate('/account', { replace: true });
+      if (profile.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (profile.role === 'business') {
+        import('../utils/partnerRouting').then(({ resolvePartnerRoute }) => {
+          resolvePartnerRoute(user, profile.role, supabase).then(route => {
+            navigate(route, { replace: true });
+          });
+        });
+      } else {
+        navigate('/account', { replace: true });
+      }
     }
   }, [user, profile, authLoading, navigate]);
 
