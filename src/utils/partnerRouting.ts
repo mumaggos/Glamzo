@@ -18,7 +18,7 @@ export async function resolvePartnerRoute(user: User | null, profileRole: string
   try {
     const { data: business, error } = await supabase
       .from('businesses')
-      .select('id, status')
+      .select('*')
       .eq('owner_id', user.id)
       .maybeSingle();
 
@@ -35,7 +35,14 @@ export async function resolvePartnerRoute(user: User | null, profileRole: string
     }
 
     // Caso 4 & 6: business existe mas não está active
-    if (business.status !== 'active') {
+    let isBusinessActive = business.status === 'active';
+    
+    // Fallback if status column is missing in older DB schema
+    if (business.status === undefined && business.name && business.name.trim() !== '') {
+      isBusinessActive = true;
+    }
+
+    if (!isBusinessActive) {
       console.log(`[PartnerRoute] redirect => /setup (status é ${business.status})`);
       return '/setup';
     }

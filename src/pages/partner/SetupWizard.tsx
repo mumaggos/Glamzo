@@ -109,11 +109,13 @@ export default function SetupWizard() {
             const fallbackPayload = {
               owner_id: user.id,
               name: '',
-              status: 'setup',
               slug: slug,
             };
             const { data: fbBiz, error: fbErr } = await supabase.from('businesses').insert(fallbackPayload).select().single();
-            if (fbErr) throw fbErr;
+            if (fbErr) {
+              console.error('[PartnerSetup] Fallback insert failed:', fbErr);
+              throw fbErr;
+            }
             biz = fbBiz;
           } else {
              throw createErr;
@@ -126,7 +128,13 @@ export default function SetupWizard() {
       if (biz) {
         console.log('[PartnerSetup] business encontrado status=', biz.status);
         setBusiness(biz);
-        if (biz.status === 'active') {
+        
+        let isBusinessActive = biz.status === 'active';
+        if (biz.status === undefined && biz.name && biz.name.trim() !== '') {
+          isBusinessActive = true;
+        }
+
+        if (isBusinessActive) {
           console.log('[PartnerSetup] Loja já ativa, redirect => /dashboard');
           navigate('/dashboard', { replace: true });
           return;
@@ -261,11 +269,15 @@ export default function SetupWizard() {
   const publishBusiness = async () => {
     if (!business) return;
     setLoading(true);
-    const { error } = await supabase.from('businesses').update({ status: 'active' }).eq('id', business.id);
+    let { error } = await supabase.from('businesses').update({ status: 'active' }).eq('id', business.id);
     setLoading(false);
     if (error) {
-      setErrorMsg(error.message);
-      return;
+      if (error.code === '42703' || error.message?.includes('status')) {
+        console.warn('Status column missing, bypassing active mark and redirecting.');
+      } else {
+        setErrorMsg(error.message);
+        return;
+      }
     }
     navigate('/dashboard');
   };
