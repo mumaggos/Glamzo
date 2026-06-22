@@ -442,7 +442,7 @@ export default function Dashboard() {
 
       if (!bData) {
         // Business profile does not exist yet: prompt onboarding redirections
-        navigate('/onboarding');
+        navigate('/setup');
         return;
       }
       

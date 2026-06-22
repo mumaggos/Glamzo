@@ -160,16 +160,8 @@ export default function App() {
                 <Route path="/sobre-nos" element={<Sobre />} />
                 <Route path="/contactos" element={<Contactos />} />
 
-                {/* /onboarding: Partner Wizard - Restricted to authenticated members */}
-                <Route
-                  path="/onboarding"
-                  element={
-                    <ProtectedRoute allowedRoles={['customer', 'business', 'admin']}>
-                      <Onboarding />
-                    </ProtectedRoute>
-                  }
-                />
-
+                {/* /onboarding: Deprecated, use /setup */}
+                
                 {/* /account: Customer profile page - Restricted to customers & admins */}
                 <Route
                   path="/account"

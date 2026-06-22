@@ -88,7 +88,7 @@ export default function PartnerSignup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (enteredCode.length !== 8) {
+    if (enteredCode.length < 6 || enteredCode.length > 8) {
       setErrorMsg('Código de verificação inválido.');
       return;
     }
@@ -118,7 +118,7 @@ export default function PartnerSignup() {
 
       setSuccessMsg('E-mail verificado com sucesso! Por favor continue para configurar o seu estabelecimento.');
       setTimeout(() => {
-        navigate('/onboarding', { replace: true });
+        navigate('/setup', { replace: true });
       }, 2000);
     } catch (err: any) {
       setIsSignUpProcessActive(false);
@@ -381,7 +381,7 @@ export default function PartnerSignup() {
 
                   <button
                     type="submit"
-                    disabled={loading || enteredCode.length !== 8}
+                    disabled={loading || enteredCode.length < 6}
                     className="w-2/3 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     {loading ? (

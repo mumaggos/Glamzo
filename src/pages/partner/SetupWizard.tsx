@@ -8,6 +8,8 @@ import {
   Phone, Mail, Lock
 } from 'lucide-react';
 import { optimizeImageBeforeUpload } from '../../utils/imageOptimizer';
+import { slugify, generateUniqueSlug } from '../../utils/slugify';
+import { getCoordinatesForCity } from '../../utils/geoData';
 
 export default function SetupWizard() {
   const { user } = useAuth();
@@ -113,7 +115,7 @@ export default function SetupWizard() {
 
   const handleNext = async () => {
     setErrorMsg(null);
-    if (!business) return;
+    if (!user) return;
 
     if (step === 1) {
       if (!name || !phone || !address || !city || !postalCode) {
@@ -121,19 +123,77 @@ export default function SetupWizard() {
         return;
       }
       setLoading(true);
-      const { error } = await supabase.from('businesses').update({
-        name, phone, email, address, city, postal_code: postalCode, logo_url: logoUrl, cover_url: coverUrl
-      }).eq('id', business.id);
-      setLoading(false);
-      if (error) return setErrorMsg(error.message);
-      setStep(2);
+      
+      try {
+        if (!business) {
+          // Check if slug exists, otherwise generate one
+          const slug = await generateUniqueSlug(name);
+          
+          let { latitude, longitude } = { latitude: 38.7223, longitude: -9.1393 }; // fallback Lisbon
+          try {
+            const coords = getCoordinatesForCity('Lisboa', city); // Defaulting district to Lisboa for basic setup
+            latitude = coords.latitude;
+            longitude = coords.longitude;
+          } catch(e) {}
+
+          const payload = {
+            owner_id: user.id,
+            name,
+            phone,
+            email,
+            address,
+            city,
+            postal_code: postalCode,
+            logo_url: logoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
+            cover_url: coverUrl || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop',
+            slug,
+            latitude,
+            longitude,
+            status: 'setup',
+            category: 'Cabelo & Barbearia' // Default
+          };
+          
+          let { data: newBiz, error } = await supabase.from('businesses').insert(payload).select().single();
+          
+          if (error) {
+            // column fallback
+            const isColumnErr = error.code === '42703' || error.message?.includes('column');
+            if (isColumnErr) {
+               const fallbackPayload = { ...payload };
+               delete (fallbackPayload as any).latitude;
+               delete (fallbackPayload as any).longitude;
+               const retryResult = await supabase.from('businesses').insert(fallbackPayload).select().single();
+               error = retryResult.error;
+               newBiz = retryResult.data;
+             }
+          }
+          
+          if (error) throw error;
+          setBusiness(newBiz);
+          
+          // Also check profile role
+          await supabase.from('profiles').update({ role: 'business' }).eq('id', user.id);
+        } else {
+          const { error } = await supabase.from('businesses').update({
+            name, phone, email, address, city, postal_code: postalCode, logo_url: logoUrl, cover_url: coverUrl
+          }).eq('id', business.id);
+          if (error) throw error;
+        }
+        setStep(2);
+      } catch (err: any) {
+        setErrorMsg(err.message);
+      } finally {
+        setLoading(false);
+      }
     } else if (step === 2) {
+      if (!business) return;
       if (services.length === 0) {
         setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
         return;
       }
       setStep(3);
     } else if (step === 3) {
+      if (!business) return;
       if (staff.length === 0) {
         setErrorMsg('Adicione pelo menos um profissional para prosseguir.');
         return;

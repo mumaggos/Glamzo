@@ -102,7 +102,7 @@ export default function Signup() {
         setLoading(false);
       }
     } else {
-      if (enteredCode.length !== 8) {
+      if (enteredCode.length < 6 || enteredCode.length > 8) {
         setErrorMsg('Código de verificação inválido.');
         return;
       }
@@ -361,7 +361,7 @@ export default function Signup() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading || enteredCode.length !== 8}
+                  disabled={loading || enteredCode.length < 6}
                   className="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 gap-2 items-center cursor-pointer shadow-md shadow-emerald-100"
                   id="btn-submit-verify"
                 >
