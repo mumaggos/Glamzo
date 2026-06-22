@@ -11,10 +11,10 @@ export default function PartnerSignup() {
   const { signUp, signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Multi-step form step (1: Account info, 2: Business info)
+  // Multi-step form step (1: Account info, 2: Verification)
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('step') === 'verify' ? 3 : 1;
+    return params.get('step') === 'verify' ? 2 : 1;
   });
 
   // Form states - Step 1
@@ -70,7 +70,7 @@ export default function PartnerSignup() {
       // This will trigger Supabase to send the confirmation email
       await signUp(email, password, fullName, 'business');
 
-      setStep(3);
+      setStep(2);
       setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
     } catch (err: any) {
       console.error('Failed to trigger verification email or create profile', err);
@@ -157,7 +157,7 @@ export default function PartnerSignup() {
             <div className="w-12 h-[1px] bg-slate-100 flex-1 mx-3" />
             <div className="flex items-center gap-2">
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'}`}>2</span>
-              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Dados do Negócio</span>
+              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Verificar E-mail</span>
             </div>
           </div>
 
@@ -339,8 +339,8 @@ export default function PartnerSignup() {
             </form>
           ) : null}
 
-          {/* Step 3: Verify OTP form */}
-          {step === 3 && (
+          {/* Step 2: Verify OTP form */}
+          {step === 2 && (
             <form className="space-y-4 animate-fade-in" onSubmit={handleRegister}>
               <div className="text-center mb-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full mb-4">

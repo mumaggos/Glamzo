@@ -19,12 +19,17 @@ function SessionGuard() {
           path.startsWith('/dashboard') || 
           path.startsWith('/setup') || 
           path.startsWith('/stripe') || 
-          path.startsWith('/onboarding')
+          path.startsWith('/onboarding') ||
+          path.startsWith('/partner')
         );
 
         if (!permittedAdmin && !permittedBusiness) {
-          console.log(`[SessionGuard] Force logout for ${profile.role} visiting public page: ${path}`);
-          signOut();
+          console.log(`[SessionGuard] Redirecting ${profile.role} to their default dashboard from: ${path}`);
+          if (profile.role === 'admin') {
+            window.location.replace('/admin');
+          } else if (profile.role === 'business') {
+            window.location.replace('/dashboard');
+          }
         }
       }
     }
