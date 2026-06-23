@@ -1998,32 +1998,28 @@ export default function Dashboard() {
     return false;
   })();
 
-  // Block dashboard if no active/trialing subscription, or if card (stripe_subscription_id) has not been linked yet (required for marketplace & panel use)
+  // Block dashboard if subscription is explicitly past due or expired
   const isBillingBlocked = (() => {
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
     if (isDemo) return false;
 
-    // Must have a credit card linked/subscription configured in stripe to use the dashboard!
-    if (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '') {
+    if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid' || resolvedSubscriptionStatus === 'canceled') {
       return true;
     }
 
-    if (resolvedSubscriptionStatus === 'active' || resolvedSubscriptionStatus === 'trialing') {
+    if (resolvedSubscriptionStatus === 'trialing') {
       const expiresAt = trialEndsAt ? new Date(trialEndsAt).getTime() : null;
-      if (expiresAt && expiresAt <= Date.now() && resolvedSubscriptionStatus !== 'active') {
+      if (expiresAt && expiresAt <= Date.now()) {
         return true;
       }
       return false;
     }
-    return true;
+    
+    // Default to false, assuming setup wizard handled it
+    return false;
   })();
 
   const subBlockReason = (() => {
-    const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
-    if (!isDemo && (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '')) {
-      return 'active_trial_requires_card';
-    }
-    if (!activeSubscription && !resolvedSubscriptionStatus) return 'onboarding';
     if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid') return 'past_due';
     return 'expired';
   })();
