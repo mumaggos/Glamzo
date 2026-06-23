@@ -392,7 +392,7 @@ export default function SetupWizard() {
                 <div key={s.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
                   <div>
                     <h4 className="font-bold text-sm text-slate-900">{s.name}</h4>
-                    <p className="text-xs text-slate-500">{s.duration} min</p>
+                    <p className="text-xs text-slate-500">{s.duration_minutes} min</p>
                   </div>
                   <div className="font-black text-slate-900">{s.price}€</div>
                 </div>
@@ -411,22 +411,29 @@ export default function SetupWizard() {
                 </div>
               </div>
               <button 
-                onClick={() => {
+                onClick={async () => {
                   const name = (document.getElementById('new-svc-name') as HTMLInputElement).value;
                   const duration = parseInt((document.getElementById('new-svc-duration') as HTMLInputElement).value);
                   const price = parseFloat((document.getElementById('new-svc-price') as HTMLInputElement).value);
                   if (name && duration && price) {
-                    supabase.from('services').insert({
+                    const { data, error } = await supabase.from('services').insert({
                       business_id: business.id,
-                      name, duration, price, is_active: true
-                    }).select().maybeSingle().then(({ data }) => {
-                      if (data) {
-                        setServices([...services, data]);
-                        (document.getElementById('new-svc-name') as HTMLInputElement).value = '';
-                        (document.getElementById('new-svc-duration') as HTMLInputElement).value = '';
-                        (document.getElementById('new-svc-price') as HTMLInputElement).value = '';
-                      }
-                    });
+                      name, 
+                      duration_minutes: duration, 
+                      price, 
+                      is_active: true
+                    }).select().maybeSingle();
+                    
+                    if (error) {
+                      setErrorMsg('Erro ao adicionar serviço: ' + error.message);
+                    } else if (data) {
+                      setServices([...services, data]);
+                      (document.getElementById('new-svc-name') as HTMLInputElement).value = '';
+                      (document.getElementById('new-svc-duration') as HTMLInputElement).value = '';
+                      (document.getElementById('new-svc-price') as HTMLInputElement).value = '';
+                    }
+                  } else {
+                     setErrorMsg('Preencha todos os campos do serviço');
                   }
                 }}
                 className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
