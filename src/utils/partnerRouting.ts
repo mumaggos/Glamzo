@@ -3,13 +3,11 @@ import { User } from '@supabase/supabase-js';
 export async function resolvePartnerRoute(user: User | null, profileRole: string | null, supabase: any): Promise<string> {
   console.log('[PartnerRoute] resolvendo rota. User:', user?.id, 'Role:', profileRole);
   
-  // Caso 1: sem sessão
   if (!user) {
     console.log('[PartnerRoute] redirect => /partner/login (sem sessão)');
     return '/partner/login';
   }
   
-  // Caso 2: sessão existe mas profile não é business
   if (profileRole !== 'business') {
     console.log('[PartnerRoute] redirect => /login (role não é business)');
     return '/login';
@@ -24,29 +22,26 @@ export async function resolvePartnerRoute(user: User | null, profileRole: string
 
     if (error && error.code !== 'PGRST116') {
       console.error('[PartnerRoute] Erro ao buscar business:', error);
-      // Fallback seguro em caso de erro (sem ser o not found)
-      return '/setup';
+      return '/partner/setup';
     }
 
-    // Caso 3: não existe business associado
     if (!business) {
-      console.log('[PartnerRoute] redirect => /setup (business não encontrado)');
-      return '/setup';
+      console.log('[PartnerRoute] redirect => /partner/setup (business não encontrado)');
+      return '/partner/setup';
     }
 
-    // Caso 4 & 6: business existe mas não está active
-    let isBusinessActive = business.status === 'active';
+    const isBusinessActive = business.status === 'active';
+    const isSetupCompleted = business.setup_completed === true;
     
-    if (!isBusinessActive) {
-      console.log(`[PartnerRoute] redirect => /setup (status é ${business.status})`);
-      return '/setup';
+    if (!isBusinessActive || !isSetupCompleted) {
+      console.log(`[PartnerRoute] redirect => /partner/setup (status: ${business.status}, setup_completed: ${business.setup_completed})`);
+      return '/partner/setup';
     }
 
-    // Caso 5: business active
-    console.log('[PartnerRoute] redirect => /dashboard (status active)');
-    return '/dashboard';
+    console.log('[PartnerRoute] redirect => /partner/dashboard (status active, setup completed)');
+    return '/partner/dashboard';
   } catch (err) {
     console.error('[PartnerRoute] Exceção:', err);
-    return '/setup';
+    return '/partner/setup';
   }
 }

@@ -441,13 +441,12 @@ export default function Dashboard() {
       if (bErr) throw bErr;
 
       if (!bData) {
-        // Business profile does not exist yet: prompt onboarding redirections
-        navigate('/setup');
+        navigate('/partner/setup', { replace: true });
         return;
       }
       
-      if (bData.status === 'setup') {
-        navigate('/setup');
+      if (bData.status === 'setup' || !bData.setup_completed) {
+        navigate('/partner/setup', { replace: true });
         return;
       }
       

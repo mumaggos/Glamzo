@@ -156,14 +156,20 @@ export default function App() {
                 <Route path="/partner/signup" element={<PartnerSignup />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
+                {/* /partner/setup: Setup Wizard - Restricted to businesses */}
                 <Route 
-                  path="/setup" 
+                  path="/partner/setup" 
                   element={
                     <ProtectedRoute allowedRoles={['business']}>
                       <SetupWizard />
                     </ProtectedRoute>
                   } 
                 />
+                
+                {/* Fallbacks */}
+                <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+
                 <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
                 <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
                 <Route path="/favorites" element={<Favorites />} />
@@ -192,9 +198,9 @@ export default function App() {
                   }
                 />
 
-                {/* /dashboard: Salon dashboard - Restricted to businesses & admins */}
+                {/* /partner/dashboard: Salon dashboard - Restricted to businesses & admins */}
                 <Route
-                  path="/dashboard"
+                  path="/partner/dashboard"
                   element={
                     <ProtectedRoute allowedRoles={['business', 'admin']}>
                       <Dashboard />
