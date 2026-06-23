@@ -1118,7 +1118,7 @@ export default function Dashboard() {
         if (found) {
           notifyTerminal(
             "🎉 Plano PRO Ativado!",
-            "Pagamento confirmado com sucesso! O seu salão de beleza está agora no plano Glamzo PRO."
+            `Pagamento confirmado com sucesso! O seu salão de beleza está agora no plano ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}.`
           );
         } else {
           notifyTerminal(
@@ -1136,7 +1136,7 @@ export default function Dashboard() {
     if (status === 'cancelled_pro') {
       notifyTerminal(
         "ℹ️ Checkout Cancelado",
-        "O processo de subscrição Glamzo PRO foi cancelado ou interrompido."
+        `O processo de subscrição ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} foi cancelado ou interrompido.`
       );
       navigate('/dashboard', { replace: true });
     }
@@ -1322,7 +1322,7 @@ export default function Dashboard() {
   const handleCancelSubscription = async () => {
     if (!business) return;
     const confirmCancel = window.confirm(
-      "Tem a certeza absoluta de que deseja cancelar o seu plano Glamzo PRO?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão."
+      `Tem a certeza absoluta de que deseja cancelar o seu plano ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;
 
@@ -1343,7 +1343,7 @@ export default function Dashboard() {
 
       if (response.ok && resData?.success) {
         notifyTerminal("✔ Desativado", "A sua subscrição foi desativada com sucesso.");
-        setGlobalSuccess("A subscrição Glamzo PRO foi desativada. O seu salão foi ocultado do público.");
+        setGlobalSuccess(`A subscrição ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} foi desativada. O seu salão foi ocultado do público.`);
         
         // Instantly force local lock screen by updating state
         setBusiness(prev => {
@@ -2051,152 +2051,59 @@ export default function Dashboard() {
               
               {/* Visual status lock/rocket/alert accent */}
               <div className="w-16 h-16 bg-white/60 rounded-2xl flex items-center justify-center border border-slate-200/80 mx-auto">
-                {subBlockReason === 'onboarding' ? (
-                  <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
-                ) : subBlockReason === 'past_due' ? (
+                {subBlockReason === 'past_due' ? (
                   <AlertCircle className="w-8 h-8 text-amber-500 animate-bounce" />
                 ) : (
                   <Lock className="w-8 h-8 text-rose-500" />
                 )}
               </div>
 
-              {subBlockReason === 'active_trial_requires_card' ? (
+              {subBlockReason === 'past_due' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900 flex flex-col items-center justify-center gap-2">
-                      <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
-                      <span>Ativar Período Experimental Glamzo PRO</span>
-                    </h2>
-                    <p className="text-sm text-slate-600 leading-relaxed font-sans px-2">
-                      Para colocar a sua loja online é necessário ativar o período experimental Glamzo PRO.
-                    </p>
-                  </div>
-
-                  <div className="text-[11px] text-left space-y-2.5 bg-white/40 p-4 rounded-2xl border border-slate-200">
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> 14 dias gratuitos de avaliação completa
-                    </p>
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
-                    </p>
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
-                    </p>
-                  </div>
-                </div>
-              ) : subBlockReason === 'onboarding' ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Ativar Glamzo PRO</h2>
+                    <h2 className="text-xl font-black text-slate-900">Erro na Cobrança</h2>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      O seu salão precisa de ativar o plano <span className="text-indigo-400 font-extrabold font-mono">Glamzo PRO</span> para:
-                    </p>
-                  </div>
-                  
-                  <div className="text-left space-y-2.5 bg-white/30 border border-slate-200/65 p-4 rounded-2xl">
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> aparecer no marketplace
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> receber reservas de clientes
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> aceitar pagamentos online seguros
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> usar o painel profissional completo
-                    </p>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 pt-1 leading-normal">
-                    Será feita apenas uma verificação segura do cartão via Glamzo Pay.
-                  </p>
-
-                  <div className="text-left space-y-1.5 bg-indigo-50 p-4 rounded-2xl border border-indigo-500/10">
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> 14 dias grátis de avaliação
-                    </p>
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> cancelamento livre a qualquer instante
-                    </p>
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> cobrança automática de 19.90€ apenas após o período gratuito
-                    </p>
-                  </div>
-                </div>
-              ) : subBlockReason === 'past_due' ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Erro na Cobrança (PRO)</h2>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      A última tentativa de cobrança automática da subscrição <span className="text-amber-500 font-bold">Glamzo PRO</span> falhou. Por favor, aceda ao portal de faturação seguro abaixo para regularizar os dados do seu cartão.
+                      A última tentativa de cobrança automática da subscrição <span className="text-amber-500 font-bold">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> falhou. Por favor, aceda ao portal de faturação seguro abaixo para regularizar os dados do seu cartão.
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Período de Teste Expirado (PRO)</h2>
+                    <h2 className="text-xl font-black text-slate-900">Subscrição Expirada</h2>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      O seu período de teste gratuito de 14 dias para o plano <span className="text-rose-500 font-extrabold">Glamzo PRO</span> expirou. Para reativar o seu salão e continuar a receber marcações, configure a sua subscrição de forma segura via Glamzo Pay.
+                      A sua subscrição ou período de teste para o plano <span className="text-rose-500 font-extrabold">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> expirou. Para reativar o seu salão e continuar a usar a plataforma, regularize a sua subscrição de forma segura.
                     </p>
                   </div>
                 </div>
               )}
 
-              {subBlockReason !== 'onboarding' && (
-                <div className="bg-white/60 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs">
-                  <div className="flex justify-between font-bold text-slate-500">
-                    <span>Subscrição Glamzo PRO</span>
-                    <span className="text-rose-400 font-bold">19.90€ / mês</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 leading-normal font-sans">
-                    Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Glamzo Pay e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
-                  </p>
+              <div className="bg-white/60 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs">
+                <div className="flex justify-between font-bold text-slate-500">
+                  <span>Subscrição {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span>
+                  <span className="text-rose-400 font-bold">{business?.selected_plan === 'app_tablet' ? '24.99€' : '19.99€'} / mês</span>
                 </div>
-              )}
+                <p className="text-[11px] text-slate-500 leading-normal font-sans">
+                  Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Glamzo Pay e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
+                </p>
+              </div>
 
               <div className="flex flex-col gap-2.5">
-                {subBlockReason === 'onboarding' ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => handleSubscribePro('PRO')}
-                      className="w-full py-4 bg-white border-2 border-purple-600 hover:bg-purple-50 text-xs font-bold uppercase tracking-wider text-purple-700 rounded-xl shadow-sm cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition duration-150"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Plano PRO</span>
-                      <span className="text-[10px] text-purple-500">19,99€ / mês</span>
-                    </button>
-                    <button
-                      onClick={() => handleSubscribePro('TERMINAL')}
-                      className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-white rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition duration-150"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>PRO Terminal</span>
-                      <span className="text-[10px] text-white/80">24,99€ / mês</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleSubscribePro('PRO')}
-                    className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-slate-900 rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>
-                      {subBlockReason === 'active_trial_requires_card'
-                        ? 'COMEÇAR TESTE GRATUITO'
-                        : 'Ativar Plano PRO'}
-                    </span>
-                  </button>
-                )}
-
-                {business?.stripe_customer_id && (
+                {business?.stripe_customer_id ? (
                   <button
                     onClick={handleOpenBillingPortal}
-                    className="w-full py-3 bg-slate-100 hover:bg-slate-100 text-xs font-bold text-slate-600 rounded-xl border border-slate-300 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                    className="w-full py-4 bg-[#635BFF] hover:bg-[#5249ea] text-xs font-bold text-white uppercase tracking-wider rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                   >
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    <ShieldCheck className="w-5 h-5" />
                     <span>Regularizar Assinatura (Billing Portal)</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleSubscribePro(business?.selected_plan === 'app_tablet' ? 'TERMINAL' : 'PRO')}
+                    className="w-full py-4 bg-[#635BFF] hover:bg-[#5249ea] text-xs font-bold text-white uppercase tracking-wider rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    <span>Ativar Assinatura</span>
                   </button>
                 )}
               </div>
@@ -2521,12 +2428,12 @@ export default function Dashboard() {
                   <Sparkles className="w-4 h-4 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-slate-900 leading-normal">Período de Testes Ativo — Glamzo PRO</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">Período de Testes Ativo — {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</p>
                   <p className="text-[11px] text-purple-400">Tem acesso total a todas as funcionalidades profissionais premium por mais <span className="text-slate-900 font-bold">{trialDaysRemaining} {trialDaysRemaining === 1 ? 'dia' : 'dias'}</span>.</p>
                 </div>
               </div>
               <button 
-                onClick={() => handleSubscribePro('PRO')}
+                onClick={() => handleSubscribePro(business?.selected_plan === 'app_tablet' ? 'TERMINAL' : 'PRO')}
                 className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
               >
                 Gerir Subscrição
@@ -4269,34 +4176,59 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-purple-400" />
-                          <span>Subscrição & Plano Atual (Glamzo PRO)</span>
+                          <span>Subscrição & Plano Atual</span>
                         </h4>
                         <p className="text-[10px] text-slate-500 mt-0.5 leading-normal font-sans">
-                          Acompanhe o estado da sua assinatura de software e os seus dias de teste ativo.
+                          Acompanhe o estado da sua assinatura de software.
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-200 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
-                        {business?.subscription_status || 'Trialing'}
+                      <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase ${
+                        resolvedSubscriptionStatus === 'active' 
+                          ? 'bg-emerald-500/10 border border-emerald-200 text-emerald-600'
+                          : resolvedSubscriptionStatus === 'trialing'
+                            ? 'bg-amber-500/10 border border-amber-200 text-amber-600'
+                            : 'bg-rose-500/10 border border-rose-200 text-rose-600'
+                      }`}>
+                        {resolvedSubscriptionStatus === 'active' ? 'Ativo' 
+                          : resolvedSubscriptionStatus === 'trialing' ? 'Em Período Experimental' 
+                          : resolvedSubscriptionStatus === 'past_due' ? 'Atrasado'
+                          : resolvedSubscriptionStatus === 'canceled' ? 'Cancelado'
+                          : 'Pendente'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/40 p-4 rounded-2xl border border-slate-200 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white/40 p-4 rounded-2xl border border-slate-200 text-xs">
                       <div className="space-y-1">
                         <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
-                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">Glamzo PRO</span>
-                        <span className="text-[10px] text-slate-500 block">Acesso ilimitado à plataforma, agenda e comissões integradas.</span>
+                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">
+                          {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">
+                          {business?.selected_plan === 'app_tablet' ? 'Plataforma completa + Terminal físico.' : 'Acesso ilimitado à plataforma.'}
+                        </span>
                       </div>
                       <div className="space-y-1">
                         <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
-                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span></span>
-                        <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Glamzo Pay.</span>
+                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">
+                          {business?.selected_plan === 'app_tablet' ? '24.99€' : '19.99€'} <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">Processado pelo Glamzo Pay.</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Próxima Cobrança</span>
+                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">
+                          {trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('pt-PT') : 'N/A'}
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">
+                          {resolvedSubscriptionStatus === 'trialing' ? 'Fim do período experimental.' : 'Data de renovação do ciclo.'}
+                        </span>
                       </div>
                     </div>
 
                     {/* Subscriptions Info Details */}
                     <div className="text-xs text-slate-500 leading-relaxed space-y-2">
                       <p>
-                        O plano <span className="font-extrabold text-slate-900">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
+                        O plano <span className="font-extrabold text-slate-900">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
                       </p>
                       {trialEndsAt && (
                         <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
@@ -4333,7 +4265,7 @@ export default function Dashboard() {
                             className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-slate-900 text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />
-                            <span>Ativar Glamzo PRO (Pagamento online)</span>
+                            <span>Ativar {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} (Pagamento online)</span>
                           </button>
                         </div>
                       )}
