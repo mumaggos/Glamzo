@@ -255,13 +255,13 @@ export default function SetupWizard() {
     if (!business) return;
     setLoading(true);
     try {
-      const response = await fetch('/api/stripe/create-connect-account', {
+      const response = await fetch('/api/stripe/connect/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           businessId: business.id,
-          refreshUrl: window.location.origin + '/partner/setup',
-          returnUrl: window.location.origin + '/partner/setup'
+          businessEmail: business.email,
+          businessName: business.name
         })
       });
       const data = await response.json();
