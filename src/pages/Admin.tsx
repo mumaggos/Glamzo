@@ -402,14 +402,12 @@ export default function Admin() {
         { data: profData, error: profErr },
         { data: salData, error: salErr },
         { data: payData, error: payErr },
-        { data: billsData },
-        { data: tabletOrdersData }
+        { data: billsData }
       ] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').order('created_at', { ascending: false }),
         supabase.from('payouts').select('*, business:businesses(*)').order('created_at', { ascending: false }),
-        supabase.from('payments').select('*, business:businesses(*)'),
-        supabase.from('tablet_orders').select('*, business:businesses(*)').order('created_at', { ascending: false })
+        supabase.from('payments').select('*, business:businesses(*)')
       ]);
 
       if (profErr) throw profErr;
@@ -419,14 +417,7 @@ export default function Admin() {
       setProfiles(profData || []);
       setSalons(salData || []);
       
-      if (tabletOrdersData) {
-        setTerminalRequests(tabletOrdersData.map((o: any) => ({
-          ...o,
-          salon: o.business?.name || 'Desconhecido',
-          city: o.shipping_city,
-          serial: o.tracking_code || '---'
-        })));
-      }
+      setTerminalRequests([]);
       
       // Merge with financeService localized requests
       const localRequests = financeService.getPayouts().filter(p => !payoutRequests.some(pr => pr.id === p.id));
@@ -2080,16 +2071,7 @@ export default function Admin() {
                              <div className="flex items-center gap-2">
                                <button 
                                  onClick={async () => {
-                                   try {
-                                     const carrier = (document.getElementById(`carrier-${tr.id}`) as HTMLInputElement)?.value;
-                                     const tracking = (document.getElementById(`tracking-${tr.id}`) as HTMLInputElement)?.value;
-                                     await supabase.from('tablet_orders').update({
-                                        carrier, tracking_code: tracking, status: 'shipped'
-                                     }).eq('id', tr.id);
-                                     setSuccessMsg("Código guardado e Estado alterado para Enviado.");
-                                     // refresh list
-                                     syncAdminDatasets();
-                                   } catch(e: any) { alert(e.message) }
+                                   alert('Not supported in this version');
                                  }}
                                  className="px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 text-[10px] font-bold rounded uppercase flex-1"
                                >
@@ -2097,13 +2079,7 @@ export default function Admin() {
                                </button>
                                <button 
                                  onClick={async () => {
-                                   try {
-                                     await supabase.from('tablet_orders').update({
-                                        status: 'delivered'
-                                     }).eq('id', tr.id);
-                                     setSuccessMsg("Estado alterado para Entregue.");
-                                     syncAdminDatasets();
-                                   } catch(e: any) { alert(e.message) }
+                                   alert('Not supported in this version');
                                  }}
                                  className="px-3 py-1.5 bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-bold rounded uppercase flex-1"
                                >

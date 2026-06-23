@@ -479,8 +479,7 @@ export default function Dashboard() {
         { data: bkData },
         { data: pyData },
         { data: poData },
-        { data: subData },
-        { data: tabletData }
+        { data: subData }
       ] = await Promise.all([
         supabase.from('service_categories').select('*'),
         supabase.from('services').select('*, category:service_categories(*)').eq('business_id', bData.id).order('created_at', { ascending: false }),
@@ -489,8 +488,7 @@ export default function Dashboard() {
         supabase.from('bookings').select('*, customer:profiles(*)').eq('business_id', bData.id).order('booking_date', { ascending: false }).order('start_time', { ascending: false }),
         supabase.from('payments').select('*').eq('business_id', bData.id),
         supabase.from('payouts').select('*').eq('business_id', bData.id).order('created_at', { ascending: false }),
-        supabase.from('subscriptions').select('*').eq('business_id', bData.id).order('created_at', { ascending: false }),
-        supabase.from('tablet_orders').select('*').eq('business_id', bData.id).maybeSingle()
+        supabase.from('subscriptions').select('*').eq('business_id', bData.id).order('created_at', { ascending: false })
       ]);
 
       setCategories(catData || []);
@@ -501,7 +499,7 @@ export default function Dashboard() {
       setLedgers(pyData || []);
       setPayouts(poData || []);
       setSubscriptions(subData || []);
-      setTabletOrder(tabletData || null);
+      setTabletOrder(null);
 
       // Real coupons fetching
       let cpData: any[] = [];
@@ -1287,10 +1285,10 @@ export default function Dashboard() {
   };
 
   // Launch a Glamzo Pay checkout recurring subscription with 14 days of trial
-  const handleSubscribePro = async () => {
+  const handleSubscribePro = async (planName: 'PRO' | 'TERMINAL' = 'PRO') => {
     if (!business) return;
     try {
-      notifyTerminal("💳 Iniciar Checkout", "A preparar o seu Glamzo Pay Checkout do Plano PRO...");
+      notifyTerminal("💳 Iniciar Checkout", `A preparar o seu Glamzo Pay Checkout do Plano ${planName}...`);
       const response = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
         headers: {
@@ -1298,7 +1296,7 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           businessId: business.id,
-          planName: 'PRO',
+          planName: planName,
           successUrl: window.location.origin + '/dashboard?status=success_pro&session_id={CHECKOUT_SESSION_ID}',
           cancelUrl: window.location.origin + '/dashboard?status=cancelled_pro'
         })
@@ -2164,19 +2162,38 @@ export default function Dashboard() {
               )}
 
               <div className="flex flex-col gap-2.5">
-                <button
-                  onClick={handleSubscribePro}
-                  className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-slate-900 rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>
-                    {subBlockReason === 'active_trial_requires_card'
-                      ? 'COMEÇAR TESTE GRATUITO'
-                      : subBlockReason === 'onboarding'
-                      ? 'Continuar para pagamento'
-                      : 'Ativar Plano PRO'}
-                  </span>
-                </button>
+                {subBlockReason === 'onboarding' ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleSubscribePro('PRO')}
+                      className="w-full py-4 bg-white border-2 border-purple-600 hover:bg-purple-50 text-xs font-bold uppercase tracking-wider text-purple-700 rounded-xl shadow-sm cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition duration-150"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Plano PRO</span>
+                      <span className="text-[10px] text-purple-500">19,99€ / mês</span>
+                    </button>
+                    <button
+                      onClick={() => handleSubscribePro('TERMINAL')}
+                      className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-white rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition duration-150"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>PRO Terminal</span>
+                      <span className="text-[10px] text-white/80">24,99€ / mês</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleSubscribePro('PRO')}
+                    className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-slate-900 rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>
+                      {subBlockReason === 'active_trial_requires_card'
+                        ? 'COMEÇAR TESTE GRATUITO'
+                        : 'Ativar Plano PRO'}
+                    </span>
+                  </button>
+                )}
 
                 {business?.stripe_customer_id && (
                   <button
@@ -2493,7 +2510,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <button 
-                onClick={handleSubscribePro}
+                onClick={() => handleSubscribePro('PRO')}
                 className="p-2.5 px-4 bg-amber-500 hover:bg-amber-650 text-[10px] text-slate-950 font-black uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto"
               >
                 Associar Cartão Agora
@@ -2514,7 +2531,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <button 
-                onClick={handleSubscribePro}
+                onClick={() => handleSubscribePro('PRO')}
                 className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
               >
                 Gerir Subscrição
@@ -4317,7 +4334,7 @@ export default function Dashboard() {
                             ⚠️ Atualmente, a sua parceria está ativa apenas em teste local ou sem cartão registado no Glamzo Pay. Para garantir a visibilidade do estabelecimento no Marketplace, ative a sua assinatura abaixo:
                           </p>
                           <button
-                            onClick={handleSubscribePro}
+                            onClick={() => handleSubscribePro('PRO')}
                             className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-slate-900 text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />

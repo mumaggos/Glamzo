@@ -128,9 +128,6 @@ export default function SetupWizard() {
         setBusiness(biz);
         
         let isBusinessActive = biz.status === 'active';
-        if (biz.status === undefined && biz.name && biz.name.trim() !== '') {
-          isBusinessActive = true;
-        }
 
         if (isBusinessActive) {
           console.log('[PartnerSetup] Loja já ativa, redirect => /dashboard');
@@ -154,17 +151,6 @@ export default function SetupWizard() {
         // Preload staff
         const { data: stfs } = await supabase.from('staff').select('*').eq('business_id', biz.id);
         if (stfs) setStaff(stfs);
-        
-        // Preload order if terminal
-        const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', biz.id).maybeSingle();
-        if (order) {
-          setSelectedPlan('TERMINAL');
-          setShippingName(order.shipping_name);
-          setShippingPhone(order.shipping_phone);
-          setShippingAddress(order.shipping_address);
-          setShippingPostalCode(order.shipping_postal_code);
-          setShippingCity(order.shipping_city);
-        }
       }
     } catch (err: any) {
       console.error('[PartnerSetup] Erro ao carregar/criar loja:', err);
@@ -230,30 +216,12 @@ export default function SetupWizard() {
           setErrorMsg('Preencha os dados de envio do terminal.');
           return;
         }
-        setLoading(true);
-        // Upsert order
-        const orderData = {
-          business_id: business.id,
-          shipping_name: shippingName,
-          shipping_phone: shippingPhone,
-          shipping_address: shippingAddress,
-          shipping_city: shippingCity,
-          shipping_postal_code: shippingPostalCode,
-          deposit_amount: 9.99,
-          deposit_paid: false,
-          status: 'pending'
-        };
-        const { error } = await supabase.from('tablet_orders').upsert(orderData, { onConflict: 'business_id' });
-        setLoading(false);
-        if (error) return setErrorMsg(error.message);
-      } else {
-        // Delete order if changed mind to PRO
-        await supabase.from('tablet_orders').delete().eq('business_id', business.id);
       }
       setStep(5);
     } else if (step === 5) {
-      // Logic for step 5 done asynchronously inside the component or just simulated bypass for now
-      setStep(6);
+      // Step 5 must be completed via the Stripe Checkout button, which redirects to success URL
+      setErrorMsg('Por favor, ative a sua subscrição para prosseguir.');
+      return;
     } else if (step === 6) {
       // Must be connected
       if (!business.charges_enabled) {
@@ -749,8 +717,8 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Navigation actions - only for step 1 to 6 */}
-        {step < 7 && (
+        {/* Navigation actions - only for step 1 to 6, excluding 5 (Stripe handles 5) */}
+        {step < 7 && step !== 5 && (
           <div className="mt-8 flex items-center gap-4">
              {step > 1 && (
                 <button
