@@ -24,6 +24,7 @@ ALTER TABLE public.businesses DROP CONSTRAINT IF EXISTS businesses_owner_id_key;
 ALTER TABLE public.businesses ADD CONSTRAINT businesses_owner_id_key UNIQUE (owner_id);
 
 -- D) Limpeza de legado e normalização de dados baseados no estado atual
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'setup';
 UPDATE public.businesses SET status = 'setup' WHERE status IS NULL;
 UPDATE public.businesses SET setup_completed = true WHERE status = 'active';
 UPDATE public.businesses SET address_line_1 = address WHERE address_line_1 IS NULL AND address IS NOT NULL;
