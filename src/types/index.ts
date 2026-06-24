@@ -172,7 +172,7 @@ export interface ChatSession {
 export interface ChatMessage {
   id: string;
   session_id: string;
-  sender_type: 'customer' | 'business' | 'ai' | 'support' | 'system';
+  sender_type: 'customer' | 'business' | 'ai' | 'support';
   sender_name: string;
   message: string;
   created_at: string;

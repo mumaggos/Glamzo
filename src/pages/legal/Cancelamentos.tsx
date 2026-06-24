@@ -1,17 +1,12 @@
 import React from 'react';
-import DynamicLegalPage from '../../components/DynamicLegalPage';
+import ContentLayout from '../../components/ContentLayout';
 
 export default function Cancelamentos() {
   return (
-    <DynamicLegalPage 
-      slug="politica-de-cancelamentos"
-      defaultTitle="Política de Cancelamentos e Reembolsos" 
-      defaultLastUpdated="18 de Junho de 2026"
-      defaultContent={
-        <>
-          <p>
-            A Glamzo pretende proporcionar uma relação de compromisso e respeito entre todos os Clientes e Salões. A não comparência ou as alterações em cima da hora trazem perdas substanciais de rendimento aos Parceiros.
-          </p>
+    <ContentLayout title="Política de Cancelamentos e Reembolsos" lastUpdated="18 de Junho de 2026">
+      <p>
+        A Glamzo pretende proporcionar uma relação de compromisso e respeito entre todos os Clientes e Salões. A não comparência ou as alterações em cima da hora trazem perdas substanciais de rendimento aos Parceiros.
+      </p>
 
       <h2>1. Regras para Clientes</h2>
       <p>
@@ -44,8 +39,6 @@ export default function Cancelamentos() {
       <p>
         Quaisquer fundos elegíveis a retornar para a conta do Cliente, por falha, por cancelamento atempado ou recusa do Salão, serão devolvidos, via Stripe, num prazo temporal normal estimado que os bancos exigem e determinam (regra geral entre 3 a 10 dias úteis diretos para o IBAN / Cartão usado no pagamento). A Glamzo emitirá as ordens de retorno de fundos prontamente.
       </p>
-        </>
-      }
-    />
+    </ContentLayout>
   );
 }

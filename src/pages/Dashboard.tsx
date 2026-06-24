@@ -2177,15 +2177,7 @@ export default function Dashboard() {
           {/* Drawer content */}
           <div className="relative flex flex-col w-72 max-w-xs h-full bg-white border-r border-[#1f1635] p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
             <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4 shrink-0">
-              <button 
-                onClick={async () => {
-                  setIsMobileSidebarOpen(false);
-                  await signOut();
-                  navigate('/');
-                }}
-                title="Voltar ao site inicial (Terminar Sessão)"
-                className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity"
-              >
+              <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -2193,7 +2185,7 @@ export default function Dashboard() {
                   <span className="font-bold text-slate-900 text-[11px] tracking-tight block leading-none">Glamzo Terminal</span>
                   <span className="text-[8px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel de Controlo</span>
                 </div>
-              </button>
+              </div>
               <button 
                 onClick={() => setIsMobileSidebarOpen(false)}
                 className="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
@@ -2290,20 +2282,13 @@ export default function Dashboard() {
       <aside className="hidden lg:flex w-64 border-r border-slate-200/80 bg-white flex-col justify-between shrink-0 h-full">
         <div>
           {/* Logo Brand Brand */}
-          <button 
-            onClick={async () => {
-              await signOut();
-              navigate('/');
-            }}
-            title="Voltar ao site inicial (Terminar Sessão)"
-            className="h-16 border-b border-slate-200/60 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-50 transition-colors cursor-pointer"
-          >
+          <div className="h-16 border-b border-slate-200/60 flex items-center px-6 gap-3">
             <GlamzoLogo size={32} glow={true} />
             <div>
               <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs font-display">GLAMZO</span>
               <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel do Parceiro</span>
             </div>
-          </button>
+          </div>
 
           {/* Quick Stats overview inside SideRail */}
           <div className="p-4 mx-4 my-2.5 bg-slate-50/40 border border-slate-200/80 rounded-xl">

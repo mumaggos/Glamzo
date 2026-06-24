@@ -1,17 +1,12 @@
 import React from 'react';
-import DynamicLegalPage from '../../components/DynamicLegalPage';
+import ContentLayout from '../../components/ContentLayout';
 
 export default function Cookies() {
   return (
-    <DynamicLegalPage 
-      slug="politica-de-cookies"
-      defaultTitle="Política de Cookies" 
-      defaultLastUpdated="18 de Junho de 2026"
-      defaultContent={
-        <>
-          <p>
-            Esta página descreve como a plataforma Glamzo utiliza "cookies" e tecnologia semelhante para disponibilizar a melhor experiência a Clientes e Parceiros.
-          </p>
+    <ContentLayout title="Política de Cookies" lastUpdated="18 de Junho de 2026">
+      <p>
+        Esta página descreve como a plataforma Glamzo utiliza "cookies" e tecnologia semelhante para disponibilizar a melhor experiência a Clientes e Parceiros.
+      </p>
 
       <h2>1. O que são os Cookies?</h2>
       <p>
@@ -43,8 +38,6 @@ export default function Cookies() {
       <p>
         A maioria dos navegadores (Google Chrome, Firefox, Safari) permitem total controlo sobre todos os cookies instalados, inclusivamente, limpar os persistentes. Pode revogar os cookies diretamente através das definições gerais de Privacidade do seu programa de navegação. 
       </p>
-        </>
-      }
-    />
+    </ContentLayout>
   );
 }

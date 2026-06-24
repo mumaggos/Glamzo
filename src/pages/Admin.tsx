@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
@@ -12,37 +11,18 @@ import {
   Shield, Users, Search, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
-  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
+  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu
 } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart as RLineChart, Line, AreaChart, Area, PieChart, Pie, Cell, Legend
 } from 'recharts';
 
-
-const PAGE_FALLBACKS: Record<string, string> = {
-  "termos-e-condicoes": "<p>\n            Bem-vindo à Glamzo. Estes Termos e Condições regem o acesso e a utilização do nosso marketplace e plataforma digital, concebidos para ligar clientes a profissionais e salões de beleza em Portugal e na União Europeia.\n          </p>\n\n      <h2>1. Utilização da Plataforma</h2>\n      <p>\n        O acesso e uso da Glamzo implicam a aceitação plena e sem reservas das presentes condições. A plataforma destina-se ao agendamento de serviços de beleza, estética e bem-estar, facilitando a interação entre Clientes (\"Utilizadores\") e Salões/Profissionais (\"Parceiros\").\n      </p>\n\n      <h2>2. Criação de Conta</h2>\n      <p>\n        Para efetuar marcações ou configurar um perfil de parceiro, o utilizador deverá criar uma conta. É responsável por manter a confidencialidade das suas credenciais (email e palavra-passe) geridas através do nosso fornecedor seguro de autenticação. É estritamente proibida a criação de contas com dados falsos.\n      </p>\n\n      <h2>3. Responsabilidade dos Salões (Parceiros)</h2>\n      <p>\n        Os Parceiros são inteiramente responsáveis pela veracidade e precisão da informação publicitada nos seus perfis, incluindo preçários, disponibilidade, morada e duração dos serviços. Os Parceiros comprometem-se a prestar os serviços aos Clientes com o mais alto padrão de profissionalismo e higiene, cumprindo a legislação laboral e sanitária aplicável.\n      </p>\n\n      <h2>4. Responsabilidade dos Clientes</h2>\n      <p>\n        Os Clientes comprometem-se a comparecer na hora e local indicados na sua marcação, respeitando as normas do estabelecimento do Parceiro. Devem garantir que os dados de pagamento utilizados nos métodos partilhados através do nosso processador Stripe são legítimos e têm os fundos necessários.\n      </p>\n\n      <h2>5. Pagamentos</h2>\n      <p>\n        Todos os pagamentos online são processados de forma segura pela Stripe e encaminhados via Stripe Connect quando aplicável. A Glamzo não armazena dados de cartões de crédito. Ao realizar uma marcação, o cliente aceita que a Glamzo poderá atuar como agente de cobrança em nome do Parceiro.\n      </p>\n\n      <h2>6. Cancelamentos e Reembolsos</h2>\n      <p>\n        As condições de cancelamento variam conforme as definições estipuladas por cada Parceiro no seu perfil. Por favor, consulte a nossa Política de Cancelamentos e Reembolsos para detalhes abrangentes sobre não comparências (\"no-shows\"), cancelamentos tardios e devolução de valores pré-pagos.\n      </p>\n\n      <h2>7. Conteúdo Publicado</h2>\n      <p>\n        As fotografias, descrições e avaliações inseridas pelos Utilizadores ou Parceiros devem respeitar as boas práticas de convivência e a legislação vigente. A Glamzo reserva-se o direito de remover qualquer conteúdo considerado difamatório, inadequado, ofensivo ou enganador.\n      </p>\n\n      <h2>8. Suspensão de Contas</h2>\n      <p>\n        Reservamo-nos o direito de suspender temporária ou definitivamente qualquer conta (Cliente ou Parceiro) que incumpra os presentes Termos, efetue ações fraudulentas ou cause prejuízos à Glamzo ou a terceiros.\n      </p>\n\n      <h2>9. Limitação de Responsabilidade</h2>\n      <p>\n        A Glamzo atua como um facilitador técnico e marketplace. Não prestamos diretamente os serviços de beleza. Deste modo, não nos responsabilizamos por falhas na execução do serviço, reações alérgicas, disputas entre o Cliente e o Parceiro ou alterações de última hora efetuadas pelas partes. Os Parceiros assumem responsabilidade integral pelos serviços prestados nas suas instalações.\n      </p>\n\n      <h2>10. Legislação Aplicável e Foro competente</h2>\n      <p>\n        Estes Termos e Condições são regulados pela lei Portuguesa. Para resolução de qualquer litígio resultante da interpretação ou execução dos presentes Termos, o foro competente será o Tribunal da Comarca de Lisboa, com renúncia a qualquer outro.\n      </p>",
-  "politica-de-privacidade": "<p>\n            A proteção da sua privacidade é fundamental para a Glamzo. Esta Política de Privacidade explica como recolhemos, tratamos, protegemos e armazenamos os seus dados pessoais, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD - Regulamento (UE) 2016/679).\n          </p>\n\n      <h2>1. Dados Recolhidos</h2>\n      <p>A Glamzo recolhe e processa as seguintes categorias de dados pessoais:</p>\n      <ul>\n        <li><strong>Dados de Identificação:</strong> Nome, apelido, e-mail e número de telefone (necessário para lembretes e autenticação).</li>\n        <li><strong>Dados de Perfil (Parceiros):</strong> Denominação social, NIF, morada física do espaço comercial, IBAN (através do Stripe Connect) e informações associadas à licença de funcionamento.</li>\n        <li><strong>Dados de Agendamento:</strong> Histórico de marcações efetuadas, serviços selecionados, horários, profissionais preferenciais e o histórico de faturação.</li>\n        <li><strong>Dados Técnicos e de Navegação:</strong> Endereço IP, tipo de dispositivo, navegador, páginas visitadas e tempos de sessão.</li>\n      </ul>\n\n      <h2>2. Finalidade do Tratamento</h2>\n      <p>Os seus dados são tratados com as seguintes finalidades:</p>\n      <ul>\n        <li>Facilitar as reservas e agendamentos de serviços.</li>\n        <li>Gerir contas de Cliente e contas de Parceiro.</li>\n        <li>Processar pagamentos e transferências financeiras (subscrições ou repasses de comissões).</li>\n        <li>Envio de notificações de transação (ex. confirmações de marcação, lembretes de calendário).</li>\n        <li>Melhorar continuamente a segurança e as funcionalidades da plataforma.</li>\n      </ul>\n\n      <h2>3. Base Legal</h2>\n      <p>\n        Processamos os seus dados com base no seu <strong>consentimento expresso</strong> (quando cria uma conta), na <strong>execução de um contrato</strong> (processamento do seu agendamento ou contrato de Parceiro) e para o cumprimento de <strong>obrigações legais</strong> e <strong>interesses legítimos</strong> da Glamzo na manutenção de segurança da infraestrutura.\n      </p>\n\n      <h2>4. Conservação dos Dados</h2>\n      <p>\n        Os dados pessoais serão retidos pelo período estritamente necessário para cumprir as finalidades indicadas. Dados fiscais e associados a faturação serão mantidos pelos prazos exigidos pela legislação fiscal Portuguesa (geralmente até 10 anos). Se eliminar a sua conta, os seus dados não essenciais são apagados ou devidamente anonimizados em 30 dias.\n      </p>\n\n      <h2>5. Serviços Terceiros Utilizados (Processadores de Dados)</h2>\n      <p>Para fornecer um serviço robusto e de alta escala, delegamos sub-processos especializados a plataformas que cumprem as exigências de tratamento de dados:</p>\n      <ul>\n        <li><strong>Supabase:</strong> A nossa base de dados primária e gestão de autenticação. Garante o isolamento de dados com políticas de acesso restritas e armazenamento encriptado, centralizado em servidores na União Europeia.</li>\n        <li><strong>Stripe:</strong> O processador exclusivo de pagamentos. Nenhum dado do seu cartão é armazenado nos nossos servidores (nem pelo Supabase ou Render). A Stripe processa cartões de crédito e as contas de payout de Parceiros (Stripe Connect).</li>\n        <li><strong>Render:</strong> Utilizamos a Render como plataforma estrutural (PaaS) que aloja as necessidades lógicas da app e serve pedidos com uma infraestrutura segura e encriptada.</li>\n      </ul>\n\n      <h2>6. Direitos GDPR (RGPD)</h2>\n      <p>Todos os utilizadores têm os seguintes direitos perante a nossa plataforma:</p>\n      <ul>\n        <li><strong>Direito de Acesso:</strong> Obter a confirmação sobre quais dados seus estão a ser processados.</li>\n        <li><strong>Direito de Retificação:</strong> Editar de forma livre no seu Perfil os seus dados caso estejam incorretos.</li>\n        <li><strong>Direito ao Apagamento (\"Direito a ser Esquecido\"):</strong> Exigir a eliminação permanente da sua conta e registos associados.</li>\n        <li><strong>Direito à Portabilidade:</strong> Obter uma cópia dos seus marcações e dados num formato digital estruturado.</li>\n      </ul>\n\n      <h2>7. Segurança e Proteção de Dados</h2>\n      <p>\n        Implementamos rigorosas práticas de segurança, como ligações encriptadas (HTTPS/TLS) por toda a nossa infraestrutura e garantimos separação relacional estrita entre os dados dos clientes e as infraestruturas dos salões (Row-Level Security) na nossa base de dados de produção.\n      </p>\n\n      <h2>8. Contacto para Proteção de Dados</h2>\n      <p>\n        Para qualquer dúvida relacionada com esta Política, para remover os seus dados, ou para o exercício dos seus direitos ao abrigo do RGPD, contacte a nossa equipa através de: <strong>glamzo.suporte@gmail.com</strong> com o assunto \"RGPD e Proteção de Dados\".\n      </p>",
-  "politica-de-cookies": "<p>\n            Esta página descreve como a plataforma Glamzo utiliza \"cookies\" e tecnologia semelhante para disponibilizar a melhor experiência a Clientes e Parceiros.\n          </p>\n\n      <h2>1. O que são os Cookies?</h2>\n      <p>\n        Cookies são pequenos ficheiros de texto transferidos para o seu dispositivo eletrónico (computador, smartphone ou tablet) pelo seu navegador de internet, a pedido dos servidores da nossa plataforma. Servem para garantir e reter o funcionamento da navegação, manter o seu login e reter preferências.\n      </p>\n\n      <h2>2. Os Nossos Cookies Essenciais</h2>\n      <p>\n        Na Glamzo, focamo-nos em garantir a máxima rapidez, segurança e fiabilidade. São estritamente necessários para permitir-lhe navegar no website e aplicar as funcionalidades chave (exemplo, manter a sessão de Cliente iniciada enquanto seleciona um salão). \n        <strong>Não exigem consentimento, pois a plataforma não consegue operar sem eles.</strong>\n      </p>\n      <ul>\n        <li><strong>Autenticação Segura:</strong> Emitidos via Supabase, necessários para identificar o seu utilizador (sessão segura) para impedir acessos de terceiros.</li>\n        <li><strong>Processamento Seguro:</strong> Emitidos pelo Stripe enquanto está num fluxo de entrada de pagamentos (são cookies cruciais para as exigências bancárias e anti-fraude).</li>\n      </ul>\n\n      <h2>3. Cookies Analíticos e de Performance</h2>\n      <p>\n        (Aguardamos a sua conformidade via Banner de Consentimento) <br />\n        Para melhorar o layout dos nossos painéis de salões ou a experiência de pesquisa, poderemos pontualmente recolher dados orgânicos agregados e anónimos (taxas de cliques nalgum botão, rotas que quebram num erro), que ajudam diretamente a nossa equipa de engenharia a lançar novas versões livre de problemas.\n      </p>\n\n      <h2>4. Banner de Consentimento</h2>\n      <p>\n        Quando o utilizador visita a Glamzo pela primeira vez será notificado acerca desta configuração, permitindo a gestão em pleno e escolhendo bloquear a inserção dos de classe Analítica/Performance se assim o desejar.\n      </p>\n\n      <h2>5. Gestão de Cookies e Browser</h2>\n      <p>\n        A maioria dos navegadores (Google Chrome, Firefox, Safari) permitem total controlo sobre todos os cookies instalados, inclusivamente, limpar os persistentes. Pode revogar os cookies diretamente através das definições gerais de Privacidade do seu programa de navegação. \n      </p>",
-  "politica-de-cancelamentos": "<p>\n            A Glamzo pretende proporcionar uma relação de compromisso e respeito entre todos os Clientes e Salões. A não comparência ou as alterações em cima da hora trazem perdas substanciais de rendimento aos Parceiros.\n          </p>\n\n      <h2>1. Regras para Clientes</h2>\n      <p>\n        Quando o Cliente agenda um serviço, o Parceiro bloqueia o tempo da sua agenda, impossibilitando que outros clientes tomem essa vaga. \n      </p>\n      <ul>\n        <li><strong>Cancelamentos Atempados:</strong> Geralmente, os clientes têm liberdade total para cancelar sua marcação online, de forma totalmente gratuita, e com reembolso a 100% (se pré-pago) desde que o façam fora da Janela de Tolerância estipulada.</li>\n        <li><strong>Janela de Tolerância:</strong> Cada salão parceiro tem a obrigatoriedade de decidir e exibir a sua própria política do limite horário (ex. cancelamento gratuito apenas até 24 ou 48 horas antes da sessão). Este limite é exibido claramente no momento do agendamento.</li>\n      </ul>\n\n      <h2>2. Cancelamentos Tardios e Não Comparência (\"No-Show\")</h2>\n      <p>\n        Caso um Cliente cancele depois de ultrapassada a Janela de Tolerância estabelecida pelo parceiro, ou em alternativa, caso o Cliente não compareça de todo no estabelecimento físico de marcação:\n      </p>\n      <ul>\n        <li>O Parceiro reserva-se ao direito de aplicar as multas protocolares, que podem variar de retenção parcial a retenção integral do valor do serviço acordado.</li>\n        <li>Se o pagamento não tiver ocorrido no momento da reserva (em pagamentos \"Pagamento no Local\"), a plataforma poderá solicitar e processar o cartão usado como caução (se exigido nas regras pré-acertadas do salão).</li>\n      </ul>\n\n      <h2>3. Regras e Garantias de Parceiros</h2>\n      <p>\n        Apesar de infrequentes, os Parceiros podem deparar-se com contratempos graves de gestão ou motivo de força maior, sendo obrigados a cancelar uma marcação do seu lado.\n      </p>\n      <ul>\n        <li>O Cliente que for alvo de um cancelamento por intervenção da parte exclusiva de um profissional será reembolsado na totalidade ou reagendado sob comum acordo.</li>\n        <li>Os Parceiros comprometem-se a comunicar com bastante antecedência qualquer eventual problema mecânico ou laboral para minimizar incómodos.</li>\n      </ul>\n\n      <h2>4. Reembolsos</h2>\n      <p>\n        Quaisquer fundos elegíveis a retornar para a conta do Cliente, por falha, por cancelamento atempado ou recusa do Salão, serão devolvidos, via Stripe, num prazo temporal normal estimado que os bancos exigem e determinam (regra geral entre 3 a 10 dias úteis diretos para o IBAN / Cartão usado no pagamento). A Glamzo emitirá as ordens de retorno de fundos prontamente.\n      </p>",
-  "politica-de-pagamentos": "<p>\n            A Glamzo compromete-se com a fiabilidade absoluta em cada transação financeira gerada nas reservas comerciais, nas subscrições de aluguer da plataforma e no processamento de repasses de saldo às faturas dos Parceiros.\n          </p>\n\n      <h2>1. Pagamentos Processados pela Stripe</h2>\n      <p>\n        Para assegurar total segurança nas redes de débito e crédito, implementamos as redes de pagamentos da Stripe, Lda. Ao transacionar através da Plataforma (ex: inserir cartões, criar subscrições), estará subordinado obrigatoriamente às políticas europeias e regras de processamento e segurança garantidas pela Stripe.\n      </p>\n\n      <h2>2. Comissões da Plataforma</h2>\n      <p>\n        No modelo original (sem subscrição), a Glamzo aplica percentagens unitárias ou comissões mínimas de taxa administrativa por cada agendamento trazido e faturado na porta de um parceiro. Estas comissões aplicam-se apenas e de modo isolado contra o saldo credor faturado em nome dos Parceiros Comerciais; os Clientes apenas pagam o preço exato listado para os seus serviços desejados. \n      </p>\n\n      <h2>3. Subscrições Glamzo PRO</h2>\n      <p>\n        Os Parceiros dispõem ainda de uma modalidade alternativa por Subscrição (Glamzo PRO). Nesse modelo:\n      </p>\n      <ul>\n        <li>O Parceiro paga mensal ou anualmente um valor base predefinido que o isenta de uma maior incidência sobre comissões avulsas, ideal para grandes faturamentos em Salões de dimensão elevada.</li>\n        <li>O cancelamento das subscrições por parte do Parceiro deve ocorrer até ou antes do termo do tempo remanescente da mensalidade já paga, para bloquear a faturação de continuidade antes do período de auto-renovação.</li>\n      </ul>\n\n      <h2>4. Falhas de Pagamento</h2>\n      <p>\n        Se um processamento ou a validade mensal da Stripe ditar e intercetar insuficiência de saldo, bloqueio na entidade bancária e impossibilidade de recuo de uma subscrição recorrente: \n        <br />\n        O perfil profissional do parceiro na Glamzo poderá ficar restrito a reservas externas online para com o público geral até regularização e preenchimento atualizado em \"Faturação e Métodos de Pagamento\".\n      </p>\n\n      <h2>5. Faturação e Repasses de Salão</h2>\n      <p>\n        Todos os repasses e valores apurados retidos para entregar são processados pela plataforma Stripe Connect e diretamente redigidos, libertados ou depositados para a conta IBAN autorizada nas definições do Painel do Salão.\n      </p>",
-  "seguranca-e-protecao-de-dados": "<p>Conteúdo padrão em falta.</p>",
-  "faq-cliente": "<p>Bem-vindo à área de ajuda rápida ao cliente. Encontre abaixo as soluções e instruções mais solicitadas.</p>\n\n      <h2>1. Como fazer uma marcação?</h2>\n      <p>\n        Pode iniciar navegando pelas listas segmentadas das áreas de estéticas localizadas perto da área da sua localidade no nosso explorador da página principal (\"Encontrar Salões\"). Selecionará após a decisão do local a lista preçário de catálogo pretendido, depois avançará até uma data calendário do funcionário apto com hora exata acordada e findará o processamento no Checkout seguro ao finalizar o carrinho.\n      </p>\n\n      <h2>2. Posso efetuar cancelamentos após pagar?</h2>\n      <p>\n        Totalmente. Dentro dos dias do painel (Exemplo: 48 horas protetivas das regras acordadas no Salão de beleza em si) deve clicar no ícone do Utilizador (cimo do painel com sua foto de perfil), em \"Os Meus Agendamentos\", selecione e confirme sob a modalidade da opção visual de \"Cancelar\" reserva na própria interface da app.\n      </p>\n      \n      <h2>3. Os meus dados de pagamento estão em risco? Como pagar?</h2>\n      <p>\n        Para confirmar uma reserva paga adiantada utilizamos um dos maiores provedores da internet (Stripe), a sua segurança sobre pagamento é intransponível (CVC e chaves creditícias não tocam nos servidores de base de dados geridos por nós na Render / Supabase). A interface apresenta MBWAY (exibido na Stripe a nível europeu sob Multibanco/SEPA, caso abrangente pela região) ou uso tradicional dos seus cartões de crédito/débito. \n      </p>\n\n      <h2>4. Como posso contactar o salão antes do compromisso?</h2>\n      <p>\n        O perfil singular de cada loja / negócio (visualizável no portfólio de exploração ou até mesmo na fatura dos seus emails interativos de pós-processamento) dispões de toda a estrutura pública preenchida por esse mesmo negócio (Números Tlm., descrições e Localidade Geográfica para rotas e conversas com a gerência do espaço físico). Pode, contudo, também resolver tudo com a Glamzo!\n      </p>",
-  "faq-parceiro": "<p>O centro e apoio dos Parceiros e Profissionais. Toda a informação técnica e base simplificada em prol da modernização das vossas atividades.</p>\n\n      <h2>1. Como aderir à rede da Glamzo?</h2>\n      <p>\n        Basta registar-se ou assinar enquanto Salão na via principal de acesso para Parceiros. Irá deparar-se com um pequeno assistente que requer os pormenores básicos fundamentais sobre a legalidade da sua loja, e logo será inserido de modo instantâneo dentro da comunidade comercial pronta a listar horários de catálogo.\n      </p>\n\n      <h2>2. Como funcionam os repasses e transações bancárias (Quando recebo)?</h2>\n      <p>\n        Os repasses (pagamentos totais consolidados para a sua conta do Salão resultantes do pagamento do cliente online através dos parceiros Stripe Connect) são de gestão integral pelo Painel Parceiro no \"Módulo Faturação\", onde introduz o seu aspeto legal do seu proprietariado. Os depósitos na conta configuradas ocorrem habitualmente num enquadramento automatizado num tempo exato de 3 dias a 7 úteis, a combinar e ditar das diretrizes bancárias vigentes na norma europeia atual.\n      </p>\n\n      <h2>3. Glamzo PRO. Em que se baseia a comissão subscrita?</h2>\n      <p>\n        Pode gerir um modelo mais básico com a Glamzo (comissões fracionadas em função das entradas individuais da clientela), de outro lado se as transações de grande volume de reservas compensar ao Seu Salão uma anuidade / mensalidade fixa, onde poupa nestas comissões independentes em troca dum selo Premium com destaque de perfil, estará também disponível o selo (PRO) atualizável a qualquer altura pelo portal Administrativo!\n      </p>\n\n      <h2>4. Obter suporte avançado para Partner ou de Faturações Específicas</h2>\n      <p>\n        Caso presencie dificuldades da base técnica, necessite pedir estornos pontuais complexos do lado da gestão, sinta falta do repórter de faturas e pagamentos de apoio ou qualquer assunto jurídico das marcações na conta profissional, abra ticket do modelo ou contacte as frentes base: <strong>glamzo.suporte@gmail.com</strong>\n      </p>",
-  "sobre-nos": "<p className=\"lead text-xl text-slate-700 font-medium pb-4\">\n            A Glamzo é o seu novo ponto de encontro para a centralização ibérica (Portugal e UE) de beleza, bem-estar e gestão sofisticada de marcações para Salões premium.\n          </p>\n\n      <h2>O que fazemos</h2>\n      <p>\n        Operamos um mercado e plataforma robusta baseada em nuvem, concebidos especificamente para facilitar o contacto logístico sem fricção entre um Cliente focado nas marcações diárias e o negócio dinâmico pronto a acecionar valor, modernizando os espaços estéticos físicos das agendas arcaicas por cadernos e telefonemas de barulhos sem parar.\n      </p>\n\n      <h2>Benefícios</h2>\n      <ul>\n        <li>\n          <strong>Para Clientes:</strong> Agendamentos 24 horas por dia, 7 dias por semana onde encontram de forma clara todas as avaliações, horários certos e o melhor portfólio dos Salões de modo desocupado e unificado em dispositivos móveis.\n        </li>\n        <li>\n          <strong>Para Salões e Profissionais:</strong> Automações automáticas dos funis de controlo. Desde redução brutal das falhas e 'no-shows' não pagos, lembretes informáticos do controlo diário em e-mail / mensagens, uma simplificação imensa na hora repassar os valores Stripe aos próprios bancos (via subscrições ou comissões). \n        </li>\n      </ul>\n\n      <h2>A Nossa Missão, Visão e Valores (Comunidade)</h2>\n      <p>\n        <strong>A Missão:</strong> Acabar de uma vez com o constrangimento logístico de perdas de tempo nos telefones na altura de marcar horas. A Glamzo empodera o empreendedor logístico da beleza a modernizar sem um orçamento louco. \n      </p>\n      <p>\n        <strong>A Visão corporativa:</strong> Consolidar os nossos polos num único sistema moderno que dominará o aspeto comercial ibérico, focando primeiramente Portugal.\n      </p>\n      <p>\n        <strong>Valores Humanos:</strong> Construímos laços reais com negócios reais. A Glamzo opera de maneira não focada só num negócio empresarial hostil sem presença: mantemos um estilo de comunicação quente, moderno e português focado no suporte contínuo dos Profissionais.\n      </p>\n\n      <h2>Tecnologia e Segurança (Dados / Pagamentos)</h2>\n      <p>\n        O nosso ecossistema moderno encontra-se desenhado nas tecnologias da vanguarda da geração. Da Base da Nuvem Supabase, às plataformas logísticas em Render até aos circuitos monetários criptográfricos do PCI-Compliance interconectados no portal mundial da Stripe, a sua navegação, a visualização da privacidade, e inserção do cartão bancário desfruta exatamente do nível mais apetrechado no panorama global para blindar o conforto de Clientes e Parceiros.\n      </p>"
-};
-
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -151,60 +131,9 @@ export default function Admin() {
     }
   };
 
-  const fetchPlatformPages = async () => {
-    setPagesError(null);
-    try {
-      const { data, error } = await supabase
-        .from('platform_pages')
-        .select('*');
-      if (error) {
-        if (error.code === '42P01') { 
-          setPagesError("A tabela 'platform_pages' ainda não existe na base de dados. Execute o setup no SQL Editor.");
-        } else {
-          setPagesError(error.message);
-        }
-      } else {
-        setPlatformPages(data || []);
-      }
-    } catch (err: any) {
-      setPagesError(err.message || "Erro de conexão ao carregar páginas.");
-    }
-  };
-
-  const handleSavePage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingPageSlug || !pageDraftTitle || !pageDraftContent) return;
-    
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('platform_pages')
-        .upsert({
-          slug: editingPageSlug,
-          title: pageDraftTitle,
-          content: pageDraftContent,
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-      setSuccessMsg("Página atualizada com sucesso!");
-      setEditingPageSlug(null);
-      setPageDraftTitle('');
-      setPageDraftContent('');
-      fetchPlatformPages();
-    } catch (err: any) {
-      setErrorMsg(`Erro ao guardar página: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (activeTab === 'cms') {
       fetchHomepageCards();
-    }
-    if (activeTab === 'pages') {
-      fetchPlatformPages();
     }
   }, [activeTab]);
 
@@ -386,12 +315,6 @@ export default function Admin() {
   }, [selectedSalon]);
 
   // Sync and fetch actual admin dashboards from database
-  const [platformPages, setPlatformPages] = useState<any[]>([]);
-  const [editingPageSlug, setEditingPageSlug] = useState<string | null>(null);
-  const [pageDraftTitle, setPageDraftTitle] = useState('');
-  const [pageDraftContent, setPageDraftContent] = useState('');
-  const [pagesError, setPagesError] = useState<string | null>(null);
-
   const syncAdminDatasets = async () => {
     setLoading(true);
     setErrorMsg(null);
@@ -678,49 +601,42 @@ export default function Admin() {
       setErrorMsg(null);
       setSuccessMsg(null);
 
-      // We call the custom RPC function that definitively wipes out auth.users
-      const { error: rpcErr } = await supabase.rpc('admin_delete_user', { target_user_id: ownerId });
-      
-      if (rpcErr) {
-        // Fallback to local cascading if RPC doesn't exist
-        console.warn("RPC admin_delete_user not found or failed, falling back to local dataset wipe", rpcErr);
-        const queries = [
-          { table: 'bookings', eq: 'business_id' },
-          { table: 'services', eq: 'business_id' },
-          { table: 'business_hours', eq: 'business_id' },
-          { table: 'staff', eq: 'business_id' },
-          { table: 'payments', eq: 'business_id' },
-          { table: 'payouts', eq: 'business_id' },
-          { table: 'subscriptions', eq: 'business_id' },
-          { table: 'reviews', eq: 'business_id' },
-          { table: 'loyalty_cards', eq: 'business_id' },
-          { table: 'loyalty_history', eq: 'business_id' },
-          { table: 'marketing_campaigns', eq: 'business_id' },
-          { table: 'leads', eq: 'business_id' }
-        ];
+      const queries = [
+        { table: 'bookings', eq: 'business_id' },
+        { table: 'services', eq: 'business_id' },
+        { table: 'business_hours', eq: 'business_id' },
+        { table: 'staff', eq: 'business_id' },
+        { table: 'payments', eq: 'business_id' },
+        { table: 'payouts', eq: 'business_id' },
+        { table: 'subscriptions', eq: 'business_id' },
+        { table: 'reviews', eq: 'business_id' },
+        { table: 'loyalty_cards', eq: 'business_id' },
+        { table: 'loyalty_history', eq: 'business_id' },
+        { table: 'marketing_campaigns', eq: 'business_id' },
+        { table: 'leads', eq: 'business_id' }
+      ];
 
-        for (const q of queries) {
-          try {
-            await supabase.from(q.table).delete().eq(q.eq, businessId);
-          } catch (e) {
-            console.warn(`Deleting from ${q.table} skipped:`, e);
-          }
+      for (const q of queries) {
+        try {
+          await supabase.from(q.table).delete().eq(q.eq, businessId);
+        } catch (e) {
+          console.warn(`Deleting from ${q.table} skipped:`, e);
         }
-
-        const { error: destBizErr } = await supabase
-          .from('businesses')
-          .delete()
-          .eq('id', businessId);
-        if (destBizErr && destBizErr.code !== '42P01') throw destBizErr;
-
-        const { error: destProfErr } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', ownerId);
-        if (destProfErr && destProfErr.code !== '42P01') throw destProfErr;
       }
 
-      setSuccessMsg("Conta (Logins e Dados) eliminada e desativada definitivamente com sucesso!");
+      const { error: destBizErr } = await supabase
+        .from('businesses')
+        .delete()
+        .eq('id', businessId);
+      if (destBizErr) throw destBizErr;
+
+      const { error: destProfErr } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', ownerId);
+      if (destProfErr) throw destProfErr;
+
+      setSuccessMsg("Conta e dados de parceiro INTEGRALMENTE eliminados com sucesso!");
       setDeleteAccountModalOpen(false);
       setDeleteAccountTarget(null);
       setDeleteAccountDoubleConfirmText('');
@@ -775,25 +691,18 @@ export default function Admin() {
 
   // Delete User permanently (Direct table write)
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm("Deseja realmente eliminar permanentemente este utilizador do sistema? Esta operação apaga também a sua loja (caso exista) e cancela assinaturas Stripe. Esta operação é irreversível.")) return;
+    if (!window.confirm("Aviso Provisório: Deseja realmente eliminar permanentemente este utilizador do sistema? Esta operação é irreversível.")) return;
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
-      // Usar a RPC de administrador para apagar tudo definitivamente (auth.users, profiles, businesses)
-      const { error } = await supabase.rpc('admin_delete_user', { target_user_id: userId });
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
 
       if (error) throw error;
-      
-      const userSalon = salons.find(s => s.owner_id === userId);
-      let successString = "Utilizador removido do sistema com sucesso!";
-      
-      if (userSalon && (userSalon.subscription_active || userSalon.subscription_status === 'active')) {
-        successString += " Assinatura Stripe do salão cancelada automaticamente com sucesso.";
-      }
-
-      setSuccessMsg(successString);
+      setSuccessMsg("Utilizador removido do sistema com sucesso!");
       setProfiles(prev => prev.filter(p => p.id !== userId));
-      setSalons(prev => prev.filter(s => s.owner_id !== userId));
     } catch (err: any) {
       console.error("Error deleting user profile", err);
       setErrorMsg("Erro ao eliminar utilizador: " + err.message);
@@ -964,7 +873,7 @@ export default function Admin() {
   // Guard protecting admin panel workspace
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-rose-500 gap-3">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-rose-500 gap-3">
         <Loader2 className="w-8 h-8 animate-spin" />
         <span className="text-xs font-mono">Verificando privilégios administrativos unificados...</span>
       </div>
@@ -973,14 +882,14 @@ export default function Admin() {
 
   if (!user || (profile && profile.role !== 'admin' && user.email !== 'admin@gmail.com' && user.email !== 'glamzo.suporte@gmail.com')) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-2xl space-y-4">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-4">
           <ShieldAlert className="w-14 h-14 text-rose-500 mx-auto" />
-          <h2 className="text-2xl font-black text-slate-900">Console Administrativo Exclusivo</h2>
+          <h2 className="text-2xl font-black text-white">Console Administrativo Exclusivo</h2>
           <p className="text-sm text-slate-600 leading-relaxed">
             Área de administração global regulada por chave mestra de produção. Apenas credenciais homologadas podem aceder virtualmente ao Painel.
           </p>
-          <a href="/admin/login" className="inline-block mt-4 px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-slate-900 text-xs font-bold rounded-xl transition-all font-mono uppercase">
+          <a href="/admin/login" className="inline-block mt-4 px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all font-mono uppercase">
             Autenticar Administrador
           </a>
         </div>
@@ -1041,7 +950,7 @@ export default function Admin() {
   };
 
   return (
-    <div id="admin-workspace" className="min-h-screen bg-slate-50 text-slate-800 flex font-sans select-none overflow-hidden h-screen">
+    <div id="admin-workspace" className="min-h-screen bg-slate-950 text-slate-100 flex font-sans select-none overflow-hidden h-screen">
       
       {/* Mobile Admin Sidebar Navigation Drawer Overlay */}
       {isMobileAdminSidebarOpen && (
@@ -1053,18 +962,18 @@ export default function Admin() {
           />
           
           {/* Drawer content */}
-          <div className="relative flex flex-col w-72 max-w-xs h-full bg-slate-50 border-r border-slate-200 p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
-            <div className="flex items-center justify-between pb-4 border-b border-purple-100 mb-4 shrink-0">
-              <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity">
+          <div className="relative flex flex-col w-72 max-w-xs h-full bg-slate-950 border-r border-slate-900 p-5 shadow-2xl animate-fade-in text-slate-100 z-10 transition-transform">
+            <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4 shrink-0">
+              <div className="flex items-center gap-2.5">
                 <GlamzoLogo size={28} glow={true} />
                 <div>
-                  <span className="font-extrabold text-slate-900 text-xs tracking-widest block leading-none">GLAMZO LOGO</span>
-                  <span className="text-[8px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Admin</span>
+                  <span className="font-extrabold text-white text-xs tracking-widest block leading-none">GLAMZO LOGO</span>
+                  <span className="text-[8px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel de Admin</span>
                 </div>
-              </button>
+              </div>
               <button 
                 onClick={() => setIsMobileAdminSidebarOpen(false)}
-                className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
                 title="Fechar Menu"
               >
                 <X className="w-5 h-5" />
@@ -1073,10 +982,10 @@ export default function Admin() {
 
             <div className="p-3 bg-purple-950/20 border border-purple-900/35 rounded-xl mb-4 shrink-0">
               <span className="block text-[8px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">Status de Conectividade</span>
-              <span className="text-slate-900 block text-xs font-bold font-sans">Produção Supabase Real</span>
+              <span className="text-white block text-xs font-bold font-sans">Produção Supabase Real</span>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-                <span className="text-[9px] text-purple-600 font-mono text-nowrap">Canal Activo (Master)</span>
+                <span className="text-[9px] text-purple-400 font-mono text-nowrap">Canal Activo (Master)</span>
               </div>
             </div>
 
@@ -1089,8 +998,7 @@ export default function Admin() {
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
-                { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
-                { id: 'pages', label: 'Páginas do Site', icon: FileText }
+                { id: 'cms', label: 'Gestão da Homepage', icon: Globe }
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1103,8 +1011,8 @@ export default function Admin() {
                     }}
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-tight rounded-xl transition-all cursor-pointer text-left ${
                       isActive 
-                        ? 'bg-purple-600 text-slate-900 shadow shadow-purple-950/30' 
-                        : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                        ? 'bg-purple-600 text-white shadow shadow-purple-950/30' 
+                        : 'text-slate-600 hover:bg-slate-900 hover:text-white'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -1115,46 +1023,39 @@ export default function Admin() {
             </nav>
 
             {/* Sidebar Bottom Profile */}
-            <div className="pt-4 border-t border-purple-100 mt-4 shrink-0 col-span-1">
+            <div className="pt-4 border-t border-white/5 mt-4 shrink-0 col-span-1">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-purple-900/50 flex items-center justify-center font-mono font-bold text-purple-700 text-xs border border-purple-500/20 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-purple-900/50 flex items-center justify-center font-mono font-bold text-purple-300 text-xs border border-purple-500/20 shrink-0">
                   {profile?.full_name?.substring(0,2).toUpperCase() || 'A'}
                 </div>
                 <div className="overflow-hidden">
-                  <span className="block text-xs font-bold truncate text-slate-900">{profile?.full_name || 'Admin Maestro'}</span>
+                  <span className="block text-xs font-bold truncate text-white">{profile?.full_name || 'Admin Maestro'}</span>
                   <span className="block text-[9px] text-slate-500 font-mono truncate">{user?.email}</span>
                 </div>
               </div>
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                Terminar Sessão
-              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* Structural Admin Sidebar */}
-      <aside className="hidden lg:flex w-64 border-r border-slate-200 bg-slate-50 flex-col justify-between shrink-0 h-full">
+      <aside className="hidden lg:flex w-64 border-r border-slate-900 bg-slate-950 flex-col justify-between shrink-0 h-full">
         <div>
           {/* Header Title branding */}
-          <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="h-16 border-b border-slate-200 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-100 transition-colors cursor-pointer">
+          <div className="h-16 border-b border-slate-900 flex items-center px-6 gap-3">
             <GlamzoLogo size={32} glow={true} />
             <div>
-              <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs">GLAMZO LOGO</span>
-              <span className="text-[9px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Administração</span>
+              <span className="font-extrabold text-white tracking-widest block leading-none text-xs">GLAMZO LOGO</span>
+              <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel de Administração</span>
             </div>
-          </button>
+          </div>
 
           <div className="p-4 mx-4 my-2.5 bg-purple-950/20 border border-purple-900/35 rounded-xl text-xs">
             <span className="block text-[9px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">Status de Conectividade</span>
-            <span className="text-slate-900 block font-bold">Produção Supabase Real</span>
+            <span className="text-white block font-bold">Produção Supabase Real</span>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-              <span className="text-[10px] text-purple-600 font-mono text-nowrap">Canal de Controlo de Segurança</span>
+              <span className="text-[10px] text-purple-400 font-mono text-nowrap">Canal de Controlo de Segurança</span>
             </div>
           </div>
 
@@ -1168,7 +1069,6 @@ export default function Admin() {
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
               { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
-              { id: 'pages', label: 'Páginas da Plataforma', icon: FileText },
               { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -1179,8 +1079,8 @@ export default function Admin() {
                   onClick={() => { setActiveTab(tab.id as any); setSearchTerm(''); }}
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs rounded-xl font-bold transition-all cursor-pointer ${
                     isActive 
-                      ? 'bg-purple-600 text-slate-900 shadow shadow-purple-950' 
-                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                      ? 'bg-purple-600 text-white shadow shadow-purple-950' 
+                      : 'text-slate-600 hover:bg-slate-900 hover:text-white'
                   }`}
                 >
                   <Icon className="w-4.5 h-4.5 shrink-0" />
@@ -1192,44 +1092,37 @@ export default function Admin() {
         </div>
 
         {/* Admin profile view bottom */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50/80">
-          <div className="flex items-center gap-2.5 mb-3">
+        <div className="p-4 border-t border-slate-900 bg-slate-950/80">
+          <div className="flex items-center gap-2.5 mb-2">
             <div className="w-8 h-8 rounded-full bg-purple-900 text-purple-200 flex items-center justify-center font-mono font-bold text-xs">
               AD
             </div>
             <div>
-              <span className="block text-xs font-black text-slate-900">Administrador</span>
-              <span className="block text-[10px] text-slate-500 font-mono truncate max-w-[150px]">{user?.email || 'admin@gmail.com'}</span>
+              <span className="block text-xs font-black text-white">Administrador</span>
+              <span className="block text-[10px] text-slate-500 font-mono">{user?.email || 'admin@gmail.com'}</span>
             </div>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Terminar Sessão
-          </button>
         </div>
       </aside>
 
       {/* Admin screen viewport */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
         
         {/* Top Header */}
-        <header className="h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between bg-slate-50/45 backdrop-blur-md">
+        <header className="h-16 border-b border-slate-900 px-4 sm:px-8 flex items-center justify-between bg-slate-950/45 backdrop-blur-md">
           <div className="flex items-center gap-3">
             {/* Mobile Sidebar toggle button */}
             <button
               onClick={() => setIsMobileAdminSidebarOpen(true)}
-              className="lg:hidden p-2 bg-[#120a21] border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition-all cursor-pointer"
+              className="lg:hidden p-2 bg-[#120a21] border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-all cursor-pointer"
               title="Abrir Menu Administrativo"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="text-left">
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <span>Painel Administrador Real</span>
-                <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-600 font-bold border border-purple-900/40">MASTER_ACCESS</span>
+                <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-400 font-bold border border-purple-900/40">MASTER_ACCESS</span>
               </h2>
             </div>
           </div>
@@ -1237,7 +1130,7 @@ export default function Admin() {
           <button
             onClick={syncAdminDatasets}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-600 rounded-xl text-xs font-bold font-mono transition-all border border-slate-200 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-bold font-mono transition-all border border-slate-800 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Sincronizar Produção</span>
@@ -1248,7 +1141,7 @@ export default function Admin() {
         <div className="flex-1 overflow-y-auto p-8 pb-36 scrollbar-thin scrollbar-thumb-slate-900">
           
           {successMsg && (
-            <div className="mb-6 p-4 bg-emerald-950/40 border border-emerald-900 text-emerald-600 rounded-2xl text-xs font-bold flex items-center gap-2 shadow animate-fade-in">
+            <div className="mb-6 p-4 bg-emerald-950/40 border border-emerald-900 text-emerald-400 rounded-2xl text-xs font-bold flex items-center gap-2 shadow animate-fade-in">
               <Check className="w-4 h-4 text-emerald-500" />
               <span>{successMsg}</span>
             </div>
@@ -1273,11 +1166,11 @@ export default function Admin() {
               {activeTab === 'partners' && (
                 <div id="admin-partners" className="space-y-6">
                   {/* Title & Search Header */}
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                      <h3 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
                         <span>Gestão Integrada de Parceiros</span>
-                        <span className="text-xs bg-purple-950 text-purple-700 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">👑 PRO Control</span>
+                        <span className="text-xs bg-purple-950 text-purple-300 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">👑 PRO Control</span>
                       </h3>
                       <p className="text-xs text-slate-600 mt-0.5">Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.</p>
                     </div>
@@ -1289,7 +1182,7 @@ export default function Admin() {
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="Filtrar por nome de loja ou cidade..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-500 outline-none focus:border-purple-600"
+                        className="w-full bg-slate-900 border border-slate-800 text-xs pl-9 pr-4 py-2.5 rounded-xl text-white placeholder-slate-500 outline-none focus:border-purple-600"
                       />
                     </div>
                   </div>
@@ -1315,12 +1208,12 @@ export default function Admin() {
                         return (
                           <div 
                             key={sal.id} 
-                            className={`bg-white/60 border p-6 rounded-[24px] flex flex-col justify-between transition-all relative ${
+                            className={`bg-slate-900/60 border p-6 rounded-[24px] flex flex-col justify-between transition-all relative ${
                               isSuspended 
                                 ? 'border-rose-950 bg-gradient-to-b from-[#1c080f]/40 to-[#0c0307]/60' 
                                 : isPro
                                   ? 'border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.06)] bg-gradient-to-b from-[#110a24]/50 to-[#090514]/80'
-                                  : 'border-purple-100 bg-white/40'
+                                  : 'border-white/5 bg-slate-900/40'
                             }`}
                           >
                             <div>
@@ -1328,23 +1221,23 @@ export default function Admin() {
                               <div className="flex items-start justify-between gap-3">
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
-                                    <h4 className="font-black text-slate-900 text-base leading-snug">{sal.name}</h4>
+                                    <h4 className="font-black text-white text-base leading-snug">{sal.name}</h4>
                                     {sal.is_verified && (
                                       <span className="w-2 h-2 rounded-full bg-purple-400" title="Verificado" />
                                     )}
                                   </div>
-                                  <span className="text-[10px] font-mono text-purple-600 hover:underline block cursor-pointer">
+                                  <span className="text-[10px] font-mono text-purple-400 hover:underline block cursor-pointer">
                                     Slug: /{sal.slug}
                                   </span>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-1 shrink-0">
                                   {isSuspended ? (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-rose-950 text-rose-600 border border-rose-900/55">
+                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-rose-950 text-rose-450 border border-rose-900/55">
                                       Suspenso
                                     </span>
                                   ) : isPro ? (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-purple-950 text-purple-700 border border-purple-900/40">
+                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-900/40">
                                       👑 Glamzo PRO
                                     </span>
                                   ) : isTrial ? (
@@ -1352,7 +1245,7 @@ export default function Admin() {
                                       Trial ({trialDaysVal} Dias Restantes)
                                     </span>
                                   ) : (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200">
+                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-slate-950 text-slate-500 border border-slate-800">
                                       Plano FREE
                                     </span>
                                   )}
@@ -1360,34 +1253,34 @@ export default function Admin() {
                               </div>
 
                               {/* Owner Account Details info panel */}
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-5 p-3.5 bg-slate-50/50 rounded-xl border border-purple-100 text-[11px] font-mono">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-5 p-3.5 bg-slate-950/50 rounded-xl border border-white/5 text-[11px] font-mono">
                                 <div>
                                   <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Gestor / Email</span>
-                                  <span className="text-slate-700 block truncate">{ownerProfile?.full_name || sal.name}</span>
-                                  <span className="text-purple-700/80 block truncate">{ownerProfile?.email || sal.email || 'Não Consta'}</span>
+                                  <span className="text-slate-200 block truncate">{ownerProfile?.full_name || sal.name}</span>
+                                  <span className="text-purple-300/80 block truncate">{ownerProfile?.email || sal.email || 'Não Consta'}</span>
                                 </div>
                                 <div className="text-right">
                                   <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Inscrito em</span>
-                                  <span className="text-slate-600 block">{new Date(sal.created_at).toLocaleDateString('pt-PT')}</span>
+                                  <span className="text-slate-300 block">{new Date(sal.created_at).toLocaleDateString('pt-PT')}</span>
                                   <span className="text-slate-500 text-[10px] block">{new Date(sal.created_at).toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'})}</span>
                                 </div>
                               </div>
 
                               {/* Stripe Connect stats */}
-                              <div className="mt-4 p-3.5 bg-slate-50/40 rounded-xl border border-purple-100 space-y-1.5 text-[11px]">
+                              <div className="mt-4 p-3.5 bg-slate-950/40 rounded-xl border border-white/5 space-y-1.5 text-[11px]">
                                 <div className="flex items-center justify-between">
                                   <span className="text-slate-600 font-bold">Stripe Connect ID:</span>
-                                  <span className="font-mono text-slate-600 select-all">{sal.stripe_account_id || 'Não configurado'}</span>
+                                  <span className="font-mono text-slate-300 select-all">{sal.stripe_account_id || 'Não configurado'}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
                                   <span className="text-slate-500">Cobranças Ativas (charges_enabled):</span>
-                                  <span className={sal.charges_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
+                                  <span className={sal.charges_enabled ? "text-emerald-400 font-bold" : "text-slate-500"}>
                                     {sal.charges_enabled ? "SIM" : "NÃO"}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
                                   <span className="text-slate-500">Pagamentos Ativos (payouts_enabled):</span>
-                                  <span className={sal.payouts_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
+                                  <span className={sal.payouts_enabled ? "text-emerald-400 font-bold" : "text-slate-500"}>
                                     {sal.payouts_enabled ? "SIM" : "NÃO"}
                                   </span>
                                 </div>
@@ -1395,23 +1288,23 @@ export default function Admin() {
                             </div>
 
                             {/* Action Buttons Hub */}
-                            <div className="mt-6 border-t border-purple-100 pt-4 space-y-2.5">
+                            <div className="mt-6 border-t border-white/5 pt-4 space-y-2.5">
                               {/* Open detail dashboard page & reset trial */}
                               <div className="grid grid-cols-2 gap-2">
                                 <a 
                                   href={`/${sal.slug}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="py-2 px-3 bg-slate-50 border border-slate-200 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                                  className="py-2 px-3 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-white rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
                                 >
-                                  <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+                                  <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
                                   <span>Ver Loja Pública</span>
                                 </a>
 
                                 <button
                                   type="button"
                                   onClick={() => handleResetTrial(sal.id)}
-                                  className="py-2 px-3 bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 cursor-pointer"
+                                  className="py-2 px-3 bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-300 hover:text-white border border-indigo-900/40 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 cursor-pointer"
                                 >
                                   <Clock className="w-3.5 h-3.5 text-indigo-400" />
                                   <span>Reiniciar Trial</span>
@@ -1424,7 +1317,7 @@ export default function Admin() {
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-slate-50 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-200 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
+                                    className="py-2.5 px-3 bg-slate-950 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-800 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
                                   >
                                     Remover PRO
                                   </button>
@@ -1432,7 +1325,7 @@ export default function Admin() {
                                   <button
                                     type="button"
                                     onClick={() => handleActivateProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
+                                    className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
                                   >
                                     Ativar PRO Manual
                                   </button>
@@ -1442,7 +1335,7 @@ export default function Admin() {
                                   <button
                                     type="button"
                                     onClick={() => handleReactivatePartner(sal.id)}
-                                    className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-slate-900 border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
+                                    className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-white border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
                                   >
                                     Reativar Loja
                                   </button>
@@ -1450,7 +1343,7 @@ export default function Admin() {
                                   <button
                                     type="button"
                                     onClick={() => handleSuspendPartner(sal.id)}
-                                    className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-slate-900 border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
+                                    className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-white border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
                                   >
                                     Suspender Loja
                                   </button>
@@ -1470,7 +1363,7 @@ export default function Admin() {
                                     setDeleteAccountDoubleConfirmText('');
                                     setDeleteAccountModalOpen(true);
                                   }}
-                                  className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-600 hover:text-slate-900 border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                                  className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-450 hover:text-white border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Eliminar Conta e Todos os Dados</span>
@@ -1490,9 +1383,9 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'users' && (
                 <div id="admin-users" className="space-y-6">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Utilizadores & Atribuição de Créditos</h3>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white">Utilizadores & Atribuição de Créditos</h3>
                       <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
                     </div>
 
@@ -1503,7 +1396,7 @@ export default function Admin() {
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="Pesquise por e-mail ou nome..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
+                        className="w-full bg-slate-900 border border-slate-800 text-xs pl-9 pr-4 py-2 rounded-xl text-white placeholder-slate-650 outline-none focus:border-purple-600"
                       />
                     </div>
                   </div>
@@ -1511,8 +1404,8 @@ export default function Admin() {
                   {/* Allocate credits custom sub-modal form */}
                   {pointsAllocUserId && (
                     <div className="p-5 bg-purple-950/20 border border-purple-900 rounded-3xl space-y-3 max-w-md animate-fade-in text-xs font-semibold">
-                      <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-                        <Coins className="w-4.5 h-4.5 text-purple-600" />
+                      <h4 className="font-extrabold text-sm text-white flex items-center gap-1.5">
+                        <Coins className="w-4.5 h-4.5 text-purple-400" />
                         <span>Atribuir Pontos Grátis de Fidelidade</span>
                       </h4>
                       <div className="flex items-center gap-3">
@@ -1520,9 +1413,9 @@ export default function Admin() {
                           type="number" 
                           value={pointsAllocVal}
                           onChange={e => setPointsAllocVal(Number(e.target.value))}
-                          className="w-28 bg-slate-50 border border-slate-200 p-2 rounded-xl text-slate-900 font-mono text-center outline-none focus:border-purple-600"
+                          className="w-28 bg-slate-950 border border-slate-800 p-2 rounded-xl text-white font-mono text-center outline-none focus:border-purple-600"
                         />
-                        <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold px-4 py-2 rounded-xl cursor-pointer">
+                        <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl cursor-pointer">
                           Acrescentar Pontos à Conta
                         </button>
                         <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">Cancelar</button>
@@ -1531,10 +1424,10 @@ export default function Admin() {
                   )}
 
                   {/* Accounts Table List */}
-                  <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="bg-slate-900 border border-slate-900 rounded-3xl overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-[10px] font-bold text-slate-450 uppercase tracking-widest border-b border-slate-105 border-slate-200">
+                        <thead className="bg-slate-950 text-[10px] font-bold text-slate-450 uppercase tracking-widest border-b border-slate-105 border-slate-900">
                           <tr>
                             <th className="py-4.5 px-6">Cliente Cadastrado</th>
                             <th className="py-4.5 px-4">E-mail Registado</th>
@@ -1545,9 +1438,9 @@ export default function Admin() {
                         </thead>
                         <tbody className="divide-y divide-slate-105 divide-slate-900 text-xs">
                           {filteredProfiles.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50/20 transition-colors">
-                              <td className="py-4 px-6 font-bold text-slate-900 flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-full bg-slate-100/80 border border-slate-705 border-slate-700 text-slate-600 font-bold flex items-center justify-center font-mono text-[10px]">
+                            <tr key={p.id} className="hover:bg-slate-950/20 transition-colors">
+                              <td className="py-4 px-6 font-bold text-white flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-slate-800/80 border border-slate-705 border-slate-700 text-slate-300 font-bold flex items-center justify-center font-mono text-[10px]">
                                   {(p.full_name || p.email).substring(0,2).toUpperCase()}
                                 </div>
                                 <span className="truncate max-w-[150px]">{p.full_name || '-'}</span>
@@ -1560,10 +1453,10 @@ export default function Admin() {
                               <td className="py-4 px-4">
                                 <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
                                   p.role === 'admin'
-                                    ? 'bg-purple-950 border-purple-900 text-purple-600'
+                                    ? 'bg-purple-950 border-purple-900 text-purple-400'
                                     : p.role === 'business'
                                     ? 'bg-amber-950 border-amber-900 text-amber-400'
-                                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                                    : 'bg-slate-950 border-slate-800 text-slate-600'
                                 }`}>
                                   {p.role}
                                 </span>
@@ -1572,7 +1465,7 @@ export default function Admin() {
                               <td className="py-4 px-4 text-center">
                                 <button 
                                   onClick={() => handleAllocateCredits(p.id)}
-                                  className="px-2.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-purple-600 hover:text-purple-700 border border-slate-200 font-mono text-[10px] font-black cursor-pointer inline-flex items-center gap-1"
+                                  className="px-2.5 py-1 rounded bg-slate-950 hover:bg-slate-800 text-purple-400 hover:text-purple-300 border border-slate-900 font-mono text-[10px] font-black cursor-pointer inline-flex items-center gap-1"
                                 >
                                   <Coins className="w-3 h-3" />
                                   <span>Gerir Pontos</span>
@@ -1584,7 +1477,7 @@ export default function Admin() {
                                   <select aria-label="Selecione uma opção"
                                     value={p.role}
                                     onChange={e => handleChangeRole(p.id, e.target.value as any)}
-                                    className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg text-xs hover:border-purple-650 outline-none text-slate-600 cursor-pointer"
+                                    className="bg-slate-950 border border-slate-800 p-1.5 rounded-lg text-xs hover:border-purple-650 outline-none text-slate-300 cursor-pointer"
                                   >
                                     <option value="customer">Acesso Customer (Cliente)</option>
                                     <option value="business">Acesso Business (Parceiro)</option>
@@ -1593,7 +1486,7 @@ export default function Admin() {
 
                                   <button
                                     onClick={() => handleStartEditUser(p)}
-                                    className="p-1.5 bg-[#100b21]/80 hover:bg-purple-950/40 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 hover:border-purple-500/20 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
+                                    className="p-1.5 bg-[#100b21]/80 hover:bg-purple-950/40 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-purple-500/20 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
                                     title="Editar Informações"
                                   >
                                     <Settings className="w-3.5 h-3.5 text-purple-450" />
@@ -1602,10 +1495,10 @@ export default function Admin() {
 
                                   <button
                                     onClick={() => handleDeleteUser(p.id)}
-                                    className="p-1.5 bg-rose-50/80 hover:bg-rose-950/45 text-rose-600 hover:text-rose-300 rounded-lg border border-slate-200 hover:border-rose-950 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
+                                    className="p-1.5 bg-[#170a14]/80 hover:bg-rose-950/45 text-rose-450 hover:text-rose-300 rounded-lg border border-slate-800 hover:border-rose-950 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
                                     title="Eliminar Utilizador"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                    <Trash2 className="w-3.5 h-3.5 text-rose-450" />
                                     <span className="text-[10px] uppercase font-mono hidden xl:inline">Eliminar</span>
                                   </button>
                                 </div>
@@ -1624,9 +1517,9 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'salons' && (
                 <div id="admin-salons" className="space-y-6">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Lojas & Salões de Beleza Parceiros</h3>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white">Lojas & Salões de Beleza Parceiros</h3>
                       <p className="text-xs text-slate-600 mt-0.5">Controle a homologação das lojas, aprovação de novas inscrições e atribuição de selo verificado.</p>
                     </div>
 
@@ -1637,7 +1530,7 @@ export default function Admin() {
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="Pesquise por salão ou concelho..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
+                        className="w-full bg-slate-900 border border-slate-800 text-xs pl-9 pr-4 py-2 rounded-xl text-white placeholder-slate-650 outline-none focus:border-purple-600"
                       />
                     </div>
                   </div>
@@ -1645,22 +1538,22 @@ export default function Admin() {
                   {/* Salons List */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredSalons.map(sal => (
-                      <div key={sal.id} className="bg-white border border-slate-200/60 p-5 rounded-3xl hover:border-purple-900/40 transition-all space-y-4 flex flex-col justify-between">
+                      <div key={sal.id} className="bg-slate-900 border border-slate-900/60 p-5 rounded-3xl hover:border-purple-900/40 transition-all space-y-4 flex flex-col justify-between">
                         <div onClick={() => setSelectedSalon(sal)} className="cursor-pointer group">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono uppercase bg-slate-50 p-1 rounded font-bold text-slate-600 leading-none">{sal.category}</span>
+                            <span className="text-[10px] font-mono uppercase bg-slate-950 p-1 rounded font-bold text-slate-600 leading-none">{sal.category}</span>
                             <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
                               sal.is_verified 
-                                ? 'bg-purple-950/45 text-purple-600 border-purple-900/50' 
-                                : 'bg-slate-50 text-slate-500 border-slate-200'
+                                ? 'bg-purple-950/45 text-purple-400 border-purple-900/50' 
+                                : 'bg-slate-950 text-slate-500 border-slate-800'
                             }`}>
                               {sal.is_verified ? 'Verificado' : 'Aguardando'}
                             </span>
                           </div>
 
-                          <h4 className="font-black text-slate-900 text-base mt-2.5 leading-tight group-hover:text-purple-600 transition-colors flex items-center gap-1">
+                          <h4 className="font-black text-white text-base mt-2.5 leading-tight group-hover:text-purple-400 transition-colors flex items-center gap-1">
                             <span>{sal.name}</span>
-                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all text-purple-600" />
+                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all text-purple-400" />
                           </h4>
                           <p className="text-[11px] text-slate-600 mt-2 font-medium">📍 {sal.address}, {sal.city}</p>
                           <p className="text-[11px] text-slate-500 font-mono mt-1">📞 {sal.phone}</p>
@@ -1669,7 +1562,7 @@ export default function Admin() {
                         <div className="border-t border-slate-950 w-full pt-3.5 space-y-2 text-xs mt-auto">
                           <button 
                             onClick={() => setSelectedSalon(sal)}
-                            className="w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-850 text-slate-350 hover:text-slate-900 cursor-pointer transition-all"
+                            className="w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-350 hover:text-white cursor-pointer transition-all"
                           >
                             🔍 Ver Dados Inseridos
                           </button>
@@ -1678,8 +1571,8 @@ export default function Admin() {
                             onClick={() => handleToggleSalonVerification(sal.id, sal.is_verified)}
                             className={`w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] whitespace-nowrap cursor-pointer transition-all border ${
                               sal.is_verified 
-                                ? 'bg-white/60 border-slate-805 hover:bg-slate-100 text-slate-450 hover:text-slate-900' 
-                                : 'bg-purple-600 hover:bg-purple-700 text-slate-900 shadow-lg shadow-purple-950/25 border-transparent'
+                                ? 'bg-slate-900/60 border-slate-805 hover:bg-slate-800 text-slate-450 hover:text-white' 
+                                : 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-950/25 border-transparent'
                             }`}
                           >
                             {sal.is_verified ? 'Retirar Selo de Verificação' : 'Atribuir Selo de Verificação'}
@@ -1688,14 +1581,14 @@ export default function Admin() {
                           <div className="grid grid-cols-2 gap-2 pt-1">
                             <button
                               onClick={() => handleStartEditSalon(sal)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-indigo-950/45 hover:bg-indigo-905/45 hover:bg-indigo-900/45 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
+                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-indigo-950/45 hover:bg-indigo-905/45 hover:bg-indigo-900/45 text-indigo-300 hover:text-white border border-indigo-900/40 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
                             >
                               <Settings className="w-3.5 h-3.5" />
                               <span>Editar</span>
                             </button>
                             <button
                               onClick={() => handleDeleteSalon(sal.id)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-rose-950/35 hover:bg-rose-900/45 text-rose-600 hover:text-rose-350 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
+                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-rose-950/35 hover:bg-rose-900/45 text-rose-450 hover:text-rose-350 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Remover</span>
@@ -1713,8 +1606,8 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'payouts' && (
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>
+                  <div className="border-b border-slate-900 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Transferências Stripe & Definição de Planos</h3>
                     <p className="text-xs text-slate-600 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
                   </div>
 
@@ -1722,18 +1615,18 @@ export default function Admin() {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Requested payouts list column */}
-                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                      <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                        <Landmark className="w-5 h-5 text-purple-600" />
+                    <div className="lg:col-span-7 bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                        <Landmark className="w-5 h-5 text-purple-400" />
                         <span>Pedidos de Transferência Recebidos (BD)</span>
                       </h4>
 
                       <div className="space-y-3.5 max-h-[400px] overflow-y-auto scrollbar-thin">
                         {payoutRequests.map((po, idx) => (
-                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
+                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-950 rounded-2xl border border-slate-900 text-xs text-slate-300">
                             <div>
-                              <span className="block font-black text-sm text-slate-900 font-mono">{po.amount.toFixed(2)} €</span>
-                              <span className="text-[10px] text-purple-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Lojista: {po.business?.name || 'Pendente'}</span>
+                              <span className="block font-black text-sm text-white font-mono">{po.amount.toFixed(2)} €</span>
+                              <span className="text-[10px] text-purple-400 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Lojista: {po.business?.name || 'Pendente'}</span>
                               <span className="text-[9px] text-slate-550 text-slate-500 font-mono mt-0.5 block">IBAN Registado no Stripe Connect</span>
                             </div>
 
@@ -1742,20 +1635,20 @@ export default function Admin() {
                                 <>
                                   <button 
                                     onClick={() => handleUpdatePayoutStatus(po.id, 'completed')}
-                                    className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold text-[10px] rounded-lg transition-all cursor-pointer"
+                                    className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded-lg transition-all cursor-pointer"
                                   >
                                     Autorizar
                                   </button>
                                   <button 
                                     onClick={() => handleUpdatePayoutStatus(po.id, 'rejected')}
-                                    className="px-2 py-1 bg-rose-950/20 text-rose-600 hover:bg-rose-955 rounded-lg text-[10px] cursor-pointer"
+                                    className="px-2 py-1 bg-rose-950/20 text-rose-450 hover:bg-rose-955 rounded-lg text-[10px] cursor-pointer"
                                   >
                                     Recusar
                                   </button>
                                 </>
                               ) : (
                                 <span className={`inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase ${
-                                  po.status === 'completed' ? 'bg-purple-950 border-purple-900 text-purple-600' : 'bg-slate-50 text-slate-500 border-slate-200'
+                                  po.status === 'completed' ? 'bg-purple-950 border-purple-900 text-purple-400' : 'bg-slate-950 text-slate-500 border-slate-800'
                                 }`}>
                                   {po.status === 'completed' ? 'Efetuado' : 'Cancelado'}
                                 </span>
@@ -1772,42 +1665,42 @@ export default function Admin() {
 
                     {/* Subscription planes custom configurations */}
                     <div className="lg:col-span-5 space-y-6">
-                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                          <Tag className="w-4.5 h-4.5 text-purple-600" />
+                      <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                          <Tag className="w-4.5 h-4.5 text-purple-400" />
                           <span>Homologação e Parâmetros</span>
                         </h4>
 
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3.5 text-xs text-slate-350">
+                        <div className="p-4 bg-slate-950 rounded-2xl border border-slate-900 space-y-3.5 text-xs text-slate-350">
                           <div>
                             <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Período Experimental de Lojas (Dias)</span>
-                            <input type="number" defaultValue={45} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                            <input type="number" defaultValue={45} className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none focus:border-purple-600 font-mono text-xs" />
                           </div>
 
                           <div>
                             <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Mensalidade Padrão Plano PRO (€)</span>
-                            <input type="number" defaultValue={19.90} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                            <input type="number" defaultValue={19.90} className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none focus:border-purple-600 font-mono text-xs" />
                           </div>
 
                           <div>
                             <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Taxa de Comissão Marketplace (%)</span>
-                            <input type="number" defaultValue={5} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                            <input type="number" defaultValue={5} className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none focus:border-purple-600 font-mono text-xs" />
                           </div>
 
-                          <button onClick={() => setSuccessMsg("Plano de Preçários, Comissões e Períodos experimentais de novas lojas modificado com sucesso!")} className="w-full py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold rounded-xl hover:text-purple-600 transition-all uppercase tracking-wide text-[10px] cursor-pointer">
+                          <button onClick={() => setSuccessMsg("Plano de Preçários, Comissões e Períodos experimentais de novas lojas modificado com sucesso!")} className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold rounded-xl hover:text-purple-400 transition-all uppercase tracking-wide text-[10px] cursor-pointer">
                             Actualizar Parâmetros Comerciais
                           </button>
                         </div>
                       </div>
 
                       {/* Coupon Creator Interactive Console */}
-                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
-                          <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
+                      <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-300 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                          <Plus className="w-4.5 h-4.5 text-purple-400 animate-pulse" />
                           <span>Gerador de Cupões Comerciais</span>
                         </h4>
 
-                        <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                        <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-900 text-xs">
                           <div>
                             <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
                             <input
@@ -1815,7 +1708,7 @@ export default function Admin() {
                               required
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value)}
-                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
+                              className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-mono select-all focus:border-purple-500 outline-none"
                               placeholder="GLAMZOPRO45"
                             />
                           </div>
@@ -1828,7 +1721,7 @@ export default function Admin() {
                                 required
                                 value={couponDuration}
                                 onChange={(e) => setCouponDuration(Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                                className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-mono outline-none"
                               />
                             </div>
                             <div>
@@ -1838,14 +1731,14 @@ export default function Admin() {
                                 required
                                 value={couponLimit}
                                 onChange={(e) => setCouponLimit(Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                                className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-white text-xs font-mono outline-none"
                               />
                             </div>
                           </div>
 
                           <button
                             type="submit"
-                            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
+                            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
                           >
                             Criar Cupão Admin
                           </button>
@@ -1856,12 +1749,12 @@ export default function Admin() {
                           <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
                           <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
                             {couponsList.map((cp) => (
-                              <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
+                              <div key={cp.code} className="p-2.5 bg-slate-950 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-300">
                                 <div className="text-left">
-                                  <span className="text-slate-900 font-black">{cp.code}</span>
+                                  <span className="text-white font-black">{cp.code}</span>
                                   <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
                                 </div>
-                                <span className="bg-purple-950 text-purple-600 border border-purple-900 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                <span className="bg-purple-950 text-purple-400 border border-purple-900 px-1.5 py-0.5 rounded text-[10px] font-bold">
                                   {cp.uses} / {cp.max_uses}
                                 </span>
                               </div>
@@ -1880,23 +1773,23 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'support' && (
                 <div id="admin-support" className="space-y-6 animate-fade-in max-w-2xl">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Disputas Bancárias & Suporte</h3>
+                  <div className="border-b border-slate-900 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Disputas Bancárias & Suporte</h3>
                     <p className="text-xs text-slate-600 mt-0.5">Avalie reclamações de clientes da cadeira e conflitos de cobrança relacionados ao Stripe.</p>
                   </div>
 
                   {/* Disputes segment */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                      <Scale className="w-4.5 h-4.5 text-purple-600" />
+                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
+                    <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                      <Scale className="w-4.5 h-4.5 text-purple-400" />
                       <span>Processos de Disputa de Cobrança</span>
                     </h4>
 
                     <div className="space-y-3">
                       {disputes.map((ds) => (
-                        <div key={ds.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs font-semibold">
+                        <div key={ds.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs font-semibold">
                           <div className="text-left">
-                            <span className="block font-black text-slate-900">{ds.customer || ds.customer_name} vs {ds.salon || ds.business_name}</span>
+                            <span className="block font-black text-white">{ds.customer || ds.customer_name} vs {ds.salon || ds.business_name}</span>
                             <span className="text-[10px] text-slate-500 mt-0.5 block">Causa: {ds.reason} • Detalhes: {ds.description || 'Nenhum detalhe adicional'}</span>
                           </div>
 
@@ -1909,7 +1802,7 @@ export default function Admin() {
                                     setDisputes(financeService.getDisputes());
                                     setSuccessMsg("Disputa encerrada. Estorno autorizado e devolvido à conta do cliente.");
                                   }}
-                                  className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded font-mono text-[9px] cursor-pointer font-bold transition"
+                                  className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded font-mono text-[9px] cursor-pointer font-bold transition"
                                 >
                                   Reembolsar
                                 </button>
@@ -1919,14 +1812,14 @@ export default function Admin() {
                                     setDisputes(financeService.getDisputes());
                                     setSuccessMsg("Disputa rejeitada. Comissão do lojista salvaguardada legalmente.");
                                   }}
-                                  className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] cursor-pointer hover:bg-slate-700"
+                                  className="px-2 py-1 bg-slate-800 text-slate-600 rounded text-[9px] cursor-pointer hover:bg-slate-700"
                                 >
                                   Rejeitar Reivindicação
                                 </button>
                               </>
                             ) : (
-                              <span className={`text-[9px] font-mono font-bold uppercase bg-slate-50 px-2 py-0.5 rounded border ${
-                                ds.admin_decision === 'refund' || ds.status === 'refunded' ? 'text-emerald-600 border-emerald-950' : 'text-rose-400 border-rose-950'
+                              <span className={`text-[9px] font-mono font-bold uppercase bg-slate-950 px-2 py-0.5 rounded border ${
+                                ds.admin_decision === 'refund' || ds.status === 'refunded' ? 'text-emerald-400 border-emerald-950' : 'text-rose-400 border-rose-950'
                               }`}>
                                 {ds.admin_decision === 'refund' || ds.status === 'refunded' ? 'Reembolsada' : 'Rejeitada'}
                               </span>
@@ -1938,10 +1831,10 @@ export default function Admin() {
                   </div>
 
                   {/* Support Tickets queue */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
+                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                        <HelpCircle className="w-4.5 h-4.5 text-purple-600" />
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                        <HelpCircle className="w-4.5 h-4.5 text-purple-400" />
                         <span>Fila Unificada de Suporte Global</span>
                       </h4>
                       <span className="text-[10px] text-slate-500 font-bold font-mono">
@@ -1956,13 +1849,13 @@ export default function Admin() {
                           return (
                             <div 
                               key={tc.id} 
-                              className={`p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs ${
+                              className={`p-4 bg-slate-950 rounded-2xl border border-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs ${
                                 isResolved ? 'opacity-50 ring-1 ring-slate-900' : ''
                               }`}
                             >
                               <div className="space-y-1 overflow-hidden">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-[9px] font-mono text-purple-600 font-bold uppercase">
+                                  <span className="text-[9px] font-mono text-purple-400 font-bold uppercase">
                                     Ticket #{tc.id}
                                   </span>
                                   <span className="text-slate-700 font-mono">•</span>
@@ -1975,14 +1868,14 @@ export default function Admin() {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-slate-900 text-[11px] font-semibold leading-relaxed">
+                                <p className="text-white text-[11px] font-semibold leading-relaxed">
                                   {tc.description || tc.title}
                                 </p>
                               </div>
 
                               <div className="shrink-0">
                                 {isResolved ? (
-                                  <span className="text-[10px] text-emerald-600 bg-emerald-950/20 border border-emerald-950 rounded-lg px-2.5 py-1 font-mono font-bold flex items-center gap-1">
+                                  <span className="text-[10px] text-emerald-400 bg-emerald-950/20 border border-emerald-950 rounded-lg px-2.5 py-1 font-mono font-bold flex items-center gap-1">
                                     ✓ RESOLVIDO
                                   </span>
                                 ) : (
@@ -1994,7 +1887,7 @@ export default function Admin() {
                                       setTickets(prev => prev.map(t => t.id === tc.id ? { ...t, status: 'resolved' } : t));
                                       setSuccessMsg(`Ticket ${tc.id} solucionado de forma conclusiva.`);
                                     }}
-                                    className="px-3.5 py-1.5 bg-purple-650 hover:bg-purple-550 text-slate-900 rounded-lg border border-purple-900/10 text-[10px] font-mono font-black cursor-pointer transition-all duration-200"
+                                    className="px-3.5 py-1.5 bg-purple-650 hover:bg-purple-550 text-white rounded-lg border border-purple-900/10 text-[10px] font-mono font-black cursor-pointer transition-all duration-200"
                                   >
                                     Resolver
                                   </button>
@@ -2018,22 +1911,22 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'terminal' && (
                 <div id="admin-terminal" className="space-y-6 animate-fade-in max-w-2xl">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Logística de CTT Glamzo Terminal</h3>
+                  <div className="border-b border-slate-900 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Logística de CTT Glamzo Terminal</h3>
                     <p className="text-xs text-slate-600 mt-0.5">Gerencie os pedidos de tablets táteis das lojas, envie com código de rastreio e confira cauções.</p>
                   </div>
 
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
+                  <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
                     <h4 className="font-extrabold text-xs text-slate-350 uppercase tracking-widest flex items-center gap-1.5">
-                      <Smartphone className="w-5 h-5 text-purple-600 animate-pulse" />
+                      <Smartphone className="w-5 h-5 text-purple-400 animate-pulse" />
                       <span>Encomendas e Despachos de Tablets Comodato</span>
                     </h4>
 
                     <div className="space-y-3.5">
                       {terminalRequests.map((tr, idx) => (
-                        <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-910 border-slate-200 flex justify-between items-center text-xs">
+                        <div key={idx} className="p-4 bg-slate-950 rounded-2xl border border-slate-910 border-slate-900 flex justify-between items-center text-xs">
                           <div>
-                            <span className="font-black text-slate-900">{tr.salon}</span>
+                            <span className="font-black text-white">{tr.salon}</span>
                             <span className="text-[10px] text-slate-450 text-slate-600 block mt-0.5">Destino: {tr.city} • Serie: {tr.serial}</span>
                           </div>
 
@@ -2044,12 +1937,12 @@ export default function Admin() {
                                   setTerminalRequests(prev => prev.map(t => t.id === tr.id ? { ...t, status: 'shipped' } : t));
                                   setSuccessMsg("Depósito caução e registo verificado. Status de despacho alterado para 'Enviado via CTT'.");
                                 }}
-                                className="px-2.5 py-1.5 bg-purple-650 bg-purple-600 hover:bg-purple-700 font-bold text-slate-900 text-[9px] font-mono rounded uppercase cursor-pointer"
+                                className="px-2.5 py-1.5 bg-purple-650 bg-purple-600 hover:bg-purple-700 font-bold text-white text-[9px] font-mono rounded uppercase cursor-pointer"
                               >
                                 Isentar Caução & Despachar
                               </button>
                             ) : (
-                              <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-600 border border-purple-900/60 px-2 py-0.5 rounded-full">Enviado via CTT</span>
+                              <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-400 border border-purple-900/60 px-2 py-0.5 rounded-full">Enviado via CTT</span>
                             )}
                           </div>
                         </div>
@@ -2064,40 +1957,40 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'analytics' && (
                 <div id="admin-analytics" className="space-y-6 animate-fade-in">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Volume de Negócios Central (Stripe Integrado)</h3>
+                  <div className="border-b border-slate-900 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-white">Volume de Negócios Central (Stripe Integrado)</h3>
                     <p className="text-xs text-slate-600 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
                   </div>
 
                   {/* Summary aggregate cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-400 rounded-2xl flex items-center justify-center border border-purple-900">
                         <Users className="w-6 h-6" />
                       </div>
                       <div>
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Profissionais PRO</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalActiveSubscriptionsCount}</span>
+                        <span className="text-xl font-black text-white mt-1 block">{totalActiveSubscriptionsCount}</span>
                       </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-400 rounded-2xl flex items-center justify-center border border-purple-900">
                         <Coins className="w-6 h-6" />
                       </div>
                       <div>
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Volume Transacionado</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalVolumeGrossCalculated.toFixed(2)} €</span>
+                        <span className="text-xl font-black text-white mt-1 block">{totalVolumeGrossCalculated.toFixed(2)} €</span>
                       </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-400 rounded-2xl flex items-center justify-center border border-purple-900">
                         <Award className="w-6 h-6" />
                       </div>
                       <div>
                         <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Comissões Plataforma</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{(totalVolumeGrossCalculated * 0.05).toFixed(2)} €</span>
+                        <span className="text-xl font-black text-white mt-1 block">{(totalVolumeGrossCalculated * 0.05).toFixed(2)} €</span>
                       </div>
                     </div>
                   </div>
@@ -2105,8 +1998,8 @@ export default function Admin() {
                   {/* Chart aggregators */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Platform users breakdown pie chart */}
-                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Distribuição de Contas de Acesso</h4>
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Distribuição de Contas de Acesso</h4>
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <RBarChart data={[
@@ -2125,8 +2018,8 @@ export default function Admin() {
                     </div>
 
                     {/* Aggregate Platform Billing line diagram */}
-                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
+                    <div className="bg-slate-900 border border-slate-900 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
                       <div className="h-64 flex items-center justify-center">
                         {getDynamicChartData().length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
@@ -2139,9 +2032,9 @@ export default function Admin() {
                             </RLineChart>
                           </ResponsiveContainer>
                         ) : (
-                          <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-50/20">
+                          <div className="text-center p-6 border border-dashed border-slate-800 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-950/20">
                             <BarChart className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-white font-bold text-xs">Sem dados disponíveis</p>
                             <p className="text-[10px] text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
                           </div>
                         )}
@@ -2156,14 +2049,14 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'cms' && (
                 <div id="admin-cms" className="space-y-6 animate-fade-in font-sans">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="border-b border-slate-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">CMS de Gestão da Homepage</h3>
+                      <h3 className="text-xl font-extrabold tracking-tight text-white mb-1">CMS de Gestão da Homepage</h3>
                       <p className="text-xs text-slate-600 mt-0.5">Gerencie os cartões de destaques da página inicial diretamente da base de dados e com uploads otimizados.</p>
                     </div>
                     <button
                       onClick={fetchHomepageCards}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-600 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-300 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Sincronizar Cards</span>
@@ -2172,13 +2065,13 @@ export default function Admin() {
 
                   {/* Proactive Storage and avatars creation SQL query notice */}
                   <div className="p-5 bg-[#0a0515]/30 border border-slate-850 rounded-3xl space-y-3">
-                    <div className="flex items-center gap-2 text-purple-600 font-extrabold text-xs uppercase tracking-wider font-mono">
+                    <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs uppercase tracking-wider font-mono">
                       <span>🗄️ Query SQL para criar o Bucket "avatars" no Supabase Storage:</span>
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       Se você presenciar falhas de upload ou erros de "bucket não encontrado" ao definir fotos de equipe, imagens do CMS, ou avatares de perfis, copie o script abaixo e execute-o no seu painel <strong>SQL Editor</strong> do Supabase. Ele cria o bucket <code>avatars</code> e define as regras RLS corretas:
                     </p>
-                    <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed scrollbar-thin">
+                    <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed scrollbar-thin">
 {`-- 1. Criar o bucket publico "avatars" se nao existir
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -2220,7 +2113,7 @@ create policy "Permitir delete em avatars"
 
                   {cmsError && (
                     <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
-                      <div className="flex items-center gap-2 text-purple-600 font-bold">
+                      <div className="flex items-center gap-2 text-purple-400 font-bold">
                         <AlertTriangle className="w-4 h-4" />
                         <span>AVISO / INFORMAÇÃO OPERACIONAL</span>
                       </div>
@@ -2229,7 +2122,7 @@ create policy "Permitir delete em avatars"
                       {cmsError.includes("tabela 'homepage_cards'") && (
                         <div className="space-y-2 mt-4">
                           <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a tabela no Supabase editor:</span>
-                          <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
+                          <pre className="bg-slate-950 text-emerald-400 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
 {`-- Criar tabela homepage_cards para o CMS da Homepage da Glamzo
 create table if not exists public.homepage_cards (
   id uuid default gen_random_uuid() primary key,
@@ -2265,8 +2158,8 @@ create policy "Allow admins full operations on homepage_cards"
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* FORM SECTION (5 cols) */}
-                    <form onSubmit={handleSaveCmsCard} className="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider border-b border-slate-850 pb-3 mb-1 font-mono">
+                    <form onSubmit={handleSaveCmsCard} className="lg:col-span-5 bg-slate-900 border border-slate-900 rounded-3xl p-5 sm:p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-slate-850 pb-3 mb-1 font-mono">
                         {editingCardId ? "📝 Editar Cartão de Destaque" : "✨ Novo Cartão de Destaque"}
                       </h4>
 
@@ -2282,11 +2175,11 @@ create policy "Allow admins full operations on homepage_cards"
                               setCmsEmoji(matched.emoji);
                             }
                           }}
-                          className="w-full bg-[#0a0515] text-slate-700 border border-slate-200 px-3 py-3 rounded-xl text-xs focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                          className="w-full bg-[#0a0515] text-slate-200 border border-slate-800 px-3 py-3 rounded-xl text-xs focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
                         >
                           <option value="" className="text-slate-650">-- Selecione uma Categoria Alvo --</option>
                           {MAIN_CATEGORIES.map((cat) => (
-                            <option key={cat.name} value={cat.name} className="bg-white text-slate-150">
+                            <option key={cat.name} value={cat.name} className="bg-slate-900 text-slate-150">
                               {cat.emoji} {cat.name}
                             </option>
                           ))}
@@ -2301,7 +2194,7 @@ create policy "Allow admins full operations on homepage_cards"
                             value={cmsEmoji}
                             onChange={(e) => setCmsEmoji(e.target.value)}
                             placeholder="Ex: 💇, 💅, ✨"
-                            className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2.5 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-medium"
+                            className="w-full bg-[#0a0515] border border-slate-800 px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500 font-medium"
                           />
                         </div>
                         <div className="sm:col-span-4">
@@ -2310,7 +2203,7 @@ create policy "Allow admins full operations on homepage_cards"
                             type="number"
                             value={cmsDisplayOrder}
                             onChange={(e) => setCmsDisplayOrder(Number(e.target.value))}
-                            className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2.5 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-mono font-bold"
+                            className="w-full bg-[#0a0515] border border-slate-800 px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500 font-mono font-bold"
                           />
                         </div>
                       </div>
@@ -2323,7 +2216,7 @@ create policy "Allow admins full operations on homepage_cards"
                           value={cmsSubtitle}
                           onChange={(e) => setCmsSubtitle(e.target.value)}
                           placeholder="Mais de 30 salões recomendados com agendamento instantâneo."
-                          className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2.5 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-medium placeholder-slate-600 resize-none"
+                          className="w-full bg-[#0a0515] border border-slate-800 px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500 font-medium placeholder-slate-600 resize-none"
                         />
                       </div>
 
@@ -2341,7 +2234,7 @@ create policy "Allow admins full operations on homepage_cards"
                           />
                           <label
                             htmlFor="cms-upload-input"
-                            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-950/40 hover:bg-purple-900/40 border border-purple-900/60 rounded-xl cursor-pointer text-purple-700 text-xs font-bold transition-all text-center"
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-950/40 hover:bg-purple-900/40 border border-purple-900/60 rounded-xl cursor-pointer text-purple-300 text-xs font-bold transition-all text-center"
                           >
                             {isUploadingCmsImage ? (
                               <>
@@ -2363,21 +2256,21 @@ create policy "Allow admins full operations on homepage_cards"
                             value={cmsImageUrl}
                             onChange={(e) => setCmsImageUrl(e.target.value)}
                             placeholder="Copiar URL gerada ou colar URL de imagem..."
-                            className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2 rounded-xl text-[11px] text-slate-900 focus:outline-none focus:border-purple-500"
+                            className="w-full bg-[#0a0515] border border-slate-800 px-3 py-2 rounded-xl text-[11px] text-white focus:outline-none focus:border-purple-500"
                           />
                         </div>
                       </div>
 
                       {/* Preview Image Block */}
                       {cmsImageUrl && (
-                        <div className="h-28 rounded-2xl overflow-hidden border border-slate-200 relative bg-slate-50">
+                        <div className="h-28 rounded-2xl overflow-hidden border border-slate-800 relative bg-slate-950">
                           <img
                             src={cmsImageUrl}
                             alt="CMS Preview"
                             className="w-full h-full object-cover opacity-80"
                             referrerPolicy="no-referrer"
                           />
-                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[9px] text-purple-700 font-bold uppercase font-mono">
+                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[9px] text-purple-300 font-bold uppercase font-mono">
                             Preview
                           </div>
                         </div>
@@ -2389,9 +2282,9 @@ create policy "Allow admins full operations on homepage_cards"
                           id="cms-active-checkbox"
                           checked={cmsActive}
                           onChange={(e) => setCmsActive(e.target.checked)}
-                          className="rounded bg-slate-50 border-slate-805 border-slate-200 text-purple-600 focus:ring-purple-500 w-4.5 h-4.5 cursor-pointer"
+                          className="rounded bg-slate-950 border-slate-805 border-slate-800 text-purple-600 focus:ring-purple-500 w-4.5 h-4.5 cursor-pointer"
                         />
-                        <label htmlFor="cms-active-checkbox" className="text-xs text-slate-600 font-bold cursor-pointer select-none">
+                        <label htmlFor="cms-active-checkbox" className="text-xs text-slate-300 font-bold cursor-pointer select-none">
                           Card Ativo na Homepage
                         </label>
                       </div>
@@ -2399,7 +2292,7 @@ create policy "Allow admins full operations on homepage_cards"
                       <div className="pt-3 flex gap-3">
                         <button
                           type="submit"
-                          className="flex-1 bg-purple-600 hover:bg-purple-500 text-slate-900 font-bold py-2.5 px-4 rounded-xl text-xs transition-all cursor-pointer shadow hover:scale-[1.01]"
+                          className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all cursor-pointer shadow hover:scale-[1.01]"
                         >
                           {editingCardId ? "Gravar Edição" : "Adicionar Card"}
                         </button>
@@ -2415,7 +2308,7 @@ create policy "Allow admins full operations on homepage_cards"
                               setCmsActive(true);
                               setCmsEmoji('✨');
                             }}
-                            className="px-3 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
+                            className="px-3 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
                           >
                             Cancelar
                           </button>
@@ -2424,12 +2317,12 @@ create policy "Allow admins full operations on homepage_cards"
                     </form>
 
                     {/* CARDS LIST SECTION (7 cols) */}
-                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
+                    <div className="lg:col-span-7 bg-slate-900 border border-slate-900 rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-center justify-between border-b border-slate-850 pb-3">
-                        <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">
+                        <h4 className="font-extrabold text-xs text-white uppercase tracking-wider font-mono">
                           🗄️ Cartões Ativos da Homepage ({homepageCards.length})
                         </h4>
-                        <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-600 border border-purple-900/60 px-2 py-0.5 rounded-full font-bold">
+                        <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-400 border border-purple-900/60 px-2 py-0.5 rounded-full font-bold">
                           Total {homepageCards.length}
                         </span>
                       </div>
@@ -2440,7 +2333,7 @@ create policy "Allow admins full operations on homepage_cards"
                           <span className="text-[10px] font-mono">A interrogar a tabela homepage_cards...</span>
                         </div>
                       ) : homepageCards.length === 0 ? (
-                        <div className="p-8 text-center bg-[#0a0515]/30 rounded-2xl border border-dashed border-slate-200">
+                        <div className="p-8 text-center bg-[#0a0515]/30 rounded-2xl border border-dashed border-slate-800">
                           <HelpCircle className="w-8 h-8 text-slate-705 text-slate-700 mx-auto mb-2" />
                           <p className="text-slate-600 font-medium">Nenhum cartão dinâmico encontrado na base de dados.</p>
                           <p className="text-slate-600 text-[11px] mt-1">A página inicial exibirá as categorias estáticas como fallback seguro de performance.</p>
@@ -2448,31 +2341,31 @@ create policy "Allow admins full operations on homepage_cards"
                       ) : (
                         <div className="space-y-3.5">
                           {homepageCards.map((card, idx) => (
-                            <div key={card.id || idx} className="p-3 bg-[#0a0515]/60 border border-slate-200 rounded-2xl flex items-center justify-between gap-4">
+                            <div key={card.id || idx} className="p-3 bg-[#0a0515]/60 border border-slate-800 rounded-2xl flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3.5 min-w-0">
-                                <div className="w-16 h-12 rounded-xl overflow-hidden relative shrink-0 bg-slate-50 border border-slate-200">
+                                <div className="w-16 h-12 rounded-xl overflow-hidden relative shrink-0 bg-slate-950 border border-slate-800">
                                   <img
                                     src={card.image_url}
                                     alt={card.title}
                                     className="w-full h-full object-cover"
                                     referrerPolicy="no-referrer"
                                   />
-                                  <span className="absolute bottom-1 right-1 text-xs bg-black/60 px-1 rounded text-slate-900 leading-none">
+                                  <span className="absolute bottom-1 right-1 text-xs bg-black/60 px-1 rounded text-white leading-none">
                                     {card.emoji || '✨'}
                                   </span>
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-extrabold text-slate-900 text-xs truncate uppercase tracking-tight">{card.title}</span>
+                                    <span className="font-extrabold text-white text-xs truncate uppercase tracking-tight">{card.title}</span>
                                     {!card.active && (
-                                      <span className="px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 text-[8px] text-slate-500 uppercase font-mono font-bold">
+                                      <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[8px] text-slate-500 uppercase font-mono font-bold">
                                         Inativo
                                       </span>
                                     )}
                                   </div>
                                   <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 leading-normal">{card.subtitle}</p>
                                   <div className="flex items-center gap-3 text-[9px] font-mono text-slate-500 mt-1 align-middle">
-                                    <span className="text-purple-600 font-bold">Ordem: {card.display_order}</span>
+                                    <span className="text-purple-400 font-bold">Ordem: {card.display_order}</span>
                                     <span>•</span>
                                     <span className="text-slate-500">Última edição: {new Date(card.updated_at || card.created_at).toLocaleDateString('pt-PT')}</span>
                                   </div>
@@ -2486,7 +2379,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     disabled={idx === 0}
                                     type="button"
                                     title="Subir Ordem"
-                                    className="p-1 rounded bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 disabled:opacity-20 cursor-pointer text-[10px]"
+                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▲
                                   </button>
@@ -2495,7 +2388,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     disabled={idx === homepageCards.length - 1}
                                     type="button"
                                     title="Descer Ordem"
-                                    className="p-1 rounded bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 disabled:opacity-20 cursor-pointer text-[10px]"
+                                    className="p-1 rounded bg-slate-950 hover:bg-slate-800 text-slate-600 hover:text-white disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▼
                                   </button>
@@ -2505,7 +2398,7 @@ create policy "Allow admins full operations on homepage_cards"
                                   <button
                                     onClick={() => handleEditCmsCard(card)}
                                     type="button"
-                                    className="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-900/40 text-purple-700 text-[10px] font-bold cursor-pointer transition-all"
+                                    className="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-900/40 text-purple-300 text-[10px] font-bold cursor-pointer transition-all"
                                     title="Editar Cartão"
                                   >
                                     Editar
@@ -2513,7 +2406,7 @@ create policy "Allow admins full operations on homepage_cards"
                                   <button
                                     onClick={() => handleDeleteCmsCard(card.id)}
                                     type="button"
-                                    className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-850 border border-slate-200 text-red-400 hover:text-red-300 text-xs font-bold cursor-pointer transition-all"
+                                    className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-red-400 hover:text-red-300 text-xs font-bold cursor-pointer transition-all"
                                     title="Eliminar Cartão"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -2529,178 +2422,6 @@ create policy "Allow admins full operations on homepage_cards"
                   </div>
                 </div>
               )}
-
-              {/* ==================================================== */}
-              {/* SECTION 8: PLATFORM PAGES CMS                      */}
-              {/* ==================================================== */}
-              {activeTab === 'pages' && (
-                <div id="admin-pages" className="space-y-6 animate-fade-in font-sans">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">Páginas da Plataforma</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Edite os termos legais, políticas de privacidade e informações de apoio.</p>
-                    </div>
-                    <button
-                      onClick={fetchPlatformPages}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-600 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Sincronizar</span>
-                    </button>
-                  </div>
-
-                  {pagesError && (
-                    <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
-                      <div className="flex items-center gap-2 text-purple-600 font-bold">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>AVISO / INFORMAÇÃO OPERACIONAL</span>
-                      </div>
-                      <p>{pagesError}</p>
-                      
-                      {pagesError.includes("platform_pages") && (
-                        <div className="space-y-2 mt-4">
-                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a funcionalidade CMS e RPC Apagar Contas:</span>
-                          <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
-{`-- 1. CMS de Plataforma
-create table if not exists public.platform_pages (
-  slug text primary key,
-  title text not null,
-  content text not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table public.platform_pages enable row level security;
-
-create policy "Allow public read access on platform_pages" 
-  on public.platform_pages for select using (true);
-
-create policy "Allow admins full operations on platform_pages" 
-  on public.platform_pages for all 
-  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')) 
-  with check (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
-
--- 2. Sistema Definitivo de Remoção de Uso (auth.users via backend admin)
-create or replace function public.admin_delete_user(target_user_id uuid)
-returns void
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
-    raise exception 'Unauthorised';
-  end if;
-
-  delete from public.businesses where owner_id = target_user_id;
-  delete from public.profiles where id = target_user_id;
-  delete from auth.users where id = target_user_id;
-end;
-$$;`}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* PAGES LISTING */}
-                    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 space-y-4">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-850 pb-3">Páginas de Sistema</h4>
-                      
-                      <div className="flex flex-col gap-2">
-                        {[
-                          { id: 'termos-e-condicoes', name: 'Termos e Condições' },
-                          { id: 'politica-de-privacidade', name: 'Política de Privacidade' },
-                          { id: 'politica-de-cookies', name: 'Política de Cookies' },
-                          { id: 'politica-de-cancelamentos', name: 'Can. e Reembolsos' },
-                          { id: 'politica-de-pagamentos', name: 'Política de Pagamentos' },
-                          { id: 'seguranca-e-protecao-de-dados', name: 'Segurança / Dados' },
-                          { id: 'faq-cliente', name: 'FAQ do Cliente' },
-                          { id: 'faq-parceiro', name: 'FAQ do Parceiro' },
-                          { id: 'sobre-nos', name: 'Sobre a Glamzo' }
-                        ].map(page => {
-                          const existingData = platformPages.find(p => p.slug === page.id);
-                          return (
-                            <button
-                              key={page.id}
-                              onClick={() => {
-                                setEditingPageSlug(page.id);
-                                setPageDraftTitle(existingData?.title || page.name);
-                                setPageDraftContent(existingData?.content || PAGE_FALLBACKS[page.id] || '');
-                              }}
-                              className={`text-left px-4 py-3 rounded-xl text-xs font-semibold transition-all ${editingPageSlug === page.id ? 'bg-purple-900/40 text-purple-200 border border-purple-800' : 'bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent'}`}
-                            >
-                              <div className="flex justify-between items-center">
-                                <span>{page.name}</span>
-                                {existingData && <Check className="w-3.5 h-3.5 text-emerald-500" />}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* EDITOR */}
-                    {editingPageSlug ? (
-                      <div className="lg:col-span-8 bg-[#0a0515]/30 border border-slate-850 rounded-3xl p-5 sm:p-6 shadow-2xl">
-                        <form onSubmit={handleSavePage} className="space-y-5">
-                          <div className="flex justify-between items-end">
-                            <h4 className="font-extrabold text-xs text-purple-600 uppercase tracking-wider font-mono">Editor de Markup da Página</h4>
-                            <span className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500 font-mono">/{editingPageSlug}</span>
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Título da Página (H1)</label>
-                            <input
-                              type="text"
-                              value={pageDraftTitle}
-                              onChange={e => setPageDraftTitle(e.target.value)}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors placeholder:text-slate-700"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between items-end mb-1.5">
-                              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Conteúdo (Suporta HTML Básico)</label>
-                            </div>
-                            <textarea
-                              value={pageDraftContent}
-                              onChange={e => setPageDraftContent(e.target.value)}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors placeholder:text-slate-700 font-mono h-[400px] resize-y leading-relaxed"
-                              required
-                              placeholder="<p>Escreva aqui o seu texto legal ou de ajuda...</p>\n<h2>Títulos 2</h2>"
-                            />
-                            <p className="text-[10px] text-slate-600 mt-2">Dica: Use &lt;h2&gt; ou &lt;h3&gt; para cabeçalhos e &lt;p&gt; para parágrafos. Tags como &lt;strong&gt; e &lt;ul&gt; &lt;li&gt; também são seguras.</p>
-                          </div>
-
-                          <div className="flex items-center gap-3 pt-2">
-                            <button
-                              type="submit"
-                              disabled={loading}
-                              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
-                            >
-                              {loading ? 'A Gravar...' : 'Gravar Alterações'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingPageSlug(null)}
-                              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
-                            >
-                              Fechar
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    ) : (
-                      <div className="lg:col-span-8 bg-white/30 border border-slate-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
-                        <FileText className="w-12 h-12 text-slate-800 mb-4" />
-                        <h4 className="text-slate-500 font-bold mb-2">Editor de Conteúdo Estático</h4>
-                        <p className="text-slate-600 text-xs">Selecione uma página no painel lateral à esquerda para iniciar a edição do seu conteúdo em direto na plataforma.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </>
           )}
 
@@ -2713,13 +2434,13 @@ $$;`}
           {/* Backdrop screen blur */}
           <div 
             onClick={() => setSelectedSalon(null)} 
-            className="fixed inset-0 bg-slate-50/80 backdrop-blur-xs transition-opacity cursor-pointer" 
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity cursor-pointer" 
           />
           
-          <div className="relative bg-white border border-slate-200 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden text-xs max-h-[90vh] flex flex-col animate-scale-up">
+          <div className="relative bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden text-xs max-h-[90vh] flex flex-col animate-scale-up">
             
             {/* Cover header block */}
-            <div className="relative h-40 bg-slate-50 flex-shrink-0">
+            <div className="relative h-40 bg-slate-950 flex-shrink-0">
               {selectedSalon.cover_url ? (
                 <img 
                   referrerPolicy="no-referrer"
@@ -2728,20 +2449,20 @@ $$;`}
                   className="w-full h-full object-cover opacity-60" 
                 />
               ) : (
-                <div className="w-full h-full bg-slate-50 opacity-80" />
+                <div className="w-full h-full bg-slate-950 opacity-80" />
               )}
               
               {/* Close Button badge */}
               <button 
                 onClick={() => setSelectedSalon(null)}
-                className="absolute top-4 right-4 bg-slate-50/80 hover:bg-white border border-slate-850 p-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all cursor-pointer"
+                className="absolute top-4 right-4 bg-slate-950/80 hover:bg-slate-900 border border-slate-850 p-2 rounded-xl text-slate-600 hover:text-white transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
               
               {/* Logo & Headline */}
               <div className="absolute bottom-4 left-6 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-900 text-xl font-bold">
+                <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-slate-800 overflow-hidden shrink-0 flex items-center justify-center text-white text-xl font-bold">
                   {selectedSalon.logo_url ? (
                     <img 
                       referrerPolicy="no-referrer"
@@ -2755,12 +2476,12 @@ $$;`}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-slate-900">{selectedSalon.name}</h3>
-                    <span className="px-2 py-0.5 rounded bg-purple-950 border border-purple-900/40 text-purple-600 font-mono text-[9px] uppercase font-bold">
+                    <h3 className="text-lg font-black text-white">{selectedSalon.name}</h3>
+                    <span className="px-2 py-0.5 rounded bg-purple-950 border border-purple-900/40 text-purple-400 font-mono text-[9px] uppercase font-bold">
                       ID: {selectedSalon.id.substring(0, 8)}
                     </span>
                   </div>
-                  <p className="text-purple-600 font-bold mt-1 uppercase tracking-wider text-[10px]">{selectedSalon.category}</p>
+                  <p className="text-purple-400 font-bold mt-1 uppercase tracking-wider text-[10px]">{selectedSalon.category}</p>
                 </div>
               </div>
             </div>
@@ -2772,44 +2493,44 @@ $$;`}
               <div className="lg:col-span-5 space-y-6">
                 
                 {/* Description card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2 mb-2.5">
+                <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2 mb-2.5">
                     Descrição da Marca
                   </h4>
-                  <p className="text-slate-600 leading-normal whitespace-pre-line text-[11px]">
+                  <p className="text-slate-300 leading-normal whitespace-pre-line text-[11px]">
                     {selectedSalon.description || 'Nenhuma descrição inserida pelo salão parceiro.'}
                   </p>
                 </div>
 
                 {/* Contacts & Links card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl space-y-3">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2 mb-1">
+                <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2 mb-1">
                     Sistemas de Contacto & Redes
                   </h4>
                   
                   <div className="grid grid-cols-1 gap-2.5">
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Telefone Principal</span>
-                      <span className="text-slate-900 font-mono font-bold">{selectedSalon.phone || '-'}</span>
+                      <span className="text-white font-mono font-bold">{selectedSalon.phone || '-'}</span>
                     </div>
 
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Correio Eletrónico</span>
-                      <span className="text-slate-900 font-mono">{selectedSalon.email || 'Não configurado'}</span>
+                      <span className="text-white font-mono">{selectedSalon.email || 'Não configurado'}</span>
                     </div>
 
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Donatário / Owner ID</span>
-                      <span className="text-slate-900 font-mono select-all text-[10px] text-slate-600">{selectedSalon.owner_id}</span>
+                      <span className="text-white font-mono select-all text-[10px] text-slate-600">{selectedSalon.owner_id}</span>
                     </div>
 
-                    <div className="border-t border-slate-200 pt-2.5 grid grid-cols-2 gap-2">
+                    <div className="border-t border-slate-900 pt-2.5 grid grid-cols-2 gap-2">
                       {selectedSalon.whatsapp && (
                         <a 
                           href={`https://wa.me/${selectedSalon.whatsapp.replace(/[^0-9]/g, '')}`} 
                           target="_blank" 
                           rel="noreferrer" 
-                          className="p-2 bg-white hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block"
+                          className="p-2 bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 rounded-xl font-bold text-center block"
                         >
                           💬 WhatsApp
                         </a>
@@ -2820,7 +2541,7 @@ $$;`}
                           href={selectedSalon.instagram} 
                           target="_blank" 
                           rel="noreferrer" 
-                          className="p-2 bg-white hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block truncate"
+                          className="p-2 bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 rounded-xl font-bold text-center block truncate"
                         >
                           📸 Instagram
                         </a>
@@ -2831,7 +2552,7 @@ $$;`}
                           href={selectedSalon.website} 
                           target="_blank" 
                           rel="noreferrer" 
-                          className="p-2 bg-slate-905 hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block col-span-2 truncate"
+                          className="p-2 bg-slate-905 hover:bg-slate-850 hover:text-white border border-slate-800 rounded-xl font-bold text-center block col-span-2 truncate"
                         >
                           🌐 Website Institucional
                         </a>
@@ -2841,26 +2562,26 @@ $$;`}
                 </div>
 
                 {/* Geography Map details card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl space-y-2.5">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2">
+                <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-2.5">
+                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-900 pb-2">
                     Localização & Morada Real
                   </h4>
                   <div>
                     <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Morada Física Completa</span>
-                    <span className="text-slate-900 mt-1 block leading-normal">{selectedSalon.address}</span>
+                    <span className="text-white mt-1 block leading-normal">{selectedSalon.address}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-2">
+                  <div className="grid grid-cols-3 gap-2 border-t border-slate-900 pt-2">
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Concelho / Cidade</span>
-                      <span className="text-slate-900 font-bold">{selectedSalon.city}</span>
+                      <span className="text-white font-bold">{selectedSalon.city}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Distrito</span>
-                      <span className="text-slate-900 font-bold">{selectedSalon.district}</span>
+                      <span className="text-white font-bold">{selectedSalon.district}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Código Postal</span>
-                      <span className="text-slate-900 font-mono">{selectedSalon.postal_code || '-'}</span>
+                      <span className="text-white font-mono">{selectedSalon.postal_code || '-'}</span>
                     </div>
                   </div>
                 </div>
@@ -2878,8 +2599,8 @@ $$;`}
                 ) : (
                   <>
                     {/* Catalog: Services List block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
+                    <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Catálogo de Serviços Registados ({selectedSalonServices.length})
                       </h4>
                       
@@ -2887,7 +2608,7 @@ $$;`}
                         {selectedSalonServices.map((srv) => (
                           <div key={srv.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
                             <div>
-                              <span className="font-black text-slate-900 block">{srv.name}</span>
+                              <span className="font-black text-white block">{srv.name}</span>
                               <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-600">
                                 <span>⏱️ {srv.duration_minutes} min</span>
                                 {srv.category?.name && (
@@ -2898,7 +2619,7 @@ $$;`}
                                 )}
                               </div>
                             </div>
-                            <span className="font-mono font-black text-purple-600">{srv.price.toFixed(2)} €</span>
+                            <span className="font-mono font-black text-purple-400">{srv.price.toFixed(2)} €</span>
                           </div>
                         ))}
 
@@ -2909,15 +2630,15 @@ $$;`}
                     </div>
 
                     {/* Team Staff List block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
+                    <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Membros da Equipa Cadastrados ({selectedSalonStaff.length})
                       </h4>
                       
                       <div className="mt-3 divide-y divide-slate-100/5 max-h-36 overflow-y-auto scrollbar-thin">
                         {selectedSalonStaff.map((stf) => (
                           <div key={stf.id} className="py-2.5 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 text-slate-600 font-mono text-[10px] font-bold">
+                            <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center shrink-0 text-slate-300 font-mono text-[10px] font-bold">
                               {stf.avatar_url ? (
                                 <img 
                                   referrerPolicy="no-referrer"
@@ -2930,10 +2651,10 @@ $$;`}
                               )}
                             </div>
                             <div>
-                              <span className="font-black text-slate-900 block">{stf.full_name}</span>
+                              <span className="font-black text-white block">{stf.full_name}</span>
                               <span className="text-[10px] text-slate-500 block font-bold uppercase mt-0.5">{stf.role_title || 'Colaborador Profissional'}</span>
                             </div>
-                            <span className="ml-auto font-mono text-[8px] tracking-wider uppercase bg-emerald-950/40 border border-emerald-900 text-emerald-600 px-1.5 py-0.5 rounded-full">
+                            <span className="ml-auto font-mono text-[8px] tracking-wider uppercase bg-emerald-950/40 border border-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full">
                               Activo
                             </span>
                           </div>
@@ -2946,8 +2667,8 @@ $$;`}
                     </div>
 
                     {/* Operating hours list block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
+                    <div className="bg-slate-950 border border-slate-850 p-5 rounded-3xl">
+                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-900 pb-2.5">
                         Horário de Funcionamento Cadastrado
                       </h4>
                       
@@ -2958,7 +2679,7 @@ $$;`}
                             const matchHour = selectedSalonHours.find(h => h.weekday === dayIdx);
                             const isClosed = !matchHour || matchHour.is_closed;
                             return (
-                              <div key={dayIdx} className="p-2 bg-white/40 border border-slate-200 rounded-xl flex flex-col items-center">
+                              <div key={dayIdx} className="p-2 bg-slate-900/40 border border-slate-900 rounded-xl flex flex-col items-center">
                                 <span className="text-[9px] text-slate-500 uppercase font-black font-mono">{weekdaysName[dayIdx]}</span>
                                 {isClosed ? (
                                   <span className="text-[10px] text-rose-500 font-bold mt-1 uppercase">Fechado</span>
@@ -2981,7 +2702,7 @@ $$;`}
             </div>
 
             {/* Modal Bottom control panel */}
-            <div className="bg-slate-50 px-6 py-4.5 border-t border-slate-850 flex items-center justify-between flex-shrink-0">
+            <div className="bg-slate-950 px-6 py-4.5 border-t border-slate-850 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${selectedSalon.is_verified ? 'bg-purple-500' : 'bg-slate-600'}`} />
                 <span className="text-[11px] text-slate-600 font-bold">
@@ -2992,7 +2713,7 @@ $$;`}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleStartEditSalon(selectedSalon)}
-                  className="px-4.5 py-2.5 bg-indigo-950/45 hover:bg-indigo-900/45 border border-indigo-900/40 text-indigo-300 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5"
+                  className="px-4.5 py-2.5 bg-indigo-950/45 hover:bg-indigo-900/45 border border-indigo-900/40 text-indigo-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   <span>Editar Loja</span>
@@ -3001,22 +2722,22 @@ $$;`}
                   onClick={() => handleDeleteSalon(selectedSalon.id)}
                   className="px-4.5 py-2.5 bg-rose-950/35 hover:bg-rose-900/45 border border-rose-950 text-rose-455 hover:text-rose-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <Trash2 className="w-3.5 h-3.5 text-rose-450" />
                   <span>Eliminar Loja</span>
                 </button>
                 <button
                   onClick={() => handleToggleSalonVerification(selectedSalon.id, selectedSalon.is_verified)}
                   className={`px-4.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     selectedSalon.is_verified 
-                      ? 'bg-white hover:bg-slate-850 text-slate-600 border border-slate-200' 
-                      : 'bg-purple-600 hover:bg-purple-700 text-slate-900'
+                      ? 'bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800' 
+                      : 'bg-purple-600 hover:bg-purple-700 text-white'
                   }`}
                 >
                   {selectedSalon.is_verified ? 'Retirar Homologação' : 'Homologar & Verificar Canal'}
                 </button>
                 <button 
                   onClick={() => setSelectedSalon(null)}
-                  className="px-4.5 py-2.5 bg-white hover:bg-slate-850 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-[10px] font-mono tracking-wider font-extrabold uppercase transition-all cursor-pointer"
+                  className="px-4.5 py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-600 hover:text-white rounded-xl text-[10px] font-mono tracking-wider font-extrabold uppercase transition-all cursor-pointer"
                 >
                   Fechar
                 </button>
@@ -3030,17 +2751,17 @@ $$;`}
       {/* 4. PREMIUM USER EDITING DIALOG MODAL */}
       {editingUser && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white border border-purple-200 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-scale-up space-y-4">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-scale-up space-y-4">
             <button 
               onClick={() => setEditingUser(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
             
-            <div className="border-b border-slate-200 pb-3">
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-purple-600" />
+            <div className="border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-purple-400" />
                 <span>Editar Utilizador {editingUser.email?.split('@')[0]}</span>
               </h3>
               <p className="text-[11px] text-slate-600 mt-0.5">Modifique o cadastro base de utilizador na base de dados.</p>
@@ -3053,7 +2774,7 @@ $$;`}
                   type="text" 
                   value={editUserName}
                   onChange={e => setEditUserName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650"
+                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650"
                   required
                 />
               </div>
@@ -3064,7 +2785,7 @@ $$;`}
                   type="email" 
                   value={editUserEmail}
                   onChange={e => setEditUserEmail(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 font-mono"
+                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 font-mono"
                   required
                 />
               </div>
@@ -3074,7 +2795,7 @@ $$;`}
                 <select aria-label="Selecione uma opção" 
                   value={editUserRole}
                   onChange={e => setEditUserRole(e.target.value as any)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 cursor-pointer"
                 >
                   <option value="customer">Customer (Cliente Comum)</option>
                   <option value="business">Business (Proprietário de Salão)</option>
@@ -3085,14 +2806,14 @@ $$;`}
               <div className="flex gap-3 pt-3">
                 <button 
                   type="submit" 
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Salvar Alterações
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setEditingUser(null)}
-                  className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-slate-950 text-slate-450 hover:text-white py-3 border border-slate-800 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Cancelar
                 </button>
@@ -3105,16 +2826,16 @@ $$;`}
       {/* 5. PREMIUM SALON EDITING DIALOG MODAL */}
       {editingSalon && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white border border-purple-200 rounded-3xl w-full max-w-lg p-6 relative shadow-2xl animate-scale-up space-y-4 my-8">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg p-6 relative shadow-2xl animate-scale-up space-y-4 my-8">
             <button 
               onClick={() => setEditingSalon(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
             
-            <div className="border-b border-slate-200 pb-3">
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+            <div className="border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
                 <Settings className="w-5 h-5 text-indigo-400" />
                 <span>Editar Estabelecimento: {editingSalon.name}</span>
               </h3>
@@ -3129,7 +2850,7 @@ $$;`}
                     type="text" 
                     value={editSalonName}
                     onChange={e => setEditSalonName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650"
                     required
                   />
                 </div>
@@ -3138,7 +2859,7 @@ $$;`}
                   <select aria-label="Selecione uma opção" 
                     value={editSalonCategory}
                     onChange={e => setEditSalonCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 cursor-pointer"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 cursor-pointer"
                   >
                     <option value="Cabelo">Cabelo (Cabeleireiro, Barbearia)</option>
                     <option value="Unhas">Unhas (Manicure, Pedicure)</option>
@@ -3157,7 +2878,7 @@ $$;`}
                     type="text" 
                     value={editSalonPhone}
                     onChange={e => setEditSalonPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-655 font-mono"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-655 font-mono"
                     required
                   />
                 </div>
@@ -3168,7 +2889,7 @@ $$;`}
                     type="text" 
                     value={editSalonDistrict}
                     onChange={e => setEditSalonDistrict(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-655"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-655"
                     placeholder="Ex: Lisboa, Porto, Braga..."
                     required
                   />
@@ -3182,7 +2903,7 @@ $$;`}
                     type="text" 
                     value={editSalonCity}
                     onChange={e => setEditSalonCity(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650"
                     required
                   />
                 </div>
@@ -3193,7 +2914,7 @@ $$;`}
                     type="text" 
                     value={editSalonAddress}
                     onChange={e => setEditSalonAddress(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650"
                     required
                   />
                 </div>
@@ -3204,7 +2925,7 @@ $$;`}
                 <textarea 
                   value={editSalonDescription}
                   onChange={e => setEditSalonDescription(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 h-24 resize-none font-sans"
+                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-purple-650 h-24 resize-none font-sans"
                   placeholder="Introduzir slogan ou breve texto explicativo..."
                 />
               </div>
@@ -3212,14 +2933,14 @@ $$;`}
               <div className="flex gap-3 pt-3">
                 <button 
                   type="submit" 
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Salvar Loja
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setEditingSalon(null)}
-                  className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-slate-950 text-slate-450 hover:text-white py-3 border border-slate-800 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Cancelar
                 </button>
@@ -3232,14 +2953,14 @@ $$;`}
       {/* DOUBLE CONFIRMATION PARTNER ACCOUNT DELETION MODAL */}
       {deleteAccountModalOpen && deleteAccountTarget && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-rose-600/30 rounded-3xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+          <div className="bg-slate-900 border-2 border-rose-600/30 rounded-3xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
             <button 
               onClick={() => {
                 setDeleteAccountModalOpen(false);
                 setDeleteAccountTarget(null);
                 setDeleteAccountDoubleConfirmText('');
               }}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-600 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -3249,8 +2970,8 @@ $$;`}
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-rose-500 uppercase tracking-wider">Confirmação de Segurança</h3>
-              <p className="text-xs text-slate-600">
-                Está prestes a eliminar DEFINITIVAMENTE a conta do parceiro <strong className="text-slate-900">{deleteAccountTarget.name}</strong>.
+              <p className="text-xs text-slate-300">
+                Está prestes a eliminar DEFINITIVAMENTE a conta do parceiro <strong className="text-white">{deleteAccountTarget.name}</strong>.
               </p>
               <div className="p-3 bg-rose-950/20 border border-rose-900/30 rounded-xl text-left">
                 <p className="text-[10px] text-rose-300 font-bold leading-relaxed">
@@ -3276,7 +2997,7 @@ $$;`}
                 value={deleteAccountDoubleConfirmText}
                 onChange={(e) => setDeleteAccountDoubleConfirmText(e.target.value)}
                 placeholder="Escreva ELIMINAR para prosseguir"
-                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-rose-600 text-center font-mono placeholder-slate-650"
+                className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-white outline-none focus:border-rose-600 text-center font-mono placeholder-slate-650"
               />
 
               <div className="flex gap-3 pt-1">
@@ -3284,7 +3005,7 @@ $$;`}
                   type="button"
                   disabled={deleteAccountDoubleConfirmText !== 'ELIMINAR'}
                   onClick={() => executeCompleteCascadeAccountDeletion(deleteAccountTarget.ownerId, deleteAccountTarget.businessId)}
-                  className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-20 disabled:hover:bg-rose-600 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-20 disabled:hover:bg-rose-600 text-white font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Confirmar Eliminação
                 </button>
@@ -3295,7 +3016,7 @@ $$;`}
                     setDeleteAccountTarget(null);
                     setDeleteAccountDoubleConfirmText('');
                   }}
-                  className="flex-1 bg-slate-50 text-slate-600 hover:text-slate-900 py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
+                  className="flex-1 bg-slate-950 text-slate-600 hover:text-white py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
                   Cancelar
                 </button>
