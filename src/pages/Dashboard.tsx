@@ -395,9 +395,9 @@ export default function Dashboard() {
 
       if (bErr) throw bErr;
 
-      if (!bData) {
-        // Business profile does not exist yet: prompt onboarding redirections
-        navigate('/onboarding');
+      if (!bData || !bData.setup_completed) {
+        // Business profile does not exist or setup is incomplete: prompt wizard redirection
+        navigate('/setup');
         return;
       }
       setBusiness(bData);

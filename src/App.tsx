@@ -15,12 +15,12 @@ const Signup = React.lazy(() => import('./pages/Signup'));
 const Account = React.lazy(() => import('./pages/Account'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
-const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Explore = React.lazy(() => import('./pages/Explore'));
 const BusinessDetail = React.lazy(() => import('./pages/BusinessDetail'));
 const Partner = React.lazy(() => import('./pages/Partner'));
 const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
 const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
+const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
@@ -118,12 +118,12 @@ export default function App() {
                 <Route path="/sobre-nos" element={<Sobre />} />
                 <Route path="/contactos" element={<Contactos />} />
 
-                {/* /onboarding: Partner Wizard - Restricted to authenticated members */}
+                {/* /setup: Dedicated clean flow for new business accounts */}
                 <Route
-                  path="/onboarding"
+                  path="/setup"
                   element={
-                    <ProtectedRoute allowedRoles={['customer', 'business', 'admin']}>
-                      <Onboarding />
+                    <ProtectedRoute allowedRoles={['business', 'admin']}>
+                      <SetupWizard />
                     </ProtectedRoute>
                   }
                 />

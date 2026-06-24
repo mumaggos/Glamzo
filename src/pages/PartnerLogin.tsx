@@ -10,9 +10,16 @@ export default function PartnerLogin() {
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {
-      if (profile.role === 'admin') navigate('/admin', { replace: true });
-      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
-      else navigate('/account', { replace: true });
+      if (profile.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (profile.role === 'business') {
+        // We can't do the async check easily here without another state, so we rely on the submit handler
+        // or just send to dashboard and let dashboard bounce them back to /setup if needed.
+        // For now, if they are already logged in and hit /partner/login, we'll just send them to dashboard.
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/account', { replace: true });
+      }
     }
   }, [user, profile, authLoading, navigate]);
 
@@ -63,8 +70,23 @@ export default function PartnerLogin() {
       const role = profData?.role || 'customer';
 
       let redirect = '/dashboard';
-      if (role === 'customer') redirect = '/account';
-      else if (role === 'admin') redirect = '/admin';
+      if (role === 'customer') {
+        redirect = '/account';
+      } else if (role === 'admin') {
+        redirect = '/admin';
+      } else if (role === 'business') {
+        // Check if business has completed setup
+        const { data: bizData } = await supabase
+          .from('businesses')
+          .select('setup_completed')
+          .eq('owner_id', activeUser.id)
+          .maybeSingle();
+        
+        // If no business profile or setup is not completed, redirect to setup wizard
+        if (!bizData || !bizData.setup_completed) {
+          redirect = '/setup';
+        }
+      }
 
       setSuccessMsg('Sessão iniciada com sucesso! A redirecionar...');
       
