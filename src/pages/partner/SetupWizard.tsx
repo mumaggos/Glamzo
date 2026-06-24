@@ -123,7 +123,11 @@ export default function SetupWizard() {
         
         // Restore step
         if (!searchParams.get('status') && currentBiz.setup_step) {
-          setStep(currentBiz.setup_step);
+          let targetStep = currentBiz.setup_step;
+          if (targetStep === 3 && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
+            targetStep = 4;
+          }
+          setStep(targetStep);
         }
 
         const { data: svcs } = await supabase.from('services').select('*').eq('business_id', currentBiz.id);
@@ -148,13 +152,24 @@ export default function SetupWizard() {
 
   const updateSetupStep = async (newStep: number) => {
     if (!business) return;
+    
+    let targetStep = newStep;
+    // Auto-forward/skip plan selection if already has an active plan
+    if (targetStep === 3 && (business.subscription_active || business.stripe_subscription_id)) {
+      if (step === 4) { // Going back from 4
+        targetStep = 2; // Skip 3 and go to 2
+      } else {
+        targetStep = 4; // Going forward from 2, skip to 4
+      }
+    }
+
     try {
-      await supabase.from('businesses').update({ setup_step: newStep }).eq('id', business.id);
+      await supabase.from('businesses').update({ setup_step: targetStep }).eq('id', business.id);
     } catch (e) {
       console.warn("Could not save setup_step", e);
     }
-    setBusiness({ ...business, setup_step: newStep });
-    setStep(newStep);
+    setBusiness({ ...business, setup_step: targetStep });
+    setStep(targetStep);
   };
 
   const handleNext = async () => {
