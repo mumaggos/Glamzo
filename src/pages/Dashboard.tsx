@@ -1522,31 +1522,36 @@ export default function Dashboard() {
     e.preventDefault();
     if (!business) return;
     try {
+      const payload: any = {
+        full_name: staffForm.full_name,
+        role_title: staffForm.role_title || null,
+        avatar_url: staffForm.avatar_url || null,
+        is_active: staffForm.is_active,
+        off_days: staffForm.off_days || null
+      };
+
       if (editingStaff) {
-        const { error } = await supabase
-          .from('staff')
-          .update({
-            full_name: staffForm.full_name,
-            role_title: staffForm.role_title || null,
-            avatar_url: staffForm.avatar_url || null,
-            is_active: staffForm.is_active,
-            off_days: staffForm.off_days || null
-          })
-          .eq('id', editingStaff.id);
+        let { error } = await supabase.from('staff').update(payload).eq('id', editingStaff.id);
+        
+        // Fallback for missing off_days column in legacy databases
+        if (error && error.message.includes('off_days')) {
+           delete payload.off_days;
+           const retry = await supabase.from('staff').update(payload).eq('id', editingStaff.id);
+           error = retry.error;
+        }
 
         if (error) throw error;
         setGlobalSuccess("Ficha do profissional atualizada.");
       } else {
-        const { error } = await supabase
-          .from('staff')
-          .insert({
-            business_id: business.id,
-            full_name: staffForm.full_name,
-            role_title: staffForm.role_title || null,
-            avatar_url: staffForm.avatar_url || null,
-            is_active: staffForm.is_active,
-            off_days: staffForm.off_days || null
-          });
+        payload.business_id = business.id;
+        let { error } = await supabase.from('staff').insert(payload);
+        
+        // Fallback for missing off_days column in legacy databases
+        if (error && error.message.includes('off_days')) {
+           delete payload.off_days;
+           const retry = await supabase.from('staff').insert(payload);
+           error = retry.error;
+        }
 
         if (error) throw error;
         setGlobalSuccess("Profissional contratado e registado com sucesso.");
@@ -1555,6 +1560,7 @@ export default function Dashboard() {
       setEditingStaff(null);
       await loadTerminalData();
     } catch (err: any) {
+      console.error('STAFF_INSERT_ERROR', err);
       setGlobalError(err.message || 'Erro ao guardar ficha do profissional.');
     }
   };
@@ -2110,6 +2116,33 @@ export default function Dashboard() {
 
               <button
                 onClick={async () => {
+                  try {
+                    setIsVerifyingSub(true);
+                    setVerifyingText("A sincronizar com a Stripe...");
+                    const r = await fetch('/api/stripe/verify-subscription', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ businessId: business?.id })
+                    });
+                    if (r.ok) {
+                      setGlobalSuccess("Estado da subscrição sincronizado com sucesso.");
+                      window.location.reload();
+                    } else {
+                      setGlobalError("Falha ao sincronizar subscrição.");
+                    }
+                  } catch (e: any) {
+                    setGlobalError(e.message || "Erro de ligação.");
+                  } finally {
+                    setIsVerifyingSub(false);
+                  }
+                }}
+                className="text-xs text-slate-500 hover:text-slate-800 font-bold transition block mx-auto underline mt-4"
+              >
+                Já paguei / Sincronizar
+              </button>
+
+              <button
+                onClick={async () => {
                   await signOut();
                   navigate('/partner/login');
                 }}
@@ -2437,6 +2470,32 @@ export default function Dashboard() {
                 className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
               >
                 Gerir Subscrição
+              </button>
+              <button 
+                onClick={async () => {
+                  try {
+                    setIsVerifyingSub(true);
+                    setVerifyingText("A sincronizar com a Stripe...");
+                    const r = await fetch('/api/stripe/verify-subscription', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ businessId: business?.id })
+                    });
+                    if (r.ok) {
+                      setGlobalSuccess("Estado da subscrição sincronizado com sucesso.");
+                      window.location.reload();
+                    } else {
+                      setGlobalError("Falha ao sincronizar subscrição.");
+                    }
+                  } catch (e: any) {
+                    setGlobalError(e.message || "Erro de ligação.");
+                  } finally {
+                    setIsVerifyingSub(false);
+                  }
+                }}
+                className="p-2.5 px-3.5 bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer shadow-sm shrink-0 self-start sm:self-auto"
+              >
+                Sincronizar
               </button>
             </div>
           )}

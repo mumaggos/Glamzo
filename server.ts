@@ -56,9 +56,9 @@ let supabaseAdminClient: any = null;
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
     const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    const key = process.env.VITE_SUPABASE_ANON_KEY;
     if (!url || !key) {
-      throw new Error('Supabase environment details are missing in backend (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY)');
+      throw new Error('Supabase environment details are missing in backend (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY)');
     }
     supabaseAdminClient = createClient(url, key);
   }
@@ -82,6 +82,20 @@ app.use((req, res, next) => {
 // App Health Check API
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', serverTime: new Date().toISOString() });
+});
+
+app.get('/api/debug-staff', async (req, res) => {
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.rpc('get_schema_info'); 
+    // Wait, rpc 'get_schema_info' might not exist. Let's just query information_schema
+    const { data: cols, error: err } = await db.from('staff').select('*').limit(1);
+    
+    // We can also just fetch from pg_catalog if we had access, but Supabase API might not let us.
+    res.json({ cols, err });
+  } catch(e: any) {
+    res.json({ error: e.message });
+  }
 });
 
 // Server-Sent Events (SSE) Client Storage for Real-Time Marketplace updates
