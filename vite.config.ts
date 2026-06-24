@@ -11,9 +11,6 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    define: {
-      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || '')
-    },
     build: {
       minify: true,
       cssMinify: true,

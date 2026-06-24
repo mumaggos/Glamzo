@@ -13,7 +13,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (fullName: string | null, avatarUrl: string | null, phone?: string | null, email?: string | null) => Promise<any>;
-  refreshProfile: () => Promise<UserProfile | null>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,8 +140,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // We removed locally syncing profile.role. Rely completely on DB and Metadata.
-      if (!currentProfile) {
+      // Ensure we keep localStorage synchronized
+      if (currentProfile) {
+        localStorage.setItem(`local_role_${userId}`, currentProfile.role);
+      } else {
         // Ultimate fallback to prevent the app from getting stuck on loading
         console.warn('Could not fetch or create profile in DB, using a local in-memory profile definition.');
         let metadataRole: UserRole | null = null;
@@ -152,8 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (_) {}
 
-        let defaultRole: UserRole = metadataRole || 'customer';
-        if (!metadataRole) {
+        const storedRole = localStorage.getItem(`local_role_${userId}`) as UserRole | null;
+        let defaultRole: UserRole = storedRole || metadataRole || 'customer';
+        
+        if (!storedRole && !metadataRole) {
           if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
             defaultRole = 'admin';
           }
@@ -167,6 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           avatar_url: null,
           created_at: new Date().toISOString()
         };
+        localStorage.setItem(`local_role_${userId}`, defaultRole);
       }
 
       return currentProfile;
@@ -182,8 +187,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (_) {}
 
-      let defaultRole: UserRole = metadataRole || 'customer';
-      if (!metadataRole) {
+      const storedRole = localStorage.getItem(`local_role_${userId}`) as UserRole | null;
+      let defaultRole: UserRole = storedRole || metadataRole || 'customer';
+      
+      if (!storedRole && !metadataRole) {
         if (emailSafe === 'admin@gmail.com' || emailSafe === 'glamzo.suporte@gmail.com') {
           defaultRole = 'admin';
         }
@@ -201,17 +208,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshProfile = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const activeUser = session?.user || user;
-    if (activeUser) {
-      const p = await fetchProfile(activeUser.id, activeUser.email);
+    if (user) {
+      const p = await fetchProfile(user.id, user.email);
       setProfile(p);
-      if (!user) {
-        setUser(activeUser);
-      }
-      return p;
     }
-    return null;
   };
 
   // Listen to Auth sessions and state changes from Supabase Auth

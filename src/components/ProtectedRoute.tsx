@@ -35,7 +35,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     if (path.startsWith('/admin')) {
       return <Navigate to="/admin/login" replace />;
     }
-    if (path.startsWith('/partner/dashboard') || path.startsWith('/partner') || (allowedRoles && allowedRoles.includes('business') && !allowedRoles.includes('customer'))) {
+    if (path.startsWith('/dashboard') || path.startsWith('/partner') || (allowedRoles && allowedRoles.includes('business') && !allowedRoles.includes('customer'))) {
       return <Navigate to="/partner/login" replace />;
     }
     return <Navigate to="/login" replace />;
@@ -52,7 +52,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
         case 'admin':
           return <Navigate to="/admin" replace />;
         case 'business':
-          return <Navigate to="/partner/setup" replace />;
+          return <Navigate to="/dashboard" replace />;
         case 'customer':
         default:
           return <Navigate to="/account" replace />;

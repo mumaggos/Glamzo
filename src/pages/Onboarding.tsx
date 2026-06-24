@@ -61,35 +61,6 @@ export default function Onboarding() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Re-hydrate any pending business data created by PartnerSignup that was blocked by email confirmation
-  React.useEffect(() => {
-    try {
-      const pendingDataStr = localStorage.getItem('pending_business_payload');
-      if (pendingDataStr) {
-        const payload = JSON.parse(pendingDataStr);
-        if (payload.name) setName(payload.name);
-        if (payload.district) setDistrict(payload.district);
-        if (payload.city) setCity(payload.city);
-        if (payload.address) setAddress(payload.address);
-        if (payload.door_number) setDoorNumber(payload.door_number);
-        if (payload.postal_code) setPostalCode(payload.postal_code);
-        if (payload.phone) setPhone(payload.phone);
-        if (payload.email) setEmail(payload.email);
-        if (payload.category) {
-           setCategory(payload.category);
-           setSelectedCategories([payload.category]);
-        }
-        if (payload.whatsapp) setWhatsapp(payload.whatsapp);
-        if (payload.description) setDescription(payload.description);
-        
-        // Clear it so it doesn't perpetually interfere
-        localStorage.removeItem('pending_business_payload');
-      }
-    } catch (e) {
-      console.warn('Could not parse pending business data:', e);
-    }
-  }, []);
-
   const handleNext = () => {
     setErrorMsg(null);
     if (currentStep === 1 && !name.trim()) {
@@ -203,7 +174,6 @@ export default function Onboarding() {
         instagram: instagram || null,
         website: website || null,
         is_verified: false,
-        status: 'setup',
       };
 
       // 3. Write record into businesses table with fallback in case columns are missing

@@ -1,6 +1,3 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
@@ -56,9 +53,9 @@ let supabaseAdminClient: any = null;
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
     const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.VITE_SUPABASE_ANON_KEY;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
     if (!url || !key) {
-      throw new Error('Supabase environment details are missing in backend (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY)');
+      throw new Error('Supabase environment details are missing in backend (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY)');
     }
     supabaseAdminClient = createClient(url, key);
   }
@@ -82,20 +79,6 @@ app.use((req, res, next) => {
 // App Health Check API
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', serverTime: new Date().toISOString() });
-});
-
-app.get('/api/debug-staff', async (req, res) => {
-  try {
-    const db = getSupabaseAdmin();
-    const { data, error } = await db.rpc('get_schema_info'); 
-    // Wait, rpc 'get_schema_info' might not exist. Let's just query information_schema
-    const { data: cols, error: err } = await db.from('staff').select('*').limit(1);
-    
-    // We can also just fetch from pg_catalog if we had access, but Supabase API might not let us.
-    res.json({ cols, err });
-  } catch(e: any) {
-    res.json({ error: e.message });
-  }
 });
 
 // Server-Sent Events (SSE) Client Storage for Real-Time Marketplace updates
@@ -135,9 +118,6 @@ app.post('/api/emails/send', async (req, res) => {
     console.log(`[EmailService] Attempting to send ${type} to ${to}`);
     
     switch (type) {
-      case 'verification_code':
-        await EmailService.sendVerificationCodeEmail(to, data.userName, data.code);
-        break;
       case 'verification':
         await EmailService.sendVerificationEmail(to, data.userName, data.confirmationLink);
         break;
@@ -564,11 +544,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     if (!priceId || priceId.trim() === "") {
       priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem";
     }
-
-    const isTerminal = planName === 'TERMINAL';
-    const terminalProductId = process.env.STRIPE_TERMINAL_PRODUCT_ID || 'prod_Uk3zSeOffcShqq';
-
-    console.log("Using Resolved price/product for Stripe Checkout. IsTerminal:", isTerminal);
+    console.log("Using Resolved price ID for Stripe Checkout:", priceId);
 
     const db = getSupabaseAdmin();
 
@@ -624,49 +600,22 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         throw new Error("No Price ID defined in environment under STRIPE_PRO_PRICE_ID.");
       }
 
-      let lineItems: any[] = [];
-
-      if (isTerminal) {
-        lineItems = [
-          {
-            price_data: {
-              currency: 'eur',
-              product: terminalProductId,
-              recurring: { interval: 'month' },
-              unit_amount: 2499,
-            },
-            quantity: 1,
-          },
-          {
-            price_data: {
-              currency: 'eur',
-              product: terminalProductId,
-              unit_amount: 999,
-            },
-            quantity: 1,
-          }
-        ];
-      } else {
-        lineItems = [
+      console.log(`Attempting Stripe session creation with priceId: '${priceId}'`);
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        line_items: [
           {
             price: priceId,
             quantity: 1,
           },
-        ];
-      }
-
-      console.log(`Attempting Stripe session creation for ${planName || 'PRO'} plan`);
-      session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: 'subscription',
-        line_items: lineItems,
+        ],
         subscription_data: subscriptionData,
         metadata: {
           business_id: businessId,
           businessId: businessId,
           owner_id: business.owner_id,
-          type: 'pro_subscription',
-          plan_name: planName || 'PRO'
+          type: 'pro_subscription'
         },
         success_url: calculatedSuccessUrl,
         cancel_url: calculatedCancelUrl,
@@ -1098,18 +1047,14 @@ const handleStripeWebhook = async (req: any, res: any) => {
             .maybeSingle();
 
           let subUpsertErr = null;
-          const planNameMetadata = session.metadata?.plan_name || 'PRO';
-          const planDbName = planNameMetadata === 'TERMINAL' ? 'Glamzo PRO Terminal' : 'Glamzo PRO';
-          const planPrice = planNameMetadata === 'TERMINAL' ? 24.99 : 19.99;
-
           if (existingSub) {
             console.log(`[Webhook SaaS Sync] Existing subscription found for business ${businessId}. Updating to status '${subStatus}' and stripe_subscription_id '${subId}'...`);
             const { error: updErr } = await db
               .from('subscriptions')
               .update({
-                plan_name: planDbName,
+                plan_name: 'PRO',
                 status: subStatus,
-                monthly_price: planPrice,
+                monthly_price: 19.90,
                 expires_at: expiresAt,
                 stripe_subscription_id: subId
               })
@@ -1121,9 +1066,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
               .from('subscriptions')
               .insert({
                 business_id: businessId,
-                plan_name: planDbName,
+                plan_name: 'PRO',
                 status: subStatus,
-                monthly_price: planPrice,
+                monthly_price: 19.95,
                 started_at: new Date().toISOString(),
                 expires_at: expiresAt,
                 stripe_subscription_id: subId
@@ -1136,14 +1081,6 @@ const handleStripeWebhook = async (req: any, res: any) => {
           } else {
             console.log(`[Webhook SaaS Success] SUBSCRIPTION UPDATED SUCCESSFULLY for salon business ${businessId}`);
             
-            if (planNameMetadata === 'TERMINAL') {
-              console.log(`[Webhook Terminal] Marking tablet_order deposit as paid for business ${businessId}`);
-              await db.from('tablet_orders')
-                .update({ deposit_paid: true, status: 'processing' })
-                .eq('business_id', businessId)
-                .eq('status', 'pending');
-            }
-
             // EMAIL VERIFICATION - SUBSCRIPTION
             try {
               const { data: business } = await db.from('businesses').select('email, owner_id').eq('id', businessId).maybeSingle();
@@ -1295,9 +1232,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
             .from('subscriptions')
             .insert({
               business_id: businessId,
-              plan_name: 'Glamzo PRO', // Defaults to PRO if missed by checkout event
+              plan_name: 'PRO',
               status: syncedStatus,
-              monthly_price: 19.99,
+              monthly_price: 19.90,
               started_at: new Date().toISOString(),
               expires_at: syncedExpiry,
               stripe_subscription_id: stripeSubId
@@ -1482,91 +1419,6 @@ app.post('/api/stripe/webhook', express.raw({ type: '*/*' }), handleStripeWebhoo
 
 // Initialize Express + Vite server middlewares
 async function startServer() {
-  app.get('/api/availability/:businessId', async (req, res) => {
-    try {
-      const businessId = req.params.businessId;
-      const db = getSupabaseAdmin();
-      const { data: hoursData } = await db.from('business_hours').select('*').eq('business_id', businessId);
-      if (!hoursData || hoursData.length === 0) {
-        return res.json({ available: false, label: "Sem vagas disponíveis" });
-      }
-      
-      const today = new Date();
-      const options = { timeZone: 'Europe/Lisbon' };
-      const todayStr = new Intl.DateTimeFormat('en-CA', { ...options, year:'numeric', month:'2-digit', day:'2-digit' }).format(today);
-      const maxDay = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-      const maxDayStr = new Intl.DateTimeFormat('en-CA', { ...options, year:'numeric', month:'2-digit', day:'2-digit' }).format(maxDay);
-      
-      const { data: bookingsData } = await db.from('bookings').select('staff_id, booking_date, start_time, end_time')
-         .eq('business_id', businessId)
-         .neq('booking_status', 'cancelled')
-         .gte('booking_date', todayStr)
-         .lte('booking_date', maxDayStr);
-         
-      const { data: staffData } = await db.from('staff').select('id, full_name, is_active').eq('business_id', businessId).eq('is_active', true);
-      if (!staffData || staffData.length === 0) {
-        return res.json({ available: false, label: "Sem profissionais ativos" });
-      }
-      
-      const slotDurationMins = 30; // Min default
-      const parseTime = (timeStr: string) => {
-        const [h, m] = timeStr.split(':').map(Number);
-        return h * 60 + m;
-      };
-      
-      for (let i = 0; i < 14; i++) {
-         const checkDate = new Date(today.getTime() + i * 24 * 60 * 60 * 1000);
-         const dayOfWeek = checkDate.getDay();
-         const localStr = new Intl.DateTimeFormat('en-CA', { ...options, year:'numeric', month:'2-digit', day:'2-digit' }).format(checkDate);
-         const dayStr = localStr;
-         
-         const bizDayHours = hoursData.find((h: any) => h.weekday === dayOfWeek);
-         if (!bizDayHours || bizDayHours.is_closed) continue;
-         
-         let startMin = parseTime(bizDayHours.open_time);
-         if (i === 0) {
-           const currentMinOfDay = today.getHours() * 60 + today.getMinutes();
-           if (startMin < currentMinOfDay + 30) {
-              startMin = currentMinOfDay + 30; 
-              startMin = Math.ceil(startMin / 15) * 15;
-           }
-         }
-         
-         const endMin = parseTime(bizDayHours.close_time);
-         if (startMin >= endMin) continue;
-         
-         const dayBookings = (bookingsData || []).filter((b: any) => b.booking_date === dayStr);
-         
-         for (let time = startMin; time <= endMin - slotDurationMins; time += 15) {
-            for (const st of staffData) {
-              const isOccupied = dayBookings.some((b: any) => {
-                 if (b.staff_id !== null && b.staff_id !== st.id) return false;
-                 const bStart = parseTime(b.start_time);
-                 const bEnd = parseTime(b.end_time);
-                 return (time < bEnd && time + slotDurationMins > bStart);
-              });
-              if (!isOccupied) {
-                 const hour = Math.floor(time / 60);
-                 const min = time % 60;
-                 const timeFormatted = `${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
-                 
-                 let label = `Disponível hoje às ${timeFormatted}`;
-                 if (i === 1) label = `Próxima vaga amanhã às ${timeFormatted}`;
-                 else if (i > 1) {
-                    const daysPt = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
-                    label = `Disponível ${daysPt[dayOfWeek]} às ${timeFormatted}`;
-                 }
-                 return res.json({ available: true, datetime: `${dayStr}T${timeFormatted}`, label, professional_name: st.full_name });
-              }
-            }
-         }
-      }
-      res.json({ available: false, label: "Sem vagas nos próx. 14 dias" });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

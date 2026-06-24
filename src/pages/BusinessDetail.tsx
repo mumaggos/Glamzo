@@ -28,7 +28,6 @@ export default function BusinessDetail() {
   const navigate = useNavigate();
 
   const [business, setBusiness] = useState<Business | null>(null);
-  const [availability, setAvailability] = useState<{ available: boolean, label: string } | null>(null);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -412,16 +411,6 @@ export default function BusinessDetail() {
 
     fetchBusinessBySlug();
   }, [slug]);
-
-  useEffect(() => {
-    if (business?.id) {
-       setAvailability({ label: 'A verificar...', available: false });
-       fetch(`/api/availability/${business.id}`)
-          .then(res => res.json())
-          .then(data => setAvailability(data))
-          .catch(err => console.error(err));
-    }
-  }, [business?.id]);
 
   // Fetch verified services associated with this specific business
   useEffect(() => {
@@ -978,26 +967,6 @@ export default function BusinessDetail() {
                   Garanta a sua vaga em segundos com confirmação em tempo real e prevenção de conflitos de horário.
                 </p>
               </div>
-
-              {/* Proactive Availability Badge */}
-              <div className="relative mt-2 mb-2">
-                 {availability?.label === 'A verificar...' ? (
-                   <div className="text-[10px] text-white flex items-center justify-center gap-1.5 opacity-70 animate-pulse bg-white/10 rounded-lg px-2 py-2 w-full border border-white/20 font-mono">
-                     <Loader2 className="w-3 h-3 animate-spin"/> A verificar vagas...
-                   </div>
-                 ) : availability?.available ? (
-                   <div className={`text-[10px] font-bold text-slate-800 flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg w-full border shadow-sm font-mono tracking-tight uppercase ${availability.label.includes('hoje') ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-white border-purple-200 text-purple-900'}`}>
-                     {availability.label.includes('hoje') ? <span>🟢</span> : <span>🟣</span>}
-                     {availability.label}
-                   </div>
-                 ) : availability?.label && availability.label !== 'A verificar...' ? (
-                   <div className="text-[10px] font-bold text-slate-700 flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg w-full border bg-slate-50 border-white/30 shadow-sm font-mono uppercase tracking-tight">
-                     <span>⚪</span>
-                     {availability.label}
-                   </div>
-                 ) : null}
-              </div>
-
               <button
                 type="button"
                 onClick={() => handleOpenBooking(null)}

@@ -4,7 +4,6 @@ import { render } from '@react-email/render';
 
 import {
   VerificationEmail,
-  VerificationCodeEmail,
   PasswordResetEmail,
   BookingConfirmationEmail,
   BookingCancelledEmail,
@@ -14,45 +13,19 @@ import {
   PaymentFailedEmail
 } from '../emails/GlamzoTemplates';
 
-let resendInstance: Resend | null = null;
-let isInitialized = false;
+// We use the RESEND_API_KEY from process.env
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@glamzo.pt';
 
-function getResendClient() {
-  if (!isInitialized) {
-    const key = process.env.RESEND_API_KEY;
-    if (key) {
-      resendInstance = new Resend(key);
-    }
-    isInitialized = true;
-  }
-  return resendInstance;
-}
-
-function getEmailFrom() {
-  return process.env.EMAIL_FROM || 'noreply@glamzo.pt';
-}
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export const EmailService = {
-  async sendVerificationCodeEmail(to: string, userName: string, code: string) {
-    const resend = getResendClient();
-    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
-    
-    const html = await render(<VerificationCodeEmail userName={userName} code={code} />);
-    return resend.emails.send({
-      from: getEmailFrom(),
-      to,
-      subject: 'Código de Verificação - Glamzo',
-      html
-    });
-  },
-
   async sendVerificationEmail(to: string, userName: string, confirmationLink: string) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
     
     const html = await render(<VerificationEmail userName={userName} confirmationLink={confirmationLink} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: 'Verifica o teu Email - Glamzo',
       html
@@ -60,12 +33,11 @@ export const EmailService = {
   },
 
   async sendPasswordResetEmail(to: string, resetLink: string) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
     
     const html = await render(<PasswordResetEmail resetLink={resetLink} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: 'Recuperação de Palavra-passe - Glamzo',
       html
@@ -76,12 +48,11 @@ export const EmailService = {
     to: string, 
     data: { shopName: string, serviceName: string, professionalName: string, date: string, time: string, price: string, reference: string }
   ) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
     
     const html = await render(<BookingConfirmationEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: `Reserva Confirmada: ${data.shopName}`,
       html
@@ -89,12 +60,11 @@ export const EmailService = {
   },
 
   async sendBookingCancelledEmail(to: string, data: { shopName: string, serviceName: string, date: string, time: string, reason?: string }) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
     const html = await render(<BookingCancelledEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: `Reserva Cancelada: ${data.shopName}`,
       html
@@ -102,12 +72,11 @@ export const EmailService = {
   },
 
   async sendNewBookingEmail(to: string, data: { customerName: string, serviceName: string, date: string, time: string, price: string }) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
     const html = await render(<NewBookingEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: `Nova Marcação: ${data.serviceName} - Glamzo`,
       html
@@ -115,12 +84,11 @@ export const EmailService = {
   },
 
   async sendSubscriptionActivatedEmail(to: string, data: { planName: string, activationDate: string, nextBillingDate: string, dashboardUrl: string }) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
     const html = await render(<SubscriptionActivatedEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: 'Bem-vindo ao Glamzo PRO! A sua subscrição está ativa.',
       html
@@ -128,12 +96,11 @@ export const EmailService = {
   },
 
   async sendInvoiceEmail(to: string, data: { amount: string, date: string, invoiceNumber: string, downloadUrl: string }) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
     const html = await render(<InvoiceEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: `Fatura Dispovível - Glamzo (${data.invoiceNumber})`,
       html
@@ -141,12 +108,11 @@ export const EmailService = {
   },
 
   async sendPaymentFailedEmail(to: string, data: { explanation: string, updatePaymentUrl: string, suspensionDate: string }) {
-    const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
     const html = await render(<PaymentFailedEmail {...data} />);
     return resend.emails.send({
-      from: getEmailFrom(),
+      from: EMAIL_FROM,
       to,
       subject: 'Falha no pagamento da Subscrição - Glamzo',
       html

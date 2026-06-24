@@ -2,31 +2,38 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { slugify, generateUniqueSlug } from '../utils/slugify';
+import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import { 
-  Building2, ArrowRight, ArrowLeft, Check, Sparkles, 
-  Mail, Loader2, KeyRound, Eye, EyeOff, User 
+  Building2, ArrowRight, ArrowLeft, Check, Store, Sparkles, 
+  MapPin, Phone, Mail, FileText, Loader2, KeyRound, Eye, EyeOff, User 
 } from 'lucide-react';
 
 export default function PartnerSignup() {
-  const { signUp, signOut, user, profile, refreshProfile } = useAuth();
+  const { signUp, signOut, user, profile } = useAuth();
   const navigate = useNavigate();
 
-  // Multi-step form step (1: Account info, 2: Verification)
-  const [step, setStep] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('step') === 'verify' ? 2 : 1;
-  });
+  // Multi-step form step (1: Account info, 2: Business info)
+  const [step, setStep] = useState(1);
 
   // Form states - Step 1
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('email') || '';
-  });
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Form states - Step 2
+  const [businessName, setBusinessName] = useState('');
+  const [category, setCategory] = useState('Cabelo & Barbearia'); // Default to Cabelo & Barbearia
+  const [district, setDistrict] = useState('Lisboa');
+  const [city, setCity] = useState('Lisboa');
+  const [address, setAddress] = useState('');
+  const [doorNumber, setDoorNumber] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [phone, setPhone] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [description, setDescription] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Auxiliary states
@@ -35,11 +42,16 @@ export default function PartnerSignup() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSignUpProcessActive, setIsSignUpProcessActive] = useState(false);
 
-  // Verification
-  const [verificationCode, setVerificationCode] = useState('');
-  const [enteredCode, setEnteredCode] = useState('');
+  const categories = [
+    'Cabelo & Barbearia',
+    'Nails & Beauty',
+    'Estética',
+    'Wellness',
+    'Ao domicílio',
+    'Noivas & Eventos'
+  ];
 
-  const handleNextStep = async (e: React.FormEvent) => {
+  const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -58,79 +70,122 @@ export default function PartnerSignup() {
       return;
     }
 
+    setStep(2);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!businessName.trim() || !city.trim() || !address.trim() || !phone.trim()) {
+      setErrorMsg('Preencha os dados obrigatórios do estabelecimento (Nome, Cidade, Morada e Telefone).');
+      return;
+    }
+
     if (!acceptedTerms) {
       setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
       return;
     }
 
     setLoading(true);
-
-    try {
-      // Normal flow: Create authentication credential & profile with role 'business'
-      // This will trigger Supabase to send the confirmation email
-      await signUp(email, password, fullName, 'business');
-
-      setStep(2);
-      setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
-    } catch (err: any) {
-      console.error('Failed to trigger verification email or create profile', err);
-      let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente novamente mais tarde.';
-      if (err.message?.includes('already registered')) {
-        userFriendlyMessage = 'Este e-mail já está em uso. Por favor, use um e-mail diferente ou faça login.';
-      }
-      setErrorMsg(userFriendlyMessage);
-      setIsSignUpProcessActive(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (enteredCode.length < 6 || enteredCode.length > 8) {
-      setErrorMsg('Código de verificação inválido.');
-      return;
-    }
-
-    setErrorMsg(null);
-    setSuccessMsg(null);
-    setLoading(true);
     setIsSignUpProcessActive(true);
 
     try {
-      // 1. Verify the OTP code with Supabase
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email,
-        token: enteredCode,
-        type: 'signup'
-      });
+      // 1. Create authentication credential & profile with role 'business'
+      const authResult = await signUp(email, password, fullName, 'business');
+      const authUser = authResult?.user;
 
-      if (verifyError || !verifyData.user || !verifyData.session) {
-        throw new Error('O código inserido é inválido ou já expirou. Peça um novo código e tente novamente.');
+      if (!authUser) {
+        throw new Error('Falha ao registar credenciais. Verifique os dados digitados.');
       }
-      
-      const authUser = verifyData.user;
-      
-      // Ensure the profile role is set to business
-      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-      console.log('[PartnerOTP] código confirmado com sucesso. Atualizado profile para business.');
-      
-      const p = await refreshProfile();
-      console.log('[PartnerAuth] profile role=business carregado para user:', authUser.id);
 
-      const { resolvePartnerRoute } = await import('../utils/partnerRouting');
-      const route = await resolvePartnerRoute(authUser, 'business', supabase);
-      console.log('[PartnerRoute] redirect =>', route);
+      // 2. Generate unique business URL slug and insert directly into public.businesses
+      const businessSlug = await generateUniqueSlug(businessName);
+      const { latitude, longitude } = getCoordinatesForCity(district, city);
 
-      setSuccessMsg('E-mail verificado com sucesso! Por favor continue para configurar o seu estabelecimento.');
+      const businessPayload = {
+        owner_id: authUser.id,
+        name: businessName,
+        slug: businessSlug,
+        category,
+        district,
+        city,
+        address,
+        door_number: doorNumber.trim() || null,
+        postal_code: postalCode.trim() || null,
+        latitude,
+        longitude,
+        phone,
+        whatsapp: whatsapp.trim() || null,
+        email: email,
+        description: description.trim() || null,
+        logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&h=150&fit=crop',
+        cover_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop'
+      };
+
+      let { data: insertedBiz, error: bizErr } = await supabase
+        .from('businesses')
+        .insert(businessPayload)
+        .select('id')
+        .maybeSingle();
+
+      if (bizErr) {
+        const isColumnErr = bizErr.code === '42703' || bizErr.message?.includes('column');
+        if (isColumnErr) {
+          console.warn('Geo or door number columns not available in table schema. Retrying fallback insertion...');
+          const fallbackPayload = { ...businessPayload };
+          delete (fallbackPayload as any).latitude;
+          delete (fallbackPayload as any).longitude;
+          delete (fallbackPayload as any).door_number;
+          delete (fallbackPayload as any).postal_code;
+
+          const retryResult = await supabase
+            .from('businesses')
+            .insert(fallbackPayload)
+            .select('id')
+            .maybeSingle();
+          bizErr = retryResult.error;
+          if (!bizErr && retryResult.data) {
+            insertedBiz = retryResult.data;
+          }
+        }
+      }
+
+      if (bizErr) {
+        console.error('Error inserting business profile:', bizErr);
+        // If profile creation failed, keep session clean
+        throw new Error('Conta criada, mas ocorreu um erro ao inicializar o estabelecimento: ' + bizErr.message);
+      }
+
+      const businessId = insertedBiz?.id;
+      if (!businessId) {
+        throw new Error('O registo foi criado, mas não conseguimos recuperar o identificador do estabelecimento.');
+      }
+
+      setSuccessMsg('Registo concluído com sucesso! Redirecionando para o seu terminal para ativar o seu período experimental...');
+
+      // Update database with default inactive state - requires card trial registration to unlock
+      await supabase
+        .from('businesses')
+        .update({
+          subscription_status: 'inactive',
+          subscription_active: false,
+          trial_ends_at: null
+        })
+        .eq('id', businessId);
+
       setTimeout(() => {
-        navigate(route, { replace: true });
+        navigate('/dashboard', { replace: true });
       }, 2000);
+
     } catch (err: any) {
       setIsSignUpProcessActive(false);
       console.error('Partner Registration error:', err);
-      let userFriendlyMessage = err.message || 'Ocorreu um erro ao verificar a conta. Verifique os dados.';
+      let userFriendlyMessage = err.message || 'Ocorreu um erro ao criar a conta de parceiro. Verifique os dados.';
+      if (err.message?.includes('already registered') || err.message?.includes('already exists') || err.message?.toLowerCase().includes('already')) {
+        userFriendlyMessage = 'Este e-mail já está registado na Glamzo. Por favor, utilize outro e-mail ou faça login com a sua conta existente.';
+      }
       setErrorMsg(userFriendlyMessage);
     } finally {
       setLoading(false);
@@ -164,7 +219,7 @@ export default function PartnerSignup() {
             <div className="w-12 h-[1px] bg-slate-100 flex-1 mx-3" />
             <div className="flex items-center gap-2">
               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'}`}>2</span>
-              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Verificar E-mail</span>
+              <span className={`text-xs font-semibold ${step === 2 ? 'text-slate-800 font-bold' : 'text-slate-600'}`}>Dados do Negócio</span>
             </div>
           </div>
 
@@ -304,16 +359,203 @@ export default function PartnerSignup() {
                 </div>
               </div>
 
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 mt-6 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              >
+                <span>Inserir Dados do Estabelecimento</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          ) : null}
+
+          {/* Step 2: Business details form */}
+          {step === 2 && (
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Nome do Estabelecimento
+                  </label>
+                  <div className="relative rounded-xl shadow-sm">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                      <Store className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                      placeholder="ex. Glamour Studio"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Categoria Principal
+                  </label>
+                  <select aria-label="Selecione uma opção"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Distrito / Região
+                  </label>
+                  <select aria-label="Selecione uma opção"
+                    value={district}
+                    onChange={(e) => {
+                      const nextDist = e.target.value;
+                      setDistrict(nextDist);
+                      if (PORTUGAL_GEO[nextDist] && PORTUGAL_GEO[nextDist].length > 0) {
+                        setCity(PORTUGAL_GEO[nextDist][0]);
+                      }
+                    }}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
+                  >
+                    {Object.keys(PORTUGAL_GEO).sort().map((dist) => (
+                      <option key={dist} value={dist}>{dist}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Cidade
+                  </label>
+                  <select aria-label="Selecione uma opção"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 cursor-pointer"
+                  >
+                    {(PORTUGAL_GEO[district] || []).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Morada / Nome da Rua *
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                    <MapPin className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                    placeholder="Rua das Flores"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Porta / Andar *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={doorNumber}
+                    onChange={(e) => setDoorNumber(e.target.value)}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                    placeholder="ex. 12C, 3º Esq"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Código Postal *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                    placeholder="ex. 1000-100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Telefone de Contacto
+                  </label>
+                  <div className="relative rounded-xl shadow-sm">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+                      <Phone className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                      placeholder="Contacto comercial"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    WhatsApp (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                    placeholder="ex. +351900000000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Breve Descrição do Negócio
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <span className="absolute top-3 left-3.5 flex items-start pointer-events-none text-slate-600">
+                    <FileText className="w-4 h-4" />
+                  </span>
+                  <textarea
+                    rows={2}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                    placeholder="Introduza uma breve apresentação do seu espaço e serviços especialidades..."
+                  />
+                </div>
+              </div>
+
               {/* Checkbox Terms */}
-              <div className="flex items-start gap-2 pt-2 pb-2">
+              <div className="flex items-start gap-2 pt-2">
                 <input
                   type="checkbox"
                   id="terms-partner"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
+                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500"
                 />
-                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
+                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1">
                   Li e aceito os{' '}
                   <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
                     Termos para Parceiros
@@ -326,109 +568,32 @@ export default function PartnerSignup() {
                 </label>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading || !acceptedTerms}
-                className="w-full flex items-center justify-center gap-2 mt-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>A processar...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Registar e Avançar</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          ) : null}
-
-          {/* Step 2: Verify OTP form */}
-          {step === 2 && (
-            <form className="space-y-4 animate-fade-in" onSubmit={handleRegister}>
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full mb-4">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Verifique o seu e-mail</h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Enviámos um código de 8 dígitos para o e-mail: <strong className="text-slate-800">{email}</strong>
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="verify-code" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 text-center">
-                  Código de Verificação
-                </label>
-                <input
-                  id="verify-code"
-                  type="text"
-                  required
-                  value={enteredCode}
-                  onChange={(e) => setEnteredCode(e.target.value)}
-                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                  placeholder="00000000"
-                  maxLength={8}
-                />
-              </div>
-
-              <div className="flex flex-col gap-4 pt-4">
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Voltar</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={loading || enteredCode.length < 6}
-                    className="w-2/3 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>A verificar...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Confirmar código</span>
-                        <Check className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-
+              <div className="flex gap-4 pt-4">
                 <button
                   type="button"
-                  disabled={loading}
-                  onClick={async () => {
-                    setLoading(true);
-                    setErrorMsg(null);
-                    setSuccessMsg(null);
-                    try {
-                      const { error } = await supabase.auth.resend({
-                        type: 'signup',
-                        email: email,
-                      });
-                      if (error) throw error;
-                      setSuccessMsg('Novo código enviado! Verifique o seu e-mail.');
-                    } catch (err: any) {
-                      console.error('Resend error:', err);
-                      setErrorMsg('Falha ao reenviar código: ' + err.message);
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  className="w-full py-2 text-sm text-slate-600 hover:text-slate-800 font-medium"
+                  onClick={() => setStep(1)}
+                  className="w-1/3 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase cursor-pointer transition-colors"
                 >
-                  Não recebeu? Reenviar novo código
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-2/3 flex items-center justify-center gap-2 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>A registar salão...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Criar Conta e Começar Teste</span>
+                      <Check className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>

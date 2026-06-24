@@ -40,8 +40,6 @@ export interface Business {
   stripe_customer_id?: string | null;
   public_page_enabled?: boolean;
   qr_scans_count?: number;
-  trial_used?: boolean;
-  status?: 'setup' | 'active' | 'suspended';
   created_at: string;
 }
 
@@ -202,22 +200,5 @@ export interface GlamzoNotification {
   content: string;
   channel: 'in_app' | 'email' | 'push' | 'whatsapp';
   created_at: string;
-}
-
-export interface TabletOrder {
-  id: string;
-  business_id: string;
-  shipping_name: string;
-  shipping_phone: string;
-  shipping_address: string;
-  shipping_postal_code: string;
-  shipping_city: string;
-  deposit_paid: boolean;
-  deposit_amount: number;
-  carrier?: string | null;
-  tracking_code?: string | null;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'returned';
-  created_at: string;
-  updated_at: string;
 }
 
