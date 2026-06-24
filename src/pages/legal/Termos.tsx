@@ -1,12 +1,17 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Termos() {
   return (
-    <ContentLayout title="Termos e Condições" lastUpdated="18 de Junho de 2026">
-      <p>
-        Bem-vindo à Glamzo. Estes Termos e Condições regem o acesso e a utilização do nosso marketplace e plataforma digital, concebidos para ligar clientes a profissionais e salões de beleza em Portugal e na União Europeia.
-      </p>
+    <DynamicLegalPage 
+      slug="termos-e-condicoes"
+      defaultTitle="Termos e Condições" 
+      defaultLastUpdated="18 de Junho de 2026"
+      defaultContent={
+        <>
+          <p>
+            Bem-vindo à Glamzo. Estes Termos e Condições regem o acesso e a utilização do nosso marketplace e plataforma digital, concebidos para ligar clientes a profissionais e salões de beleza em Portugal e na União Europeia.
+          </p>
 
       <h2>1. Utilização da Plataforma</h2>
       <p>
@@ -57,6 +62,8 @@ export default function Termos() {
       <p>
         Estes Termos e Condições são regulados pela lei Portuguesa. Para resolução de qualquer litígio resultante da interpretação ou execução dos presentes Termos, o foro competente será o Tribunal da Comarca de Lisboa, com renúncia a qualquer outro.
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

@@ -1,27 +1,76 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
-import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import ScrollToTop from './components/ScrollToTop';
+
+function SessionGuard() {
+  const { user, profile, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Avoid running logic before auth resolves
+    if (loading || !user || !profile) return;
+
+    // We only enforce strict redirects for internal roles. Customer logic remains default.
+    if (profile.role === 'admin' || profile.role === 'business') {
+      const path = location.pathname;
+      const isAuthPage = path === '/login' || path === '/partner/login' || path === '/admin/login' || path === '/partner/signup';
+      const permittedAdmin = profile.role === 'admin' && path.startsWith('/admin');
+      const permittedBusiness = profile.role === 'business' && (
+        path.startsWith('/dashboard') || 
+        path.startsWith('/setup') || 
+        path.startsWith('/stripe') || 
+        path.startsWith('/onboarding') ||
+        path.startsWith('/partner')
+      );
+
+      // Prevent authenticated business users from sitting on auth pages
+      if (isAuthPage && profile.role === 'business') {
+        navigate('/setup', { replace: true });
+        return;
+      }
+      if (isAuthPage && profile.role === 'admin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+
+      // Force logout or redirect if visiting forbidden routes
+      if (!isAuthPage && !permittedAdmin && !permittedBusiness) {
+        console.log(`[SessionGuard] Redirecting ${profile.role} to their default dashboard from: ${path}`);
+        if (profile.role === 'admin') {
+          navigate('/admin', { replace: true });
+        } else if (profile.role === 'business') {
+          navigate('/setup', { replace: true });
+        }
+      }
+    }
+  }, [location.pathname, user, profile, loading, navigate]);
+
+  return null;
+}
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
+import Home from './pages/Home';
+
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
-const Home = React.lazy(() => import('./pages/Home'));
+const SupabaseSetupHelper = React.lazy(() => import('./components/SupabaseSetupHelper'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Account = React.lazy(() => import('./pages/Account'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
+const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Explore = React.lazy(() => import('./pages/Explore'));
 const BusinessDetail = React.lazy(() => import('./pages/BusinessDetail'));
 const Partner = React.lazy(() => import('./pages/Partner'));
 const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
 const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
-const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
 const Favorites = React.lazy(() => import('./pages/Favorites'));
@@ -73,13 +122,18 @@ export default function App() {
 
   // 1. If Supabase keys are not set yet, present the SQL and variable Setup Assistant
   if (!isSupabaseConfigured) {
-    return <SupabaseSetupHelper />;
+    return (
+      <Suspense fallback={<RouteLoader />}>
+        <SupabaseSetupHelper />
+      </Suspense>
+    );
   }
 
   return (
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
+        <SessionGuard />
         <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
           {/* Elite subtle static top bar cue */}
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
@@ -102,6 +156,20 @@ export default function App() {
                 <Route path="/partner/signup" element={<PartnerSignup />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
+                {/* /partner/setup: Setup Wizard - Restricted to businesses */}
+                <Route 
+                  path="/partner/setup" 
+                  element={
+                    <ProtectedRoute allowedRoles={['business']}>
+                      <SetupWizard />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Fallbacks */}
+                <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+
                 <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
                 <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
                 <Route path="/favorites" element={<Favorites />} />
@@ -118,16 +186,8 @@ export default function App() {
                 <Route path="/sobre-nos" element={<Sobre />} />
                 <Route path="/contactos" element={<Contactos />} />
 
-                {/* /setup: Dedicated clean flow for new business accounts */}
-                <Route
-                  path="/setup"
-                  element={
-                    <ProtectedRoute allowedRoles={['business', 'admin']}>
-                      <SetupWizard />
-                    </ProtectedRoute>
-                  }
-                />
-
+                {/* /onboarding: Deprecated, use /setup */}
+                
                 {/* /account: Customer profile page - Restricted to customers & admins */}
                 <Route
                   path="/account"
@@ -138,9 +198,9 @@ export default function App() {
                   }
                 />
 
-                {/* /dashboard: Salon dashboard - Restricted to businesses & admins */}
+                {/* /partner/dashboard: Salon dashboard - Restricted to businesses & admins */}
                 <Route
-                  path="/dashboard"
+                  path="/partner/dashboard"
                   element={
                     <ProtectedRoute allowedRoles={['business', 'admin']}>
                       <Dashboard />

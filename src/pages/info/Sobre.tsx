@@ -1,12 +1,16 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Sobre() {
   return (
-    <ContentLayout title="Sobre a Glamzo">
-      <p className="lead text-xl text-slate-700 font-medium pb-4">
-        A Glamzo é o seu novo ponto de encontro para a centralização ibérica (Portugal e UE) de beleza, bem-estar e gestão sofisticada de marcações para Salões premium.
-      </p>
+    <DynamicLegalPage 
+      slug="sobre-nos"
+      defaultTitle="Sobre a Glamzo" 
+      defaultContent={
+        <>
+          <p className="lead text-xl text-slate-700 font-medium pb-4">
+            A Glamzo é o seu novo ponto de encontro para a centralização ibérica (Portugal e UE) de beleza, bem-estar e gestão sofisticada de marcações para Salões premium.
+          </p>
 
       <h2>O que fazemos</h2>
       <p>
@@ -38,6 +42,8 @@ export default function Sobre() {
       <p>
         O nosso ecossistema moderno encontra-se desenhado nas tecnologias da vanguarda da geração. Da Base da Nuvem Supabase, às plataformas logísticas em Render até aos circuitos monetários criptográfricos do PCI-Compliance interconectados no portal mundial da Stripe, a sua navegação, a visualização da privacidade, e inserção do cartão bancário desfruta exatamente do nível mais apetrechado no panorama global para blindar o conforto de Clientes e Parceiros.
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

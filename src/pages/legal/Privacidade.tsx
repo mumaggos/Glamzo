@@ -1,12 +1,17 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Privacidade() {
   return (
-    <ContentLayout title="Política de Privacidade" lastUpdated="18 de Junho de 2026">
-      <p>
-        A proteção da sua privacidade é fundamental para a Glamzo. Esta Política de Privacidade explica como recolhemos, tratamos, protegemos e armazenamos os seus dados pessoais, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD - Regulamento (UE) 2016/679).
-      </p>
+    <DynamicLegalPage 
+      slug="politica-de-privacidade"
+      defaultTitle="Política de Privacidade" 
+      defaultLastUpdated="18 de Junho de 2026"
+      defaultContent={
+        <>
+          <p>
+            A proteção da sua privacidade é fundamental para a Glamzo. Esta Política de Privacidade explica como recolhemos, tratamos, protegemos e armazenamos os seus dados pessoais, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD - Regulamento (UE) 2016/679).
+          </p>
 
       <h2>1. Dados Recolhidos</h2>
       <p>A Glamzo recolhe e processa as seguintes categorias de dados pessoais:</p>
@@ -63,6 +68,8 @@ export default function Privacidade() {
       <p>
         Para qualquer dúvida relacionada com esta Política, para remover os seus dados, ou para o exercício dos seus direitos ao abrigo do RGPD, contacte a nossa equipa através de: <strong>glamzo.suporte@gmail.com</strong> com o assunto "RGPD e Proteção de Dados".
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

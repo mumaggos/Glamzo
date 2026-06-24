@@ -80,7 +80,9 @@ create table public.businesses (
   subscription_active boolean default false not null,
   trial_started_at timestamp with time zone,
   trial_ends_at timestamp with time zone,
+  trial_used boolean default false not null,
   is_verified boolean default false not null,
+  status text default 'setup' check (status in ('setup', 'active', 'suspended')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -103,6 +105,38 @@ create policy "Allow owners to update their businesses"
 create policy "Allow owners to delete their businesses"
   on public.businesses for delete
   using (auth.uid() = owner_id);
+
+-- Create tablet_orders table
+create table public.tablet_orders (
+  id uuid default gen_random_uuid() primary key,
+  business_id uuid references public.businesses(id) on delete cascade not null,
+  shipping_name text not null,
+  shipping_phone text not null,
+  shipping_address text not null,
+  shipping_postal_code text not null,
+  shipping_city text not null,
+  deposit_paid boolean default false not null,
+  deposit_amount numeric(10,2) not null,
+  carrier text,
+  tracking_code text,
+  status text default 'pending' check (status in ('pending', 'processing', 'shipped', 'delivered', 'returned')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.tablet_orders enable row level security;
+
+create policy "Allow owners to read their orders"
+  on public.tablet_orders for select
+  using (exists (select 1 from public.businesses b where b.id = tablet_orders.business_id and b.owner_id = auth.uid()));
+
+create policy "Allow owners to insert orders"
+  on public.tablet_orders for insert
+  with check (exists (select 1 from public.businesses b where b.id = tablet_orders.business_id and b.owner_id = auth.uid()));
+
+create policy "Allow admin full access to tablet_orders"
+  on public.tablet_orders for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
 
 -- 6. Create service_categories table
 create table public.service_categories (
@@ -525,6 +559,60 @@ create policy "Permitir updates em avatars"
 create policy "Permitir delete em avatars"
   on storage.objects for delete
   using (bucket_id = 'avatars' and auth.role() = 'authenticated');
+
+-- 9. Arquitetura CMS de Plataforma
+create table if not exists public.platform_pages (
+  slug text primary key,
+  title text not null,
+  content text not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.platform_pages enable row level security;
+
+create policy "Allow public read access on platform_pages" 
+  on public.platform_pages for select using (true);
+
+create policy "Allow admins full operations on platform_pages" 
+  on public.platform_pages for all 
+  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')) 
+  with check (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+
+-- 10. Sistema de Gestao Homepage
+create table if not exists public.homepage_cards (
+  id uuid default gen_random_uuid() primary key,
+  business_id uuid references public.businesses(id) on delete cascade not null,
+  title text not null,
+  featured boolean default false not null,
+  display_order integer default 0 not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.homepage_cards enable row level security;
+
+create policy "Allow read access for all"
+  on public.homepage_cards for select using (true);
+
+create policy "Allow admins full access on homepage_cards"
+  on public.homepage_cards for all
+  using (exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
+
+-- 11. Sistema Definitivo de Remoçao de Uso (auth.users via backend admin)
+create or replace function public.admin_delete_user(target_user_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and role = 'admin') then
+    raise exception 'Unauthorised';
+  end if;
+
+  delete from public.businesses where owner_id = target_user_id;
+  delete from public.profiles where id = target_user_id;
+  delete from auth.users where id = target_user_id;
+end;
+$$;
 `;
 
   const handleCopy = () => {
@@ -576,7 +664,7 @@ create policy "Permitir delete em avatars"
             <div className="flex items-center justify-between gap-2 text-emerald-400 font-semibold mb-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-xs text-semibold">2</span>
-                Criar tabela Profiles & Trigger Automático
+                Criar Tabelas, Políticas de Segurança e Administrador
               </div>
               <button
                 onClick={handleCopy}
@@ -596,7 +684,7 @@ create policy "Permitir delete em avatars"
               </button>
             </div>
             <p className="text-slate-300 text-xs leading-relaxed mb-3">
-              No painel do Supabase, vá em <strong>SQL Editor &gt; New Query</strong>, cole o código abaixo e execute. Ele criará a tabela <code>profiles</code> segura com RLS e gatilhos para Google Login e cadastros por email:
+              No painel do Supabase, vá em <strong>SQL Editor &gt; New Query</strong>, cole o código abaixo e execute. Ele criará as tabelas da plataforma (perfis, páginas CMS, salões) com RLS, Storage e permissões definitivas:
             </p>
 
             <div className="max-h-56 overflow-y-auto bg-slate-900 rounded border border-slate-800 text-xs font-mono p-4 text-emerald-300 leading-relaxed scrollbar-thin">

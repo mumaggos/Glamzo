@@ -1,10 +1,14 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function FaqCliente() {
   return (
-    <ContentLayout title="Perguntas Frequentes (FAQ) - Cliente">
-      <p>Bem-vindo à área de ajuda rápida ao cliente. Encontre abaixo as soluções e instruções mais solicitadas.</p>
+    <DynamicLegalPage 
+      slug="faq-cliente"
+      defaultTitle="Perguntas Frequentes (FAQ) - Cliente" 
+      defaultContent={
+        <>
+          <p>Bem-vindo à área de ajuda rápida ao cliente. Encontre abaixo as soluções e instruções mais solicitadas.</p>
 
       <h2>1. Como fazer uma marcação?</h2>
       <p>
@@ -25,6 +29,8 @@ export default function FaqCliente() {
       <p>
         O perfil singular de cada loja / negócio (visualizável no portfólio de exploração ou até mesmo na fatura dos seus emails interativos de pós-processamento) dispões de toda a estrutura pública preenchida por esse mesmo negócio (Números Tlm., descrições e Localidade Geográfica para rotas e conversas com a gerência do espaço físico). Pode, contudo, também resolver tudo com a Glamzo!
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

@@ -52,6 +52,8 @@ export default function Dashboard() {
   const [manualStripeId, setManualStripeId] = useState('');
   const [savingManualStripe, setSavingManualStripe] = useState(false);
 
+  const [tabletOrder, setTabletOrder] = useState<any>(null);
+  
   // Real database coupons state
   const [coupons, setCoupons] = useState<any[]>([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
@@ -121,6 +123,49 @@ export default function Dashboard() {
       }
     }
     return bk.customer?.full_name || bk.customer_profile?.full_name || 'Cliente Particular';
+  };
+
+  // Drag and Drop support
+  const handleDropBooking = async (bookingId: string, newStaffId: string | null, newStartTime: string) => {
+    try {
+      if (!user || !bookingId) return;
+      
+      const bkObj = bookings.find(b => b.id === bookingId);
+      if (!bkObj) return;
+
+      const duration = bkObj.service?.duration_minutes || 30;
+      const [startH, startM] = newStartTime.split(':').map(Number);
+      const totalMinutes = startH * 60 + startM + duration;
+      const endH = Math.floor(totalMinutes / 60) % 24;
+      const endM = totalMinutes % 60;
+      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+
+      // Optimistic update
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, staff_id: newStaffId, start_time: newStartTime, end_time: endTimeStr } : b));
+
+      const { error } = await supabase
+        .from('bookings')
+        .update({
+           staff_id: newStaffId,
+           start_time: newStartTime,
+           end_time: endTimeStr
+        })
+        .eq('id', bookingId);
+        
+      if (error) {
+         console.error('Error dragging booking', error);
+         alert('Erro ao guardar a reagendamento.');
+         // Reload list if error
+         // loadTerminalData();
+      } else {
+        notifyTerminal(
+          "Agenda Atualizada",
+          `Reserva arrastada para as ${newStartTime}.`
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSaveManualBooking = async (e: React.FormEvent) => {
@@ -395,11 +440,16 @@ export default function Dashboard() {
 
       if (bErr) throw bErr;
 
-      if (!bData || !bData.setup_completed) {
-        // Business profile does not exist or setup is incomplete: prompt wizard redirection
-        navigate('/setup');
+      if (!bData) {
+        navigate('/partner/setup', { replace: true });
         return;
       }
+      
+      if (bData.status === 'setup' || !bData.setup_completed) {
+        navigate('/partner/setup', { replace: true });
+        return;
+      }
+      
       setBusiness(bData);
       setEditSlugValue(bData.slug || '');
       setPublicPageEnabled(bData.public_page_enabled !== false);
@@ -448,6 +498,7 @@ export default function Dashboard() {
       setLedgers(pyData || []);
       setPayouts(poData || []);
       setSubscriptions(subData || []);
+      setTabletOrder(null);
 
       // Real coupons fetching
       let cpData: any[] = [];
@@ -1067,7 +1118,7 @@ export default function Dashboard() {
         if (found) {
           notifyTerminal(
             "🎉 Plano PRO Ativado!",
-            "Pagamento confirmado com sucesso! O seu salão de beleza está agora no plano Glamzo PRO."
+            `Pagamento confirmado com sucesso! O seu salão de beleza está agora no plano ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}.`
           );
         } else {
           notifyTerminal(
@@ -1085,7 +1136,7 @@ export default function Dashboard() {
     if (status === 'cancelled_pro') {
       notifyTerminal(
         "ℹ️ Checkout Cancelado",
-        "O processo de subscrição Glamzo PRO foi cancelado ou interrompido."
+        `O processo de subscrição ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} foi cancelado ou interrompido.`
       );
       navigate('/dashboard', { replace: true });
     }
@@ -1233,10 +1284,10 @@ export default function Dashboard() {
   };
 
   // Launch a Glamzo Pay checkout recurring subscription with 14 days of trial
-  const handleSubscribePro = async () => {
+  const handleSubscribePro = async (planName: 'PRO' | 'TERMINAL' = 'PRO') => {
     if (!business) return;
     try {
-      notifyTerminal("💳 Iniciar Checkout", "A preparar o seu Glamzo Pay Checkout do Plano PRO...");
+      notifyTerminal("💳 Iniciar Checkout", `A preparar o seu Glamzo Pay Checkout do Plano ${planName}...`);
       const response = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
         headers: {
@@ -1244,7 +1295,7 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           businessId: business.id,
-          planName: 'PRO',
+          planName: planName,
           successUrl: window.location.origin + '/dashboard?status=success_pro&session_id={CHECKOUT_SESSION_ID}',
           cancelUrl: window.location.origin + '/dashboard?status=cancelled_pro'
         })
@@ -1271,7 +1322,7 @@ export default function Dashboard() {
   const handleCancelSubscription = async () => {
     if (!business) return;
     const confirmCancel = window.confirm(
-      "Tem a certeza absoluta de que deseja cancelar o seu plano Glamzo PRO?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão."
+      `Tem a certeza absoluta de que deseja cancelar o seu plano ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;
 
@@ -1292,7 +1343,7 @@ export default function Dashboard() {
 
       if (response.ok && resData?.success) {
         notifyTerminal("✔ Desativado", "A sua subscrição foi desativada com sucesso.");
-        setGlobalSuccess("A subscrição Glamzo PRO foi desativada. O seu salão foi ocultado do público.");
+        setGlobalSuccess(`A subscrição ${business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} foi desativada. O seu salão foi ocultado do público.`);
         
         // Instantly force local lock screen by updating state
         setBusiness(prev => {
@@ -1471,31 +1522,36 @@ export default function Dashboard() {
     e.preventDefault();
     if (!business) return;
     try {
+      const payload: any = {
+        full_name: staffForm.full_name,
+        role_title: staffForm.role_title || null,
+        avatar_url: staffForm.avatar_url || null,
+        is_active: staffForm.is_active,
+        off_days: staffForm.off_days || null
+      };
+
       if (editingStaff) {
-        const { error } = await supabase
-          .from('staff')
-          .update({
-            full_name: staffForm.full_name,
-            role_title: staffForm.role_title || null,
-            avatar_url: staffForm.avatar_url || null,
-            is_active: staffForm.is_active,
-            off_days: staffForm.off_days || null
-          })
-          .eq('id', editingStaff.id);
+        let { error } = await supabase.from('staff').update(payload).eq('id', editingStaff.id);
+        
+        // Fallback for missing off_days column in legacy databases
+        if (error && error.message.includes('off_days')) {
+           delete payload.off_days;
+           const retry = await supabase.from('staff').update(payload).eq('id', editingStaff.id);
+           error = retry.error;
+        }
 
         if (error) throw error;
         setGlobalSuccess("Ficha do profissional atualizada.");
       } else {
-        const { error } = await supabase
-          .from('staff')
-          .insert({
-            business_id: business.id,
-            full_name: staffForm.full_name,
-            role_title: staffForm.role_title || null,
-            avatar_url: staffForm.avatar_url || null,
-            is_active: staffForm.is_active,
-            off_days: staffForm.off_days || null
-          });
+        payload.business_id = business.id;
+        let { error } = await supabase.from('staff').insert(payload);
+        
+        // Fallback for missing off_days column in legacy databases
+        if (error && error.message.includes('off_days')) {
+           delete payload.off_days;
+           const retry = await supabase.from('staff').insert(payload);
+           error = retry.error;
+        }
 
         if (error) throw error;
         setGlobalSuccess("Profissional contratado e registado com sucesso.");
@@ -1504,6 +1560,7 @@ export default function Dashboard() {
       setEditingStaff(null);
       await loadTerminalData();
     } catch (err: any) {
+      console.error('STAFF_INSERT_ERROR', err);
       setGlobalError(err.message || 'Erro ao guardar ficha do profissional.');
     }
   };
@@ -1947,32 +2004,28 @@ export default function Dashboard() {
     return false;
   })();
 
-  // Block dashboard if no active/trialing subscription, or if card (stripe_subscription_id) has not been linked yet (required for marketplace & panel use)
+  // Block dashboard if subscription is explicitly past due or expired
   const isBillingBlocked = (() => {
     const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
     if (isDemo) return false;
 
-    // Must have a credit card linked/subscription configured in stripe to use the dashboard!
-    if (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '') {
+    if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid' || resolvedSubscriptionStatus === 'canceled') {
       return true;
     }
 
-    if (resolvedSubscriptionStatus === 'active' || resolvedSubscriptionStatus === 'trialing') {
+    if (resolvedSubscriptionStatus === 'trialing') {
       const expiresAt = trialEndsAt ? new Date(trialEndsAt).getTime() : null;
-      if (expiresAt && expiresAt <= Date.now() && resolvedSubscriptionStatus !== 'active') {
+      if (expiresAt && expiresAt <= Date.now()) {
         return true;
       }
       return false;
     }
-    return true;
+    
+    // Default to false, assuming setup wizard handled it
+    return false;
   })();
 
   const subBlockReason = (() => {
-    const isDemo = ['salao-spa-premium', 'barbearia-braga-moderna', 'estetica-beleza-braganca'].includes(business?.slug || '');
-    if (!isDemo && (!business?.stripe_subscription_id || business.stripe_subscription_id.trim() === '')) {
-      return 'active_trial_requires_card';
-    }
-    if (!activeSubscription && !resolvedSubscriptionStatus) return 'onboarding';
     if (resolvedSubscriptionStatus === 'past_due' || resolvedSubscriptionStatus === 'unpaid') return 'past_due';
     return 'expired';
   })();
@@ -2004,136 +2057,89 @@ export default function Dashboard() {
               
               {/* Visual status lock/rocket/alert accent */}
               <div className="w-16 h-16 bg-white/60 rounded-2xl flex items-center justify-center border border-slate-200/80 mx-auto">
-                {subBlockReason === 'onboarding' ? (
-                  <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
-                ) : subBlockReason === 'past_due' ? (
+                {subBlockReason === 'past_due' ? (
                   <AlertCircle className="w-8 h-8 text-amber-500 animate-bounce" />
                 ) : (
                   <Lock className="w-8 h-8 text-rose-500" />
                 )}
               </div>
 
-              {subBlockReason === 'active_trial_requires_card' ? (
+              {subBlockReason === 'past_due' ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900 flex flex-col items-center justify-center gap-2">
-                      <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
-                      <span>Ativar Período Experimental Glamzo PRO</span>
-                    </h2>
-                    <p className="text-sm text-slate-600 leading-relaxed font-sans px-2">
-                      Para colocar a sua loja online é necessário ativar o período experimental Glamzo PRO.
-                    </p>
-                  </div>
-
-                  <div className="text-[11px] text-left space-y-2.5 bg-white/40 p-4 rounded-2xl border border-slate-200">
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> 14 dias gratuitos de avaliação completa
-                    </p>
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Cancelamento 100% livre e imediato a qualquer instante
-                    </p>
-                    <p className="text-slate-500 font-medium flex items-center gap-2">
-                      <span className="text-purple-400 font-extrabold shrink-0">✔</span> Ativação instantânea do salão para receber reservas reais
-                    </p>
-                  </div>
-                </div>
-              ) : subBlockReason === 'onboarding' ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Ativar Glamzo PRO</h2>
+                    <h2 className="text-xl font-black text-slate-900">Erro na Cobrança</h2>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      O seu salão precisa de ativar o plano <span className="text-indigo-400 font-extrabold font-mono">Glamzo PRO</span> para:
-                    </p>
-                  </div>
-                  
-                  <div className="text-left space-y-2.5 bg-white/30 border border-slate-200/65 p-4 rounded-2xl">
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> aparecer no marketplace
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> receber reservas de clientes
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> aceitar pagamentos online seguros
-                    </p>
-                    <p className="text-xs text-slate-600 font-medium flex items-center gap-2.5">
-                      <span className="text-indigo-400 font-bold shrink-0">✔</span> usar o painel profissional completo
-                    </p>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 pt-1 leading-normal">
-                    Será feita apenas uma verificação segura do cartão via Glamzo Pay.
-                  </p>
-
-                  <div className="text-left space-y-1.5 bg-indigo-50 p-4 rounded-2xl border border-indigo-500/10">
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> 14 dias grátis de avaliação
-                    </p>
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> cancelamento livre a qualquer instante
-                    </p>
-                    <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-2">
-                      <span>✔</span> cobrança automática de 19.90€ apenas após o período gratuito
-                    </p>
-                  </div>
-                </div>
-              ) : subBlockReason === 'past_due' ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Erro na Cobrança (PRO)</h2>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      A última tentativa de cobrança automática da subscrição <span className="text-amber-500 font-bold">Glamzo PRO</span> falhou. Por favor, aceda ao portal de faturação seguro abaixo para regularizar os dados do seu cartão.
+                      A última tentativa de cobrança automática da subscrição <span className="text-amber-500 font-bold">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> falhou. Por favor, aceda ao portal de faturação seguro abaixo para regularizar os dados do seu cartão.
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-xl font-black text-slate-900">Período de Teste Expirado (PRO)</h2>
+                    <h2 className="text-xl font-black text-slate-900">Subscrição Expirada</h2>
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      O seu período de teste gratuito de 14 dias para o plano <span className="text-rose-500 font-extrabold">Glamzo PRO</span> expirou. Para reativar o seu salão e continuar a receber marcações, configure a sua subscrição de forma segura via Glamzo Pay.
+                      A sua subscrição ou período de teste para o plano <span className="text-rose-500 font-extrabold">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> expirou. Para reativar o seu salão e continuar a usar a plataforma, regularize a sua subscrição de forma segura.
                     </p>
                   </div>
                 </div>
               )}
 
-              {subBlockReason !== 'onboarding' && (
-                <div className="bg-white/60 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs">
-                  <div className="flex justify-between font-bold text-slate-500">
-                    <span>Subscrição Glamzo PRO</span>
-                    <span className="text-rose-400 font-bold">19.90€ / mês</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 leading-normal font-sans">
-                    Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Glamzo Pay e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
-                  </p>
+              <div className="bg-white/60 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs">
+                <div className="flex justify-between font-bold text-slate-500">
+                  <span>Subscrição {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span>
+                  <span className="text-rose-400 font-bold">{business?.selected_plan === 'app_tablet' ? '24.99€' : '19.99€'} / mês</span>
                 </div>
-              )}
+                <p className="text-[11px] text-slate-500 leading-normal font-sans">
+                  Insira os dados do cartão de crédito de forma segura. O processamento é feito 100% pelo Glamzo Pay e a subscrição pode ser livremente cancelada a qualquer instante no painel financeiro.
+                </p>
+              </div>
 
               <div className="flex flex-col gap-2.5">
-                <button
-                  onClick={handleSubscribePro}
-                  className="w-full py-4 bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-xs font-bold uppercase tracking-wider text-slate-900 rounded-xl shadow-xl shadow-purple-950/15 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>
-                    {subBlockReason === 'active_trial_requires_card'
-                      ? 'COMEÇAR TESTE GRATUITO'
-                      : subBlockReason === 'onboarding'
-                      ? 'Continuar para pagamento'
-                      : 'Ativar Plano PRO'}
-                  </span>
-                </button>
-
-                {business?.stripe_customer_id && (
+                {business?.stripe_customer_id ? (
                   <button
                     onClick={handleOpenBillingPortal}
-                    className="w-full py-3 bg-slate-100 hover:bg-slate-100 text-xs font-bold text-slate-600 rounded-xl border border-slate-300 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                    className="w-full py-4 bg-[#635BFF] hover:bg-[#5249ea] text-xs font-bold text-white uppercase tracking-wider rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                   >
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    <ShieldCheck className="w-5 h-5" />
                     <span>Regularizar Assinatura (Billing Portal)</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleSubscribePro(business?.selected_plan === 'app_tablet' ? 'TERMINAL' : 'PRO')}
+                    className="w-full py-4 bg-[#635BFF] hover:bg-[#5249ea] text-xs font-bold text-white uppercase tracking-wider rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    <span>Ativar Assinatura</span>
                   </button>
                 )}
               </div>
+
+              <button
+                onClick={async () => {
+                  try {
+                    setIsVerifyingSub(true);
+                    setVerifyingText("A sincronizar com a Stripe...");
+                    const r = await fetch('/api/stripe/verify-subscription', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ businessId: business?.id })
+                    });
+                    if (r.ok) {
+                      setGlobalSuccess("Estado da subscrição sincronizado com sucesso.");
+                      window.location.reload();
+                    } else {
+                      setGlobalError("Falha ao sincronizar subscrição.");
+                    }
+                  } catch (e: any) {
+                    setGlobalError(e.message || "Erro de ligação.");
+                  } finally {
+                    setIsVerifyingSub(false);
+                  }
+                }}
+                className="text-xs text-slate-500 hover:text-slate-800 font-bold transition block mx-auto underline mt-4"
+              >
+                Já paguei / Sincronizar
+              </button>
 
               <button
                 onClick={async () => {
@@ -2177,7 +2183,15 @@ export default function Dashboard() {
           {/* Drawer content */}
           <div className="relative flex flex-col w-72 max-w-xs h-full bg-white border-r border-[#1f1635] p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
             <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-4 shrink-0">
-              <div className="flex items-center gap-2.5">
+              <button 
+                onClick={async () => {
+                  setIsMobileSidebarOpen(false);
+                  await signOut();
+                  navigate('/');
+                }}
+                title="Voltar ao site inicial (Terminar Sessão)"
+                className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity"
+              >
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -2185,7 +2199,7 @@ export default function Dashboard() {
                   <span className="font-bold text-slate-900 text-[11px] tracking-tight block leading-none">Glamzo Terminal</span>
                   <span className="text-[8px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel de Controlo</span>
                 </div>
-              </div>
+              </button>
               <button 
                 onClick={() => setIsMobileSidebarOpen(false)}
                 className="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
@@ -2216,6 +2230,7 @@ export default function Dashboard() {
                 { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
                 { id: 'loja', label: 'Website & QR Code', icon: Globe },
                 { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
+                ...(tabletOrder ? [{ id: 'tablet', label: 'Terminal Glamzo', icon: Smartphone }] : []),
                 { id: 'configuracoes', label: 'Configurações', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -2282,13 +2297,20 @@ export default function Dashboard() {
       <aside className="hidden lg:flex w-64 border-r border-slate-200/80 bg-white flex-col justify-between shrink-0 h-full">
         <div>
           {/* Logo Brand Brand */}
-          <div className="h-16 border-b border-slate-200/60 flex items-center px-6 gap-3">
+          <button 
+            onClick={async () => {
+              await signOut();
+              navigate('/');
+            }}
+            title="Voltar ao site inicial (Terminar Sessão)"
+            className="h-16 border-b border-slate-200/60 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-50 transition-colors cursor-pointer"
+          >
             <GlamzoLogo size={32} glow={true} />
             <div>
               <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs font-display">GLAMZO</span>
               <span className="text-[9px] font-mono uppercase font-bold text-purple-400 tracking-wider">Painel do Parceiro</span>
             </div>
-          </div>
+          </button>
 
           {/* Quick Stats overview inside SideRail */}
           <div className="p-4 mx-4 my-2.5 bg-slate-50/40 border border-slate-200/80 rounded-xl">
@@ -2312,6 +2334,7 @@ export default function Dashboard() {
               { id: 'financeiro', label: 'Pagamentos', icon: Landmark },
               { id: 'loja', label: 'Website & QR Code', icon: Globe },
               { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
+              ...(tabletOrder ? [{ id: 'tablet', label: 'Terminal Glamzo', icon: Smartphone }] : []),
               { id: 'configuracoes', label: 'Configurações', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -2422,7 +2445,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <button 
-                onClick={handleSubscribePro}
+                onClick={() => handleSubscribePro('PRO')}
                 className="p-2.5 px-4 bg-amber-500 hover:bg-amber-650 text-[10px] text-slate-950 font-black uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto"
               >
                 Associar Cartão Agora
@@ -2438,15 +2461,41 @@ export default function Dashboard() {
                   <Sparkles className="w-4 h-4 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-extrabold text-slate-900 leading-normal">Período de Testes Ativo — Glamzo PRO</p>
+                  <p className="font-extrabold text-slate-900 leading-normal">Período de Testes Ativo — {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</p>
                   <p className="text-[11px] text-purple-400">Tem acesso total a todas as funcionalidades profissionais premium por mais <span className="text-slate-900 font-bold">{trialDaysRemaining} {trialDaysRemaining === 1 ? 'dia' : 'dias'}</span>.</p>
                 </div>
               </div>
               <button 
-                onClick={handleSubscribePro}
+                onClick={() => handleSubscribePro(business?.selected_plan === 'app_tablet' ? 'TERMINAL' : 'PRO')}
                 className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
               >
                 Gerir Subscrição
+              </button>
+              <button 
+                onClick={async () => {
+                  try {
+                    setIsVerifyingSub(true);
+                    setVerifyingText("A sincronizar com a Stripe...");
+                    const r = await fetch('/api/stripe/verify-subscription', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ businessId: business?.id })
+                    });
+                    if (r.ok) {
+                      setGlobalSuccess("Estado da subscrição sincronizado com sucesso.");
+                      window.location.reload();
+                    } else {
+                      setGlobalError("Falha ao sincronizar subscrição.");
+                    }
+                  } catch (e: any) {
+                    setGlobalError(e.message || "Erro de ligação.");
+                  } finally {
+                    setIsVerifyingSub(false);
+                  }
+                }}
+                className="p-2.5 px-3.5 bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer shadow-sm shrink-0 self-start sm:self-auto"
+              >
+                Sincronizar
               </button>
             </div>
           )}
@@ -2586,7 +2635,7 @@ export default function Dashboard() {
                     {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
                     <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
                       
-                      {/* ==================== TODAY VIEW ==================== */}
+                      {/* ==================== TODAY VIEW (ADVANCED DRAG/DROP GRID) ==================== */}
                       {agendaMode === 'today' && (
                         <div className="space-y-4">
                           {/* Rich Interactive Date Selector and Scroller */}
@@ -2652,175 +2701,114 @@ export default function Dashboard() {
                             )}
                           </div>
 
-                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
-                            Fita Horária • Marcações Reais do Dia
-                          </span>
+                          <div className="relative mt-6 overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm font-sans">
+                            {/* Real-time horizontal red line */}
+                            {selectedAgendaDate === new Date().toISOString().split('T')[0] && (
+                              <div 
+                                className="absolute left-0 right-0 border-t-2 border-rose-500 z-30 pointer-events-none"
+                                style={{ top: `${Math.max(0, (new Date().getHours() - 8) * 80 + (new Date().getMinutes() / 60) * 80) + 64}px` }} 
+                              >
+                                <div className="absolute -top-1.5 left-2 w-3 h-3 rounded-full bg-rose-500 shadow-md"></div>
+                              </div>
+                            )}
 
-                          {/* Timeline Slots */}
-                          <div className="space-y-4 divide-y divide-slate-800/60">
-                            {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'].map((hourSlot) => {
-                              // Find any active booking corresponding roughly to slot
-                              const activeBookingsAtHour = bookings.filter(b => 
-                                b.booking_date === selectedAgendaDate && 
-                                b.start_time.startsWith(hourSlot.split(':')[0])
-                              );
+                            <div className="flex min-w-max">
+                              {/* Left axis - Times (8:00 to 20:00) */}
+                              <div className="w-16 shrink-0 border-r border-slate-100 bg-slate-50 relative pt-16">
+                                {['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].map(hour => (
+                                  <div key={hour} className="h-[80px] relative border-b border-slate-100 text-[10px] font-bold text-slate-400 text-center flex items-start justify-center pt-2">
+                                      {hour}:00
+                                  </div>
+                                ))}
+                              </div>
 
-                              return (
-                                <div key={hourSlot} className="flex gap-4 sm:gap-6 pt-5 first:pt-0 group/row text-left">
-                                  {/* Left Hour Indicator */}
-                                  <div className="w-14 shrink-0 flex flex-col items-end pt-1 select-none">
-                                    <span className="text-xs font-mono font-bold text-slate-700 tracking-tight">{hourSlot}</span>
-                                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Slot</span>
+                              {/* Staff Columns */}
+                              {(staff.length > 0 ? staff : [{id: 'unassigned', full_name: 'Equipa', is_active: true} as any]).map(st => (
+                                <div key={st.id} className="flex-1 min-w-[220px] relative border-r border-slate-100">
+                                  {/* Staff Header */}
+                                  <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-center flex-col px-2 sticky top-0 z-20">
+                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs mb-1">
+                                      {st.full_name?.charAt(0) || 'E'}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-800 line-clamp-1">{st.full_name}</span>
                                   </div>
 
-                                  {/* Right Content */}
-                                  <div className="flex-1 min-h-[64px] space-y-3">
-                                    {activeBookingsAtHour.length > 0 ? (
-                                      activeBookingsAtHour.map((bk) => {
-                                        const isBlock = bk.notes?.startsWith('Bloqueio Agenda:');
-                                        const status = bk.booking_status;
-                                        
-                                        // Dynamic Left Accent Color Bar for Status
-                                        let borderColor = 'border-purple-800';
-                                        let leftBarColor = 'bg-purple-600';
-                                        let bgClass = 'bg-slate-50/90 border-slate-200';
-                                        
-                                        if (isBlock) {
-                                          borderColor = 'border-rose-900/30';
-                                          leftBarColor = 'bg-rose-500';
-                                          bgClass = 'bg-rose-50 border border-rose-900/30';
-                                        } else if (status === 'completed') {
-                                          borderColor = 'border-slate-200';
-                                          leftBarColor = 'bg-slate-600';
-                                          bgClass = 'bg-slate-50/50 border border-slate-200/80';
-                                        } else if (status === 'pending') {
-                                          borderColor = 'border-amber-900/60';
-                                          leftBarColor = 'bg-amber-500';
-                                          bgClass = 'bg-amber-50 border border-amber-900/40';
-                                        }
-
-                                        return (
-                                          <div 
-                                            key={bk.id} 
-                                            className={`relative overflow-hidden p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-colors hover:border-slate-300 ${bgClass}`}
-                                          >
-                                            {/* Status accent left bar */}
-                                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${leftBarColor}`} />
-
-                                            <div className="pl-2">
-                                              <div className="flex items-center gap-2">
-                                                <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">
-                                                  {getBookingDisplayName(bk)}
-                                                </h4>
-                                                {!isBlock && (
-                                                  <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-purple-95 border border-purple-800/50 text-purple-350">
-                                                    Atendimento
-                                                  </span>
-                                                )}
-                                              </div>
-                                              
-                                              {!isBlock ? (
-                                                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 leading-none">
-                                                  <span className="flex items-center gap-1">
-                                                    <span className="text-purple-400">💈</span> {bk.service?.name || 'Serviço'}
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="flex items-center gap-1">
-                                                    <span className="text-purple-405 font-bold">👥</span> {bk.staff?.full_name || 'Profissional'}
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-600">
-                                                    ⏱ {bk.service?.duration_minutes || '0'} min
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="text-slate-900 font-extrabold text-xs">
-                                                    {bk.total_price}€
-                                                  </span>
-                                                  <span className="text-slate-700">•</span>
-                                                  <span className="text-[10px] inline-flex items-center gap-1 font-semibold text-slate-600">
-                                                    💳 {bk.payment_method === 'stripe_online' ? 'Online' : 'No Local'} ({bk.payment_status === 'paid' ? 'Pago' : 'Não Pago'})
-                                                  </span>
-                                                </div>
-                                              ) : (
-                                                <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-semibold text-rose-400 font-mono">
-                                                  <span>🛑 Slot Bloqueado (Intervalo / Indisponível)</span>
-                                                  <span>•</span>
-                                                  <span>⏱ {bk.service?.duration_minutes || '30'} min</span>
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 pl-2">
-                                              {bk.booking_status !== 'completed' && bk.booking_status !== 'cancelled' && bk.booking_status !== 'no_show' && (
-  <div className="flex items-center gap-1.5">
-    {!isPastBooking(bk.booking_date, bk.end_time || bk.start_time) ? (
-      <>
-        <button 
-          type="button"
-          onClick={() => handleUpdateBookingStatus(bk.id, 'completed')}
-          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-[10px] font-mono cursor-pointer uppercase tracking-wider transition-all"
-        >
-          Concluir
-        </button>
-        <button 
-          type="button"
-          onClick={() => handleUpdateBookingStatus(bk.id, 'cancelled')}
-          className="px-3.5 py-2 bg-white hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-400 rounded-xl text-[10px] font-mono cursor-pointer transition-all"
-        >
-          Mover/Cancelar
-        </button>
-      </>
-    ) : (
-      <button 
-        type="button"
-        onClick={() => handleUpdateBookingStatus(bk.id, 'no_show')}
-        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-200 rounded-xl text-[10px] font-extrabold font-mono cursor-pointer uppercase tracking-wider transition-all"
-      >
-        Reclamar: Falta de Comparência
-      </button>
-    )}
-  </div>
-)}
-                                              <span className={"px-2.5 py-1 rounded-full text-[9px] font-extrabold font-mono uppercase tracking-wider " + (
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'bg-slate-50 text-slate-500 border border-slate-200' :
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'cancelled' ? 'bg-rose-50 text-rose-400 border border-rose-200' :
-        (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'bg-orange-50 text-orange-500 border border-orange-200' : 'bg-indigo-50 text-indigo-400 border border-indigo-200'
-      )}>
-        {(((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'completed' ? 'concluída' :
-         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status) === 'no_show' ? 'Falta de Comparência' : 
-         (((bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && isPastBooking(bk.booking_date, bk.end_time || bk.start_time)) ? 'completed' : bk.booking_status)}
-      </span>
-                                            </div>
-                                          </div>
-                                        );
-                                      })
-                                    ) : (
-                                      /* Quick Book / Block Event placeholder button: Fresha style with premium Dark Look */
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setManualStartTime(hourSlot);
-                                          setManualBookingType('booking');
-                                          setManualDate(selectedAgendaDate);
-                                          setIsManualBookingOpen(true);
-                                          if (services.length > 0) setManualServiceId(services[0].id);
-                                          if (staff.length > 0) setManualStaffId(staff[0].id);
-                                        }}
-                                        className="w-full h-14 bg-white hover:bg-purple-50 border border-dashed border-slate-200 hover:border-purple-800/80 text-slate-500 hover:text-purple-400 rounded-2xl flex items-center justify-between px-5 text-left transition-all duration-150 group cursor-pointer"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-lg font-bold font-mono opacity-65 group-hover:opacity-100 text-purple-400">+</span>
-                                          <span className="text-[11px] font-bold font-mono tracking-tight uppercase text-slate-500 group-hover:text-slate-900">Disponível</span>
+                                  {/* Hour Slots Container for Drag and Drop Dropzone */}
+                                  <div className="relative">
+                                    {['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].map(hour => {
+                                      const slotTime = `${hour}:00`;
+                                      return (
+                                        <div 
+                                          key={slotTime} 
+                                          className="h-[80px] border-b border-slate-100 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                          onDragOver={(e) => e.preventDefault()}
+                                          onDrop={(e) => {
+                                            e.preventDefault();
+                                            const bookingId = e.dataTransfer.getData('bookingId');
+                                            if (bookingId) handleDropBooking(bookingId, st.id === 'unassigned' ? null : st.id, slotTime);
+                                          }}
+                                          onClick={() => {
+                                              setManualStartTime(slotTime);
+                                              setManualBookingType('booking');
+                                              setManualDate(selectedAgendaDate);
+                                              setIsManualBookingOpen(true);
+                                              if (st.id !== 'unassigned') setManualStaffId(st.id);
+                                          }}
+                                        >
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-400 bg-white border border-slate-200 px-2 py-1 rounded-lg">
-                                          Reservar {hourSlot}
-                                        </span>
-                                      </button>
-                                    )}
+                                      );
+                                    })}
+
+                                    {/* Absolute positioned active bookings for this staff */}
+                                    {bookings.filter(b => b.booking_date === selectedAgendaDate && (b.staff_id === st.id || (!b.staff_id && st.id === 'unassigned'))).map(bk => {
+                                      const startH = parseInt(String(bk.start_time).split(':')[0] || '8');
+                                      const startM = parseInt(String(bk.start_time).split(':')[1] || '0');
+                                      if (startH < 8 || startH > 20) return null; // fallback bounds
+                                      
+                                      const duration = bk.service?.duration_minutes || 30;
+                                      const topPos = (startH - 8) * 80 + (startM / 60) * 80;
+                                      const height = Math.max(30, (duration / 60) * 80);
+                                      
+                                      let statusColors = 'bg-blue-50 border border-blue-200 text-blue-900 border-l-4 border-l-blue-500';
+                                      if (bk.booking_status === 'completed') statusColors = 'bg-amber-50 border border-amber-200 text-amber-900 border-l-4 border-l-amber-500';
+                                      else if (bk.booking_status === 'confirmed') statusColors = 'bg-purple-50 border border-purple-200 text-purple-900 border-l-4 border-l-purple-500';
+                                      else if (bk.booking_status === 'cancelled' || bk.booking_status === 'no_show' || bk.notes?.startsWith('Bloqueio')) {
+                                        statusColors = 'bg-rose-50 border border-rose-200 text-rose-900 border-l-4 border-l-rose-500';
+                                      }
+
+                                      return (
+                                        <div
+                                          key={bk.id}
+                                          draggable
+                                          onDragStart={(e) => {
+                                            e.dataTransfer.setData('bookingId', bk.id);
+                                          }}
+                                          className={`absolute left-1 right-1 rounded-md p-1.5 shadow-sm text-left overflow-hidden cursor-move transition-transform hover:z-30 hover:scale-[1.02] hover:shadow-md ${statusColors}`}
+                                          style={{ top: `${topPos}px`, height: `${height - 2}px` }}
+                                        >
+                                          <div className="text-[8px] font-bold opacity-70 leading-tight truncate">
+                                            {bk.start_time} - {bk.end_time}
+                                          </div>
+                                          <div className="text-[10px] font-black truncate mt-0.5 leading-tight">
+                                            {getBookingDisplayName(bk)}
+                                          </div>
+                                          {!bk.notes?.startsWith('Bloqueio') && (
+                                            <>
+                                              <div className="text-[9px] truncate opacity-90 leading-tight">
+                                                {bk.service?.name}
+                                              </div>
+                                              <div className="text-[8px] opacity-75 mt-0.5 font-mono">
+                                                {bk.booking_status === 'completed' ? 'CONCLUÍDA' : bk.booking_status === 'pending' ? 'PENDENTE' : 'CONFIRMADA'}
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -3917,6 +3905,54 @@ export default function Dashboard() {
               )}
 
               {/* ==================================================== */}
+              {/* VIEW 12: TABLET ORDER STATUS                         */}
+              {/* ==================================================== */}
+              {activeTab === 'tablet' && tabletOrder && (
+                <div id="view-tablet" className="space-y-6 animate-fade-in max-w-2xl">
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                       <Smartphone className="w-5 h-5 text-purple-600" /> Terminal Glamzo
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Acompanhe o estado do envio do seu equipamento PRO.</p>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white rounded-lg shadow flex items-center justify-center">
+                        <Truck className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Estado do Envio</span>
+                        <h4 className="font-bold text-slate-900 text-lg capitalize">{tabletOrder.status}</h4>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Transportadora</span>
+                        <h4 className="font-bold text-slate-900 mt-1">{tabletOrder.carrier || 'Aguardando envio'}</h4>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">Tracking #</span>
+                        <h4 className="font-mono text-slate-900 mt-1 text-sm">{tabletOrder.tracking_code || '---'}</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold mb-2 block">Morada de Entrega</span>
+                      <p><strong>Nome:</strong> {tabletOrder.shipping_name}</p>
+                      <p><strong>Telefone:</strong> {tabletOrder.shipping_phone}</p>
+                      <p><strong>Morada:</strong> {tabletOrder.shipping_address}, {tabletOrder.shipping_postal_code} {tabletOrder.shipping_city}</p>
+                    </div>
+                    
+                    <button className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2">
+                       <HelpCircle className="w-4 h-4" /> Relatar problema de entrega
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
               {/* VIEW 8: CONFIGURAÇÕES - EDIT SHOP PROFILE            */}
               {/* ==================================================== */}
               {activeTab === 'configuracoes' && (
@@ -4199,34 +4235,59 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-purple-400" />
-                          <span>Subscrição & Plano Atual (Glamzo PRO)</span>
+                          <span>Subscrição & Plano Atual</span>
                         </h4>
                         <p className="text-[10px] text-slate-500 mt-0.5 leading-normal font-sans">
-                          Acompanhe o estado da sua assinatura de software e os seus dias de teste ativo.
+                          Acompanhe o estado da sua assinatura de software.
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-200 text-purple-400 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase">
-                        {business?.subscription_status || 'Trialing'}
+                      <span className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full tracking-wider font-mono uppercase ${
+                        resolvedSubscriptionStatus === 'active' 
+                          ? 'bg-emerald-500/10 border border-emerald-200 text-emerald-600'
+                          : resolvedSubscriptionStatus === 'trialing'
+                            ? 'bg-amber-500/10 border border-amber-200 text-amber-600'
+                            : 'bg-rose-500/10 border border-rose-200 text-rose-600'
+                      }`}>
+                        {resolvedSubscriptionStatus === 'active' ? 'Ativo' 
+                          : resolvedSubscriptionStatus === 'trialing' ? 'Em Período Experimental' 
+                          : resolvedSubscriptionStatus === 'past_due' ? 'Atrasado'
+                          : resolvedSubscriptionStatus === 'canceled' ? 'Cancelado'
+                          : 'Pendente'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/40 p-4 rounded-2xl border border-slate-200 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white/40 p-4 rounded-2xl border border-slate-200 text-xs">
                       <div className="space-y-1">
                         <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Plano Ativo</span>
-                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">Glamzo PRO</span>
-                        <span className="text-[10px] text-slate-500 block">Acesso ilimitado à plataforma, agenda e comissões integradas.</span>
+                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">
+                          {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">
+                          {business?.selected_plan === 'app_tablet' ? 'Plataforma completa + Terminal físico.' : 'Acesso ilimitado à plataforma.'}
+                        </span>
                       </div>
                       <div className="space-y-1">
                         <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Mensalidade Recorrente</span>
-                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">19.90€ <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span></span>
-                        <span className="text-[10px] text-slate-500 block">Cobrança segura automática processada pelo Glamzo Pay.</span>
+                        <span className="text-purple-400 font-extrabold text-xs sm:text-sm leading-none block">
+                          {business?.selected_plan === 'app_tablet' ? '24.99€' : '19.99€'} <span className="text-[10px] text-slate-500 font-medium font-sans">/ mês</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">Processado pelo Glamzo Pay.</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">Próxima Cobrança</span>
+                        <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">
+                          {trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('pt-PT') : 'N/A'}
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">
+                          {resolvedSubscriptionStatus === 'trialing' ? 'Fim do período experimental.' : 'Data de renovação do ciclo.'}
+                        </span>
                       </div>
                     </div>
 
                     {/* Subscriptions Info Details */}
                     <div className="text-xs text-slate-500 leading-relaxed space-y-2">
                       <p>
-                        O plano <span className="font-extrabold text-slate-900">Glamzo PRO</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
+                        O plano <span className="font-extrabold text-slate-900">{business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'}</span> inclui 14 dias de teste gratuito na ativação inicial. Se optar por cancelar antes de terminar o período técnico de 14 dias, nenhuma cobrança será efetuada ao seu cartão bancário.
                       </p>
                       {trialEndsAt && (
                         <p className="font-mono text-[10px] text-indigo-400 bg-indigo-950/25 p-2 px-3 rounded-lg border border-indigo-950/45 w-fit">
@@ -4259,11 +4320,11 @@ export default function Dashboard() {
                             ⚠️ Atualmente, a sua parceria está ativa apenas em teste local ou sem cartão registado no Glamzo Pay. Para garantir a visibilidade do estabelecimento no Marketplace, ative a sua assinatura abaixo:
                           </p>
                           <button
-                            onClick={handleSubscribePro}
+                            onClick={() => handleSubscribePro('PRO')}
                             className="bg-gradient-to-tr from-[#9333ea] to-[#db2777] hover:opacity-95 text-slate-900 text-xs font-extrabold uppercase px-5 py-3.5 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2"
                           >
                             <CreditCard className="w-4.5 h-4.5" />
-                            <span>Ativar Glamzo PRO (Pagamento online)</span>
+                            <span>Ativar {business?.selected_plan === 'app_tablet' ? 'PRO Terminal' : 'Glamzo PRO'} (Pagamento online)</span>
                           </button>
                         </div>
                       )}

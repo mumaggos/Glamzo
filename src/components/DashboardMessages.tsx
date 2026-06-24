@@ -196,6 +196,17 @@ export default function DashboardMessages({ businessId }: { businessId: string }
                 <div className="text-center text-xs text-slate-500 py-6">A carregar mensagens...</div>
               ) : (
                 messages.map(msg => {
+                  const isSystem = msg.sender_type === 'system';
+                  if (isSystem) {
+                    return (
+                      <div key={msg.id} className="text-center my-3">
+                        <span className="inline-block bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-mono px-3 py-1 rounded-full">
+                          {msg.message}
+                        </span>
+                      </div>
+                    );
+                  }
+
                   const isStore = msg.sender_type === 'business' || msg.sender_type === 'ai';
                   return (
                     <div 

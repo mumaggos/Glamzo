@@ -13,10 +13,11 @@ export default function PartnerLogin() {
       if (profile.role === 'admin') {
         navigate('/admin', { replace: true });
       } else if (profile.role === 'business') {
-        // We can't do the async check easily here without another state, so we rely on the submit handler
-        // or just send to dashboard and let dashboard bounce them back to /setup if needed.
-        // For now, if they are already logged in and hit /partner/login, we'll just send them to dashboard.
-        navigate('/dashboard', { replace: true });
+        import('../utils/partnerRouting').then(({ resolvePartnerRoute }) => {
+          resolvePartnerRoute(user, profile.role, supabase).then(route => {
+            navigate(route, { replace: true });
+          });
+        });
       } else {
         navigate('/account', { replace: true });
       }
@@ -70,23 +71,8 @@ export default function PartnerLogin() {
       const role = profData?.role || 'customer';
 
       let redirect = '/dashboard';
-      if (role === 'customer') {
-        redirect = '/account';
-      } else if (role === 'admin') {
-        redirect = '/admin';
-      } else if (role === 'business') {
-        // Check if business has completed setup
-        const { data: bizData } = await supabase
-          .from('businesses')
-          .select('setup_completed')
-          .eq('owner_id', activeUser.id)
-          .maybeSingle();
-        
-        // If no business profile or setup is not completed, redirect to setup wizard
-        if (!bizData || !bizData.setup_completed) {
-          redirect = '/setup';
-        }
-      }
+      if (role === 'customer') redirect = '/account';
+      else if (role === 'admin') redirect = '/admin';
 
       setSuccessMsg('Sessão iniciada com sucesso! A redirecionar...');
       
@@ -96,7 +82,14 @@ export default function PartnerLogin() {
 
     } catch (err: any) {
       console.error('Partner Login Error:', err);
-      setErrorMsg(err.message || 'Falha ao autenticar. Confirme suas credenciais.');
+      if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+        setErrorMsg('Por favor, verificar a conta primeiro utilizando o código que enviámos por e-mail.');
+        setTimeout(() => {
+          navigate(`/partner/signup?email=${encodeURIComponent(email)}&step=verify`);
+        }, 1500);
+      } else {
+        setErrorMsg(err.message || 'Falha ao autenticar. Confirme suas credenciais.');
+      }
     } finally {
       setLoading(false);
     }

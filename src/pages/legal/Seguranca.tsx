@@ -1,12 +1,17 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Seguranca() {
   return (
-    <ContentLayout title="Segurança e Proteção de Dados" lastUpdated="18 de Junho de 2026">
-      <p>
-        A transparência, a modernidade e a garantia de isolamento criptográfico são pedras balneares do crescimento comunitário na estrutura corporativa. Aqui descrevemos as vertentes robustas do serviço Glamzo.
-      </p>
+    <DynamicLegalPage 
+      slug="seguranca-e-protecao-de-dados"
+      defaultTitle="Segurança e Proteção de Dados" 
+      defaultLastUpdated="18 de Junho de 2026"
+      defaultContent={
+        <>
+          <p>
+            A transparência, a modernidade e a garantia de isolamento criptográfico são pedras balneares do crescimento comunitário na estrutura corporativa. Aqui descrevemos as vertentes robustas do serviço Glamzo.
+          </p>
 
       <h2>1. Infraestruturas na Nuvem e Base de Dados</h2>
       <p>
@@ -27,6 +32,8 @@ export default function Seguranca() {
       <p>
         Nenhum desenvolvedor corporativo, proprietário da plataforma ou profissional de banco de base de dados afiliado no ecossistema de operação técnica e apoio informático na Glamzo possuirá (em parte nenhuma, de modo visível ou ofuscado) visualização aos seus CVC's ou panóplia do seu número digital de crédito/débito. Apenas os provedores de serviços financeiros (Banco Intermediário da Stripe) possui e retém esta comunicação na cloud PCI-Compliance.
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

@@ -1,10 +1,14 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function FaqParceiro() {
   return (
-    <ContentLayout title="Perguntas Frequentes (FAQ) - Parceiros (Salões)">
-      <p>O centro e apoio dos Parceiros e Profissionais. Toda a informação técnica e base simplificada em prol da modernização das vossas atividades.</p>
+    <DynamicLegalPage 
+      slug="faq-parceiro"
+      defaultTitle="Perguntas Frequentes (FAQ) - Parceiros (Salões)" 
+      defaultContent={
+        <>
+          <p>O centro e apoio dos Parceiros e Profissionais. Toda a informação técnica e base simplificada em prol da modernização das vossas atividades.</p>
 
       <h2>1. Como aderir à rede da Glamzo?</h2>
       <p>
@@ -25,6 +29,8 @@ export default function FaqParceiro() {
       <p>
         Caso presencie dificuldades da base técnica, necessite pedir estornos pontuais complexos do lado da gestão, sinta falta do repórter de faturas e pagamentos de apoio ou qualquer assunto jurídico das marcações na conta profissional, abra ticket do modelo ou contacte as frentes base: <strong>glamzo.suporte@gmail.com</strong>
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

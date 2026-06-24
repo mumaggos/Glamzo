@@ -1,564 +1,604 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
-import { slugify, generateUniqueSlug } from '../../utils/slugify';
-import { PORTUGAL_GEO, getCoordinatesForCity } from '../../utils/geoData';
-import { optimizeImageBeforeUpload } from '../../utils/imageOptimizer';
-import {
-  Store, Loader2, Check, ArrowRight, ArrowLeft, Building2, MapPin, 
-  Phone, Mail, FileText, Image, Scissors, MonitorSmartphone, CreditCard, User
+import { 
+  Building2, Scissors, CreditCard, Landmark, CheckCircle, 
+  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText
 } from 'lucide-react';
+import { generateUniqueSlug } from '../../utils/slugify';
 
 export default function SetupWizard() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
   
-  const [businessId, setBusinessId] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 6;
+  const [loading, setLoading] = useState(true);
+  const [business, setBusiness] = useState<any>(null);
+  const [step, setStep] = useState(1);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Step 1: Business Details
+  // Step 1: Data
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('Cabelo & Barbearia');
   const [phone, setPhone] = useState('');
-  const [publicEmail, setPublicEmail] = useState('');
-  const [addressLine1, setAddressLine1] = useState('');
-  const [addressLine2, setAddressLine2] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [city, setCity] = useState('Lisboa');
-  const [district, setDistrict] = useState('Lisboa');
-  const [description, setDescription] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
 
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
-  const [newServiceName, setNewServiceName] = useState('');
-  const [newServicePrice, setNewServicePrice] = useState('');
-  const [newServiceDuration, setNewServiceDuration] = useState('30');
 
   // Step 3: Plan
-  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'pro_terminal' | null>(null);
-
-  // Step 4: Payments
-  const [acceptsOnlinePayments, setAcceptsOnlinePayments] = useState<boolean | null>(null);
-
-  // Step 5: Staff (Optional)
-  const [staffName, setStaffName] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<'PRO' | 'TERMINAL'>('PRO');
+  const [shippingName, setShippingName] = useState('');
+  const [shippingPhone, setShippingPhone] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [shippingPostalCode, setShippingPostalCode] = useState('');
+  const [shippingCity, setShippingCity] = useState('');
 
   useEffect(() => {
-    async function initSetup() {
-      if (!user) return;
+    fetchBusiness();
+  }, [user]);
+
+  useEffect(() => {
+    const status = searchParams.get('status');
+    if (status === 'stripe_success') {
+      setSuccessMsg('Subscrição ativada com sucesso!');
+      setStep(4);
+      window.history.replaceState({}, document.title, '/partner/setup');
+    } else if (status === 'stripe_cancelled') {
+      setErrorMsg('Pagamento cancelado ou não concluído.');
+      window.history.replaceState({}, document.title, '/partner/setup');
+    }
+  }, [searchParams]);
+
+  const fetchBusiness = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const { data: biz, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
       
-      try {
-        const { data: business } = await supabase
-          .from('businesses')
-          .select('*')
-          .eq('owner_id', user.id)
-          .maybeSingle();
-
-        if (business) {
-          if (business.setup_completed) {
-            navigate('/dashboard', { replace: true });
-            return;
+      let currentBiz = biz;
+      
+      if (!currentBiz) {
+        // Create initial placeholder business idempotently
+        const slug = await generateUniqueSlug(`loja-${user.id.substring(0, 8)}`);
+        const payload = {
+          owner_id: user.id,
+          name: '',
+          email: user.email || '',
+          phone: '',
+          address: '',
+          city: '',
+          district: '', 
+          postal_code: '',
+          status: 'setup',
+          setup_step: 1,
+          setup_completed: false,
+          slug: slug,
+          category: 'Cabelo & Barbearia'
+        };
+        
+        const { data: newBiz, error: createErr } = await supabase.from('businesses').insert(payload).select().single();
+          
+        if (createErr) {
+          if (createErr.code === '23505') {
+            const { data: existingBiz } = await supabase.from('businesses').select('*').eq('owner_id', user.id).single();
+            currentBiz = existingBiz;
+          } else if (createErr.code === '42703' || createErr.message?.includes('column')) {
+            const fallbackPayload = { ...payload };
+            delete (fallbackPayload as any).setup_step;
+            delete (fallbackPayload as any).setup_completed;
+            const { data: fbBiz } = await supabase.from('businesses').insert(fallbackPayload).select().single();
+            currentBiz = fbBiz;
+          } else {
+             throw createErr;
           }
-          
-          setBusinessId(business.id);
-          setCurrentStep(business.setup_step || 1);
-          
-          setName(business.name || '');
-          setCategory(business.category || 'Cabelo & Barbearia');
-          setPhone(business.phone || '');
-          setPublicEmail(business.email || '');
-          setAddressLine1(business.address || business.address_line_1 || '');
-          setAddressLine2(business.door_number || business.address_line_2 || '');
-          setPostalCode(business.postal_code || '');
-          setCity(business.city || 'Lisboa');
-          setDistrict(business.district || 'Lisboa');
-          setDescription(business.description || '');
-          setLogoUrl(business.logo_url || '');
-          setCoverUrl(business.cover_url || '');
-          setSelectedPlan(business.selected_plan_code as any);
-          
-          if (business.accepts_online_payments !== null) {
-             setAcceptsOnlinePayments(business.accepts_online_payments);
-          }
-
-          // Fetch existing services
-          const { data: srvs } = await supabase
-            .from('services')
-            .select('*')
-            .eq('business_id', business.id);
-            
-          if (srvs) setServices(srvs);
+        } else {
+          currentBiz = newBiz;
         }
-      } catch (err) {
-        console.error('Error fetching business setup state:', err);
+      }
+
+      if (currentBiz) {
+        setBusiness(currentBiz);
+        if (currentBiz.status === 'active' && currentBiz.setup_completed) {
+          navigate('/partner/dashboard', { replace: true });
+          return;
+        }
+        
+        setName(currentBiz.name || '');
+        setPhone(currentBiz.phone || '');
+        setEmail(currentBiz.email || '');
+        setAddress(currentBiz.address || '');
+        setCity(currentBiz.city || '');
+        setPostalCode(currentBiz.postal_code || '');
+        
+        // Restore step
+        if (!searchParams.get('status') && currentBiz.setup_step) {
+          setStep(currentBiz.setup_step);
+        }
+
+        const { data: svcs } = await supabase.from('services').select('*').eq('business_id', currentBiz.id);
+        if (svcs) setServices(svcs);
+        
+        const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', currentBiz.id).maybeSingle();
+        if (order) {
+          setSelectedPlan('TERMINAL');
+          setShippingName(order.shipping_name || '');
+          setShippingPhone(order.shipping_phone || '');
+          setShippingAddress(order.shipping_address || '');
+          setShippingPostalCode(order.shipping_postal_code || '');
+          setShippingCity(order.shipping_city || '');
+        }
+      }
+    } catch (err: any) {
+      setErrorMsg('Erro ao preparar a configuração da loja: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSetupStep = async (newStep: number) => {
+    if (!business) return;
+    try {
+      await supabase.from('businesses').update({ setup_step: newStep }).eq('id', business.id);
+    } catch (e) {
+      console.warn("Could not save setup_step", e);
+    }
+    setBusiness({ ...business, setup_step: newStep });
+    setStep(newStep);
+  };
+
+  const handleNext = async () => {
+    setErrorMsg(null);
+    if (!user || !business) return;
+
+    if (step === 1) {
+      if (!name || !phone || !address || !city || !postalCode) {
+        setErrorMsg('Preencha os campos obrigatórios.');
+        return;
+      }
+      setLoading(true);
+      try {
+        let slug = business.slug;
+        if (slug.startsWith('loja-') && name) {
+          slug = await generateUniqueSlug(name);
+        }
+        const { error } = await supabase.from('businesses').update({
+          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2
+        }).eq('id', business.id);
+        
+        if (error) {
+          if (error.code === '42703' || error.message?.includes('setup_step')) {
+            await supabase.from('businesses').update({ name, phone, email, address, city, postal_code: postalCode, slug }).eq('id', business.id);
+          } else {
+            throw error;
+          }
+        }
+        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2 });
+        setStep(2);
+      } catch (err: any) {
+        setErrorMsg(err.message);
       } finally {
         setLoading(false);
       }
-    }
-    initSetup();
-  }, [user, navigate]);
-
-  const saveProgress = async (stepNumber: number, data: any = {}) => {
-    if (!user) return null;
-    try {
-      let currentBizId = businessId;
+    } else if (step === 2) {
+      if (services.length === 0) {
+        setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
+        return;
+      }
+      await updateSetupStep(3);
+    } else if (step === 3) {
+      if (selectedPlan === 'TERMINAL') {
+        if (!shippingName || !shippingPhone || !shippingAddress || !shippingCity || !shippingPostalCode) {
+          setErrorMsg('Preencha os dados de envio do terminal.');
+          return;
+        }
+      }
       
-      if (!currentBizId) {
-        // Initial insert
-        const slug = await generateUniqueSlug(data.name || 'Nova Loja');
-        const { latitude, longitude } = getCoordinatesForCity(data.district || 'Lisboa', data.city || 'Lisboa');
+      setLoading(true);
+      try {
+        // Save plan choice
+        try {
+          await supabase.from('businesses').update({ 
+            selected_plan: selectedPlan === 'TERMINAL' ? 'app_tablet' : 'app',
+            tablet_requested: selectedPlan === 'TERMINAL'
+          }).eq('id', business.id);
+        } catch(e) {}
         
-        const payload = {
-          owner_id: user.id,
-          name: data.name,
-          slug,
-          status: 'setup',
-          setup_step: stepNumber,
-          category: data.category,
-          phone: data.phone,
-          email: data.publicEmail,
-          address: data.addressLine1,
-          address_line_1: data.addressLine1,
-          door_number: data.addressLine2,
-          address_line_2: data.addressLine2,
-          postal_code: data.postalCode,
-          city: data.city,
-          district: data.district,
-          description: data.description,
-          logo_url: data.logoUrl,
-          cover_url: data.coverUrl,
-          latitude,
-          longitude
-        };
+        if (selectedPlan === 'TERMINAL') {
+           await supabase.from('tablet_orders').upsert({
+             business_id: business.id,
+             shipping_name: shippingName,
+             shipping_phone: shippingPhone,
+             shipping_address: shippingAddress,
+             shipping_city: shippingCity,
+             shipping_postal_code: shippingPostalCode,
+             status: 'pending'
+           }, { onConflict: 'business_id' });
+        }
 
-        const { data: newBiz, error } = await supabase
-          .from('businesses')
-          .insert(payload)
-          .select('id')
-          .maybeSingle();
-
-        if (error) throw error;
-        currentBizId = newBiz?.id;
-        setBusinessId(currentBizId);
-      } else {
-        // Update existing
-        const { error } = await supabase
-          .from('businesses')
-          .update({
-            setup_step: stepNumber,
-            last_onboarding_update_at: new Date().toISOString(),
-            ...data
+        const res = await fetch('/api/stripe/create-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: business.id,
+            planName: selectedPlan,
+            successUrl: window.location.origin + '/partner/setup?status=stripe_success',
+            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
           })
-          .eq('id', currentBizId);
-          
-        if (error) throw error;
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Failed to create checkout session');
+        }
+      } catch (e: any) {
+        setErrorMsg(e.message);
+        setLoading(false);
       }
-      
-      return currentBizId;
-    } catch (err: any) {
-      console.error('Error saving progress:', err);
-      // Fallback update without new schema columns if they don't exist yet
-      if (businessId && data.selected_plan_code) {
-         try {
-             await supabase.from('businesses').update({
-                 setup_step: stepNumber
-             }).eq('id', businessId);
-             return businessId;
-         } catch (e) {}
-      }
-      throw err;
+    } else if (step === 4) {
+      await updateSetupStep(5);
     }
   };
 
-  const handleNextStep1 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    setSubmitting(true);
-    
+  const triggerStripeOnboarding = async () => {
+    if (!business) return;
+    setLoading(true);
     try {
-      await saveProgress(2, {
-        name, category, phone, publicEmail, addressLine1, addressLine2,
-        postalCode, city, district, description, logoUrl, coverUrl
+      const response = await fetch('/api/stripe/connect/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: business.id,
+          businessEmail: business.email,
+          businessName: business.name
+        })
       });
-      setCurrentStep(2);
-    } catch (err: any) {
-      setErrorMsg('Erro ao guardar dados. ' + err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleAddService = async () => {
-    if (!newServiceName || !newServicePrice || !businessId) return;
-    
-    try {
-      const { data, error } = await supabase.from('services').insert({
-        business_id: businessId,
-        name: newServiceName,
-        price: parseFloat(newServicePrice),
-        duration_minutes: parseInt(newServiceDuration),
-        is_active: true
-      }).select().single();
-      
-      if (error) throw error;
-      if (data) {
-        setServices([...services, data]);
-        setNewServiceName('');
-        setNewServicePrice('');
-        setNewServiceDuration('30');
+      const data = await response.json();
+      if (response.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to create connect session');
       }
     } catch (err: any) {
-      setErrorMsg('Erro ao adicionar serviço.');
+      setErrorMsg(err.message);
+      setLoading(false);
     }
   };
 
-  const handleNextStep2 = async () => {
-    if (services.length === 0) {
-      setErrorMsg('Adicione pelo menos um serviço para os clientes conseguirem reservar.');
-      return;
-    }
-    setErrorMsg(null);
-    setSubmitting(true);
+  const publishBusiness = async () => {
+    if (!business) return;
+    setLoading(true);
     try {
-      await saveProgress(3);
-      setCurrentStep(3);
-    } catch (err) {
-      setErrorMsg('Erro ao avançar.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleNextStep3 = async () => {
-    if (!selectedPlan) {
-      setErrorMsg('Por favor, escolha um plano para continuar.');
-      return;
-    }
-    setErrorMsg(null);
-    setSubmitting(true);
-    try {
-      await saveProgress(4, {
-        selected_plan_code: selectedPlan,
-        selected_plan_name: selectedPlan === 'pro' ? 'PRO' : 'PRO TERMINAL',
-        tablet_requested: selectedPlan === 'pro_terminal',
-        tablet_deposit_amount: selectedPlan === 'pro_terminal' ? 9.99 : null
-      });
-      setCurrentStep(4);
-    } catch (err) {
-      setErrorMsg('Erro ao guardar plano.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleNextStep4 = async () => {
-    if (acceptsOnlinePayments === null) {
-      setErrorMsg('Indique se pretende aceitar pagamentos online.');
-      return;
-    }
-    setErrorMsg(null);
-    setSubmitting(true);
-    try {
-      await saveProgress(5, {
-        accepts_online_payments: acceptsOnlinePayments,
-        payments_mode: acceptsOnlinePayments ? 'online_enabled' : 'offline_only'
-      });
-      // Skip Staff step for now and go to review
-      setCurrentStep(6);
-    } catch (err) {
-      setErrorMsg('Erro ao guardar preferência de pagamentos.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleFinish = async () => {
-    setErrorMsg(null);
-    setSubmitting(true);
-    try {
-      // Final activation
-      await supabase.from('businesses').update({
+      const { error } = await supabase.from('businesses').update({ 
         status: 'active',
         setup_completed: true,
-        setup_step: 6,
-        onboarding_completed_at: new Date().toISOString(),
-        published_at: new Date().toISOString(),
-        is_visible_in_marketplace: true, // Visible as long as trial/sub is active
-        subscription_status: 'trialing', // Start 14-day trial logically
-        trial_used: true
-      }).eq('id', businessId);
+        onboarding_completed_at: new Date().toISOString()
+      }).eq('id', business.id);
       
-      // Update role to be sure
-      if (user) {
-        await supabase.from('profiles').update({ role: 'business' }).eq('id', user.id);
-        localStorage.setItem(`local_role_${user.id}`, 'business');
-        await refreshProfile();
+      if (error && error.code !== '42703') {
+        throw error;
+      } else if (error && error.code === '42703') {
+        await supabase.from('businesses').update({ status: 'active' }).eq('id', business.id);
       }
       
-      navigate('/dashboard', { replace: true });
-    } catch (err: any) {
-      setErrorMsg('Erro ao ativar a loja. ' + err.message);
-      setSubmitting(false);
+      navigate('/partner/dashboard', { replace: true });
+    } catch(err: any) {
+      setErrorMsg(err.message);
+      setLoading(false);
     }
   };
 
-  if (!user) return <Navigate to="/partner/login" replace />;
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>;
+  if (loading && !business) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>;
+  }
+
+  const steps = [
+    { num: 1, title: 'Loja', icon: <Building2 className="w-4 h-4" /> },
+    { num: 2, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
+    { num: 3, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
+    { num: 4, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
+    { num: 5, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-12 font-sans selection:bg-purple-200">
-      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden relative">
-        
-        {/* Progress Bar */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
-          <div 
-            className="h-full bg-purple-600 transition-all duration-500 ease-out" 
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          />
+    <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Configure a sua Loja</h1>
+          <p className="text-sm text-slate-500 mt-2">Complete os passos para ativar o seu estabelecimento na Glamzo.</p>
         </div>
 
-        <div className="p-8 sm:p-12">
-          <div className="mb-8">
-            <span className="text-xs font-black text-purple-600 tracking-widest uppercase">Passo {currentStep} de {totalSteps}</span>
-            <h1 className="text-2xl font-extrabold text-slate-900 mt-1 uppercase tracking-tight">Configuração da Loja</h1>
+        {/* Error / Success Messages */}
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-semibold text-center animate-fade-in">
+            {errorMsg}
           </div>
+        )}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold text-center animate-fade-in">
+            {successMsg}
+          </div>
+        )}
 
-          {errorMsg && (
-            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
-              {errorMsg}
+        {/* Progress Bar */}
+        <div className="flex justify-between items-center mb-8 relative">
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
+          <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 4) * 100}%` }}></div>
+          
+          {steps.map(s => (
+            <div key={s.num} className={`flex flex-col items-center gap-2 ${step >= s.num ? 'text-purple-600' : 'text-slate-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${step >= s.num ? 'bg-purple-600 border-purple-600 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>
+                {s.icon}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">{s.title}</span>
             </div>
-          )}
+          ))}
+        </div>
 
-          {/* STEP 1: BUSINESS DETAILS */}
-          {currentStep === 1 && (
-            <form onSubmit={handleNextStep1} className="space-y-5 animate-fade-in">
-              <p className="text-sm text-slate-500 mb-6 font-medium">Preencha os dados reais do seu negócio para aparecer no marketplace.</p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Step 1: Data */}
+        {step === 1 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Informações da Loja</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome do Estabelecimento *</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Barbearia Central" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nome da Loja *</label>
-                  <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="Ex: Glamour Studio" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Telefone *</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 910 000 000" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Categoria *</label>
-                  <select required value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
-                    <option value="Cabelo & Barbearia">Cabelo & Barbearia</option>
-                    <option value="Estética">Estética</option>
-                    <option value="Nails & Beauty">Nails & Beauty</option>
-                    <option value="Spa & Wellness">Spa & Wellness</option>
-                  </select>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">E-mail</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: ola@barbearia.pt" />
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada Completa *</label>
+                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Telefone Comercial *</label>
-                  <input type="text" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="Telefone" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">E-mail Público *</label>
-                  <input type="email" required value={publicEmail} onChange={e => setPublicEmail(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="geral@loja.pt" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
               </div>
+            </div>
+          </div>
+        )}
 
+        {/* Step 2: Services */}
+        {step === 2 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
+            <div className="mb-6 space-y-3">
+              {services.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900">{s.name}</h4>
+                    <p className="text-xs text-slate-500">{s.duration_minutes} min</p>
+                  </div>
+                  <div className="font-black text-slate-900">{s.price}€</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
+              <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Serviço</h4>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Morada (Linha 1) *</label>
-                  <input type="text" required value={addressLine1} onChange={e => setAddressLine1(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="Rua principal" />
+                  <input id="new-svc-name" type="text" placeholder="Nome do Serviço" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
-                <div className="grid grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Porta / Andar</label>
-                    <input type="text" value={addressLine2} onChange={e => setAddressLine2(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="Ex: 12C" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Código Postal *</label>
-                    <input type="text" required value={postalCode} onChange={e => setPostalCode(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all" placeholder="1000-100" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Distrito *</label>
-                    <select required value={district} onChange={e => { setDistrict(e.target.value); setCity(PORTUGAL_GEO[e.target.value]?.[0] || ''); }} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
-                      {Object.keys(PORTUGAL_GEO).map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cidade *</label>
-                    <select required value={city} onChange={e => setCity(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
-                      {(PORTUGAL_GEO[district] || []).map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input id="new-svc-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-price" type="number" step="0.01" placeholder="Preço (€)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
               </div>
+              <button 
+                onClick={async () => {
+                  const name = (document.getElementById('new-svc-name') as HTMLInputElement).value;
+                  const duration = parseInt((document.getElementById('new-svc-duration') as HTMLInputElement).value);
+                  const price = parseFloat((document.getElementById('new-svc-price') as HTMLInputElement).value);
+                  if (name && duration && price) {
+                    const { data, error } = await supabase.from('services').insert({
+                      business_id: business.id,
+                      name, 
+                      duration_minutes: duration, 
+                      price, 
+                      is_active: true
+                    }).select().maybeSingle();
+                    
+                    if (error) {
+                      setErrorMsg('Erro ao adicionar serviço: ' + error.message);
+                    } else if (data) {
+                      setServices([...services, data]);
+                      (document.getElementById('new-svc-name') as HTMLInputElement).value = '';
+                      (document.getElementById('new-svc-duration') as HTMLInputElement).value = '';
+                      (document.getElementById('new-svc-price') as HTMLInputElement).value = '';
+                    }
+                  } else {
+                     setErrorMsg('Preencha todos os campos do serviço');
+                  }
+                }}
+                className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
+              >
+                Adicionar Serviço
+              </button>
+            </div>
+          </div>
+        )}
 
-              <div className="pt-4 flex justify-end">
-                <button type="submit" disabled={submitting} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Avançar'}
-                  {!submitting && <ArrowRight className="w-4 h-4" />}
-                </button>
+        {/* Step 3: Plan */}
+        {step === 3 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div 
+                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${selectedPlan === 'PRO' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
+                onClick={() => setSelectedPlan('PRO')}
+              >
+                {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
+                <h3 className="text-lg font-bold text-slate-900">Glamzo PRO</h3>
+                <div className="my-3"><span className="text-3xl font-black">19,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <ul className="space-y-2 mt-4 text-sm text-slate-600">
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> App Gestão Completa</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Marketplace Glamzo</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Website e QR Code</li>
+                </ul>
               </div>
-            </form>
-          )}
 
-          {/* STEP 2: SERVICES */}
-          {currentStep === 2 && (
-            <div className="space-y-6 animate-fade-in">
-              <p className="text-sm text-slate-500 font-medium">Adicione pelo menos um serviço para os clientes conseguirem reservar.</p>
-              
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nome do Serviço</label>
-                    <input type="text" value={newServiceName} onChange={e => setNewServiceName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Ex: Corte de Cabelo" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Preço (€)</label>
-                    <input type="number" step="0.01" value={newServicePrice} onChange={e => setNewServicePrice(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="15.00" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Duração (Min)</label>
-                    <input type="number" step="5" value={newServiceDuration} onChange={e => setNewServiceDuration(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                  </div>
+              <div 
+                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${selectedPlan === 'TERMINAL' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
+                onClick={() => setSelectedPlan('TERMINAL')}
+              >
+                <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
+                  Recomendado
                 </div>
-                <button type="button" onClick={handleAddService} disabled={!newServiceName || !newServicePrice} className="w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-lg text-xs uppercase tracking-wider transition-colors disabled:opacity-50">
-                  Adicionar Serviço
-                </button>
-              </div>
-
-              {services.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Serviços Adicionados</h4>
-                  {services.map(s => (
-                    <div key={s.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Scissors className="w-4 h-4 text-slate-400" />
-                        <span className="font-semibold text-sm">{s.name}</span>
-                      </div>
-                      <div className="text-sm font-medium text-slate-600">
-                        {s.duration_minutes} min • {s.price} €
-                      </div>
-                    </div>
-                  ))}
+                {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
+                <h3 className="text-lg font-bold text-slate-900">PRO Terminal</h3>
+                <div className="my-3"><span className="text-3xl font-black">24,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <ul className="space-y-2 text-sm text-slate-600 mb-4">
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tudo do plano PRO</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tablet configurado</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Suporte prioritário</li>
+                </ul>
+                <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
+                  + Caução única de equipamento: 9,99€
                 </div>
-              )}
-
-              <div className="pt-6 flex justify-between">
-                <button type="button" onClick={() => setCurrentStep(1)} className="px-6 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold text-xs uppercase transition-colors">Voltar</button>
-                <button type="button" onClick={handleNextStep2} disabled={submitting || services.length === 0} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Avançar'}
-                </button>
               </div>
             </div>
-          )}
 
-          {/* STEP 3: PLAN */}
-          {currentStep === 3 && (
-            <div className="space-y-6 animate-fade-in">
-              <p className="text-sm text-slate-500 font-medium">Escolha o plano ideal para a sua loja. Ambos incluem 14 dias de teste grátis.</p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <button type="button" onClick={() => setSelectedPlan('pro')} className={`text-left p-6 rounded-2xl border-2 transition-all ${selectedPlan === 'pro' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">PRO</h3>
-                  <p className="text-2xl font-black text-purple-600 mb-4">19,99 € <span className="text-sm font-medium text-slate-500">/mês</span></p>
-                  <ul className="text-sm text-slate-600 space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Visibilidade no Marketplace</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Agenda Ilimitada</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Gestão de Clientes</li>
-                  </ul>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Apenas Plataforma Online</div>
-                </button>
-
-                <button type="button" onClick={() => setSelectedPlan('pro_terminal')} className={`text-left p-6 rounded-2xl border-2 transition-all ${selectedPlan === 'pro_terminal' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">PRO TERMINAL</h3>
-                  <p className="text-2xl font-black text-purple-600 mb-4">24,99 € <span className="text-sm font-medium text-slate-500">/mês</span></p>
-                  <ul className="text-sm text-slate-600 space-y-2 mb-6">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Tudo no plano PRO</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Tablet Físico para a Loja</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Suporte Dedicado</li>
-                  </ul>
-                  <div className="p-3 bg-purple-100/50 rounded-xl text-xs font-medium text-purple-800">
-                    <MonitorSmartphone className="w-4 h-4 inline mr-1" /> Caução de equipamento: 9,99 € (reembolsável)
-                  </div>
-                </button>
+            {selectedPlan === 'TERMINAL' && (
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
+                <h4 className="font-bold text-slate-900 mb-4">Dados de Envio do Terminal</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="text" placeholder="Nome Destinatário" value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Telefone" value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Morada" value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
+                  <input type="text" placeholder="Código Postal" value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Cidade" value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                </div>
               </div>
+            )}
+            
+            <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
+          </div>
+        )}
 
-              <div className="pt-6 flex justify-between">
-                <button type="button" onClick={() => setCurrentStep(2)} className="px-6 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold text-xs uppercase transition-colors">Voltar</button>
-                <button type="button" onClick={handleNextStep3} disabled={submitting || !selectedPlan} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Avançar'}
-                </button>
-              </div>
+        {/* Step 4: Payments (Connect) */}
+        {step === 4 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Landmark className="w-8 h-8" />
             </div>
-          )}
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Receber Pagamentos Online</h2>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
+              Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
+            </p>
+            
+            {business?.charges_enabled ? (
+               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8">
+                 <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+                 <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
+                 <p className="text-xs text-emerald-700 mt-2">A sua conta bancária está conectada.</p>
+               </div>
+            ) : (
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <button
+                    onClick={triggerStripeOnboarding}
+                    className="px-8 py-4 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-lg inline-flex items-center gap-3 w-full max-w-md justify-center"
+                  >
+                    <span>Conectar Stripe Glamzo Pay</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => updateSetupStep(5)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+                    Configurar mais tarde
+                  </button>
+                </div>
+            )}
+          </div>
+        )}
 
-          {/* STEP 4: PAYMENTS */}
-          {currentStep === 4 && (
-            <div className="space-y-6 animate-fade-in">
-              <p className="text-sm text-slate-500 font-medium">Pretende aceitar pagamentos online dos clientes diretamente na plataforma?</p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <button type="button" onClick={() => setAcceptsOnlinePayments(true)} className={`text-left p-6 rounded-2xl border-2 transition-all ${acceptsOnlinePayments === true ? 'border-emerald-600 bg-emerald-50/50 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <CreditCard className={`w-8 h-8 mb-4 ${acceptsOnlinePayments === true ? 'text-emerald-600' : 'text-slate-400'}`} />
-                  <h3 className="text-md font-bold text-slate-900 mb-2">Sim, Aceitar Pagamentos</h3>
-                  <p className="text-xs text-slate-600 mb-4 leading-relaxed">Permite cobrar aos clientes no momento da reserva online. (Taxa de plataforma 5%). Requer configuração do Stripe no painel.</p>
-                </button>
-
-                <button type="button" onClick={() => setAcceptsOnlinePayments(false)} className={`text-left p-6 rounded-2xl border-2 transition-all ${acceptsOnlinePayments === false ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <Store className={`w-8 h-8 mb-4 ${acceptsOnlinePayments === false ? 'text-purple-600' : 'text-slate-400'}`} />
-                  <h3 className="text-md font-bold text-slate-900 mb-2">Não, Apenas no Local</h3>
-                  <p className="text-xs text-slate-600 mb-4 leading-relaxed">Os clientes fazem a reserva online mas pagam presencialmente na sua loja. Pode alterar isto mais tarde no painel.</p>
-                </button>
-              </div>
-
-              <div className="pt-6 flex justify-between">
-                <button type="button" onClick={() => setCurrentStep(3)} className="px-6 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold text-xs uppercase transition-colors">Voltar</button>
-                <button type="button" onClick={handleNextStep4} disabled={submitting || acceptsOnlinePayments === null} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Avançar'}
-                </button>
-              </div>
+        {/* Step 5: Review */}
+        {step === 5 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
+            <div className="max-w-md mx-auto space-y-4 mb-8">
+                <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
+                  <span className="font-semibold text-sm text-emerald-900">Dados da Loja</span>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
+                  <span className="font-semibold text-sm text-emerald-900">Serviços ({services.length})</span>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
+                  <span className="font-semibold text-sm text-emerald-900">Plano Subscrito</span>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className={`flex items-center justify-between p-4 rounded-xl border ${business?.charges_enabled ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+                  <span className={`font-semibold text-sm ${business?.charges_enabled ? 'text-emerald-900' : 'text-amber-900'}`}>
+                    Pagamentos Online
+                  </span>
+                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">Mais tarde</span>}
+                </div>
             </div>
-          )}
 
-          {/* STEP 6: REVIEW & ACTIVATE */}
-          {currentStep === 6 && (
-            <div className="space-y-6 animate-fade-in text-center">
-              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Check className="w-10 h-10" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase">Tudo Pronto!</h2>
-              <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
-                A sua loja <strong>{name}</strong> está configurada. Irá arrancar com o plano <strong>{selectedPlan === 'pro' ? 'PRO' : 'PRO TERMINAL'}</strong> e 14 dias de teste gratuito.
-              </p>
-
-              {acceptsOnlinePayments && (
-                 <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-xs max-w-md mx-auto text-left">
-                   <strong>Aviso:</strong> Escolheu aceitar pagamentos online. Não se esqueça de ativar a sua conta Stripe Connect no seu Dashboard para poder receber os pagamentos.
-                 </div>
-              )}
-              {selectedPlan === 'pro_terminal' && (
-                 <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl text-xs max-w-md mx-auto text-left">
-                   <strong>Equipamento:</strong> Iremos contactar em breve para combinar o envio do seu Tablet e o pagamento da caução.
-                 </div>
-              )}
-
-              <div className="pt-8 flex justify-center">
-                <button type="button" onClick={handleFinish} disabled={submitting} className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-purple-200 disabled:opacity-50 w-full sm:w-auto">
-                  {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Ativar Loja & Entrar'}
-                </button>
-              </div>
+            <div className="text-center">
+              <button
+                onClick={publishBusiness}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-black text-lg uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 inline-flex items-center gap-3"
+              >
+                <span>Concluir Setup & Entrar</span>
+                <Sparkles className="w-6 h-6" />
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-        </div>
+        {/* Navigation Buttons */}
+        {step < 5 && (
+          <div className="mt-8 flex items-center gap-4">
+             {step > 1 && step !== 4 && (
+                <button
+                  type="button"
+                  onClick={() => updateSetupStep(step - 1)}
+                  className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2 w-full max-w-[200px]"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar</span>
+                </button>
+             )}
+            
+            {step !== 4 && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleNext}
+                className="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{step === 3 ? 'Assinar Plano' : 'Prosseguir'}</span><ArrowRight className="w-4 h-4" /></>}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

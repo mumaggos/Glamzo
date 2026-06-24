@@ -1,12 +1,17 @@
 import React from 'react';
-import ContentLayout from '../../components/ContentLayout';
+import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Pagamentos() {
   return (
-    <ContentLayout title="Política de Pagamentos" lastUpdated="18 de Junho de 2026">
-      <p>
-        A Glamzo compromete-se com a fiabilidade absoluta em cada transação financeira gerada nas reservas comerciais, nas subscrições de aluguer da plataforma e no processamento de repasses de saldo às faturas dos Parceiros.
-      </p>
+    <DynamicLegalPage 
+      slug="politica-de-pagamentos"
+      defaultTitle="Política de Pagamentos" 
+      defaultLastUpdated="18 de Junho de 2026"
+      defaultContent={
+        <>
+          <p>
+            A Glamzo compromete-se com a fiabilidade absoluta em cada transação financeira gerada nas reservas comerciais, nas subscrições de aluguer da plataforma e no processamento de repasses de saldo às faturas dos Parceiros.
+          </p>
 
       <h2>1. Pagamentos Processados pela Stripe</h2>
       <p>
@@ -38,6 +43,8 @@ export default function Pagamentos() {
       <p>
         Todos os repasses e valores apurados retidos para entregar são processados pela plataforma Stripe Connect e diretamente redigidos, libertados ou depositados para a conta IBAN autorizada nas definições do Painel do Salão.
       </p>
-    </ContentLayout>
+        </>
+      }
+    />
   );
 }

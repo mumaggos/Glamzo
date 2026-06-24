@@ -14,12 +14,15 @@ import {
 import { 
   Search, MapPin, Grid, Store, Sparkles, SlidersHorizontal, 
   CheckCircle2, Loader2, ArrowRight, X, Phone, Compass, AtSign,
-  Star, ChevronRight, Sliders, Navigation, Home, Zap, Clock, ThumbsUp, Heart
+  Star, ChevronRight, Sliders, Navigation, Home, Zap, Clock, ThumbsUp, Heart, Map as MapIcon, List
 } from 'lucide-react';
+import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 export default function Explore() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [availabilities, setAvailabilities] = useState<Record<string, { label: string, available: boolean }>>({});
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -411,7 +414,28 @@ export default function Explore() {
   });
 
   // Paginated chunk selection
-  const paginatedBusinesses = sortedBusinesses.slice(0, itemsLimit);
+  const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === 'map' ? 50 : itemsLimit);
+
+  useEffect(() => {
+    // Only fetch those that aren't already fetched
+    paginatedBusinesses.forEach(b => {
+      if (availabilities[b.id] === undefined) {
+        // Mark as loading to avoid duplicate requests
+        setAvailabilities(prev => ({ ...prev, [b.id]: { label: 'A verificar...', available: false } }));
+        fetch(`/api/availability/${b.id}`)
+          .then(res => res.json())
+          .then(data => {
+            setAvailabilities(prev => ({ ...prev, [b.id]: data }));
+          })
+          .catch(err => {
+            console.error('Failed to fetch availability for', b.id, err);
+            setAvailabilities(prev => ({ ...prev, [b.id]: { label: 'Ver detalhes', available: false } }));
+          });
+      }
+    });
+  }, [paginatedBusinesses, availabilities]);
+
+  const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || '';
 
   return (
     <div id="explore-view" className="min-h-screen bg-[#fafbfc] py-10 font-sans text-slate-600 selection:bg-purple-100 selection:text-purple-950 pb-28">
@@ -432,9 +456,25 @@ export default function Explore() {
             </p>
           </div>
 
-          <div className="text-[11px] font-bold text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm font-mono flex items-center gap-1.5 shrink-0">
-            <span>Encontrados:</span> 
-            <span className="font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">{sortedBusinesses.length} estúdios</span>
+          <div className="flex items-center gap-3">
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                <List className="w-4 h-4" /> Lista
+              </button>
+              <button 
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'map' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                <MapIcon className="w-4 h-4" /> Mapa
+              </button>
+            </div>
+            <div className="text-[11px] font-bold text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm font-mono flex items-center gap-1.5 shrink-0 hidden sm:flex">
+              <span>Encontrados:</span> 
+              <span className="font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">{sortedBusinesses.length} estúdios</span>
+            </div>
           </div>
         </div>
 
@@ -767,6 +807,53 @@ export default function Explore() {
               <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm">
                 {errorMsg}
               </div>
+            ) : viewMode === 'map' ? (
+               <div className="w-full h-[65vh] rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative">
+                {mapApiKey ? (
+                  <APIProvider apiKey={mapApiKey} version="weekly">
+                    <Map
+                      defaultCenter={{ lat: 39.3999, lng: -8.2245 }} // Portugal center roughly
+                      defaultZoom={6}
+                      mapId="GLAMZO_EXPLORE_MAP"
+                      internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
+                      style={{ width: '100%', height: '100%' }}
+                    >
+                      {paginatedBusinesses.map(b => {
+                        const markerColor = b.rating >= 4.9 ? '#10b981' : b.rating >= 4.5 ? '#9333ea' : b.rating >= 4.0 ? '#3b82f6' : b.rating >= 3.5 ? '#f59e0b' : '#ef4444';
+                        return (
+                          <AdvancedMarker 
+                            key={b.id} 
+                            position={{ lat: b.lat || 39.3999, lng: b.lng || -8.2245 }} 
+                            title={b.name}
+                            onClick={() => {
+                              // We could add an InfoWindow, but let's just make it redirect to the business page for now, or open a mini overlay
+                              window.location.href = `/business/${b.slug}`;
+                            }}
+                          >
+                            <div className="relative cursor-pointer hover:scale-110 transition-transform">
+                              <Pin background={markerColor} borderColor={markerColor} glyphColor="#fff" />
+                              {(b.rating ?? 0) > 0 && (
+                                <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
+                                  {b.rating.toFixed(1)}
+                                </div>
+                              )}
+                            </div>
+                          </AdvancedMarker>
+                        );
+                      })}
+                    </Map>
+                  </APIProvider>
+                ) : (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',fontFamily:'sans-serif'}} className="bg-slate-100">
+                    <div style={{textAlign:'center',maxWidth:520}} className="p-8">
+                      <h2>Google Maps API Key Required for Maps</h2>
+                      <p className="mt-2 text-sm text-slate-500">
+                        Please add <code className="bg-slate-200 px-1 py-0.5 rounded">GOOGLE_MAPS_PLATFORM_KEY</code> to AI Studio Secrets to use this feature.
+                      </p>
+                    </div>
+                  </div>
+                )}
+               </div>
             ) : paginatedBusinesses.length > 0 ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8" id="explore-grid-container">
@@ -904,6 +991,25 @@ export default function Explore() {
                             <p className="text-xs text-slate-500 mt-3 line-clamp-2 leading-relaxed">
                               {b.description || 'Tratamentos estéticos de alta costura, equipe especializada de alto gabarito e produtos importados.'}
                             </p>
+
+                            {/* PROVEN AVAILABILITY LOGIC BADGE */}
+                            <div className="mt-3 relative">
+                              {availabilities[b.id]?.label === 'A verificar...' ? (
+                                <div className="text-[10px] text-slate-500 flex items-center gap-1.5 opacity-70 animate-pulse bg-slate-100 rounded-lg px-2 py-1 w-fit border border-slate-200">
+                                  <Loader2 className="w-3 h-3 animate-spin"/> A verificar vagas
+                                </div>
+                              ) : availabilities[b.id]?.available ? (
+                                <div className={`text-[10px] font-bold text-slate-700 flex items-center gap-1.5 px-2.5 py-1 rounded-lg w-fit border shadow-sm ${availabilities[b.id].label.includes('hoje') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-purple-50 border-purple-200 text-purple-800'}`}>
+                                  {availabilities[b.id].label.includes('hoje') ? <span>🟢</span> : <span>🟣</span>}
+                                  {availabilities[b.id].label}
+                                </div>
+                              ) : availabilities[b.id]?.label && availabilities[b.id].label !== 'A verificar...' ? (
+                                <div className="text-[10px] font-bold text-slate-600 flex items-center gap-1.5 px-2.5 py-1 rounded-lg w-fit border bg-slate-50 border-slate-200 shadow-sm">
+                                  <span>⚪</span>
+                                  {availabilities[b.id].label}
+                                </div>
+                              ) : null}
+                            </div>
 
                             {/* Service-oriented Listings on the Explore Page */}
                             {services.filter(s => s.business_id === b.id).length > 0 && (
