@@ -5,6 +5,7 @@ import {
   ArrowLeft, CheckCircle2, ShoppingBag, BadgeEuro, Sparkles, RefreshCw
 } from 'lucide-react';
 import { financeService } from '../utils/financeService';
+import { supabase } from '../lib/supabase';
 
 export default function StripeSimulatedCheckout() {
   const [searchParams] = useSearchParams();
@@ -45,28 +46,54 @@ export default function StripeSimulatedCheckout() {
     setError(null);
 
     try {
-      // 1. Trigger the server-side simulated webhook to update database statuses safely
-      const response = await fetch('/api/webhooks/stripe-simulated', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type,
-          bookingId,
-          businessId,
-          planName,
-          creditAmount,
-          couponUsed
-        })
-      });
+      // Direct supabase update
+      if (type === 'subscription_payment' && businessId) {
+        const subId = `sub_simulated_${Date.now()}`;
+        
+        // 1. Update the business
+        const { error: subErr } = await supabase.from('businesses').update({
+          stripe_subscription_id: subId,
+          subscription_status: 'active',
+          selected_plan: planName || 'PRO',
+          subscription_active: true
+        }).eq('id', businessId);
+        if (subErr) console.error("Falha ao atualizar plano na loja:", subErr);
 
-      if (!response.ok) {
-        throw new Error('Ocorreu um erro ao comunicar com a Gateway Stripe.');
+        // 2. Insert/Update subscriptions table
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+        const { data: existingSubs } = await supabase.from('subscriptions').select('id').eq('business_id', businessId).limit(1);
+        
+        if (existingSubs && existingSubs.length > 0) {
+           await supabase.from('subscriptions').update({
+             plan_name: planName || 'PRO',
+             status: 'active',
+             stripe_subscription_id: subId,
+             expires_at: expiresAt.toISOString()
+           }).eq('id', existingSubs[0].id);
+        } else {
+           await supabase.from('subscriptions').insert({
+             business_id: businessId,
+             plan_name: planName || 'PRO',
+             status: 'active',
+             stripe_subscription_id: subId,
+             expires_at: expiresAt.toISOString(),
+             monthly_price: 19.90,
+             started_at: new Date().toISOString()
+           });
+        }
+      } else if (type === 'booking_payment' && bookingId) {
+         // Update booking status
+         await supabase.from('bookings').update({
+           payment_status: 'paid',
+           status: 'confirmed'
+         }).eq('id', bookingId);
       }
 
       // 2. Update local services, balances, subscriptions, and points
       if (type === 'booking_payment') {
+
         // Find customer ID to grant them loyalty points
         // In local storage sessions, get user id or default client user
         const localAuth = localStorage.getItem('glamzo_registered_user');

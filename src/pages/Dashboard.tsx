@@ -65,6 +65,8 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
+  Image,
+  Upload
 } from "lucide-react";
 import {
   BarChart as RBarChart,
@@ -869,7 +871,7 @@ export default function Dashboard() {
         },
       );
     }
-  }, [activeTab, business?.slug, qrCanvasRef.current]);
+  }, [activeTab, business?.slug]);
 
   // Handle simulations of customer bookings (live real database insert + notification bell + play audio synth chime!)
   const handleSimulateNewBooking = async () => {
