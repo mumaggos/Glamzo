@@ -46,6 +46,7 @@ export default function Home() {
     supabase
       .from("businesses")
       .select("*")
+      .order("created_at", { ascending: false })
       .limit(30)
       .then(({ data }) => {
         if (data) {
@@ -56,6 +57,9 @@ export default function Home() {
                 if (b.subscription_status === "suspended") {
                   return false;
                 }
+
+                if (b.public_page_enabled === false) return false;
+
                 // Enforce card added for real shops to appear in the public list
                 const isDemo = [
                   "salao-spa-premium",

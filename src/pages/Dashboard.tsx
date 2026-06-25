@@ -3192,7 +3192,7 @@ export default function Dashboard() {
               {activeTab === "agenda" && (
                 <div
                   id="view-agenda"
-                  className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-50 bg-slate-50 p-6 overflow-y-auto" : ""}`}
+                  className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-[9999] bg-slate-50 p-6 overflow-y-auto w-full h-full" : ""}`}
                 >
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
                     <div>
@@ -5664,6 +5664,63 @@ export default function Dashboard() {
                                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
                                   <span>Gerir faturas e cartão</span>
                                 </button>
+                                {resolvedSubscriptionStatus !== "active" &&
+                                  resolvedSubscriptionStatus !== "trialing" && (
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          setIsVerifyingSub(true);
+                                          setGlobalError(null);
+                                          setVerifyingText(
+                                            "A sincronizar com a Stripe...",
+                                          );
+                                          const r = await fetch(
+                                            "/api/stripe/verify-subscription",
+                                            {
+                                              method: "POST",
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+                                              },
+                                              body: JSON.stringify({
+                                                businessId: business?.id,
+                                              }),
+                                            },
+                                          );
+                                          if (r.ok) {
+                                            setGlobalSuccess(
+                                              "Estado da subscrição sincronizado com sucesso.",
+                                            );
+                                            setTimeout(
+                                              () => window.location.reload(),
+                                              1500,
+                                            );
+                                          } else {
+                                            setGlobalError(
+                                              "Falha ao sincronizar subscrição.",
+                                            );
+                                          }
+                                        } catch (e: any) {
+                                          setGlobalError(
+                                            e.message || "Erro de ligação.",
+                                          );
+                                        } finally {
+                                          setIsVerifyingSub(false);
+                                        }
+                                      }}
+                                      disabled={isVerifyingSub}
+                                      className="bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 w-full"
+                                    >
+                                      <RefreshCw
+                                        className={`w-4 h-4 ${isVerifyingSub ? "animate-spin" : ""}`}
+                                      />
+                                      <span>
+                                        {isVerifyingSub
+                                          ? "A Sincronizar..."
+                                          : "Sincronizar Subscrição"}
+                                      </span>
+                                    </button>
+                                  )}
                                 <button
                                   onClick={handleCancelSubscription}
                                   disabled={cancelingSubscription}

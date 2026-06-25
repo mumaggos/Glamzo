@@ -123,7 +123,10 @@ export default function Explore() {
     setErrorMsg(null);
     try {
       const [bizRes, servRes, realRev, hoursRes] = await Promise.all([
-        supabase.from("businesses").select("*"),
+        supabase
+          .from("businesses")
+          .select("*")
+          .order("created_at", { ascending: false }),
         supabase.from("services").select("*"),
         fetchAllReviews(),
         supabase.from("business_hours").select("*"),
@@ -376,6 +379,9 @@ export default function Explore() {
   const filteredBusinesses = processedBusinesses.filter((b) => {
     // Exclude partners manually suspended by administration
     if (b.subscription_status === "suspended") return false;
+
+    // Enforce public visibility and subscription
+    if (b.public_page_enabled === false) return false;
 
     // Enforce Glamzo Pay card subscription added to show on public marketplace list (demo seeds bypass this)
     const isDemo = [
