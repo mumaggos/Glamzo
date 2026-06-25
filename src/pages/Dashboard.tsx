@@ -66,7 +66,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Image,
-  Upload
+  Upload,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import {
   BarChart as RBarChart,
@@ -152,6 +154,7 @@ export default function Dashboard() {
   // Real Image Uploading states
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingStaffAvatar, setUploadingStaffAvatar] = useState(false);
 
   // Website & QR Code States
   const [editSlugValue, setEditSlugValue] = useState("");
@@ -179,6 +182,7 @@ export default function Dashboard() {
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
+  const [agendaFullScreen, setAgendaFullScreen] = useState(false);
   const [bookingFilter, setBookingFilter] = useState<
     "all" | "pending" | "confirmed" | "completed" | "cancelled" | "no_show"
   >("all");
@@ -2254,6 +2258,44 @@ export default function Dashboard() {
     }
   };
 
+  const handleUploadStaffAvatar = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !business) return;
+    setUploadingStaffAvatar(true);
+    setGlobalError(null);
+    try {
+      const optimized = await optimizeImageBeforeUpload(file);
+      const filePath = `businesses/${business.id}/staff-${Date.now()}.webp`;
+      const { error: uploadErr } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, optimized.blob, {
+          cacheControl:
+            "public, max-age=31536000, stale-while-revalidate=86400, immutable",
+          contentType: "image/webp",
+          upsert: true,
+        });
+
+      if (uploadErr) {
+        throw uploadErr;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      setStaffForm((prev) => ({ ...prev, avatar_url: publicUrl }));
+    } catch (err: any) {
+      console.error("Staff avatar upload failed:", err);
+      setGlobalError(
+        `Erro no upload da foto do funcionário: ${err.message}. Tente novamente.`,
+      );
+    } finally {
+      setUploadingStaffAvatar(false);
+    }
+  };
+
   // Direct edit physical details of the salon business profile
   const handleUpdateConfiguracoes = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2418,7 +2460,7 @@ export default function Dashboard() {
   const resolvedSubscriptionActive =
     business?.subscription_active || isSubTableActiveVal;
   const trialEndsAt =
-    business?.trial_ends_at || activeSubscription?.expires_at || null;
+    activeSubscription?.expires_at || business?.trial_ends_at || null;
 
   const trialDaysRemaining = (() => {
     const trialEndStr = trialEndsAt;
@@ -3105,45 +3147,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Glamzo Pay Connect Pending Alert Banner */}
-          {!isBillingBlocked &&
-            (!business?.stripe_account_id ||
-              !stripeStatus?.charges_enabled ||
-              !stripeStatus?.payouts_enabled) && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-amber-950/40 to-yellow-950/40 border border-amber-500/20 text-amber-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-amber-950/15 animate-fade-in text-left">
-                <div className="flex items-center gap-3">
-                  <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/25 shrink-0">
-                    <Landmark className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <p className="font-extrabold text-slate-900 leading-normal">
-                      Ative os pagamentos para receber reservas online.
-                    </p>
-                    <p className="text-[11px] text-amber-450 leading-normal">
-                      Configure a sua conta Glamzo Pay Express (IBAN e
-                      verificação) para receber pagamentos de marcações
-                      diretamente na sua conta bancária de forma segura pelas
-                      marcações online.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleConnectStripe}
-                  disabled={connectingStripe}
-                  className="p-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-[10px] text-slate-950 font-black uppercase rounded-xl transition-all cursor-pointer shadow shrink-0 self-start sm:self-auto flex items-center gap-1.5"
-                >
-                  {connectingStripe ? (
-                    <>
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                      <span>A Processar...</span>
-                    </>
-                  ) : (
-                    <span>ATIVAR PAGAMENTOS</span>
-                  )}
-                </button>
-              </div>
-            )}
-
           {globalSuccess && (
             <div className="mb-6 p-4 bg-emerald-950/45 border border-emerald-900 text-emerald-400 rounded-2xl text-xs font-semibold flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -3189,7 +3192,7 @@ export default function Dashboard() {
               {activeTab === "agenda" && (
                 <div
                   id="view-agenda"
-                  className="space-y-6 text-left animate-fade-in text-slate-700"
+                  className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-50 bg-slate-50 p-6 overflow-y-auto" : ""}`}
                 >
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
                     <div>
@@ -3204,6 +3207,20 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                      <button
+                        onClick={() => setAgendaFullScreen(!agendaFullScreen)}
+                        className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-extrabold px-3 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-sm"
+                        title={
+                          agendaFullScreen ? "Sair de Tela Cheia" : "Tela Cheia"
+                        }
+                      >
+                        {agendaFullScreen ? (
+                          <Minimize className="w-4 h-4" />
+                        ) : (
+                          <Maximize className="w-4 h-4" />
+                        )}
+                      </button>
+
                       {/* Button to Trigger Manual Booking / Blocking */}
                       <button
                         onClick={() => {
@@ -4694,20 +4711,42 @@ export default function Dashboard() {
 
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                              Link da foto
+                              Foto do Funcionário
                             </label>
-                            <input
-                              type="text"
-                              value={staffForm.avatar_url}
-                              onChange={(e) =>
-                                setStaffForm((prev) => ({
-                                  ...prev,
-                                  avatar_url: e.target.value,
-                                }))
-                              }
-                              placeholder="https://exemplo.com/fotoperfil.jpg"
-                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-605"
-                            />
+                            <div className="flex items-center gap-4">
+                              {staffForm.avatar_url ? (
+                                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                                  <img
+                                    src={staffForm.avatar_url}
+                                    alt="Staff Avatar"
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                  <Image className="w-5 h-5 text-slate-400" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <label className="bg-white border border-slate-200 hover:border-purple-400 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center gap-2">
+                                  <Upload className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>Fazer Upload da Foto</span>
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/png, image/jpeg, image/webp"
+                                    onChange={handleUploadStaffAvatar}
+                                    disabled={uploadingStaffAvatar}
+                                  />
+                                </label>
+                                {uploadingStaffAvatar && (
+                                  <span className="text-[10px] text-purple-500 block mt-1">
+                                    A carregar imagem...
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           <div>
@@ -5594,6 +5633,24 @@ export default function Dashboard() {
                                   : "Data de renovação do ciclo."}
                               </span>
                             </div>
+                            {business?.stripe_subscription_id &&
+                              business.stripe_subscription_id.trim() !== "" && (
+                                <div className="space-y-1 mt-1 border-t border-slate-200/50 pt-3">
+                                  <span className="text-slate-500 block text-[9px] uppercase font-mono tracking-wider font-bold">
+                                    Método de Pagamento
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-5 rounded bg-slate-200 flex items-center justify-center shrink-0 border border-slate-300">
+                                      <span className="text-[8px] font-bold text-slate-600">
+                                        VISA
+                                      </span>
+                                    </div>
+                                    <span className="text-slate-900 font-bold text-xs">
+                                      •••• 4242
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                           </div>
 
                           <div className="flex flex-col gap-3 pt-2">
