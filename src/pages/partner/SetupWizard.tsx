@@ -44,9 +44,22 @@ export default function SetupWizard() {
 
   useEffect(() => {
     const status = searchParams.get('status');
+    const stepParam = searchParams.get('step');
 
     if (status === 'stripe_cancelled') {
       setErrorMsg('Pagamento cancelado ou não concluído.');
+      window.history.replaceState({}, document.title, '/partner/setup');
+    } else if (status === 'connect_success') {
+      setSuccessMsg('Conta de pagamentos associada com sucesso.');
+      if (stepParam) {
+         setStep(parseInt(stepParam));
+      }
+      window.history.replaceState({}, document.title, '/partner/setup');
+    } else if (status === 'connect_refresh') {
+      setErrorMsg('O processo de configuração de pagamentos foi interrompido.');
+      if (stepParam) {
+         setStep(parseInt(stepParam));
+      }
       window.history.replaceState({}, document.title, '/partner/setup');
     }
   }, [searchParams, business]);
@@ -273,7 +286,9 @@ export default function SetupWizard() {
         body: JSON.stringify({
           businessId: business.id,
           businessEmail: business.email,
-          businessName: business.name
+          businessName: business.name,
+          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=5',
+          refreshUrl: window.location.origin + '/partner/setup?status=connect_refresh&step=4'
         })
       });
       const data = await response.json();

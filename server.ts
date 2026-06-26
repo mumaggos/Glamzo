@@ -278,7 +278,7 @@ function getRealRedirectUrl(
 // Create an Express Connected Onboarding route
 app.post("/api/stripe/connect/onboard", async (req, res) => {
   try {
-    const { businessId, businessEmail, businessName } = req.body;
+    const { businessId, businessEmail, businessName, returnUrl: reqReturnUrl, refreshUrl: reqRefreshUrl } = req.body;
 
     if (!businessId) {
       res.status(400).json({ error: "Missing businessId parameter" });
@@ -342,12 +342,12 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
     }
 
     // Generate onboarding links
-    const returnUrl = getRealRedirectUrl(
+    const returnUrl = reqReturnUrl || getRealRedirectUrl(
       req,
       `/dashboard?status=connect_success&stripe_acct=${stripeAccountId}&biz_id=${businessId}`,
       `/dashboard`,
     );
-    const refreshUrl = getRealRedirectUrl(
+    const refreshUrl = reqRefreshUrl || getRealRedirectUrl(
       req,
       `/dashboard?status=connect_refresh&biz_id=${businessId}`,
       `/dashboard`,
@@ -1044,8 +1044,6 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
     };
 
     if (isSActive) {
-      saasUpdateData.setup_completed = true;
-      saasUpdateData.status = 'active';
       saasUpdateData.public_page_enabled = true;
       saasUpdateData.selected_plan = planName;
       if (planName === 'app_tablet') {
@@ -1385,8 +1383,6 @@ const handleStripeWebhook = async (req: any, res: any) => {
             };
 
             if (isSActive) {
-                saasUpdateData.setup_completed = true;
-                saasUpdateData.status = 'active';
                 saasUpdateData.public_page_enabled = true;
                 saasUpdateData.selected_plan = planName;
                 if (planName === 'app_tablet') {
@@ -1662,8 +1658,6 @@ const handleStripeWebhook = async (req: any, res: any) => {
           };
 
           if (syncedActive) {
-            saasUpdateData.setup_completed = true;
-            saasUpdateData.status = 'active';
             saasUpdateData.public_page_enabled = true;
             
             // Only update selected_plan if we know it (e.g. metadata is passed down). Or rely on checkout setting it.

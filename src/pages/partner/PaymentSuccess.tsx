@@ -41,7 +41,7 @@ export default function PaymentSuccess() {
         if (res.ok && data.success) {
           setStatus("success");
           setTimeout(() => {
-             navigate("/dashboard");
+             navigate("/partner/setup");
           }, 3000);
         } else {
            // Maybe still processing webhook or failed
@@ -72,8 +72,8 @@ export default function PaymentSuccess() {
           <div className="flex flex-col items-center animate-fade-in">
             <CheckCircle className="w-16 h-16 text-emerald-500 mb-6" />
             <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Subscrição Ativada!</h1>
-            <p className="text-sm text-slate-500 font-medium mb-6">O seu pagamento foi processado com sucesso. A sua loja já se encontra visível para os clientes no marketplace.</p>
-            <button onClick={() => navigate("/dashboard")} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-wider text-xs">Ir para o Dashboard</button>
+            <p className="text-sm text-slate-500 font-medium mb-6">O seu pagamento foi processado com sucesso. Pode agora concluir a configuração da sua loja.</p>
+            <button onClick={() => navigate("/partner/setup")} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-wider text-xs">Continuar Configuração</button>
           </div>
         )}
 
@@ -82,8 +82,8 @@ export default function PaymentSuccess() {
             <XCircle className="w-16 h-16 text-rose-500 mb-6" />
             <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Aviso de Sincronização</h1>
             <p className="text-sm text-rose-500 font-medium mb-6">{errorMsg}</p>
-            <p className="text-xs text-slate-500 mb-6">Pode demorar até um minuto para o webhook ser recebido. Pode aceder ao dashboard e o sistema atualizará automaticamente assim que for confirmado pelo banco.</p>
-            <button onClick={() => navigate("/dashboard")} className="px-6 py-3 bg-slate-900 hover:bg-slate-800 transition-colors text-white rounded-xl font-bold uppercase tracking-wider text-xs">Continuar para o Dashboard</button>
+            <p className="text-xs text-slate-500 mb-6">Pode demorar até um minuto para o webhook ser recebido. O sistema atualizará automaticamente assim que for confirmado pelo banco.</p>
+            <button onClick={() => navigate("/partner/setup")} className="px-6 py-3 bg-slate-900 hover:bg-slate-800 transition-colors text-white rounded-xl font-bold uppercase tracking-wider text-xs">Voltar à Configuração</button>
           </div>
         )}
       </div>
