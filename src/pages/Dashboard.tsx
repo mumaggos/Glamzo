@@ -2880,7 +2880,9 @@ export default function Dashboard() {
       )}
 
       {/* Side Rail Panel */}
-      <aside className="hidden lg:flex w-64 border-r border-slate-200/80 bg-white flex-col justify-between shrink-0 h-full">
+      <aside
+        className={`hidden ${agendaFullScreen ? "" : "lg:flex"} w-64 border-r border-slate-200/80 bg-white flex-col justify-between shrink-0 h-full`}
+      >
         <div>
           {/* Logo Brand Brand */}
           <button
@@ -3013,7 +3015,9 @@ export default function Dashboard() {
         />
 
         {/* Top Operational Header */}
-        <header className="h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-slate-50/30 backdrop-blur-md relative z-10">
+        <header
+          className={`${agendaFullScreen ? "hidden" : "h-16 border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-slate-50/30 backdrop-blur-md relative z-10"}`}
+        >
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Mobile Sidebar Hamburger */}
             <button
@@ -3047,8 +3051,8 @@ export default function Dashboard() {
 
         {/* Dynamic tabs render Workspace container with generous bottom spacing so layouts are never covered on mobile */}
         <div
-          className="flex-1 overflow-y-auto p-4 sm:p-8 pb-36 scrollbar-thin scrollbar-thumb-slate-900"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          className={`flex-1 ${agendaFullScreen ? "" : "overflow-y-auto p-4 sm:p-8 pb-36"} scrollbar-thin scrollbar-thumb-slate-900`}
+          style={agendaFullScreen ? {} : { WebkitOverflowScrolling: "touch" }}
         >
           {/* Active Trial State Reminder Header Banner (Only when card/subscription is real) */}
           {resolvedSubscriptionStatus === "trialing" &&
