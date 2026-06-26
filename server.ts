@@ -57,10 +57,10 @@ let supabaseAdminClient: any = null;
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
     const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.VITE_SUPABASE_ANON_KEY;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !key) {
       throw new Error(
-        "Supabase environment details are missing in backend (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY)",
+        "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
       );
     }
     supabaseAdminClient = createClient(url, key);

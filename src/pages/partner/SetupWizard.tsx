@@ -132,7 +132,19 @@ export default function SetupWizard() {
         setPostalCode(currentBiz.postal_code || '');
         
         // Restore step
-        if (!searchParams.get('status') && currentBiz.setup_step) {
+        const stepParam = searchParams.get('step');
+        if (stepParam) {
+           const parsedStep = parseInt(stepParam);
+           if (!isNaN(parsedStep)) {
+              setStep(parsedStep);
+              if (currentBiz.setup_step !== parsedStep) {
+                 try {
+                   await supabase.from('businesses').update({ setup_step: parsedStep }).eq('id', currentBiz.id);
+                   currentBiz.setup_step = parsedStep;
+                 } catch (e) {}
+              }
+           }
+        } else if (!searchParams.get('status') && currentBiz.setup_step) {
           let targetStep = currentBiz.setup_step;
           if (targetStep === 3 && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
             targetStep = 4;

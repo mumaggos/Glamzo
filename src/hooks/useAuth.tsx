@@ -226,13 +226,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let lastUserId: string | null = null;
     setLoading(true);
 
-    // Safeguard automatic timeout protection (2s max) to prevent user from being stuck indefinitely
+    // Safeguard automatic timeout protection (8s max) to prevent user from being stuck indefinitely
     fallbackTimeout = setTimeout(() => {
       if (mounted && loading) {
         console.warn("Auth initialization transition safeguard triggered.");
         setLoading(false);
       }
-    }, 2000);
+    }, 8000);
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
