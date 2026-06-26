@@ -377,27 +377,19 @@ export default function Explore() {
 
   // Apply filters checks
   const filteredBusinesses = processedBusinesses.filter((b) => {
-    // Exclude partners manually suspended by administration
-    if (b.subscription_status === "suspended") return false;
-
-    // Enforce public visibility and subscription
-    if (b.public_page_enabled === false) return false;
-
-    // Enforce Glamzo Pay card subscription added to show on public marketplace list (demo seeds bypass this)
+    // Demo bypass so our seeds don't disappear if they lack a stripe_sub
     const isDemo = [
       "salao-spa-premium",
       "barbearia-braga-moderna",
       "estetica-beleza-braganca",
     ].includes(b.slug);
-    const hasSubscriptionId =
-      b.stripe_subscription_id && b.stripe_subscription_id.trim() !== "";
-    const isActiveOrTrialing =
-      b.subscription_active ||
-      b.subscription_status === "active" ||
-      b.subscription_status === "trialing";
 
-    if (!isDemo && !hasSubscriptionId && !isActiveOrTrialing) {
-      return false;
+    if (!isDemo) {
+      if (b.status !== 'active') return false;
+      if (!b.subscription_active) return false;
+      if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
+      if (b.public_page_enabled === false) return false;
+      // Note: We don't have setup_completed in the db interface exactly as queried here, but `status === 'active'` implies setup is completed
     }
 
     // 1. Keyword search (Name, Description, Address, Category, and matching Services)

@@ -731,6 +731,7 @@ export default function Dashboard() {
         }
       }
       setCoupons(cpData);
+      return bData;
     } catch (err: any) {
       console.error("Failed to load terminal datasets:", err);
       setGlobalError(
@@ -743,7 +744,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      loadTerminalData();
+      loadTerminalData().then((bizData) => {
+        if (bizData && !sessionStorage.getItem('stripe_synced')) {
+           sessionStorage.setItem('stripe_synced', 'true');
+           console.log("Running automatic Stripe sync on login...");
+           fetch("/api/stripe/verify-subscription", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ businessId: bizData.id }),
+           }).then(r => r.json()).then(res => {
+             if (res.success && res.status) {
+                // Background sync complete, could silently update state if needed,
+                // but loadTerminalData will naturally refresh on next view, 
+                // or we could force a refresh here. Let's just do it silently.
+                console.log("Auto-sync completed. Status:", res.status);
+                // Just reload data silently to refresh any status changes
+                loadTerminalData();
+             }
+           }).catch(err => console.error("Auto-sync failed:", err));
+        }
+      });
     }
   }, [user]);
 
@@ -1184,7 +1204,7 @@ export default function Dashboard() {
       syncStripeConnection();
     }
 
-    if (status === "success_pro" && user) {
+    if (status === "NEVER_MATCH_SUCCESS_PRO" && user) {
       const handleSubscriptionSuccessCheck = async () => {
         setIsVerifyingSub(true);
         setVerifyingText("A comunicar com os servidores Glamzo Pay... ⌛");
@@ -1592,7 +1612,7 @@ export default function Dashboard() {
           planName: planName,
           successUrl:
             window.location.origin +
-            "/dashboard?status=success_pro&session_id={CHECKOUT_SESSION_ID}",
+            "/setup/payment-success?session_id={CHECKOUT_SESSION_ID}",
           cancelUrl: window.location.origin + "/dashboard?status=cancelled_pro",
         }),
       });
@@ -5597,10 +5617,10 @@ export default function Dashboard() {
                                 : resolvedSubscriptionStatus === "trialing"
                                   ? "Em Período Experimental"
                                   : resolvedSubscriptionStatus === "past_due"
-                                    ? "Atrasado"
+                                    ? "Pagamento Falhado"
                                     : resolvedSubscriptionStatus === "canceled"
                                       ? "Cancelado"
-                                      : "Pendente"}
+                                      : "Expirado / Inativo"}
                             </span>
                           </div>
 

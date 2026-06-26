@@ -1030,12 +1030,29 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
     const isSActive =
       currentStatus === "active" || currentStatus === "trialing";
 
+    let planName = "pro";
+    const items = stripeSub.items?.data || [];
+    if (items.some((item) => item.price.unit_amount === 2499 || item.price.unit_amount === 999)) {
+        planName = "app_tablet";
+    }
+
     const saasUpdateData: any = {
       stripe_customer_id: customerId,
       stripe_subscription_id: subId,
       subscription_status: currentStatus,
       subscription_active: isSActive,
     };
+
+    if (isSActive) {
+      saasUpdateData.setup_completed = true;
+      saasUpdateData.status = 'active';
+      saasUpdateData.public_page_enabled = true;
+      saasUpdateData.selected_plan = planName;
+      if (planName === 'app_tablet') {
+         saasUpdateData.tablet_requested = true;
+         // We might not have tablet_deposit_status column so we'll only set what we can, but we can try setting it or just stick to tablet_requested
+      }
+    }
 
     if (currentStatus === "trialing") {
       saasUpdateData.trial_started_at = new Date().toISOString();
@@ -1350,20 +1367,36 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
           // 1. Link customer ID & subscription details inside Businesses table
           try {
-            const { error: bizUpdateErr } = await db
-              .from("businesses")
-              .update({
+            const isSActive = subStatus === "active" || subStatus === "trialing";
+            
+            let planName = "pro";
+            const planNameMetadata = session.metadata?.plan_name || "PRO";
+            if (planNameMetadata === 'TERMINAL') {
+               planName = 'app_tablet';
+            }
+
+            const saasUpdateData: any = {
                 stripe_customer_id: customerId,
                 stripe_subscription_id: subId,
                 subscription_status: subStatus,
-                subscription_active:
-                  subStatus === "active" || subStatus === "trialing",
-                trial_started_at:
-                  subStatus === "trialing"
-                    ? new Date().toISOString()
-                    : undefined,
+                subscription_active: isSActive,
+                trial_started_at: subStatus === "trialing" ? new Date().toISOString() : undefined,
                 trial_ends_at: subStatus === "trialing" ? expiresAt : undefined,
-              })
+            };
+
+            if (isSActive) {
+                saasUpdateData.setup_completed = true;
+                saasUpdateData.status = 'active';
+                saasUpdateData.public_page_enabled = true;
+                saasUpdateData.selected_plan = planName;
+                if (planName === 'app_tablet') {
+                    saasUpdateData.tablet_requested = true;
+                }
+            }
+
+            const { error: bizUpdateErr } = await db
+              .from("businesses")
+              .update(saasUpdateData)
               .eq("id", businessId);
 
             if (bizUpdateErr) {
@@ -1621,14 +1654,27 @@ const handleStripeWebhook = async (req: any, res: any) => {
       // Sync businesses table subscription columns
       if (businessId) {
         try {
+          const saasUpdateData: any = {
+            stripe_subscription_id: stripeSubId,
+            subscription_status: syncedStatus,
+            subscription_active: syncedActive,
+            trial_ends_at: syncedExpiry,
+          };
+
+          if (syncedActive) {
+            saasUpdateData.setup_completed = true;
+            saasUpdateData.status = 'active';
+            saasUpdateData.public_page_enabled = true;
+            
+            // Only update selected_plan if we know it (e.g. metadata is passed down). Or rely on checkout setting it.
+            // Let's set it to 'pro' if empty, but prefer leaving existing. We don't read existing easily here, so we will skip setting selected_plan here.
+          } else {
+             saasUpdateData.public_page_enabled = false;
+          }
+
           await db
             .from("businesses")
-            .update({
-              stripe_subscription_id: stripeSubId,
-              subscription_status: syncedStatus,
-              subscription_active: syncedActive,
-              trial_ends_at: syncedExpiry,
-            })
+            .update(saasUpdateData)
             .eq("id", businessId);
           console.log(
             `[Webhook Sync] Aligned businesses subscription info for business: ${businessId}`,
@@ -1724,12 +1770,21 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
         if (businessId) {
           try {
+            const saasUpdateData: any = {
+              subscription_status: syncedStatus,
+              subscription_active: syncedActive,
+            };
+
+            if (syncedActive) {
+               saasUpdateData.status = 'active';
+               saasUpdateData.public_page_enabled = true;
+            } else {
+               saasUpdateData.public_page_enabled = false;
+            }
+
             await db
               .from("businesses")
-              .update({
-                subscription_status: syncedStatus,
-                subscription_active: syncedActive,
-              })
+              .update(saasUpdateData)
               .eq("id", businessId);
           } catch (err: any) {
             console.warn(

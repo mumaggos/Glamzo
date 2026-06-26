@@ -44,15 +44,12 @@ export default function SetupWizard() {
 
   useEffect(() => {
     const status = searchParams.get('status');
-    if (status === 'stripe_success') {
-      setSuccessMsg('Subscrição ativada com sucesso!');
-      setStep(4);
-      window.history.replaceState({}, document.title, '/partner/setup');
-    } else if (status === 'stripe_cancelled') {
+
+    if (status === 'stripe_cancelled') {
       setErrorMsg('Pagamento cancelado ou não concluído.');
       window.history.replaceState({}, document.title, '/partner/setup');
     }
-  }, [searchParams]);
+  }, [searchParams, business]);
 
   const fetchBusiness = async () => {
     if (!user) return;
@@ -247,7 +244,7 @@ export default function SetupWizard() {
           body: JSON.stringify({
             businessId: business.id,
             planName: selectedPlan,
-            successUrl: window.location.origin + '/partner/setup?status=stripe_success',
+            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
             cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
           })
         });

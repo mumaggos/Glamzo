@@ -54,28 +54,17 @@ export default function Home() {
             const now = Date.now();
             const filtered = data
               .filter((b: any) => {
-                if (b.subscription_status === "suspended") {
-                  return false;
-                }
-
-                if (b.public_page_enabled === false) return false;
-
-                // Enforce card added for real shops to appear in the public list
                 const isDemo = [
                   "salao-spa-premium",
                   "barbearia-braga-moderna",
                   "estetica-beleza-braganca",
                 ].includes(b.slug);
-                const hasSubscriptionId =
-                  b.stripe_subscription_id &&
-                  b.stripe_subscription_id.trim() !== "";
-                const isActiveOrTrialing =
-                  b.subscription_active ||
-                  b.subscription_status === "active" ||
-                  b.subscription_status === "trialing";
 
-                if (!isDemo && !hasSubscriptionId && !isActiveOrTrialing) {
-                  return false;
+                if (!isDemo) {
+                  if (b.status !== 'active') return false;
+                  if (!b.subscription_active) return false;
+                  if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
+                  if (b.public_page_enabled === false) return false;
                 }
                 return true;
               })

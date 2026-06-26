@@ -71,6 +71,7 @@ const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
 const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
+const PaymentSuccess = React.lazy(() => import('./pages/partner/PaymentSuccess'));
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
 const Favorites = React.lazy(() => import('./pages/Favorites'));
@@ -162,6 +163,15 @@ export default function App() {
                   element={
                     <ProtectedRoute allowedRoles={['business']}>
                       <SetupWizard />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/setup/payment-success" 
+                  element={
+                    <ProtectedRoute allowedRoles={['business']}>
+                      <PaymentSuccess />
                     </ProtectedRoute>
                   } 
                 />
