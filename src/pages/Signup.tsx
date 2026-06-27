@@ -12,6 +12,12 @@ export default function Signup() {
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect) {
+        navigate(redirect, { replace: true });
+        return;
+      }
       if (profile.role === 'admin') navigate('/admin', { replace: true });
       else if (profile.role === 'business') navigate('/dashboard', { replace: true });
       else navigate('/account', { replace: true });
@@ -196,7 +202,7 @@ export default function Signup() {
               {(errorMsg.includes('já está associado') || errorMsg.includes('já está registado') || errorMsg.toLowerCase().includes('already')) && (
                 <div className="mt-2 text-left">
                   <Link 
-                    to={`/login?email=${encodeURIComponent(email)}`} 
+                    to={`/login${window.location.search ? window.location.search + '&' : '?'}email=${encodeURIComponent(email)}`} 
                     className="inline-flex items-center gap-1 text-xs text-rose-700 hover:text-rose-800 font-extrabold hover:underline"
                   >
                     <span>Iniciar Sessão com este E-mail &rarr;</span>
@@ -428,7 +434,7 @@ export default function Signup() {
 
           <p className="mt-6 text-center text-xs text-slate-600">
             Deseja entrar em uma de suas contas?{' '}
-            <Link to="/login" className="font-bold text-rose-600 hover:text-rose-700">
+            <Link to={`/login${window.location.search}`} className="font-bold text-rose-600 hover:text-rose-700">
               Iniciar sessão
             </Link>
           </p>

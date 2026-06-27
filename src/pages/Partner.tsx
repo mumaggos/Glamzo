@@ -5,6 +5,7 @@ import {
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, ArrowRight 
 } from 'lucide-react';
+import terminalImg from '../assets/images/glamzo_terminal_1782560901697.jpg';
 
 export default function Partner() {
   const { user, profile } = useAuth();
@@ -86,6 +87,73 @@ export default function Partner() {
             <div className="p-3">
               <div className="text-3xl sm:text-4xl font-display font-medium text-purple-600">+143%</div>
               <div className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">Retenção de Clientes</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 Terminal Glamzo Section */}
+      <section className="py-20 bg-slate-950 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded text-[9px] font-bold uppercase text-purple-300 tracking-wider mb-4">
+                <Smartphone className="w-3.5 h-3.5 text-purple-400" />
+                <span>O Futuro da Recepção</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-display font-medium tracking-tight mb-6">
+                O Seu Novo <span className="text-purple-400">Terminal Glamzo</span>
+              </h2>
+              <p className="text-slate-400 text-sm mb-8 leading-relaxed max-w-lg">
+                Esqueça o papel e a caneta. O nosso painel otimizado para tablets permite-lhe gerir a agenda, 
+                confirmar clientes, aceitar marcações e processar pagamentos num ecrã deslumbrante e ultra-rápido, 
+                mesmo ao balcão.
+              </p>
+              <ul className="space-y-4 text-slate-300 text-sm font-medium">
+                <li className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5 text-purple-400" />
+                  </div>
+                  Interface limpa e profissional para a rececionista.
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5 text-purple-400" />
+                  </div>
+                  Modo ecrã inteiro com atualizações ao segundo.
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5 text-purple-400" />
+                  </div>
+                  Design premium que eleva a imagem do seu salão.
+                </li>
+              </ul>
+            </div>
+            
+            <div className="relative">
+              <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative group">
+                <img 
+                  src={terminalImg}
+                  alt="Terminal Glamzo em tablet" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-slate-400 font-mono mb-1">Status</div>
+                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Sincronizado
+                      </div>
+                    </div>
+                    <div className="bg-purple-600 text-white text-xs font-bold px-4 py-2 rounded-xl">
+                      Modo Terminal
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -197,53 +265,99 @@ export default function Partner() {
 
       {/* 4. Subscription Pricing Structure */}
       <section className="py-20 bg-purple-50/40 border-t border-b border-slate-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 border border-rose-100 rounded text-[9px] font-bold uppercase text-rose-600 tracking-wider mb-3">
-            <span>Investimento Transparente</span>
+            <span>Planos Flexíveis</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Preço Único e Simples</h2>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">Diga adeus a taxas ocultas e planos confusos.</p>
+          <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Escolha o Plano Ideal para Si</h2>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">Diga adeus a taxas ocultas. Opções adaptadas ao tamanho do seu negócio.</p>
 
-          <div className="mt-12 bg-white border border-purple-100 p-10 rounded-3xl max-w-md mx-auto relative overflow-hidden shadow-xl shadow-purple-100/50">
-            <span className="text-[10px] font-black tracking-widest text-purple-600 uppercase block font-mono">Assinatura Única</span>
-            <div className="mt-4 flex justify-center items-baseline mb-4">
-              <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">19.90€</span>
-              <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Base Plan */}
+            <div className="bg-white border border-slate-200 p-10 rounded-3xl relative overflow-hidden shadow-sm hover:shadow-md transition-all">
+              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">Plano Base</span>
+              <div className="mt-4 flex justify-center items-baseline mb-4">
+                <span className="text-4xl font-display font-medium text-slate-900">19.90€</span>
+                <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+              </div>
+              
+              <p className="text-xs text-slate-500 mt-4 leading-normal font-medium h-10">
+                O essencial para impulsionar e gerir todo o seu salão.
+              </p>
+
+              <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Agenda e Marcações Ilimitadas</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Página pública com SEO (Website)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Notificações e Lembretes a clientes</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Equipa e Serviços Ilimitados</span>
+                </li>
+              </ul>
+
+              <Link
+                to="/partner/signup"
+                className="mt-10 block w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer"
+              >
+                Começar no Plano Base
+              </Link>
             </div>
-            
-            <p className="text-xs text-slate-500 mt-4 leading-normal font-medium">
-              Comece com 14 dias de teste grátis para explorar todas as funcionalidades sem qualquer risco.
-            </p>
 
-            <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
-              <li className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Gestão Completa de Calendário de Funcionários</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Cobranças online integradas via Stripe</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Otimizador de Horários de Menor Afluência</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Fidelização e Emissão de Cupões Promocionais</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Painel de Resultados e Relatórios em Tempo Real</span>
-              </li>
-            </ul>
+            {/* Pro Plan */}
+            <div className="bg-white border-2 border-purple-500 p-10 rounded-3xl relative overflow-hidden shadow-xl shadow-purple-100/50 transform md:-translate-y-4">
+              <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">Plano Recomendado</div>
+              <span className="text-[10px] font-black tracking-widest text-purple-600 uppercase block font-mono">Plano Terminal</span>
+              <div className="mt-4 flex flex-col items-center justify-center mb-4">
+                <div className="flex items-baseline">
+                  <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">24.99€</span>
+                  <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+                </div>
+                <span className="text-[10px] text-purple-600 font-medium mt-1 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">+9.99€ Caução Única (Equipamento)</span>
+              </div>
+              
+              <p className="text-xs text-slate-500 mt-4 leading-normal font-medium h-10">
+                A experiência premium ao balcão, com tablet incluído e muito mais.
+              </p>
 
-            <Link
-              to="/partner/signup"
-              className="mt-10 block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-purple-200"
-            >
-              Iniciar 14 Dias Grátis
-            </Link>
+              <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span className="font-bold text-slate-900">Tudo do Plano Base, mais:</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Terminal de Balcão Integrado</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Sistema de Cobranças na Loja</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Destaque Premium (Top Results)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Assistência técnica prioritária</span>
+                </li>
+              </ul>
+
+              <Link
+                to="/partner/signup"
+                className="mt-10 block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-purple-200"
+              >
+                Solicitar Terminal
+              </Link>
+            </div>
           </div>
         </div>
       </section>

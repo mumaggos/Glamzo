@@ -18,6 +18,18 @@ import {
   Home as HomeIcon,
   Heart,
 } from "lucide-react";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  Pin,
+} from "@vis.gl/react-google-maps";
+
+const API_KEY =
+  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+  "";
 
 export default function Home() {
   const { user } = useAuth();
@@ -31,6 +43,41 @@ export default function Home() {
   // Promoted Campaigns state
   const [promotedShops, setPromotedShops] = useState<any[]>([]);
   const [dynamicCards, setDynamicCards] = useState<any[]>([]);
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapBusinesses, setMapBusinesses] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.warn("Geolocation error:", error);
+        }
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    // Fetch businesses for the map
+    supabase
+      .from("businesses")
+      .select("*")
+      .eq("status", "active")
+      .eq("public_page_enabled", true)
+      .limit(50)
+      .then(({ data }) => {
+        if (data) {
+          // If we had a postgis database we could order by distance, but we'll just filter in memory
+          setMapBusinesses(data);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     // 1. Load promoted campaigns with instant SessionStorage cache fallback for 100ms render speeds
@@ -565,6 +612,70 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* 2.7 Map Section */}
+      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex flex-col mb-8 gap-3">
+          <div className="inline-flex w-max items-center gap-1.5 px-2.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] font-bold uppercase text-purple-600 tracking-wider">
+            <MapPin className="w-3 h-3 text-purple-500" />
+            <span>Perto de si</span>
+          </div>
+          <h2 className="text-2xl font-display font-medium tracking-tight text-slate-900">
+            Descubra lojas à sua volta
+          </h2>
+          <p className="text-slate-500 text-xs mt-1 max-w-2xl">
+            Explore os melhores profissionais e espaços da sua zona, com marcação imediata.
+          </p>
+        </div>
+        
+        <div className="w-full h-[55vh] sm:h-[65vh] rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative bg-slate-100">
+          {API_KEY ? (
+            <APIProvider apiKey={API_KEY} version="weekly">
+              <Map
+                defaultCenter={userLocation || { lat: 39.3999, lng: -8.2245 }}
+                defaultZoom={userLocation ? 12 : 6}
+                center={userLocation || undefined}
+                mapId="GLAMZO_HOME_MAP"
+                internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
+                style={{ width: "100%", height: "100%" }}
+              >
+                {mapBusinesses.map((b) => {
+                  if (!b.lat || !b.lng) return null;
+                  const markerColor = (b.rating ?? 0) >= 4.5 ? "#9333ea" : "#3b82f6";
+                  return (
+                    <AdvancedMarker
+                      key={b.id}
+                      position={{ lat: b.lat, lng: b.lng }}
+                      title={b.name}
+                      onClick={() => {
+                        navigate(`/business/${b.slug}`);
+                      }}
+                    >
+                      <div className="relative cursor-pointer hover:scale-110 transition-transform">
+                        <Pin
+                          background={markerColor}
+                          borderColor={markerColor}
+                          glyphColor="#fff"
+                        />
+                        {(b.rating ?? 0) > 0 && (
+                          <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
+                            {b.rating.toFixed(1)}
+                          </div>
+                        )}
+                      </div>
+                    </AdvancedMarker>
+                  );
+                })}
+              </Map>
+            </APIProvider>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center text-slate-500">
+              <MapPin className="w-10 h-10 mb-4 text-slate-300" />
+              <p>O mapa não está disponível neste momento.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* 3. Emotional Lifestyle Narrative (Values) - Clean Grid */}
       <section className="py-20 border-t border-slate-100 bg-white">

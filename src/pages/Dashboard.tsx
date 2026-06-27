@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import QRCode from "qrcode";
+import * as QRCode from "qrcode";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
@@ -3223,7 +3223,7 @@ export default function Dashboard() {
                   id="view-agenda"
                   className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-[9999] bg-slate-50 p-6 overflow-y-auto w-full h-full" : ""}`}
                 >
-                  <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 ${agendaFullScreen ? "pb-2" : "border-b border-slate-200 pb-5"}`}>
+                  <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 ${agendaFullScreen ? "fixed top-4 right-6 z-50 pointer-events-none" : "border-b border-slate-200 pb-5"}`}>
                     <div className={agendaFullScreen ? "hidden" : ""}>
                       <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-purple-400" />
@@ -3235,7 +3235,7 @@ export default function Dashboard() {
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div className={`flex flex-wrap items-center gap-3 w-full lg:w-auto pointer-events-auto ${agendaFullScreen ? "bg-white/80 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-slate-200/50" : ""}`}>
                       <button
                         onClick={() => setAgendaFullScreen(!agendaFullScreen)}
                         className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-extrabold px-3 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-sm"
@@ -3262,7 +3262,7 @@ export default function Dashboard() {
                             setManualStaffId(staff[0].id);
                           }
                         }}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30"
+                        className={`bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30 ${agendaFullScreen ? "hidden" : ""}`}
                       >
                         <Calendar className="w-4 h-4 text-slate-900" />
                         <span className="text-slate-900">
@@ -3298,7 +3298,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Hourly timeline view of selectedAgendaDate or custom calendar switcher */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${agendaFullScreen ? "pt-16" : ""}`}>
                     {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
                     <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
                       {/* ==================== TODAY VIEW (ADVANCED DRAG/DROP GRID) ==================== */}
@@ -5640,8 +5640,8 @@ export default function Dashboard() {
                               </span>
                               <span className="text-slate-900 font-extrabold text-xs sm:text-sm leading-none block">
                                 {business?.selected_plan === "app_tablet"
-                                  ? "PRO Terminal"
-                                  : "Glamzo PRO"}
+                                  ? "Plano Terminal"
+                                  : "Plano Base"}
                               </span>
                               <span className="text-[10px] text-slate-500 block">
                                 {business?.selected_plan === "app_tablet"
@@ -5687,6 +5687,21 @@ export default function Dashboard() {
                           </div>
 
                           <div className="flex flex-col gap-3 pt-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setActiveTab("financeiro" as any);
+                                setTimeout(() => {
+                                  const financeiroEl = document.getElementById("view-financeiro");
+                                  if (financeiroEl) financeiroEl.scrollIntoView({ behavior: 'smooth' });
+                                }, 100);
+                              }}
+                              className="bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold px-4 py-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 w-full border border-purple-200"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              <span>Alterar Plano de Subscrição</span>
+                            </button>
+                            
                             {business?.stripe_subscription_id &&
                             business.stripe_subscription_id.trim() !== "" ? (
                               <>
@@ -5916,6 +5931,89 @@ export default function Dashboard() {
                   </div>
 
                   {/* Operational Metrics Grid */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 mb-6">
+                    <h4 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                      O Seu Plano Glamzo
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Base Plan */}
+                      <div className={`p-5 rounded-2xl border transition-all ${
+                        business?.selected_plan !== "app_tablet"
+                          ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
+                          : "bg-white border-slate-200 hover:border-purple-300"
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">Plano Base</span>
+                          {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-0.5 rounded-full">Plano Atual</span>}
+                        </div>
+                        <div className="flex items-baseline mb-3">
+                          <span className="text-2xl font-display font-medium text-slate-900">19.90€</span>
+                          <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+                        </div>
+                        <ul className="space-y-1.5 text-left text-xs text-slate-600 font-medium mb-4">
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Agenda e Marcações Ilimitadas</li>
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Página pública com SEO</li>
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Equipa e Serviços Ilimitados</li>
+                        </ul>
+                        {business?.selected_plan === "app_tablet" && (
+                          <button 
+                            onClick={async () => {
+                              if (!business) return;
+                              const { error } = await supabase.from('businesses').update({ selected_plan: 'base_plan' }).eq('id', business.id);
+                              if (!error) {
+                                setBusiness({ ...business, selected_plan: 'base_plan' });
+                                setGlobalSuccess("Plano alterado com sucesso para Plano Base!");
+                              }
+                            }}
+                            className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                          >
+                            Alterar para Plano Base
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Terminal Plan */}
+                      <div className={`p-5 rounded-2xl border transition-all ${
+                        business?.selected_plan === "app_tablet"
+                          ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
+                          : "bg-white border-slate-200 hover:border-purple-300"
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-[10px] font-black tracking-widest text-purple-600 uppercase block font-mono">Plano Terminal</span>
+                          {business?.selected_plan === "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-0.5 rounded-full">Plano Atual</span>}
+                        </div>
+                        <div className="flex items-baseline">
+                          <span className="text-2xl font-display font-medium text-slate-900 bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">24.99€</span>
+                          <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+                        </div>
+                        <p className="text-[9px] text-purple-600 font-medium mb-3">+9.99€ Caução Única (Equipamento)</p>
+                        
+                        <ul className="space-y-1.5 text-left text-xs text-slate-600 font-medium mb-4">
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-purple-500" /> Tudo do Plano Base</li>
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-purple-500" /> Terminal de Balcão Integrado</li>
+                          <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-purple-500" /> Sistema de Cobranças na Loja</li>
+                        </ul>
+                        {business?.selected_plan !== "app_tablet" && (
+                          <button 
+                            onClick={async () => {
+                              if (!business) return;
+                              const { error } = await supabase.from('businesses').update({ selected_plan: 'app_tablet' }).eq('id', business.id);
+                              if (!error) {
+                                setBusiness({ ...business, selected_plan: 'app_tablet' });
+                                setGlobalSuccess("Plano atualizado! Entraremos em contacto para o envio do Terminal.");
+                              }
+                            }}
+                            className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition shadow cursor-pointer"
+                          >
+                            Alterar para Plano Terminal
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left border-l-2 border-l-purple-500">
                       <span className="block text-[9px] font-mono text-slate-500 uppercase font-black tracking-wider leading-none">
