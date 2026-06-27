@@ -5,7 +5,6 @@ import {
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, ArrowRight 
 } from 'lucide-react';
-import terminalImg from '../assets/images/glamzo_terminal_1782560901697.jpg';
 
 export default function Partner() {
   const { user, profile } = useAuth();
@@ -133,13 +132,50 @@ export default function Partner() {
             </div>
             
             <div className="relative">
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative group">
-                <img 
-                  src={terminalImg}
-                  alt="Terminal Glamzo em tablet" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+              <div className="aspect-[4/3] rounded-3xl overflow-hidden border-8 border-slate-900 shadow-2xl relative group bg-slate-50 flex flex-col">
+                {/* Mockup Header */}
+                <div className="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-500" />
+                    <span className="font-bold text-slate-900 text-xs">Agenda do Salão</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-5 w-24 bg-slate-100 rounded-md"></div>
+                    <div className="h-5 w-16 bg-purple-600 rounded-md"></div>
+                  </div>
+                </div>
+                {/* Mockup Grid */}
+                <div className="flex-1 p-4 grid grid-cols-4 gap-3 relative overflow-hidden">
+                  <div className="col-span-1 space-y-3">
+                    <div className="h-3 w-10 bg-slate-200 rounded mx-auto mb-6"></div>
+                    <div className="h-10 border-t border-slate-200 relative"><span className="absolute -top-2 left-0 text-[8px] text-slate-400">09:00</span></div>
+                    <div className="h-10 border-t border-slate-200 relative"><span className="absolute -top-2 left-0 text-[8px] text-slate-400">10:00</span></div>
+                    <div className="h-10 border-t border-slate-200 relative"><span className="absolute -top-2 left-0 text-[8px] text-slate-400">11:00</span></div>
+                  </div>
+                  <div className="col-span-1 border-l border-slate-200 pl-2 relative">
+                    <div className="h-3 w-16 bg-slate-300 rounded mx-auto mb-6"></div>
+                    <div className="absolute top-10 left-2 right-2 h-16 bg-purple-100 border-l-2 border-purple-500 rounded p-1.5">
+                      <div className="h-2 w-12 bg-purple-300 rounded mb-1"></div>
+                      <div className="h-1.5 w-8 bg-purple-200 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="col-span-1 border-l border-slate-200 pl-2 relative">
+                    <div className="h-3 w-16 bg-slate-300 rounded mx-auto mb-6"></div>
+                    <div className="absolute top-20 left-2 right-2 h-24 bg-emerald-50 border-l-2 border-emerald-400 rounded p-1.5">
+                      <div className="h-2 w-12 bg-emerald-300 rounded mb-1"></div>
+                      <div className="h-1.5 w-8 bg-emerald-200 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="col-span-1 border-l border-slate-200 pl-2 relative">
+                    <div className="h-3 w-16 bg-slate-300 rounded mx-auto mb-6"></div>
+                    <div className="absolute top-8 left-2 right-2 h-12 bg-amber-50 border-l-2 border-amber-400 rounded p-1.5">
+                      <div className="h-2 w-12 bg-amber-300 rounded mb-1"></div>
+                      <div className="h-1.5 w-8 bg-amber-200 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                     <div>

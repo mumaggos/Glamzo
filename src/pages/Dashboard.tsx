@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import * as QRCode from "qrcode";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
@@ -849,56 +848,6 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   }, [business?.id]);
-
-  useEffect(() => {
-    if (activeTab === "loja" && business?.slug && qrCanvasRef.current) {
-      const canvas = qrCanvasRef.current;
-      const url = `${window.location.origin}/${business.slug}?source=qrcode`;
-      QRCode.toCanvas(
-        canvas,
-        url,
-        {
-          width: 512, // High resolution
-          margin: 4,
-          color: {
-            dark: "#03000a",
-            light: "#ffffff",
-          },
-          errorCorrectionLevel: "H",
-        },
-        (err) => {
-          if (err) {
-            console.error("Failed to draw QR code:", err);
-            return;
-          }
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return;
-          const size = canvas.width;
-          const logoSize = size * 0.22;
-          const halfSize = size / 2;
-
-          // Circle backing
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(halfSize, halfSize, logoSize / 2 + 6, 0, 2 * Math.PI);
-          ctx.fill();
-
-          // Brand backdrop badge
-          ctx.fillStyle = "#6b21a8";
-          ctx.beginPath();
-          ctx.arc(halfSize, halfSize, logoSize / 2, 0, 2 * Math.PI);
-          ctx.fill();
-
-          // Brand letter "G"
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `bold ${logoSize * 0.65}px sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("G", halfSize, halfSize + 1);
-        },
-      );
-    }
-  }, [activeTab, business?.slug]);
 
   // Handle simulations of customer bookings (live real database insert + notification bell + play audio synth chime!)
   const handleSimulateNewBooking = async () => {
@@ -2316,6 +2265,10 @@ export default function Dashboard() {
       );
     } finally {
       setUploadingStaffAvatar(false);
+      // Reset the input value to allow selecting the same file again
+      if (e.target) {
+        e.target.value = '';
+      }
     }
   };
 
@@ -3300,7 +3253,7 @@ export default function Dashboard() {
                   {/* Hourly timeline view of selectedAgendaDate or custom calendar switcher */}
                   <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${agendaFullScreen ? "pt-16" : ""}`}>
                     {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
-                    <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                    <div className={`${agendaFullScreen ? "lg:col-span-12" : "lg:col-span-8"} bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6`}>
                       {/* ==================== TODAY VIEW (ADVANCED DRAG/DROP GRID) ==================== */}
                       {agendaMode === "today" && (
                         <div className="space-y-4">
@@ -3925,7 +3878,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Quick Scaled Agenda Tools - Elegant clean banners */}
-                    <div className="lg:col-span-4 space-y-6">
+                    <div className={`lg:col-span-4 space-y-6 ${agendaFullScreen ? "hidden" : ""}`}>
                       <div className="bg-slate-50/60 border border-slate-200 rounded-3xl p-6 space-y-4">
                         <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest leading-none">
                           Métricas Rápidas
@@ -6584,8 +6537,9 @@ export default function Dashboard() {
                         {/* Interactive Canvas frame with professional safety bounding & max sizes */}
                         <div className="p-5 bg-white border border-slate-200/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
                           <div className="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                            <canvas
-                              ref={qrCanvasRef}
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(`${window.location.origin}/${business?.slug}?source=qrcode`)}`}
+                              alt="QR Code"
                               style={{
                                 maxWidth: "190px",
                                 maxHeight: "190px",
@@ -6593,6 +6547,7 @@ export default function Dashboard() {
                                 height: "auto",
                               }}
                               className="select-none"
+                              crossOrigin="anonymous"
                             />
                           </div>
                           <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-500 text-slate-500 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
