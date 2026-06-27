@@ -95,7 +95,7 @@ export default function BusinessDetail() {
   // Handles opening the chat drawer with the business
   const handleOpenChat = async () => {
     if (!user) {
-      navigate('/login');
+      navigate(`/login?redirect=/business/${slug}`);
       return;
     }
     if (!business) return;
@@ -747,7 +747,7 @@ export default function BusinessDetail() {
                     onClick={() => {
                       if (!user) {
                         alert('Por favor, inicie sessão para escrever uma avaliação!');
-                        navigate('/login');
+                        navigate(`/login?redirect=/business/${slug}`);
                         return;
                       }
                       setReviewFormOpen(!reviewFormOpen);
@@ -1027,7 +1027,7 @@ export default function BusinessDetail() {
                 onClick={() => {
                   if (!user) {
                     alert('Inicie sessão para abrir uma disputa oficial com este salão.');
-                    navigate('/login');
+                    navigate(`/login?redirect=/business/${slug}`);
                     return;
                   }
                   setDisputeOpen(true);

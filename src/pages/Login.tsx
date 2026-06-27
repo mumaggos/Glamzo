@@ -11,6 +11,12 @@ export default function Login() {
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect) {
+        navigate(redirect, { replace: true });
+        return;
+      }
       if (profile.role === 'admin') {
         navigate('/admin', { replace: true });
       } else if (profile.role === 'business') {
@@ -285,7 +291,7 @@ export default function Login() {
 
           <p className="mt-6 text-center text-xs text-slate-600">
             Não tem uma conta?{' '}
-            <Link to="/signup" className="font-bold text-rose-600 hover:text-rose-700">
+            <Link to={`/signup${window.location.search}`} className="font-bold text-rose-600 hover:text-rose-700">
               Registe-se gratuitamente
             </Link>
           </p>

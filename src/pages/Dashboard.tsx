@@ -112,6 +112,9 @@ export default function Dashboard() {
     | "servicos"
     | "equipa"
     | "clientes"
+    | "horarios"
+    | "analytics"
+    | "terminal"
     | "configuracoes"
     | "financeiro"
     | "campanhas"
@@ -2817,6 +2820,7 @@ export default function Dashboard() {
                 { id: "clientes", label: "Clientes", icon: UsersRound },
                 { id: "equipa", label: "Equipa", icon: Users },
                 { id: "servicos", label: "Serviços", icon: Scissors },
+                { id: "horarios", label: "Horários", icon: Clock },
                 { id: "campanhas", label: "Promoções", icon: Tag },
                 { id: "financeiro", label: "Pagamentos", icon: Landmark },
                 { id: "loja", label: "Website & QR Code", icon: Globe },
@@ -2951,6 +2955,7 @@ export default function Dashboard() {
               { id: "clientes", label: "Clientes", icon: UsersRound },
               { id: "equipa", label: "Equipa", icon: Users },
               { id: "servicos", label: "Serviços", icon: Scissors },
+              { id: "horarios", label: "Horários", icon: Clock },
               { id: "campanhas", label: "Promoções", icon: Tag },
               { id: "financeiro", label: "Pagamentos", icon: Landmark },
               { id: "loja", label: "Website & QR Code", icon: Globe },
@@ -3218,8 +3223,8 @@ export default function Dashboard() {
                   id="view-agenda"
                   className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-[9999] bg-slate-50 p-6 overflow-y-auto w-full h-full" : ""}`}
                 >
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
-                    <div>
+                  <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 ${agendaFullScreen ? "pb-2" : "border-b border-slate-200 pb-5"}`}>
+                    <div className={agendaFullScreen ? "hidden" : ""}>
                       <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-purple-400" />
                         <span>Agenda do Salão</span>
@@ -3439,8 +3444,12 @@ export default function Dashboard() {
                                 >
                                   {/* Staff Header */}
                                   <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-center flex-col px-2 sticky top-0 z-20">
-                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs mb-1">
-                                      {st.full_name?.charAt(0) || "E"}
+                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs mb-1 overflow-hidden shrink-0">
+                                      {st.avatar_url ? (
+                                        <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      ) : (
+                                        st.full_name?.charAt(0) || "E"
+                                      )}
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-800 line-clamp-1">
                                       {st.full_name}
@@ -6753,39 +6762,39 @@ export default function Dashboard() {
 
                   {/* BOTTOM BENTO GRAPHIC: VISISTS & SCANS STATS (Part 5) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-                    {/* Stat 1: Visitas de página */}
+                    {/* Stat 1: Ticket Médio */}
                     <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
                         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Visitas Página
+                          Ticket Médio
                         </span>
-                        <span className="text-2xl font-black text-slate-500 font-mono">
-                          0
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {bookings.filter(b => b.booking_status === "completed").length > 0 ? (bookings.filter(b => b.booking_status === "completed").reduce((sum, item) => sum + Number(item.total_price), 0) / bookings.filter(b => b.booking_status === "completed").length).toFixed(2) : "0.00"} €
                         </span>
-                        <p className="text-[9px] text-slate-500 font-mono leading-none">
-                          Sem visitas disponíveis
+                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
+                          Valor médio por marcação
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-500 border border-slate-200">
-                        <Eye className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <DollarSign className="w-5 h-5 text-purple-400" />
                       </div>
                     </div>
 
-                    {/* Stat 2: Favoritos */}
+                    {/* Stat 2: Total Clientes */}
                     <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
                       <div className="space-y-1">
                         <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Favoritos
+                          Total Clientes
                         </span>
-                        <span className="text-2xl font-black text-slate-500 font-mono">
-                          0
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {customers.length}
                         </span>
-                        <p className="text-[9px] text-slate-500 font-mono leading-none">
-                          Sem favoritos guardados
+                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
+                          Clientes registados na base
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-500 border border-slate-200">
-                        <Heart className="w-5 h-5 text-slate-500" />
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <Users className="w-5 h-5 text-purple-400" />
                       </div>
                     </div>
 
