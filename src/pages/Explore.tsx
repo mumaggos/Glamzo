@@ -582,12 +582,12 @@ export default function Explore() {
               >
                 <List className="w-4 h-4" /> Lista
               </button>
-              <button
+              {/* <button
                 onClick={() => setViewMode("map")}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "map" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
               >
                 <MapIcon className="w-4 h-4" /> Mapa
-              </button>
+              </button> */}
             </div>
             <div className="text-[11px] font-bold text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm font-mono flex items-center gap-1.5 shrink-0 hidden sm:flex">
               <span>Encontrados:</span>

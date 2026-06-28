@@ -613,7 +613,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* 2.7 Map Section */}
+      {/* 2.7 Map Section - Hidden 
       <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col mb-8 gap-3">
           <div className="inline-flex w-max items-center gap-1.5 px-2.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] font-bold uppercase text-purple-600 tracking-wider">
@@ -676,6 +676,7 @@ export default function Home() {
           )}
         </div>
       </section>
+      */}
 
       {/* 3. Emotional Lifestyle Narrative (Values) - Clean Grid */}
       <section className="py-20 border-t border-slate-100 bg-white">

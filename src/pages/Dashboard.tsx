@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import * as QRCode from "qrcode";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
@@ -850,55 +849,8 @@ export default function Dashboard() {
     };
   }, [business?.id]);
 
-  useEffect(() => {
-    if (activeTab === "loja" && business?.slug && qrCanvasRef.current) {
-      const canvas = qrCanvasRef.current;
-      const url = `${window.location.origin}/${business.slug}?source=qrcode`;
-      QRCode.toCanvas(
-        canvas,
-        url,
-        {
-          width: 512, // High resolution
-          margin: 4,
-          color: {
-            dark: "#03000a",
-            light: "#ffffff",
-          },
-          errorCorrectionLevel: "H",
-        },
-        (err) => {
-          if (err) {
-            console.error("Failed to draw QR code:", err);
-            return;
-          }
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return;
-          const size = canvas.width;
-          const logoSize = size * 0.22;
-          const halfSize = size / 2;
-
-          // Circle backing
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(halfSize, halfSize, logoSize / 2 + 6, 0, 2 * Math.PI);
-          ctx.fill();
-
-          // Brand backdrop badge
-          ctx.fillStyle = "#6b21a8";
-          ctx.beginPath();
-          ctx.arc(halfSize, halfSize, logoSize / 2, 0, 2 * Math.PI);
-          ctx.fill();
-
-          // Brand letter "G"
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `bold ${logoSize * 0.65}px sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("G", halfSize, halfSize + 1);
-        },
-      );
-    }
-  }, [activeTab, business?.slug]);
+  // useEffect for QRCode.toCanvas removed
+  
 
   // Handle simulations of customer bookings (live real database insert + notification bell + play audio synth chime!)
   const handleSimulateNewBooking = async () => {
@@ -1068,46 +1020,45 @@ export default function Dashboard() {
     }
   };
 
-  const handleDownloadPNG = () => {
-    if (!qrCanvasRef.current) return;
-    const link = document.createElement("a");
-    link.download = `${business?.slug || "glamzo"}-qrcode.png`;
-    link.href = qrCanvasRef.current.toDataURL("image/png");
-    link.click();
+  const getQrUrl = (format: 'png' | 'svg' = 'png') => {
+    const data = encodeURIComponent(`${window.location.origin}/${business?.slug}?source=qrcode`);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${data}&format=${format}`;
   };
 
-  const handleDownloadSVG = () => {
+  const handleDownloadPNG = async () => {
     if (!business?.slug) return;
-    const url = `${window.location.origin}/${business.slug}?source=qrcode`;
-    QRCode.toString(
-      url,
-      {
-        type: "svg",
-        errorCorrectionLevel: "H",
-        margin: 4,
-        color: {
-          dark: "#03000a",
-          light: "#ffffff",
-        },
-      },
-      (err, rawSvg) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        const blob = new Blob([rawSvg], { type: "image/svg+xml" });
-        const objectUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.download = `${business?.slug || "glamzo"}-qrcode.svg`;
-        link.href = objectUrl;
-        link.click();
-        URL.revokeObjectURL(objectUrl);
-      },
-    );
+    try {
+      const response = await fetch(getQrUrl('png'));
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `${business.slug}-qrcode.png`;
+      link.href = objectUrl;
+      link.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Error downloading PNG:", err);
+    }
+  };
+
+  const handleDownloadSVG = async () => {
+    if (!business?.slug) return;
+    try {
+      const response = await fetch(getQrUrl('svg'));
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `${business.slug}-qrcode.svg`;
+      link.href = objectUrl;
+      link.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Error downloading SVG:", err);
+    }
   };
 
   const handlePrintQRCode = () => {
-    if (!qrCanvasRef.current) return;
+    if (!business?.slug) return;
     const win = window.open("", "_blank");
     if (win) {
       win.document.write(`
@@ -1127,13 +1078,12 @@ export default function Dashboard() {
             <div class="outer-wrap">
               <h1>${business?.name || "Glamzo Store"}</h1>
               <p>Escaneie com a câmera do telemóvel para agendamento automático</p>
-              <img src="${qrCanvasRef.current.toDataURL("image/png")}" />
+              <img src="${getQrUrl('png')}" onload="window.print()" />
               <div class="footer">Parceiro Oficial Glamzo • glamzo.pt</div>
             </div>
             <script>
               window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
+                setTimeout(function() { window.close(); }, 1500);
               };
             </script>
           </body>
