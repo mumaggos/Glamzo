@@ -267,43 +267,59 @@ export default function Partner() {
           <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">Escolha o Plano Ideal para Si</h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-1">Diga adeus a taxas ocultas. Opções adaptadas ao tamanho do seu negócio.</p>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Base Plan */}
-            <div className="bg-white border border-slate-200 p-10 rounded-3xl relative overflow-hidden shadow-sm hover:shadow-md transition-all">
-              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">Plano Base</span>
-              <div className="mt-4 flex justify-center items-baseline mb-4">
-                <span className="text-4xl font-display font-medium text-slate-900">19.90€</span>
-                <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+            <div className="bg-white border-2 border-rose-500 p-10 rounded-3xl relative overflow-hidden shadow-xl shadow-rose-100/50 transition-all">
+              <div className="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">Experimente Grátis</div>
+              <span className="text-[10px] font-black tracking-widest text-rose-600 uppercase block font-mono">Plano Digital</span>
+              <div className="mt-4 flex flex-col items-center justify-center mb-4">
+                <div className="flex items-baseline">
+                  <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-rose-500 to-orange-400 bg-clip-text text-transparent">19.90€</span>
+                  <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
+                </div>
+                <span className="text-[10px] text-rose-600 font-medium mt-1 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">14 Dias Totalmente Grátis</span>
               </div>
               
               <p className="text-xs text-slate-500 mt-4 leading-normal font-medium h-10">
-                O essencial para impulsionar e gerir todo o seu salão.
+                O essencial para digitalizar, impulsionar e gerir todo o seu salão.
               </p>
 
               <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
                   <span>Agenda e Marcações Ilimitadas</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span>Página pública com SEO (Website)</span>
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Página Online & App Glamzo (Destaque)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span>Notificações e Lembretes a clientes</span>
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Lembretes Automáticos por Email / Notificação (Redução No-Shows)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span>Equipa e Serviços Ilimitados</span>
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Equipa, Serviços e Produtos Ilimitados</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Relatórios de Faturação, Receitas e Desempenho</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Marketing, Campanhas e Promoções de Fidelização</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>QR Code da sua Loja para a Montra</span>
                 </li>
               </ul>
 
               <Link
                 to="/partner/signup"
-                className="mt-10 block w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer"
+                className="mt-10 block w-full text-center bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-rose-200"
               >
-                Começar no Plano Base
+                Começar Teste de 14 Dias Grátis
               </Link>
             </div>
 
@@ -316,7 +332,10 @@ export default function Partner() {
                   <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">24.99€</span>
                   <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
                 </div>
-                <span className="text-[10px] text-purple-600 font-medium mt-1 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">+9.99€ Caução Única (Equipamento)</span>
+                <div className="flex flex-col items-center gap-1 mt-1">
+                  <span className="text-[10px] text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">14 Dias Totalmente Grátis</span>
+                  <span className="text-[10px] text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">+9.99€ Caução Única (Equipamento)</span>
+                </div>
               </div>
               
               <p className="text-xs text-slate-500 mt-4 leading-normal font-medium h-10">
@@ -326,23 +345,23 @@ export default function Partner() {
               <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span className="font-bold text-slate-900">Tudo do Plano Base, mais:</span>
+                  <span className="font-bold text-slate-900">Tudo do Plano Digital, mais:</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Terminal de Balcão Integrado</span>
+                  <span>Terminal Inteligente de Balcão (Tablet Incluído)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Sistema de Cobranças na Loja</span>
+                  <span>Sistema Integrado de Cobranças na Loja</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Destaque Premium (Top Results)</span>
+                  <span>Destaque Premium VIP na App (Top Results)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Assistência técnica prioritária</span>
+                  <span>Assistência técnica prioritária e dedicada 24/7</span>
                 </li>
               </ul>
 
@@ -350,7 +369,7 @@ export default function Partner() {
                 to="/partner/signup"
                 className="mt-10 block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-purple-200"
               >
-                Solicitar Terminal
+                Solicitar Terminal + 14 Dias Grátis
               </Link>
             </div>
           </div>
