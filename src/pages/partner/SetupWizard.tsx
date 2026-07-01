@@ -26,7 +26,7 @@ export default function SetupWizard() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [category, setCategory] = useState('Barbearia');
+  const [category, setCategory] = useState('Cabelo & Barbearia');
 
   // Step 2: Hours
   const [hours, setHours] = useState([
@@ -451,7 +451,7 @@ export default function SetupWizard() {
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria Principal *</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {['Barbearia', 'Cabeleireiro', 'Unhas', 'Estética', 'Spa', 'Sobrancelhas', 'Depilação', 'Maquilhagem'].map(cat => (
+                  {['Cabelo & Barbearia', 'Nails & Beauty', 'Estética', 'Wellness', 'Ao domicílio', 'Noivas & Eventos'].map(cat => (
                     <div 
                       key={cat}
                       onClick={() => setCategory(cat)}

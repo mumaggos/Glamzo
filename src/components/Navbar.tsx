@@ -13,7 +13,10 @@ export default function Navbar() {
   const isDarkNavbar = false; // Force light navbar everywhere to match site's style
 
   const getProfileTargetRoute = (): string => {
-    if (!user) return isPartnerPage ? '/partner/login' : '/login';
+    if (!user) {
+      const currentPath = encodeURIComponent(location.pathname + location.search);
+      return isPartnerPage ? `/partner/login?redirect=${currentPath}` : `/login?redirect=${currentPath}`;
+    }
     if (!profile) return '/account';
 
     switch (profile.role) {
@@ -137,13 +140,13 @@ export default function Navbar() {
               ) : (
                 <div className="flex items-center gap-2">
                   <Link
-                    to={isPartnerPage ? "/partner/login" : "/login"}
+                    to={isPartnerPage ? "/partner/login" : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                     className={`text-xs sm:text-sm px-3.5 py-2 ${isDarkNavbar ? 'text-slate-300 hover:text-white' : 'text-slate-650 hover:text-slate-900'} transition-all font-medium`}
                   >
                     Entrar
                   </Link>
                   <Link
-                    to={isPartnerPage ? "/partner/signup" : "/signup"}
+                    to={isPartnerPage ? "/partner/signup" : `/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                     className="text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md shadow-purple-950/20 transition-all hover:scale-[1.01]"
                   >
                     {isPartnerPage ? "Registar" : "Criar Conta"}

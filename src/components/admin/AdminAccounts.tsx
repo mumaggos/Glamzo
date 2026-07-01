@@ -50,8 +50,8 @@ export default function AdminAccounts() {
       phone: b.phone,
       address: b.address,
       city: b.city,
-      category: b.category || 'Barbearia',
-      is_premium: b.is_premium,
+      category: b.category || 'Cabelo & Barbearia',
+      subscription_active: b.subscription_active,
       is_top_partner: b.is_top_partner || false,
     });
     
@@ -86,7 +86,7 @@ export default function AdminAccounts() {
         address: editFormData.address,
         city: editFormData.city,
         category: editFormData.category,
-        is_premium: editFormData.is_premium,
+        subscription_active: editFormData.subscription_active,
         is_top_partner: editFormData.is_top_partner
       }).eq('id', selectedBusiness.id);
 
@@ -215,7 +215,7 @@ export default function AdminAccounts() {
                         <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-[10px] font-bold">{b.category || 'Não definido'}</span>
                       </td>
                       <td className="p-4">
-                        {b.is_premium ? (
+                        {b.subscription_active ? (
                           <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold"><CheckCircle className="w-3 h-3" /> Ativo</span>
                         ) : (
                           <span className="flex items-center gap-1 text-slate-400 text-[10px] font-bold"><X className="w-3 h-3" /> Inativo</span>
@@ -289,7 +289,7 @@ export default function AdminAccounts() {
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Categoria Principal</label>
                   <select value={editFormData.category} onChange={e => setEditFormData({...editFormData, category: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm">
-                    {['Barbearia', 'Cabeleireiro', 'Unhas', 'Estética', 'Spa', 'Sobrancelhas', 'Depilação', 'Maquilhagem'].map(c => <option key={c} value={c}>{c}</option>)}
+                    {['Cabelo & Barbearia', 'Nails & Beauty', 'Estética', 'Wellness', 'Ao domicílio', 'Noivas & Eventos'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
@@ -313,7 +313,7 @@ export default function AdminAccounts() {
                 
                 <div className="md:col-span-2 flex items-center gap-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={editFormData.is_premium} onChange={e => setEditFormData({...editFormData, is_premium: e.target.checked})} className="w-4 h-4 text-purple-600 rounded" />
+                    <input type="checkbox" checked={editFormData.subscription_active} onChange={e => setEditFormData({...editFormData, subscription_active: e.target.checked})} className="w-4 h-4 text-purple-600 rounded" />
                     <span className="text-sm font-bold text-slate-700">Plano Ativo (Premium)</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">

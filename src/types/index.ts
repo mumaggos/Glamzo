@@ -44,6 +44,8 @@ export interface Business {
   status?: 'setup' | 'active' | 'suspended';
   is_top_partner?: boolean;
   top_partner_score?: number;
+  subscription_active?: boolean;
+  stripe_subscription_id?: string | null;
   created_at: string;
 }
 

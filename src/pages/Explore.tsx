@@ -344,17 +344,6 @@ export default function Explore({ autoFilter }: { autoFilter?: { city?: string; 
         isOpenNow =
           currentTimeStr >= todayHour.open_time &&
           currentTimeStr <= todayHour.close_time;
-      } else {
-        isOpenNow = false; // explicitly marked as closed by merchant
-      }
-    } else {
-      // Graceful fallback: Default to open if weekdays 09:00 - 19:00 (closed on Sunday)
-      if (currentDayIndex !== 0) {
-        const now = new Date();
-        const currentHours = String(now.getHours()).padStart(2, "0");
-        const currentMinutes = String(now.getMinutes()).padStart(2, "0");
-        const currentTimeStr = `${currentHours}:${currentMinutes}`;
-        isOpenNow = currentTimeStr >= "09:00" && currentTimeStr <= "19:00";
       }
     }
 

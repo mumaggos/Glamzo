@@ -1208,9 +1208,9 @@ export default function BusinessDetail({ overrideSlug }: { overrideSlug?: string
                       const record = businessHours.find(h => h.weekday === dayIdx);
                       const isToday = new Date().getDay() === dayIdx;
                       
-                      const isClosed = record ? record.is_closed : (dayIdx === 0);
-                      const openStr = record ? record.open_time : '09:00';
-                      const closeStr = record ? record.close_time : '19:00';
+                      const isClosed = record ? record.is_closed : true;
+                      const openStr = record ? record.open_time : '--:--';
+                      const closeStr = record ? record.close_time : '--:--';
 
                       return (
                         <div 
