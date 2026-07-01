@@ -61,7 +61,7 @@ export default function AdminAccounts() {
       setBusinessHours(hours);
     } else {
       // Default empty hours structure
-      setBusinessHours([0, 1, 2, 3, 4, 5, 6].map(w => ({ weekday: w, open_time: '09:00', close_time: '19:00', is_closed: w === 0 })));
+      setBusinessHours([0, 1, 2, 3, 4, 5, 6].map(w => ({ weekday: w, open_time: '09:00', close_time: '19:00', is_closed: true })));
     }
   };
 
@@ -328,7 +328,7 @@ export default function AdminAccounts() {
                 <div className="space-y-2">
                   {[1,2,3,4,5,6,0].map(day => {
                     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                    const h = businessHours.find(x => x.weekday === day) || { weekday: day, open_time: '09:00', close_time: '19:00', is_closed: day === 0 };
+                    const h = businessHours.find(x => x.weekday === day) || { weekday: day, open_time: '09:00', close_time: '19:00', is_closed: true };
                     return (
                       <div key={day} className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-100">
                         <span className="w-20 text-xs font-bold text-slate-700">{dayNames[day]}</span>

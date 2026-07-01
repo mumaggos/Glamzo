@@ -141,3 +141,5 @@ CREATE TABLE IF NOT EXISTS public.tablet_orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_active BOOLEAN DEFAULT false;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;

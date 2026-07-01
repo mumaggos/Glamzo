@@ -96,7 +96,11 @@ export default function Login() {
         setTimeout(() => {
           // If they were trying to go to dashboard, assume business signup maybe?
           // For safety, let's just send them to signup page with verify step.
-          navigate(`/signup?email=${encodeURIComponent(email)}&step=verify`);
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get('redirect');
+          let url = `/signup?email=${encodeURIComponent(email)}&step=verify`;
+          if (redirect) url += `&redirect=${encodeURIComponent(redirect)}`;
+          navigate(url);
         }, 1500);
       } else {
         setErrorMsg(err.message || 'Falha ao autenticar. Verifique suas credenciais.');
