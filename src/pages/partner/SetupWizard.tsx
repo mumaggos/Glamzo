@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { 
   Building2, Scissors, CreditCard, Landmark, CheckCircle, 
-  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText
+  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText, Clock
 } from 'lucide-react';
 import { generateUniqueSlug } from '../../utils/slugify';
 
@@ -26,8 +26,20 @@ export default function SetupWizard() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [category, setCategory] = useState('Barbearia');
 
-  // Step 2: Services
+  // Step 2: Hours
+  const [hours, setHours] = useState([
+    { weekday: 1, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 2, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 3, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 4, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 5, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 6, open_time: '09:00', close_time: '13:00', is_closed: false },
+    { weekday: 0, open_time: '00:00', close_time: '00:00', is_closed: true }
+  ]);
+
+  // Step 3: Services
   const [services, setServices] = useState<any[]>([]);
 
   // Step 3: Plan
@@ -130,6 +142,7 @@ export default function SetupWizard() {
         setAddress(currentBiz.address || '');
         setCity(currentBiz.city || '');
         setPostalCode(currentBiz.postal_code || '');
+        if (currentBiz.category) setCategory(currentBiz.category);
         
         // Restore step
         const stepParam = searchParams.get('step');
@@ -154,6 +167,18 @@ export default function SetupWizard() {
 
         const { data: svcs } = await supabase.from('services').select('*').eq('business_id', currentBiz.id);
         if (svcs) setServices(svcs);
+
+        const { data: fetchedHours } = await supabase.from('business_hours').select('*').eq('business_id', currentBiz.id);
+        if (fetchedHours && fetchedHours.length > 0) {
+           const mergedHours = [...hours];
+           fetchedHours.forEach(fh => {
+              const idx = mergedHours.findIndex(h => h.weekday === fh.weekday);
+              if (idx !== -1) {
+                 mergedHours[idx] = { ...mergedHours[idx], open_time: fh.open_time, close_time: fh.close_time, is_closed: fh.is_closed };
+              }
+           });
+           setHours(mergedHours);
+        }
         
         const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', currentBiz.id).maybeSingle();
         if (order) {
@@ -177,11 +202,11 @@ export default function SetupWizard() {
     
     let targetStep = newStep;
     // Auto-forward/skip plan selection if already has an active plan
-    if (targetStep === 3 && (business.subscription_active || business.stripe_subscription_id)) {
-      if (step === 4) { // Going back from 4
-        targetStep = 2; // Skip 3 and go to 2
+    if (targetStep === 4 && (business.subscription_active || business.stripe_subscription_id)) {
+      if (step === 5) { // Going back from 5
+        targetStep = 3; // Skip 4 and go to 3
       } else {
-        targetStep = 4; // Going forward from 2, skip to 4
+        targetStep = 5; // Going forward from 3, skip to 5
       }
     }
 
@@ -199,7 +224,7 @@ export default function SetupWizard() {
     if (!user || !business) return;
 
     if (step === 1) {
-      if (!name || !phone || !address || !city || !postalCode) {
+      if (!name || !phone || !address || !city || !postalCode || !category) {
         setErrorMsg('Preencha os campos obrigatórios.');
         return;
       }
@@ -210,17 +235,17 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const { error } = await supabase.from('businesses').update({
-          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2
+          name, phone, email, address, city, postal_code: postalCode, category, slug, setup_step: 2
         }).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
-            await supabase.from('businesses').update({ name, phone, email, address, city, postal_code: postalCode, slug }).eq('id', business.id);
+            await supabase.from('businesses').update({ name, phone, email, address, city, postal_code: postalCode, category, slug }).eq('id', business.id);
           } else {
             throw error;
           }
         }
-        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2 });
+        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, category, slug, setup_step: 2 });
         setStep(2);
       } catch (err: any) {
         setErrorMsg(err.message);
@@ -228,12 +253,30 @@ export default function SetupWizard() {
         setLoading(false);
       }
     } else if (step === 2) {
+      // Save hours
+      setLoading(true);
+      try {
+        const hoursPayload = hours.map(h => ({
+          business_id: business.id,
+          weekday: h.weekday,
+          open_time: h.open_time,
+          close_time: h.close_time,
+          is_closed: h.is_closed
+        }));
+        await supabase.from('business_hours').upsert(hoursPayload, { onConflict: 'business_id, weekday' });
+        await updateSetupStep(3);
+      } catch (e: any) {
+        setErrorMsg('Erro ao guardar horários: ' + e.message);
+      } finally {
+        setLoading(false);
+      }
+    } else if (step === 3) {
       if (services.length === 0) {
         setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
         return;
       }
-      await updateSetupStep(3);
-    } else if (step === 3) {
+      await updateSetupStep(4);
+    } else if (step === 4) {
       if (selectedPlan === 'TERMINAL') {
         if (!shippingName || !shippingPhone || !shippingAddress || !shippingCity || !shippingPostalCode) {
           setErrorMsg('Preencha os dados de envio do terminal.');
@@ -283,8 +326,8 @@ export default function SetupWizard() {
         setErrorMsg(e.message);
         setLoading(false);
       }
-    } else if (step === 4) {
-      await updateSetupStep(5);
+    } else if (step === 5) {
+      await updateSetupStep(6);
     }
   };
 
@@ -299,8 +342,8 @@ export default function SetupWizard() {
           businessId: business.id,
           businessEmail: business.email,
           businessName: business.name,
-          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=5',
-          refreshUrl: window.location.origin + '/partner/setup?status=connect_refresh&step=4'
+          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=6',
+          refreshUrl: window.location.origin + '/partner/setup?status=connect_refresh&step=5'
         })
       });
       const data = await response.json();
@@ -344,10 +387,11 @@ export default function SetupWizard() {
 
   const steps = [
     { num: 1, title: 'Loja', icon: <Building2 className="w-4 h-4" /> },
-    { num: 2, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
-    { num: 3, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
-    { num: 4, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
-    { num: 5, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
+    { num: 2, title: 'Horários', icon: <Clock className="w-4 h-4" /> },
+    { num: 3, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
+    { num: 4, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
+    { num: 5, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
+    { num: 6, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
   ];
 
   return (
@@ -373,7 +417,7 @@ export default function SetupWizard() {
         {/* Progress Bar */}
         <div className="flex justify-between items-center mb-8 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 4) * 100}%` }}></div>
+          <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 5) * 100}%` }}></div>
           
           {steps.map(s => (
             <div key={s.num} className={`flex flex-col items-center gap-2 ${step >= s.num ? 'text-purple-600' : 'text-slate-400'}`}>
@@ -405,6 +449,21 @@ export default function SetupWizard() {
                 </div>
               </div>
               <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria Principal *</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {['Barbearia', 'Cabeleireiro', 'Unhas', 'Estética', 'Spa', 'Sobrancelhas', 'Depilação', 'Maquilhagem'].map(cat => (
+                    <div 
+                      key={cat}
+                      onClick={() => setCategory(cat)}
+                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${category === cat ? 'border-purple-600 bg-purple-50 text-purple-700 font-bold shadow-sm' : 'border-slate-200 text-slate-600 hover:border-purple-300'}`}
+                    >
+                      <span className="text-sm">{cat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada Completa *</label>
                 <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
               </div>
@@ -422,8 +481,58 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 2: Services */}
+        {/* Step 2: Hours */}
         {step === 2 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Horário de Funcionamento</h2>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5, 6, 0].map((dayIdx) => {
+                const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+                const h = hours.find(x => x.weekday === dayIdx);
+                if (!h) return null;
+
+                return (
+                  <div key={dayIdx} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl transition-all ${h.is_closed ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-300 shadow-sm'}`}>
+                    <div className="flex items-center gap-3 mb-3 sm:mb-0">
+                      <button
+                        onClick={() => {
+                          setHours(hours.map(x => x.weekday === dayIdx ? { ...x, is_closed: !x.is_closed } : x));
+                        }}
+                        className={`w-12 h-6 rounded-full relative transition-colors ${h.is_closed ? 'bg-slate-300' : 'bg-purple-500'}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${h.is_closed ? 'left-1' : 'left-7'}`}></div>
+                      </button>
+                      <span className={`font-bold text-sm ${h.is_closed ? 'text-slate-400' : 'text-slate-900'}`}>{dayNames[dayIdx]}</span>
+                    </div>
+                    
+                    {!h.is_closed ? (
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="time" 
+                          value={h.open_time}
+                          onChange={(e) => setHours(hours.map(x => x.weekday === dayIdx ? { ...x, open_time: e.target.value } : x))}
+                          className="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-purple-500"
+                        />
+                        <span className="text-slate-500 text-xs font-bold">até</span>
+                        <input 
+                          type="time" 
+                          value={h.close_time}
+                          onChange={(e) => setHours(hours.map(x => x.weekday === dayIdx ? { ...x, close_time: e.target.value } : x))}
+                          className="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 py-2">Encerrado</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Services */}
+        {step === 3 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
             <div className="mb-6 space-y-3">
@@ -483,8 +592,8 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 3: Plan */}
-        {step === 3 && (
+        {/* Step 4: Plan */}
+        {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
             
@@ -541,8 +650,8 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 4: Payments (Connect) */}
-        {step === 4 && (
+        {/* Step 5: Payments (Connect) */}
+        {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Landmark className="w-8 h-8" />
@@ -567,7 +676,7 @@ export default function SetupWizard() {
                     <span>Conectar Stripe Glamzo Pay</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => updateSetupStep(5)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+                  <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
                     Configurar mais tarde
                   </button>
                 </div>
@@ -575,8 +684,8 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 5: Review */}
-        {step === 5 && (
+        {/* Step 6: Review */}
+        {step === 6 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
             <div className="max-w-md mx-auto space-y-4 mb-8">
@@ -613,9 +722,9 @@ export default function SetupWizard() {
         )}
 
         {/* Navigation Buttons */}
-        {step < 5 && (
+        {step < 6 && (
           <div className="mt-8 flex items-center gap-4">
-             {step > 1 && step !== 4 && (
+             {step > 1 && step !== 5 && (
                 <button
                   type="button"
                   onClick={() => updateSetupStep(step - 1)}
@@ -626,14 +735,14 @@ export default function SetupWizard() {
                 </button>
              )}
             
-            {step !== 4 && (
+            {step !== 5 && (
               <button
                 type="button"
                 disabled={loading}
                 onClick={handleNext}
                 className="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{step === 3 ? 'Assinar Plano' : 'Prosseguir'}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{step === 4 ? 'Assinar Plano' : 'Prosseguir'}</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             )}
           </div>

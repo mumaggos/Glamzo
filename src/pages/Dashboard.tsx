@@ -92,6 +92,7 @@ import { slugify, validateSlugUniqueness } from "../utils/slugify";
 import { optimizeImageBeforeUpload } from "../utils/imageOptimizer";
 import DashboardAssistant from "../components/DashboardAssistant";
 import DashboardMessages from "../components/DashboardMessages";
+import DashboardMarketing from "../components/dashboard/DashboardMarketing";
 
 export default function Dashboard() {
   const {
@@ -119,6 +120,7 @@ export default function Dashboard() {
     | "campanhas"
     | "loja"
     | "mensagens"
+    | "marketing"
   >("agenda");
 
   // Core Database States
@@ -2777,6 +2779,7 @@ export default function Dashboard() {
                 { id: "horarios", label: "Horários", icon: Clock },
                 { id: "campanhas", label: "Promoções", icon: Tag },
                 { id: "financeiro", label: "Pagamentos", icon: Landmark },
+                { id: "marketing", label: "Marketing", icon: Heart },
                 { id: "loja", label: "Website & QR Code", icon: Globe },
                 { id: "mensagens", label: "Mensagens", icon: MessageSquare },
                 ...(tabletOrder
@@ -2912,6 +2915,7 @@ export default function Dashboard() {
               { id: "horarios", label: "Horários", icon: Clock },
               { id: "campanhas", label: "Promoções", icon: Tag },
               { id: "financeiro", label: "Pagamentos", icon: Landmark },
+              { id: "marketing", label: "Marketing", icon: Heart },
               { id: "loja", label: "Website & QR Code", icon: Globe },
               { id: "mensagens", label: "Mensagens", icon: MessageSquare },
               ...(tabletOrder
@@ -6109,6 +6113,15 @@ export default function Dashboard() {
               )}
 
               {/* ==================================================== */}
+              {/* VIEW: MARKETING & INSPIRAÇÃO                         */}
+              {/* ==================================================== */}
+              {activeTab === "marketing" && (
+                <div id="view-marketing" className="animate-fade-in max-w-7xl">
+                  <DashboardMarketing business={business} />
+                </div>
+              )}
+
+              {/* ==================================================== */}
               {/* VIEW 10: MARKETING CAMPANHAS                         */}
               {/* ==================================================== */}
               {activeTab === "campanhas" && (
@@ -6839,7 +6852,7 @@ export default function Dashboard() {
                           Total Clientes
                         </span>
                         <span className="text-2xl font-black text-slate-900 font-mono">
-                          {customers.length}
+                          {clientsList.length}
                         </span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
                           Clientes registados na base

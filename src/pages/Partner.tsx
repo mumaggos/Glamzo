@@ -269,15 +269,15 @@ export default function Partner() {
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Base Plan */}
-            <div className="bg-white border-2 border-rose-500 p-10 rounded-3xl relative overflow-hidden shadow-xl shadow-rose-100/50 transition-all">
-              <div className="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">Experimente Grátis</div>
-              <span className="text-[10px] font-black tracking-widest text-rose-600 uppercase block font-mono">Plano Digital</span>
+            <div className="bg-white border-2 border-purple-500 p-10 rounded-3xl relative overflow-hidden shadow-xl shadow-purple-100/50 transition-all">
+              <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-bl-xl">Experimente Grátis</div>
+              <span className="text-[10px] font-black tracking-widest text-purple-600 uppercase block font-mono">Plano Digital</span>
               <div className="mt-4 flex flex-col items-center justify-center mb-4">
                 <div className="flex items-baseline">
-                  <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-rose-500 to-orange-400 bg-clip-text text-transparent">19.90€</span>
+                  <span className="text-4xl font-display font-medium text-slate-900 bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">19.90€</span>
                   <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
                 </div>
-                <span className="text-[10px] text-rose-600 font-medium mt-1 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">14 Dias Totalmente Grátis</span>
+                <span className="text-[10px] text-purple-600 font-medium mt-1 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">14 Dias Totalmente Grátis</span>
               </div>
               
               <p className="text-xs text-slate-500 mt-4 leading-normal font-medium h-10">
@@ -286,38 +286,42 @@ export default function Partner() {
 
               <ul className="mt-8 space-y-3.5 text-left text-xs text-slate-600 font-medium">
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Agenda e Marcações Ilimitadas</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Agenda e Marcações Ilimitadas (24/7)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Página Online & App Glamzo (Destaque)</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Website Próprio, App Glamzo e Presença no Mapa</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Lembretes Automáticos por Email / Notificação (Redução No-Shows)</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Alertas, SMS e Lembretes (Redução No-Shows)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Equipa, Serviços e Produtos Ilimitados</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Acesso à Rede de Inspiração e Top Partners</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Relatórios de Faturação, Receitas e Desempenho</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Histórico, CRM de Clientes e Notas Internas</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>Marketing, Campanhas e Promoções de Fidelização</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Dashboard Financeiro, Relatórios e Métricas</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-rose-500 shrink-0" />
-                  <span>QR Code da sua Loja para a Montra</span>
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Marketing, Campanhas e Códigos de Desconto</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Gestão de Staff, Horários e Comissões</span>
                 </li>
               </ul>
 
               <Link
                 to="/partner/signup"
-                className="mt-10 block w-full text-center bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-rose-200"
+                className="mt-10 block w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition-all font-sans text-xs sm:text-sm cursor-pointer shadow-md shadow-purple-200"
               >
                 Começar Teste de 14 Dias Grátis
               </Link>
@@ -358,6 +362,10 @@ export default function Partner() {
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />
                   <span>Destaque Premium VIP na App (Top Results)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>Integração de Avaliações Google Automática</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-600 shrink-0" />

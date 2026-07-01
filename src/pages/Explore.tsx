@@ -51,7 +51,7 @@ import {
   Pin,
 } from "@vis.gl/react-google-maps";
 
-export default function Explore() {
+export default function Explore({ autoFilter }: { autoFilter?: { city?: string; category?: string } }) {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -83,16 +83,17 @@ export default function Explore() {
     }, 150);
     return () => clearTimeout(handler);
   }, [localSearchQuery]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    searchParams.get("category") || "All",
-  );
+  
+  // Initialize category/city from props or URL
+  const initialCategory = autoFilter?.category || searchParams.get("category") || "All";
+  const initialCity = autoFilter?.city || searchParams.get("city") || "All";
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("All");
   const [selectedDistrict, setSelectedDistrict] = useState<string>(
     searchParams.get("district") || "All",
   );
-  const [selectedCity, setSelectedCity] = useState<string>(
-    searchParams.get("city") || "All",
-  );
+  const [selectedCity, setSelectedCity] = useState<string>(initialCity);
 
   // Client Geolocation for "Perto de mim"
   const [userCoords, setUserCoords] = useState<{

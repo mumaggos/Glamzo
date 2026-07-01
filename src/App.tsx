@@ -65,6 +65,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Explore = React.lazy(() => import('./pages/Explore'));
+const InspirationFeed = React.lazy(() => import('./pages/inspiration/InspirationFeed'));
 const BusinessDetail = React.lazy(() => import('./pages/BusinessDetail'));
 const Partner = React.lazy(() => import('./pages/Partner'));
 const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
@@ -75,6 +76,7 @@ const PaymentSuccess = React.lazy(() => import('./pages/partner/PaymentSuccess')
 const StripeSimulatedCheckout = React.lazy(() => import('./pages/StripeSimulatedCheckout'));
 const StripeSimulatedConnect = React.lazy(() => import('./pages/StripeSimulatedConnect'));
 const Favorites = React.lazy(() => import('./pages/Favorites'));
+const DynamicRouter = React.lazy(() => import('./pages/seo/DynamicRouter'));
 const Termos = React.lazy(() => import('./pages/legal/Termos'));
 const Privacidade = React.lazy(() => import('./pages/legal/Privacidade'));
 const Cookies = React.lazy(() => import('./pages/legal/Cookies'));
@@ -150,6 +152,9 @@ export default function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/explore" element={<Explore />} />
+                <Route path="/inspiration" element={<InspirationFeed />} />
+                <Route path="/inspiration/:tag" element={<InspirationFeed />} />
+                <Route path="/trends" element={<InspirationFeed isTrending={true} />} />
                 <Route path="/business/:slug" element={<BusinessDetail />} />
                 <Route path="/store/:slug" element={<BusinessDetail />} />
                 <Route path="/partner" element={<Partner />} />
@@ -218,7 +223,7 @@ export default function App() {
                   }
                 />
 
-                {/* /admin: Administrative control panel - Restricted to admins */}
+                {/* Administrative control panel - Restricted to admins */}
                 <Route
                   path="/admin"
                   element={
@@ -228,8 +233,9 @@ export default function App() {
                   }
                 />
 
-                {/* Direct Premium Link Wildcard Route (glamzo.pt/nome-loja) */}
-                <Route path="/:slug" element={<BusinessDetail />} />
+                {/* Auto SEO City & Location System + Wildcard Business Profiles */}
+                <Route path="/:param1" element={<DynamicRouter />} />
+                <Route path="/:param1/:param2" element={<DynamicRouter />} />
 
                 {/* Standard fallback redirecting search engines and direct typo accesses to Home */}
                 <Route path="*" element={<Navigate to="/" replace />} />

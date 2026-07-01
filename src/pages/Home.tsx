@@ -24,6 +24,7 @@ import {
   AdvancedMarker,
   Pin,
 } from "@vis.gl/react-google-maps";
+import TrendingInspirationCarousel from "../components/inspiration/TrendingInspirationCarousel";
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -524,6 +525,11 @@ export default function Home() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* 2.1 Trending Inspiration */}
+      <section className="py-12 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <TrendingInspirationCarousel />
       </section>
 
       {/* 2.5 Promoted Campaigns Section - Minimal Modern Cards */}

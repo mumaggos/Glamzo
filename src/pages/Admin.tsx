@@ -8,6 +8,9 @@ import { MAIN_CATEGORIES } from '../utils/categoriesData';
 import { financeService } from '../utils/financeService';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { fetchSupportTickets, resolveSupportTicket } from '../utils/communicationHelper';
+import AdminMarketing from '../components/admin/AdminMarketing';
+import AdminSEO from '../components/admin/AdminSEO';
+import AdminAccounts from '../components/admin/AdminAccounts';
 import { 
   Shield, Users, Search, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
@@ -42,7 +45,7 @@ export default function Admin() {
   };
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages'>('users');
+  const [activeTab, setActiveTab] = useState<'accounts' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'pages' | 'marketing' | 'seo'>('accounts');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -1085,13 +1088,13 @@ export default function Admin() {
             {/* Scrolling Navigation Links */}
             <nav className="flex-1 space-y-1.5">
               {[
-                { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
-                { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
-                { id: 'salons', label: 'Salões de Beleza', icon: Briefcase },
+                { id: 'accounts', label: 'Gestão de Contas', icon: Users },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
                 { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+                { id: 'marketing', label: 'Marketing & Top Partners', icon: Award },
+                { id: 'seo', label: 'SEO & Indexação', icon: Search },
                 { id: 'pages', label: 'Páginas do Site', icon: FileText }
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -1163,13 +1166,13 @@ export default function Admin() {
           {/* Navigation Links inside admin sidebar */}
           <nav className="p-3.5 space-y-1.5">
             {[
-              { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
-              { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
-              { id: 'salons', label: 'Salões de Beleza', icon: Briefcase },
+              { id: 'accounts', label: 'Gestão de Contas', icon: Users },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
               { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+              { id: 'marketing', label: 'Marketing & Top Partners', icon: Award },
+              { id: 'seo', label: 'SEO & Indexação', icon: Search },
               { id: 'pages', label: 'Páginas da Plataforma', icon: FileText },
               { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
@@ -1270,443 +1273,11 @@ export default function Admin() {
           ) : (
             <>
               {/* ==================================================== */}
-              {/* SECTION: GESTÃO DE PARCEIROS (SHOPS & ACCOUNTS)     */}
+              {/* SECTION: ADMIN ACCOUNTS (Users & Businesses)         */}
               {/* ==================================================== */}
-              {activeTab === 'partners' && (
-                <div id="admin-partners" className="space-y-6">
-                  {/* Title & Search Header */}
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                        <span>Gestão Integrada de Parceiros</span>
-                        <span className="text-xs bg-purple-950 text-purple-700 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">👑 PRO Control</span>
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.</p>
-                    </div>
-
-                    <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input 
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Filtrar por nome de loja ou cidade..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-500 outline-none focus:border-purple-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Partners Grid */}
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {salons
-                      .filter(sal => {
-                        const term = searchTerm.toLowerCase();
-                        return sal.name.toLowerCase().includes(term) || sal.city.toLowerCase().includes(term) || (sal.email || '').toLowerCase().includes(term);
-                      })
-                      .map(sal => {
-                        const ownerProfile = profiles.find(p => p.id === sal.owner_id);
-                        const trialDaysVal = (() => {
-                          if (!sal.trial_ends_at) return 0;
-                          const diff = new Date(sal.trial_ends_at).getTime() - Date.now();
-                          return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-                        })();
-                        const isSuspended = sal.subscription_status === 'suspended';
-                        const isPro = sal.subscription_status === 'active' || sal.subscription_active;
-                        const isTrial = sal.subscription_status === 'trialing';
-
-                        return (
-                          <div 
-                            key={sal.id} 
-                            className={`bg-white/60 border p-6 rounded-[24px] flex flex-col justify-between transition-all relative ${
-                              isSuspended 
-                                ? 'border-rose-950 bg-gradient-to-b from-[#1c080f]/40 to-[#0c0307]/60' 
-                                : isPro
-                                  ? 'border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.06)] bg-gradient-to-b from-[#110a24]/50 to-[#090514]/80'
-                                  : 'border-purple-100 bg-white/40'
-                            }`}
-                          >
-                            <div>
-                              {/* Header Title with Subscriptions Badge tags */}
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-black text-slate-900 text-base leading-snug">{sal.name}</h4>
-                                    {sal.is_verified && (
-                                      <span className="w-2 h-2 rounded-full bg-purple-400" title="Verificado" />
-                                    )}
-                                  </div>
-                                  <span className="text-[10px] font-mono text-purple-600 hover:underline block cursor-pointer">
-                                    Slug: /{sal.slug}
-                                  </span>
-                                </div>
-
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                  {isSuspended ? (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-rose-950 text-rose-600 border border-rose-900/55">
-                                      Suspenso
-                                    </span>
-                                  ) : isPro ? (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-purple-950 text-purple-700 border border-purple-900/40">
-                                      👑 Glamzo PRO
-                                    </span>
-                                  ) : isTrial ? (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-900/40">
-                                      Trial ({trialDaysVal} Dias Restantes)
-                                    </span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200">
-                                      Plano FREE
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Owner Account Details info panel */}
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-5 p-3.5 bg-slate-50/50 rounded-xl border border-purple-100 text-[11px] font-mono">
-                                <div>
-                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Gestor / Email</span>
-                                  <span className="text-slate-700 block truncate">{ownerProfile?.full_name || sal.name}</span>
-                                  <span className="text-purple-700/80 block truncate">{ownerProfile?.email || sal.email || 'Não Consta'}</span>
-                                </div>
-                                <div className="text-right">
-                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Inscrito em</span>
-                                  <span className="text-slate-600 block">{new Date(sal.created_at).toLocaleDateString('pt-PT')}</span>
-                                  <span className="text-slate-500 text-[10px] block">{new Date(sal.created_at).toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'})}</span>
-                                </div>
-                              </div>
-
-                              {/* Stripe Connect stats */}
-                              <div className="mt-4 p-3.5 bg-slate-50/40 rounded-xl border border-purple-100 space-y-1.5 text-[11px]">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-slate-600 font-bold">Stripe Connect ID:</span>
-                                  <span className="font-mono text-slate-600 select-all">{sal.stripe_account_id || 'Não configurado'}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-500">Cobranças Ativas (charges_enabled):</span>
-                                  <span className={sal.charges_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
-                                    {sal.charges_enabled ? "SIM" : "NÃO"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-500">Pagamentos Ativos (payouts_enabled):</span>
-                                  <span className={sal.payouts_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
-                                    {sal.payouts_enabled ? "SIM" : "NÃO"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Action Buttons Hub */}
-                            <div className="mt-6 border-t border-purple-100 pt-4 space-y-2.5">
-                              {/* Open detail dashboard page & reset trial */}
-                              <div className="grid grid-cols-2 gap-2">
-                                <a 
-                                  href={`/${sal.slug}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="py-2 px-3 bg-slate-50 border border-slate-200 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
-                                >
-                                  <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
-                                  <span>Ver Loja Pública</span>
-                                </a>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleResetTrial(sal.id)}
-                                  className="py-2 px-3 bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 cursor-pointer"
-                                >
-                                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                                  <span>Reiniciar Trial</span>
-                                </button>
-                              </div>
-
-                              {/* Manual activation toggles */}
-                              <div className="grid grid-cols-2 gap-2">
-                                {isPro ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-slate-50 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-200 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
-                                  >
-                                    Remover PRO
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleActivateProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
-                                  >
-                                    Ativar PRO Manual
-                                  </button>
-                                )}
-
-                                {isSuspended ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleReactivatePartner(sal.id)}
-                                    className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-slate-900 border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
-                                  >
-                                    Reativar Loja
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSuspendPartner(sal.id)}
-                                    className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-slate-900 border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
-                                  >
-                                    Suspender Loja
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Delete partner account with double confirmation modal trigger */}
-                              <div className="pt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setDeleteAccountTarget({
-                                      ownerId: sal.owner_id,
-                                      businessId: sal.id,
-                                      name: sal.name
-                                    });
-                                    setDeleteAccountDoubleConfirmText('');
-                                    setDeleteAccountModalOpen(true);
-                                  }}
-                                  className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-600 hover:text-slate-900 border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>Eliminar Conta e Todos os Dados</span>
-                                </button>
-                              </div>
-
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-
-              {/* ==================================================== */}
-              {/* SECTION 1: UTILIZADORES & CRÉDITOS                 */}
-              {/* ==================================================== */}
-              {activeTab === 'users' && (
-                <div id="admin-users" className="space-y-6">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Utilizadores & Atribuição de Créditos</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
-                    </div>
-
-                    <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input 
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Pesquise por e-mail ou nome..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Allocate credits custom sub-modal form */}
-                  {pointsAllocUserId && (
-                    <div className="p-5 bg-purple-950/20 border border-purple-900 rounded-3xl space-y-3 max-w-md animate-fade-in text-xs font-semibold">
-                      <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-                        <Coins className="w-4.5 h-4.5 text-purple-600" />
-                        <span>Atribuir Pontos Grátis de Fidelidade</span>
-                      </h4>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="number" 
-                          value={pointsAllocVal}
-                          onChange={e => setPointsAllocVal(Number(e.target.value))}
-                          className="w-28 bg-slate-50 border border-slate-200 p-2 rounded-xl text-slate-900 font-mono text-center outline-none focus:border-purple-600"
-                        />
-                        <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold px-4 py-2 rounded-xl cursor-pointer">
-                          Acrescentar Pontos à Conta
-                        </button>
-                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">Cancelar</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Accounts Table List */}
-                  <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-[10px] font-bold text-slate-450 uppercase tracking-widest border-b border-slate-105 border-slate-200">
-                          <tr>
-                            <th className="py-4.5 px-6">Cliente Cadastrado</th>
-                            <th className="py-4.5 px-4">E-mail Registado</th>
-                            <th className="py-4.5 px-4">Nível Administrativo (DB)</th>
-                            <th className="py-4.5 px-4 text-center">Fidelidade</th>
-                            <th className="py-4.5 px-6 text-right">Acções Gerais</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-105 divide-slate-900 text-xs">
-                          {filteredProfiles.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50/20 transition-colors">
-                              <td className="py-4 px-6 font-bold text-slate-900 flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-full bg-slate-100/80 border border-slate-705 border-slate-700 text-slate-600 font-bold flex items-center justify-center font-mono text-[10px]">
-                                  {(p.full_name || p.email).substring(0,2).toUpperCase()}
-                                </div>
-                                <span className="truncate max-w-[150px]">{p.full_name || '-'}</span>
-                              </td>
-
-                              <td className="py-2.1 py-4 px-4 text-slate-600 font-mono select-all">
-                                {p.email}
-                              </td>
-
-                              <td className="py-4 px-4">
-                                <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
-                                  p.role === 'admin'
-                                    ? 'bg-purple-950 border-purple-900 text-purple-600'
-                                    : p.role === 'business'
-                                    ? 'bg-amber-950 border-amber-900 text-amber-400'
-                                    : 'bg-slate-50 border-slate-200 text-slate-600'
-                                }`}>
-                                  {p.role}
-                                </span>
-                              </td>
-
-                              <td className="py-4 px-4 text-center">
-                                <button 
-                                  onClick={() => handleAllocateCredits(p.id)}
-                                  className="px-2.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-purple-600 hover:text-purple-700 border border-slate-200 font-mono text-[10px] font-black cursor-pointer inline-flex items-center gap-1"
-                                >
-                                  <Coins className="w-3 h-3" />
-                                  <span>Gerir Pontos</span>
-                                </button>
-                              </td>
-
-                              <td className="py-4 px-6 text-right">
-                                <div className="flex items-center justify-end gap-2.5">
-                                  <select aria-label="Selecione uma opção"
-                                    value={p.role}
-                                    onChange={e => handleChangeRole(p.id, e.target.value as any)}
-                                    className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg text-xs hover:border-purple-650 outline-none text-slate-600 cursor-pointer"
-                                  >
-                                    <option value="customer">Acesso Customer (Cliente)</option>
-                                    <option value="business">Acesso Business (Parceiro)</option>
-                                    <option value="admin">Acesso Admin (Global MASTER)</option>
-                                  </select>
-
-                                  <button
-                                    onClick={() => handleStartEditUser(p)}
-                                    className="p-1.5 bg-[#100b21]/80 hover:bg-purple-950/40 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 hover:border-purple-500/20 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
-                                    title="Editar Informações"
-                                  >
-                                    <Settings className="w-3.5 h-3.5 text-purple-450" />
-                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">Editar</span>
-                                  </button>
-
-                                  <button
-                                    onClick={() => handleDeleteUser(p.id)}
-                                    className="p-1.5 bg-rose-50/80 hover:bg-rose-950/45 text-rose-600 hover:text-rose-300 rounded-lg border border-slate-200 hover:border-rose-950 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
-                                    title="Eliminar Utilizador"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">Eliminar</span>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==================================================== */}
-              {/* SECTION 2: LOJAS PARCEIRAS (VERIFICATION TOGGLES)    */}
-              {/* ==================================================== */}
-              {activeTab === 'salons' && (
-                <div id="admin-salons" className="space-y-6">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Lojas & Salões de Beleza Parceiros</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Controle a homologação das lojas, aprovação de novas inscrições e atribuição de selo verificado.</p>
-                    </div>
-
-                    <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-550 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-                      <input 
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Pesquise por salão ou concelho..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Salons List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredSalons.map(sal => (
-                      <div key={sal.id} className="bg-white border border-slate-200/60 p-5 rounded-3xl hover:border-purple-900/40 transition-all space-y-4 flex flex-col justify-between">
-                        <div onClick={() => setSelectedSalon(sal)} className="cursor-pointer group">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono uppercase bg-slate-50 p-1 rounded font-bold text-slate-600 leading-none">{sal.category}</span>
-                            <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
-                              sal.is_verified 
-                                ? 'bg-purple-950/45 text-purple-600 border-purple-900/50' 
-                                : 'bg-slate-50 text-slate-500 border-slate-200'
-                            }`}>
-                              {sal.is_verified ? 'Verificado' : 'Aguardando'}
-                            </span>
-                          </div>
-
-                          <h4 className="font-black text-slate-900 text-base mt-2.5 leading-tight group-hover:text-purple-600 transition-colors flex items-center gap-1">
-                            <span>{sal.name}</span>
-                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all text-purple-600" />
-                          </h4>
-                          <p className="text-[11px] text-slate-600 mt-2 font-medium">📍 {sal.address}, {sal.city}</p>
-                          <p className="text-[11px] text-slate-500 font-mono mt-1">📞 {sal.phone}</p>
-                        </div>
-
-                        <div className="border-t border-slate-950 w-full pt-3.5 space-y-2 text-xs mt-auto">
-                          <button 
-                            onClick={() => setSelectedSalon(sal)}
-                            className="w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-850 text-slate-350 hover:text-slate-900 cursor-pointer transition-all"
-                          >
-                            🔍 Ver Dados Inseridos
-                          </button>
-
-                          <button 
-                            onClick={() => handleToggleSalonVerification(sal.id, sal.is_verified)}
-                            className={`w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] whitespace-nowrap cursor-pointer transition-all border ${
-                              sal.is_verified 
-                                ? 'bg-white/60 border-slate-805 hover:bg-slate-100 text-slate-450 hover:text-slate-900' 
-                                : 'bg-purple-600 hover:bg-purple-700 text-slate-900 shadow-lg shadow-purple-950/25 border-transparent'
-                            }`}
-                          >
-                            {sal.is_verified ? 'Retirar Selo de Verificação' : 'Atribuir Selo de Verificação'}
-                          </button>
-
-                          <div className="grid grid-cols-2 gap-2 pt-1">
-                            <button
-                              onClick={() => handleStartEditSalon(sal)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-indigo-950/45 hover:bg-indigo-905/45 hover:bg-indigo-900/45 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
-                            >
-                              <Settings className="w-3.5 h-3.5" />
-                              <span>Editar</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSalon(sal.id)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-rose-950/35 hover:bg-rose-900/45 text-rose-600 hover:text-rose-350 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Remover</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {activeTab === 'accounts' && (
+                <div id="admin-accounts" className="animate-fade-in max-w-7xl space-y-6">
+                  <AdminAccounts />
                 </div>
               )}
 
@@ -2563,6 +2134,24 @@ create policy "Allow admins full operations on homepage_cards"
                     </div>
 
                   </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION: MARKETING, AWARDS, TOP PARTNERS           */}
+              {/* ==================================================== */}
+              {activeTab === 'marketing' && (
+                <div id="admin-marketing" className="animate-fade-in max-w-7xl">
+                  <AdminMarketing salons={salons} />
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION: SEO & INDEXING ENGINE                     */}
+              {/* ==================================================== */}
+              {activeTab === 'seo' && (
+                <div id="admin-seo" className="animate-fade-in max-w-7xl">
+                  <AdminSEO />
                 </div>
               )}
 
