@@ -51,7 +51,7 @@ import {
   Pin,
 } from "@vis.gl/react-google-maps";
 
-export default function Explore({ autoFilter }: { autoFilter?: { city?: string; category?: string } }) {
+export default function Explore() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -83,17 +83,16 @@ export default function Explore({ autoFilter }: { autoFilter?: { city?: string; 
     }, 150);
     return () => clearTimeout(handler);
   }, [localSearchQuery]);
-  
-  // Initialize category/city from props or URL
-  const initialCategory = autoFilter?.category || searchParams.get("category") || "All";
-  const initialCity = autoFilter?.city || searchParams.get("city") || "All";
-
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get("category") || "All",
+  );
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("All");
   const [selectedDistrict, setSelectedDistrict] = useState<string>(
     searchParams.get("district") || "All",
   );
-  const [selectedCity, setSelectedCity] = useState<string>(initialCity);
+  const [selectedCity, setSelectedCity] = useState<string>(
+    searchParams.get("city") || "All",
+  );
 
   // Client Geolocation for "Perto de mim"
   const [userCoords, setUserCoords] = useState<{
@@ -344,6 +343,17 @@ export default function Explore({ autoFilter }: { autoFilter?: { city?: string; 
         isOpenNow =
           currentTimeStr >= todayHour.open_time &&
           currentTimeStr <= todayHour.close_time;
+      } else {
+        isOpenNow = false; // explicitly marked as closed by merchant
+      }
+    } else {
+      // Graceful fallback: Default to open if weekdays 09:00 - 19:00 (closed on Sunday)
+      if (currentDayIndex !== 0) {
+        const now = new Date();
+        const currentHours = String(now.getHours()).padStart(2, "0");
+        const currentMinutes = String(now.getMinutes()).padStart(2, "0");
+        const currentTimeStr = `${currentHours}:${currentMinutes}`;
+        isOpenNow = currentTimeStr >= "09:00" && currentTimeStr <= "19:00";
       }
     }
 

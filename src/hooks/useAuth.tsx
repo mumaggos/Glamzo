@@ -381,13 +381,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Supabase is not configured yet.');
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const redirectPath = params.get('redirect') || '/';
-
     const { data, error: gError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}${redirectPath}`,
+        redirectTo: window.location.origin,
       },
     });
 

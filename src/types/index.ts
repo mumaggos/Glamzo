@@ -42,10 +42,6 @@ export interface Business {
   qr_scans_count?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
-  is_top_partner?: boolean;
-  top_partner_score?: number;
-  subscription_active?: boolean;
-  stripe_subscription_id?: string | null;
   created_at: string;
 }
 
@@ -224,61 +220,4 @@ export interface TabletOrder {
   created_at: string;
   updated_at: string;
 }
-
-export interface InspirationPost {
-  id: string;
-  business_id: string;
-  professional_id?: string | null;
-  title: string;
-  description?: string | null;
-  category: string;
-  style: string;
-  tags: string[]; // ['low-fade', 'fade', 'barber']
-  price?: number | null;
-  duration_minutes?: number | null;
-  season?: string | null;
-  visibility: 'public' | 'private' | 'draft';
-  is_before_after: boolean;
-  views_count: number;
-  saves_count: number;
-  shares_count: number;
-  bookings_generated: number;
-  is_trending: boolean;
-  is_editors_choice: boolean;
-  created_at: string;
-  updated_at: string;
-  // Joins
-  business?: Business;
-  professional?: Staff;
-  media?: InspirationMedia[];
-}
-
-export interface InspirationMedia {
-  id: string;
-  post_id: string;
-  url: string;
-  type: 'image' | 'video';
-  is_before?: boolean; // For Before & After
-  is_after?: boolean;
-  sort_order: number;
-}
-
-export interface Collection {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string | null;
-  cover_image_url?: string | null;
-  tags: string[]; // Tags to automatically include posts
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface SavedPost {
-  id: string;
-  customer_id: string;
-  post_id: string;
-  created_at: string;
-}
-
 

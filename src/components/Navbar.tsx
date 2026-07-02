@@ -13,10 +13,7 @@ export default function Navbar() {
   const isDarkNavbar = false; // Force light navbar everywhere to match site's style
 
   const getProfileTargetRoute = (): string => {
-    if (!user) {
-      const currentPath = encodeURIComponent(location.pathname + location.search);
-      return isPartnerPage ? `/partner/login?redirect=${currentPath}` : `/login?redirect=${currentPath}`;
-    }
+    if (!user) return isPartnerPage ? '/partner/login' : '/login';
     if (!profile) return '/account';
 
     switch (profile.role) {
@@ -62,9 +59,6 @@ export default function Navbar() {
                 <>
                   <Link to="/explore" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
                     Explorar Salões
-                  </Link>
-                  <Link to="/inspiration" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
-                    Inspiração
                   </Link>
                   {(!user || profile?.role === 'customer') && (
                     <Link 
@@ -140,13 +134,13 @@ export default function Navbar() {
               ) : (
                 <div className="flex items-center gap-2">
                   <Link
-                    to={isPartnerPage ? "/partner/login" : `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                    to={isPartnerPage ? "/partner/login" : "/login"}
                     className={`text-xs sm:text-sm px-3.5 py-2 ${isDarkNavbar ? 'text-slate-300 hover:text-white' : 'text-slate-650 hover:text-slate-900'} transition-all font-medium`}
                   >
                     Entrar
                   </Link>
                   <Link
-                    to={isPartnerPage ? "/partner/signup" : `/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`}
+                    to={isPartnerPage ? "/partner/signup" : "/signup"}
                     className="text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md shadow-purple-950/20 transition-all hover:scale-[1.01]"
                   >
                     {isPartnerPage ? "Registar" : "Criar Conta"}
@@ -207,18 +201,18 @@ export default function Navbar() {
               <GlamzoLogo size={46} showSquircle={true} glow={true} />
             </Link>
 
-            {/* Button 3: Inspiration */}
+            {/* Button 3: Account (or Log in if not logged in) */}
             <Link 
-              to="/inspiration" 
+              to="/favorites" 
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
-                location.pathname.startsWith('/inspiration') || location.pathname === '/trends'
+                location.pathname === '/favorites'
                   ? 'text-purple-400 scale-[1.02]' 
                   : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-555 hover:text-slate-900'
               }`}
             >
               <Heart className="w-5 h-5 stroke-[2]" />
-              <span className="text-[9px] font-bold tracking-wide uppercase font-mono">Inspiração</span>
-              {(location.pathname.startsWith('/inspiration') || location.pathname === '/trends') && <span className="w-1 h-1 bg-purple-500 rounded-full mt-0.5 animate-pulse" />}
+              <span className="text-[9px] font-bold tracking-wide uppercase font-mono">Favoritos</span>
+              {location.pathname === '/favorites' && <span className="w-1 h-1 bg-purple-500 rounded-full mt-0.5 animate-pulse" />}
             </Link>
 
             {/* Button 4: Dashboard/Admin control hub OR Partner link */}
