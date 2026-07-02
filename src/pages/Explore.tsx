@@ -109,26 +109,7 @@ export default function Explore() {
       results.sort((a,b) => (b.rating || 5) - (a.rating || 5));
     }
     
-    // Sort by proximity if "Perto de mim" or "mais_perto" is selected and userLoc is available
-    if (userLoc && (location.toLowerCase() === 'perto de mim' || activeFilters.includes('mais_perto'))) {
-      const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-          Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-      };
-      
-      results.sort((a, b) => {
-        const distA = a.latitude && a.longitude ? getDistance(userLoc.lat, userLoc.lng, a.latitude, a.longitude) : 9999;
-        const distB = b.latitude && b.longitude ? getDistance(userLoc.lat, userLoc.lng, b.latitude, b.longitude) : 9999;
-        return distA - distB;
-      });
-    }
-    
+
     setBusinesses(results);
     setLoading(false);
   };
