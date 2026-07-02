@@ -27,12 +27,12 @@ const CATEGORIES = [
 ];
 
 const CITIES = [
-  { name: 'Lisboa', image: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Lisboa', image: 'https://images.unsplash.com/photo-1589330694653-efa637384160?auto=format&fit=crop&q=80&w=400' },
   { name: 'Porto', image: 'https://images.unsplash.com/photo-1552832233-90d2ce2c6b44?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Braga', image: 'https://images.unsplash.com/photo-1634563148112-9c1624cba433?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Coimbra', image: 'https://images.unsplash.com/photo-1616086708761-0f7ff3b99db1?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Braga', image: 'https://images.unsplash.com/photo-1563200921-9d19a28867a5?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Coimbra', image: 'https://images.unsplash.com/photo-1647466854125-97fc8dce857c?auto=format&fit=crop&q=80&w=400' },
   { name: 'Aveiro', image: 'https://images.unsplash.com/photo-1681729015096-3c0512db47bd?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Faro', image: 'https://images.unsplash.com/photo-1620023605809-5a9fba7532a3?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Faro', image: 'https://images.unsplash.com/photo-1534008897995-27a23e859048?auto=format&fit=crop&q=80&w=400' },
 ];
 
 export default function Home() {
@@ -43,6 +43,10 @@ export default function Home() {
   const [topPartners, setTopPartners] = useState<Business[]>([]);
   const [recommended, setRecommended] = useState<Business[]>([]);
   const [promotions, setPromotions] = useState<Business[]>([]);
+  const [topRated, setTopRated] = useState<Business[]>([]);
+  const [newShops, setNewShops] = useState<Business[]>([]);
+  const [mostBooked, setMostBooked] = useState<Business[]>([]);
+  const [nearMe, setNearMe] = useState<Business[]>([]);
   
   const [userLoc, setUserLoc] = useState<{lat: number, lng: number} | null>(null);
   
@@ -85,9 +89,15 @@ export default function Home() {
       const promos = data.filter(b => b.discount_active);
       const recom = [...data].sort((a,b) => (b.rating || 5) - (a.rating || 5)); // Just mock recommendation logic by rating for now
       
+      const newS = [...data].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
       setTopPartners(partners);
       setPromotions(promos);
       setRecommended(recom);
+      setTopRated(recom);
+      setNewShops(newS);
+      setMostBooked([...data]);
+      setNearMe(data);
     }
   };
 
@@ -125,75 +135,77 @@ export default function Home() {
     const isNew = isNewShop(shop.created_at);
     
     return (
-      <Link 
-        to={`/${shop.slug}`}
-        className="group flex flex-col bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all duration-300 overflow-hidden relative"
-      >
-        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-          <img 
-            src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} 
-            alt={shop.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-          
-          {/* Badges Container */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2 items-start">
-            {shop.is_premium && (
-              <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
-                <Crown className="w-3 h-3" /> Top Partner
-              </span>
-            )}
-            {isNew && (
-              <span className="bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shadow-lg">
-                NOVA
-              </span>
-            )}
-            {shop.discount_active && (
-              <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
-                <Percent className="w-3 h-3" /> -{shop.discount_percent || 10}%
-              </span>
-            )}
-          </div>
-          
-          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
-            <span className="text-xs font-bold text-slate-900">{shop.rating?.toFixed(1) || '5.0'}</span>
-          </div>
-
-          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3">
-             {shop.logo_url && (
-               <img src={shop.logo_url} alt={shop.name} loading="lazy" className="w-10 h-10 rounded-full border-2 border-white object-cover bg-white shrink-0 shadow-md" />
-             )}
-             <div className="flex-1 min-w-0">
-               <h3 className="text-white font-bold truncate text-base mb-0.5">{shop.name}</h3>
-               <p className="text-slate-200 text-xs truncate flex items-center gap-1">
-                 {shop.category}
-               </p>
-             </div>
-          </div>
-        </div>
-
-        <div className="p-4 flex flex-col gap-3">
-          <div className="flex items-center text-xs text-slate-500 font-medium">
-            <MapPin className="w-3.5 h-3.5 mr-1" />
-            <span className="truncate">{shop.city} • {shop.address}</span>
-          </div>
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-50">
-             <div className="flex-1 flex flex-col">
-                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Aberto Agora</span>
-                <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Disponível
+      <div className="shrink-0 w-[280px] sm:w-[300px]">
+        <Link 
+          to={`/${shop.slug}`}
+          className="group flex flex-col bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all duration-300 overflow-hidden relative h-full"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 shrink-0">
+            <img 
+              src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} 
+              alt={shop.name}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+            
+            {/* Badges Container */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2 items-start">
+              {shop.is_premium && (
+                <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                  <Crown className="w-3 h-3" /> Top Partner
                 </span>
-             </div>
-             <div className="flex items-center gap-1 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-                <Clock className="w-3.5 h-3.5" />
-                Agendar
-             </div>
+              )}
+              {isNew && (
+                <span className="bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shadow-lg">
+                  NOVA
+                </span>
+              )}
+              {shop.discount_active && (
+                <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
+                  <Percent className="w-3 h-3" /> -{shop.discount_percent || 10}%
+                </span>
+              )}
+            </div>
+            
+            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
+              <span className="text-xs font-bold text-slate-900">{shop.rating?.toFixed(1) || '5.0'}</span>
+            </div>
+
+            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3">
+               {shop.logo_url && (
+                 <img src={shop.logo_url} alt={shop.name} loading="lazy" className="w-10 h-10 rounded-full border-2 border-white object-cover bg-white shrink-0 shadow-md" />
+               )}
+               <div className="flex-1 min-w-0">
+                 <h3 className="text-white font-bold truncate text-base mb-0.5">{shop.name}</h3>
+                 <p className="text-slate-200 text-xs truncate flex items-center gap-1">
+                   {shop.category}
+                 </p>
+               </div>
+            </div>
           </div>
-        </div>
-      </Link>
+
+          <div className="p-4 flex flex-col gap-3 flex-1 justify-between">
+            <div className="flex items-center text-xs text-slate-500 font-medium">
+              <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" />
+              <span className="truncate">{shop.city} • {shop.address}</span>
+            </div>
+            <div className="flex items-center gap-3 pt-3 border-t border-slate-50 mt-auto">
+               <div className="flex-1 flex flex-col">
+                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Aberto Agora</span>
+                  <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Disponível
+                  </span>
+               </div>
+               <div className="flex items-center gap-1 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+                  <Clock className="w-3.5 h-3.5" />
+                  Agendar
+               </div>
+            </div>
+          </div>
+        </Link>
+      </div>
     );
   };
 
@@ -247,7 +259,8 @@ export default function Home() {
                       className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors"
                       onClick={() => {
                         if (s.type === 'category') {
-                          window.location.href = `/explore?cat=${encodeURIComponent(s.text)}`;
+                          setQuery(s.text);
+                          setShowSuggestions(false);
                         } else if (s.slug) {
                           window.location.href = `/${s.slug}`;
                         }
@@ -320,9 +333,9 @@ export default function Home() {
                 <p className="text-slate-500 mt-2 font-medium">Os estabelecimentos mais prestigiados da plataforma.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {topPartners.slice(0, 4).map((shop, i) => (
-                <ShopCard key={i} shop={shop} />
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {topPartners.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
               ))}
             </div>
           </section>
@@ -339,9 +352,9 @@ export default function Home() {
                 <p className="text-slate-500 mt-2 font-medium">Aproveite descontos especiais perto de si.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {promotions.slice(0, 4).map((shop, i) => (
-                <ShopCard key={i} shop={shop} />
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {promotions.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
               ))}
             </div>
           </section>
@@ -360,17 +373,88 @@ export default function Home() {
               Ver todos <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
             {recommended.slice(0, 8).map((shop, i) => (
-              <ShopCard key={i} shop={shop} />
+              <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
             ))}
           </div>
-          <div className="mt-8 text-center sm:hidden">
-            <Link to="/explore" className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-xl shadow-sm">
-              Ver todos os espaços <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
         </section>
+
+        {/* MELHORES AVALIAÇÕES */}
+        {topRated.length > 0 && (
+          <section>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
+                   <Star className="w-8 h-8 text-amber-500" /> Melhores Avaliações
+                </h2>
+                <p className="text-slate-500 mt-2 font-medium">Os espaços favoritos dos nossos clientes.</p>
+              </div>
+            </div>
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {topRated.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* NOVIDADES */}
+        {newShops.length > 0 && (
+          <section>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
+                   <span className="text-3xl">✨</span> Novidades
+                </h2>
+                <p className="text-slate-500 mt-2 font-medium">Descubra os novos espaços na plataforma.</p>
+              </div>
+            </div>
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {newShops.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* MAIS RESERVADOS */}
+        {mostBooked.length > 0 && (
+          <section>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
+                   <span className="text-3xl">🔥</span> Mais Reservados
+                </h2>
+                <p className="text-slate-500 mt-2 font-medium">Os serviços mais populares do momento.</p>
+              </div>
+            </div>
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {mostBooked.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* PERTO DE MIM */}
+        {nearMe.length > 0 && (
+          <section>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
+                   <MapPin className="w-8 h-8 text-emerald-600" /> Perto de Mim
+                </h2>
+                <p className="text-slate-500 mt-2 font-medium">Os melhores espaços na sua área.</p>
+              </div>
+            </div>
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
+              {nearMe.slice(0, 8).map((shop, i) => (
+                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
+              ))}
+            </div>
+          </section>
+        )}
         
         {/* EXPLORAR POR CIDADE */}
         <section className="pb-10">
