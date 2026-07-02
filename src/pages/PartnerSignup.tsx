@@ -28,8 +28,56 @@ export default function PartnerSignup() {
     }
   }, [user, navigate]);
 
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleSendCode = async () => {
+    if (!email || !email.includes('@')) {
+      setErrorMsg('Por favor insira um e-mail válido.');
+      return;
+    }
+    
+    setLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      // Generate a temporary strong password just to trigger the OTP for signup without requiring them to fill it first
+      const tempPassword = Math.random().toString(36).slice(-10) + 'A1!@';
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: tempPassword,
+        options: {
+          data: { role: 'business' }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+            throw new Error('Este e-mail já se encontra registado. Por favor, inicie sessão.');
+        }
+        throw error;
+      }
+      
+      setIsOtpSent(true);
+      setSuccessMsg('Código enviado! Verifique a sua caixa de entrada.');
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Erro ao enviar código.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isOtpSent) {
+      setErrorMsg('Primeiro deve verificar o seu e-mail clicando em "Verificar".');
+      return;
+    }
+    if (enteredCode.length < 6) {
+      setErrorMsg('Por favor insira o código completo.');
+      return;
+    }
     if (password !== confirmPassword) {
       setErrorMsg('As senhas não coincidem.');
       return;
@@ -44,50 +92,29 @@ export default function PartnerSignup() {
     setSuccessMsg(null);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role: 'business' }
-        }
-      });
-      if (error) throw error;
-      
-      setIsOtpSent(true);
-      setSuccessMsg('Código enviado! Verifique a sua caixa de entrada.');
-    } catch (err: any) {
-      console.error(err);
-      setErrorMsg(err.message || 'Erro ao enviar código.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (enteredCode.length < 6) {
-      setErrorMsg('Código inválido.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    try {
+      // 1. Verify the OTP with type 'signup'
       const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token: enteredCode,
         type: 'signup'
       });
+
       if (verifyError || !verifyData.user || !verifyData.session) throw new Error('Código inválido ou expirado.');
 
+      // 2. We are now logged in. Update the profile role immediately.
       await supabase.from('profiles').update({ role: 'business' }).eq('id', verifyData.user.id);
+
+      // 3. Update the temporary password to the user's actual chosen password
+      const { error: pwdError } = await supabase.auth.updateUser({ password });
+      if (pwdError) {
+         console.warn("Failed to set final password:", pwdError);
+      }
+
       await refreshProfile();
       
       navigate('/partner/setup', { replace: true });
     } catch (err: any) {
-      setErrorMsg(err.message || 'Erro ao verificar código.');
+      setErrorMsg(err.message || 'Erro ao verificar código e finalizar registo.');
     } finally {
       setLoading(false);
     }
@@ -122,6 +149,7 @@ export default function PartnerSignup() {
               <p>{errorMsg}</p>
             </div>
           )}
+
           {successMsg && (
             <div className="mb-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium border border-emerald-100 animate-fade-in flex items-start gap-3">
               <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -129,150 +157,133 @@ export default function PartnerSignup() {
             </div>
           )}
 
-          {!isOtpSent ? (
-            <form className="space-y-5 animate-fade-in" onSubmit={handleSendCode}>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  E-mail Profissional
-                </label>
-                <div className="relative rounded-xl shadow-sm">
+          <form className="space-y-5 animate-fade-in" onSubmit={handleCompleteSignup}>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                E-mail Profissional
+              </label>
+              <div className="flex gap-2">
+                <div className="relative rounded-xl shadow-sm flex-1">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-slate-400" />
                   </div>
                   <input
                     type="email"
                     required
+                    disabled={isOtpSent}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400 disabled:opacity-60"
                     placeholder="geral@seusalao.pt"
                   />
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Senha
-                  </label>
-                  <div className="relative rounded-xl shadow-sm">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full px-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
-                      placeholder="Mín. 6 letras"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Confirmar Senha
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
-                    placeholder="Repita a senha"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 pt-2 pb-2">
-                <input
-                  type="checkbox"
-                  id="terms-partner"
-                  required
-                  checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-                />
-                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
-                  Li e aceito os{' '}
-                  <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                    Termos para Parceiros
-                  </Link>{' '}
-                  e a{' '}
-                  <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                    Política de Privacidade e Tratamento GDPR
-                  </Link>.
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading || !acceptedTerms}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>A enviar código...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Enviar Código de Verificação</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
+                {!isOtpSent && (
+                  <button
+                    type="button"
+                    onClick={handleSendCode}
+                    disabled={loading || !email}
+                    className="px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold whitespace-nowrap hover:bg-slate-800 transition-all disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verificar'}
+                  </button>
                 )}
-              </button>
-            </form>
-          ) : (
-            <form className="space-y-5 animate-fade-in" onSubmit={handleVerifyOtp}>
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full mb-4">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Verifique o seu e-mail</h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Enviámos um código para <strong className="text-slate-800">{email}</strong>
-                </p>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 text-center">
-                  Código OTP
+            {isOtpSent && (
+              <div className="animate-fade-in pt-1 pb-2">
+                <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider mb-1.5 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4" /> Código de 8 Dígitos Recebido
                 </label>
                 <input
                   type="text"
                   required
                   value={enteredCode}
                   onChange={(e) => setEnteredCode(e.target.value)}
-                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-3xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                  placeholder="000000"
-                  maxLength={6}
+                  className="block w-full px-4 py-3 bg-purple-50 border border-purple-200 rounded-xl text-center text-2xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-purple-900"
+                  placeholder="00000000"
+                  maxLength={8}
                 />
               </div>
+            )}
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Senha
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full px-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    placeholder="Mín. 6 letras"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Confirmar Senha
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                  placeholder="Repita a senha"
+                />
+              </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading || enteredCode.length < 6}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>A verificar...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Confirmar Registo</span>
-                    <Check className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
+            <div className="flex items-start gap-2 pt-2 pb-2">
+              <input
+                type="checkbox"
+                id="terms-partner"
+                required
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
+              />
+              <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
+                Li e aceito os{' '}
+                <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                  Termos para Parceiros
+                </Link>{' '}
+                e a{' '}
+                <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                  Política de Privacidade e Tratamento GDPR
+                </Link>.
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !acceptedTerms || !isOtpSent || enteredCode.length < 6}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>A processar...</span>
+                </>
+              ) : (
+                <>
+                  <span>Completar Registo</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
 
           <p className="mt-8 text-center text-xs text-slate-500">
             Deseja aceder a uma conta existente?{' '}
