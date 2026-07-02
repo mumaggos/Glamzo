@@ -91,7 +91,7 @@ export default function Explore() {
     if (query) {
       q = q.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
     }
-    if (location && location.toLowerCase() !== 'perto de mim') {
+    if (location) {
       q = q.or(`city.ilike.%${location}%,address_line_1.ilike.%${location}%`);
     }
 
@@ -109,7 +109,6 @@ export default function Explore() {
       results.sort((a,b) => (b.rating || 5) - (a.rating || 5));
     }
     
-
     setBusinesses(results);
     setLoading(false);
   };

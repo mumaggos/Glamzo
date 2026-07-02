@@ -58,7 +58,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link to="/explore" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
-                    Explorar
+                    Explorar Salões
                   </Link>
                   {(!user || profile?.role === 'customer') && (
                     <Link 
@@ -69,7 +69,7 @@ export default function Navbar() {
                           : 'text-rose-500 bg-rose-50 hover:bg-rose-100 border border-rose-200/55 hover:border-rose-450'
                       } px-3.5 py-1.5 transition-all rounded-full tracking-wider`}
                     >
-                      Parceiros
+                      ÁREA PARCEIRO
                     </Link>
                   )}
                   {profile?.role === 'business' && (
@@ -153,7 +153,7 @@ export default function Navbar() {
       )}
 
       {/* 2. FLOATING BOTTOM NAVIGATION BAR (APPLE & AIRBNB STYLE) */}
-      {(!isDashboardOrAdmin && user) && (
+      {!isDashboardOrAdmin && (
         <div 
           id="floating-bottom-nav" 
           className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[480px] ${

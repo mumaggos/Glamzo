@@ -1,16 +1,17 @@
-
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
-import { Business } from "../types";
 import { 
-  Search, MapPin, Star, Navigation, ArrowRight, Clock, Map as MapIcon, 
-  Percent, Crown, CheckCircle2, Navigation2
+  Search, MapPin, Star, Sparkles, Navigation, ArrowRight,
+  Scissors, Heart, Smile, Droplet, Sun, Zap, CheckCircle, Clock
 } from "lucide-react";
+import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { getFallbackImageForCategory } from '../utils/categoryImages';
 
+const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || "";
+
 const CATEGORIES = [
-  { id: 'todos', label: 'Todos os Serviços', icon: '✨' },
   { id: 'barbearias', label: 'Barbearias', icon: '💈' },
   { id: 'cabeleireiros', label: 'Cabeleireiros', icon: '💇' },
   { id: 'unhas', label: 'Unhas', icon: '💅' },
@@ -27,33 +28,17 @@ const CATEGORIES = [
   { id: 'piercing', label: 'Piercing', icon: '💎' },
 ];
 
-const CITIES = [
-  { name: 'Lisboa', image: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Porto', image: 'https://images.unsplash.com/photo-1552832233-90d2ce2c6b44?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Braga', image: 'https://images.unsplash.com/photo-1634563148112-9c1624cba433?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Coimbra', image: 'https://images.unsplash.com/photo-1616086708761-0f7ff3b99db1?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Aveiro', image: 'https://images.unsplash.com/photo-1681729015096-3c0512db47bd?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Faro', image: 'https://images.unsplash.com/photo-1620023605809-5a9fba7532a3?auto=format&fit=crop&q=80&w=400' },
-];
-
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
   
-  const [topPartners, setTopPartners] = useState<Business[]>([]);
-  const [recommended, setRecommended] = useState<Business[]>([]);
-  const [promotions, setPromotions] = useState<Business[]>([]);
-  const [topRated, setTopRated] = useState<Business[]>([]);
-  const [newShops, setNewShops] = useState<Business[]>([]);
-  const [mostBooked, setMostBooked] = useState<Business[]>([]);
-  const [nearMe, setNearMe] = useState<Business[]>([]);
-  
+  const [topRated, setTopRated] = useState<any[]>([]);
+  const [newShops, setNewShops] = useState<any[]>([]);
+  const [mostBooked, setMostBooked] = useState<any[]>([]);
+  const [nearMe, setNearMe] = useState<any[]>([]);
+
   const [userLoc, setUserLoc] = useState<{lat: number, lng: number} | null>(null);
-  
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -62,43 +47,18 @@ export default function Home() {
         setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       });
     }
-    
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (!query) {
-      setSuggestions(CATEGORIES.slice(0, 4).map(c => ({ text: c.label, type: 'category', icon: c.icon })));
-      return;
-    }
-    const filteredCats = CATEGORIES.filter(c => c.label.toLowerCase().includes(query.toLowerCase())).map(c => ({ text: c.label, type: 'category', icon: c.icon }));
-    const filteredShops = recommended.filter(s => s.name.toLowerCase().includes(query.toLowerCase()) || s.category.toLowerCase().includes(query.toLowerCase())).map(s => ({ text: s.name, type: 'business', slug: s.slug, category: s.category }));
-    setSuggestions([...filteredCats, ...filteredShops].slice(0, 5));
-  }, [query, recommended]);
 
   const fetchData = async () => {
     const { data } = await supabase.from('businesses').select('*').eq('status', 'active');
     if (data) {
-      // Logic for new categories and badges
-      const partners = data.filter(b => b.is_premium);
-      const promos = data.filter(b => b.discount_active);
-      const recom = [...data].sort((a,b) => (b.rating || 5) - (a.rating || 5)); // Just mock recommendation logic by rating for now
-      
-      const newS = [...data].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      
-      setTopPartners(partners);
-      setPromotions(promos);
-      setRecommended(recom);
-      setTopRated(recom);
+      const rated = [...data].sort((a,b) => (b.rating || 5) - (a.rating || 5)).slice(0, 8);
+      const newS = [...data].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8);
+      const booked = [...data].slice(0, 8);
+      setTopRated(rated);
       setNewShops(newS);
-      setMostBooked([...data]);
-      setNearMe(data);
+      setMostBooked(booked);
+      setNearMe(data.slice(0, 8));
     }
   };
 
@@ -108,145 +68,26 @@ export default function Home() {
   };
 
   const handleCategory = (c: string) => {
-    if (c === 'todos') {
-      navigate('/explore');
-    } else {
-      navigate(`/explore?cat=${encodeURIComponent(c)}`);
-    }
-  };
-  
-  const handleCity = (c: string) => {
-    navigate(`/explore?loc=${encodeURIComponent(c)}`);
-  };
-  
-  const requestLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        if (API_KEY) {
-          try {
-            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${pos.coords.latitude},${pos.coords.longitude}&key=${API_KEY}`);
-            const data = await res.json();
-            if (data.results && data.results.length > 0) {
-              const cityComponent = data.results[0].address_components.find((c: any) => c.types.includes('locality') || c.types.includes('administrative_area_level_2') || c.types.includes('administrative_area_level_1'));
-              if (cityComponent) {
-                setLocation(cityComponent.long_name);
-                return;
-              }
-            }
-          } catch (e) {
-            console.error(e);
-          }
-        }
-        setLocation("Perto de mim");
-      });
-    }
-  };
-
-  const isNewShop = (dateString?: string) => {
-    if (!dateString) return false;
-    const createdDate = new Date(dateString);
-    const diffDays = Math.ceil(Math.abs(new Date().getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)); 
-    return diffDays <= 15;
-  };
-
-  const ShopCard = ({ shop }: { shop: Business }) => {
-    const isNew = isNewShop(shop.created_at);
-    
-    return (
-      <div className="shrink-0 w-[280px] sm:w-[300px]">
-        <Link 
-          to={`/${shop.slug}`}
-          className="group flex flex-col bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all duration-300 overflow-hidden relative h-full"
-        >
-          <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 shrink-0">
-            <img 
-              src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} 
-              alt={shop.name}
-              loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-            
-            {/* Badges Container */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2 items-start">
-              {shop.is_premium && (
-                <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
-                  <Crown className="w-3 h-3" /> Top Partner
-                </span>
-              )}
-              {isNew && (
-                <span className="bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shadow-lg">
-                  NOVA
-                </span>
-              )}
-              {shop.discount_active && (
-                <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
-                  <Percent className="w-3 h-3" /> -{shop.discount_percent || 10}%
-                </span>
-              )}
-            </div>
-            
-            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
-              <span className="text-xs font-bold text-slate-900">{shop.rating?.toFixed(1) || '5.0'}</span>
-            </div>
-
-            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3">
-               {shop.logo_url && (
-                 <img src={shop.logo_url} alt={shop.name} loading="lazy" className="w-10 h-10 rounded-full border-2 border-white object-cover bg-white shrink-0 shadow-md" />
-               )}
-               <div className="flex-1 min-w-0">
-                 <h3 className="text-white font-bold truncate text-base mb-0.5">{shop.name}</h3>
-                 <p className="text-slate-200 text-xs truncate flex items-center gap-1">
-                   {shop.category}
-                 </p>
-               </div>
-            </div>
-          </div>
-
-          <div className="p-4 flex flex-col gap-2 flex-1">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center text-xs text-slate-500 font-medium">
-                <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" />
-                <span className="truncate">{shop.city} • {shop.address}</span>
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
-    );
+    navigate(`/explore?cat=${encodeURIComponent(c)}`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 font-sans selection:bg-purple-100 selection:text-purple-900">
-      
-      {/* HERO SECTION */}
-      <div className="relative pt-24 pb-20 md:pt-32 md:pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden bg-slate-950">
-        <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1600880292089-90a7e086ee8c?auto=format&fit=crop&q=80&w=1920" 
-            alt="Glamzo Premium Spa and Salon Background" 
-            fetchPriority="high" 
-            className="w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/60 to-slate-950" />
-          <div className="absolute inset-0 bg-purple-900/10" />
-        </div>
+    <div className="min-h-screen bg-white text-slate-900 pb-20">
+      <div className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-slate-50">
+        <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80" alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 w-full h-full object-cover opacity-[0.04] pointer-events-none" />
         
-        <div className="max-w-5xl mx-auto relative z-10 text-center flex flex-col items-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-200 text-[10px] font-bold uppercase tracking-widest mb-6">A revolução da beleza</span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
-            Encontre o profissional perfeito <span className="text-purple-400 italic font-display">perto de si.</span>
+        <div className="max-w-5xl mx-auto relative z-10 text-center">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
+            Encontre o seu próximo <span className="text-purple-600 italic font-display">profissional de beleza</span>.
           </h1>
-          <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 font-medium">
-            Reserve facilmente os melhores barbeiros, cabeleireiros, salões de beleza, spas e clínicas em Portugal.
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10">
+            Descubra e reserve os melhores salões, spas e clínicas perto de si. Instantaneamente.
           </p>
           
-          {/* SEARCH BAR */}
-          <form ref={searchRef} onSubmit={handleSearch} className="w-full max-w-3xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-2xl flex flex-col md:flex-row items-center relative z-20">
-            <div className="flex-1 w-full flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-slate-100 relative group">
-              <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0 group-focus-within:text-purple-600 transition-colors" />
+          <form ref={searchRef} onSubmit={handleSearch} className="max-w-3xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-xl shadow-purple-900/5 flex flex-col md:flex-row items-center border border-slate-200/60 relative">
+            
+            <div className="flex-1 w-full flex items-center px-4 py-3 md:py-2 border-b md:border-b-0 md:border-r border-slate-200 relative">
+              <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
               <input 
                 type="text"
                 placeholder="Qual serviço procura?"
@@ -256,20 +97,18 @@ export default function Home() {
                   setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                className="w-full bg-transparent focus:outline-none text-slate-900 placeholder:text-slate-400 font-semibold"
+                className="w-full bg-transparent focus:outline-none text-slate-800 placeholder:text-slate-400 font-medium"
               />
               
-              {/* SUGGESTIONS */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-[calc(100%+16px)] left-0 right-0 bg-white rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+                <div className="absolute top-full left-0 right-0 mt-4 md:mt-6 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
                   {suggestions.map((s, i) => (
                     <div 
                       key={i} 
                       className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors"
                       onClick={() => {
                         if (s.type === 'category') {
-                          setQuery(s.text);
-                          setShowSuggestions(false);
+                          window.location.href = `/explore?cat=${encodeURIComponent(s.text)}`;
                         } else if (s.slug) {
                           window.location.href = `/${s.slug}`;
                         }
@@ -289,209 +128,208 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div className="flex-1 w-full flex items-center px-4 py-3 group relative">
-              <MapPin className="w-5 h-5 text-slate-400 mr-3 shrink-0 group-focus-within:text-purple-600 transition-colors" />
+
+            <div className="flex-1 w-full flex items-center px-4 py-3 md:py-2">
+              <MapPin className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
               <input 
                 type="text"
                 placeholder="Onde? Ex: Lisboa"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-transparent focus:outline-none text-slate-900 placeholder:text-slate-400 font-semibold"
+                className="w-full bg-transparent focus:outline-none text-slate-800 placeholder:text-slate-400 font-medium"
               />
-              <button 
-                type="button" 
-                onClick={requestLocation}
-                title="Perto de mim"
-                className="text-slate-400 hover:text-purple-600 hover:bg-purple-50 p-2 rounded-full transition-all ml-2 shrink-0 active:scale-95"
-              >
-                <Navigation2 className="w-5 h-5" />
+              <button type="button" className="text-purple-600 hover:bg-purple-50 p-1.5 rounded-full transition-colors ml-2 shrink-0">
+                <Navigation className="w-4 h-4" />
               </button>
             </div>
-            <button type="submit" className="w-full md:w-auto mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl md:rounded-full font-bold transition-all shadow-md shadow-purple-600/20 flex items-center justify-center shrink-0 active:scale-95">
-              Pesquisar
+            <button type="submit" className="w-full md:w-auto mt-2 md:mt-0 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 md:py-3 rounded-xl md:rounded-full font-bold transition-all shadow-md flex items-center justify-center shrink-0">
+              Procurar
             </button>
           </form>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-16 relative z-10 -translate-y-14 md:-translate-y-16">
-        <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 px-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-16">
+        <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 px-2 snap-x">
           {CATEGORIES.map(cat => (
             <button 
               key={cat.id} 
               onClick={() => handleCategory(cat.id)}
-              className="shrink-0 flex items-center gap-2 px-5 py-3.5 bg-white rounded-full border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_25px_rgba(168,85,247,0.15)] hover:border-purple-200 transition-all group hover:-translate-y-1"
+              className="snap-start shrink-0 flex flex-col items-center justify-center w-24 h-24 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all group"
             >
-              <span className="text-xl group-hover:scale-110 transition-transform duration-300">{cat.icon}</span>
-              <span className="text-[13px] font-bold text-slate-700 whitespace-nowrap">{cat.label}</span>
+              <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{cat.icon}</span>
+              <span className="text-[10px] font-bold text-slate-600 text-center leading-tight uppercase tracking-wide">{cat.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
         
-        {/* TOP PARTNERS (Only show if there are top partners) */}
-        {topPartners.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <Crown className="w-8 h-8 text-amber-500" /> Top Partner
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Os estabelecimentos mais prestigiados da plataforma.</p>
-              </div>
-            </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {topPartners.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* PROMOÇÕES (Only show if there are active promos) */}
-        {promotions.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <Percent className="w-8 h-8 text-rose-500" /> Promoções Ativas
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Aproveite descontos especiais perto de si.</p>
-              </div>
-            </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {promotions.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* RECOMENDADOS PARA SI */}
         <section>
-          <div className="flex items-end justify-between mb-8">
+          <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                 <Star className="w-8 h-8 text-purple-600" /> Recomendados para Si
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <span className="text-2xl">⭐</span> Melhores Avaliações
               </h2>
-              <p className="text-slate-500 mt-2 font-medium">Com base na sua localização e avaliações.</p>
+              <p className="text-slate-500 text-sm mt-1">Os espaços mais bem cotados pelos clientes.</p>
             </div>
-            <Link to="/explore" className="hidden sm:flex items-center gap-1 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors group">
-              Ver todos <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <Link to="/explore?sort=rating" className="text-sm font-bold text-purple-600 hover:text-purple-700 hidden md:block">Ver todos</Link>
           </div>
-          <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-            {recommended.slice(0, 8).map((shop, i) => (
-              <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-            ))}
-          </div>
+          <ShopCarousel shops={topRated} />
         </section>
 
-        {/* MELHORES AVALIAÇÕES */}
-        {topRated.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <Star className="w-8 h-8 text-amber-500" /> Melhores Avaliações
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Os espaços favoritos dos nossos clientes.</p>
-              </div>
+        <section>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <span className="text-2xl">🔥</span> Mais Reservadas
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">Os locais de eleição do momento.</p>
             </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {topRated.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* NOVIDADES */}
-        {newShops.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <span className="text-3xl">✨</span> Novidades
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Descubra os novos espaços na plataforma.</p>
-              </div>
-            </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {newShops.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* MAIS RESERVADOS */}
-        {mostBooked.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <span className="text-3xl">🔥</span> Mais Reservados
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Os serviços mais populares do momento.</p>
-              </div>
-            </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {mostBooked.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* PERTO DE MIM */}
-        {nearMe.length > 0 && (
-          <section>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-                   <MapPin className="w-8 h-8 text-emerald-600" /> Perto de Mim
-                </h2>
-                <p className="text-slate-500 mt-2 font-medium">Os melhores espaços na sua área.</p>
-              </div>
-            </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-6 px-2 -mx-2 snap-x">
-              {nearMe.slice(0, 8).map((shop, i) => (
-                <div key={i} className="snap-start"><ShopCard shop={shop} /></div>
-              ))}
-            </div>
-          </section>
-        )}
-        
-        {/* EXPLORAR POR CIDADE */}
-        <section className="pb-10">
-          <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3">
-               <MapIcon className="w-8 h-8 text-emerald-500" /> Explorar por Cidade
-            </h2>
-            <p className="text-slate-500 mt-2 font-medium">Descubra os melhores serviços de beleza nas principais cidades.</p>
+            <Link to="/explore?sort=popular" className="text-sm font-bold text-purple-600 hover:text-purple-700 hidden md:block">Ver todos</Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {CITIES.map((city, i) => (
-              <button 
-                key={i} 
-                onClick={() => handleCity(city.name)}
-                className="group relative aspect-[4/5] rounded-3xl overflow-hidden cursor-pointer"
-              >
-                <img src={city.image} alt={city.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-left">
-                  <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-300 transition-colors">{city.name}</h3>
-                  <div className="w-8 h-1 bg-white/30 rounded-full group-hover:w-12 group-hover:bg-purple-500 transition-all duration-300" />
+          <ShopCarousel shops={mostBooked} />
+        </section>
+
+        <section>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <span className="text-2xl">🆕</span> Novas Lojas
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">As novidades que acabaram de chegar à Glamzo.</p>
+            </div>
+            <Link to="/explore?sort=new" className="text-sm font-bold text-purple-600 hover:text-purple-700 hidden md:block">Ver todos</Link>
+          </div>
+          <ShopCarousel shops={newShops} />
+        </section>
+
+        <section>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <span className="text-2xl">📍</span> Perto de Mim
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">Descubra os serviços à sua volta.</p>
+            </div>
+            <Link to="/explore?mode=map" className="text-sm font-bold text-purple-600 hover:text-purple-700 hidden md:block">Abrir Mapa</Link>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-[400px] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200">
+              
+              {API_KEY && API_KEY.startsWith('AIza') ? (
+              <APIProvider apiKey={API_KEY}>
+                <Map 
+                  defaultCenter={userLoc || { lat: 38.7223, lng: -9.1393 }}
+                  defaultZoom={12}
+                  gestureHandling={'greedy'}
+                  disableDefaultUI={true}
+                  mapId="DEMO_MAP_ID"
+                >
+                  {nearMe.map((shop, i) => shop.latitude && shop.longitude && (
+                    <AdvancedMarker key={i} position={{ lat: shop.latitude, lng: shop.longitude }}>
+                      <div className="bg-white px-3 py-1.5 rounded-full shadow-lg border border-slate-200 text-sm font-bold text-slate-900 flex items-center gap-1.5 transform hover:scale-110 transition-transform cursor-pointer">
+                        <span>⭐ {(shop.rating || 5.0).toFixed(1)}</span>
+                      </div>
+                    </AdvancedMarker>
+                  ))}
+                </Map>
+              </APIProvider>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-6 text-center">
+                  <MapPin className="w-12 h-12 mb-4 opacity-50" />
+                  <p className="font-bold text-slate-700">Mapa Indisponível</p>
+                  <p className="text-sm mt-2 max-w-xs">A integração do Google Maps requer configuração adicional.</p>
                 </div>
-              </button>
-            ))}
+              )}
+
+            </div>
+            <div className="flex flex-col gap-4 overflow-y-auto pr-2 max-h-[400px] scrollbar-thin scrollbar-thumb-slate-200">
+              {nearMe.slice(0,5).map((shop, i) => (
+                <Link key={i} to={`/${shop.slug}`} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                    <img src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h3 className="font-bold text-slate-900 line-clamp-1">{shop.name}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{shop.address_line_1 || shop.city}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center text-xs font-bold text-amber-500">
+                        <Star className="w-3.5 h-3.5 fill-current mr-1" /> {(shop.rating || 5.0).toFixed(1)}
+                      </div>
+                      <span className="text-slate-300 text-xs">•</span>
+                      <span className="text-xs font-medium text-slate-600">{shop.category || 'Beleza'}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
       </div>
+    </div>
+  );
+}
+
+function ShopCarousel({ shops }: { shops: any[] }) {
+  if (!shops.length) {
+    return (
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x">
+        {[1,2,3,4].map(i => (
+          <div key={i} className="min-w-[260px] h-[320px] bg-slate-100 rounded-3xl animate-pulse shrink-0" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x">
+      {shops.map((shop, i) => (
+        <Link 
+          key={i} 
+          to={`/${shop.slug}`}
+          className="snap-start shrink-0 w-[260px] sm:w-[280px] group block"
+        >
+          <div className="relative aspect-[4/5] rounded-3xl overflow-hidden mb-3 bg-slate-100">
+            <img 
+              src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} 
+              alt={shop.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
+            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-slate-900 flex items-center gap-1 shadow-sm">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              {(shop.rating || 5.0).toFixed(1)}
+            </div>
+            {shop.discount_active && (
+              <div className="absolute top-3 right-3 bg-rose-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                -{shop.discount_percent}%
+              </div>
+            )}
+            <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
+               {shop.logo_url && (
+                 <img src={shop.logo_url} alt={`Logotipo de ${shop.name}`} className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+               )}
+               <div className="flex-1 min-w-0">
+                 <h3 className="text-white font-bold truncate text-sm">{shop.name}</h3>
+                 <p className="text-white/80 text-[10px] truncate">{shop.category}</p>
+               </div>
+            </div>
+          </div>
+          <div className="px-1">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="truncate">{shop.city || 'Portugal'}</span>
+            </div>
+            {shop.accepts_online_payments && (
+              <span className="inline-flex text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Pagamento Online</span>
+            )}
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }
