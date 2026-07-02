@@ -123,9 +123,101 @@ export default function Partner() {
             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 relative z-10">O centro de comando perfeito.</h2>
             <p className="text-slate-300 text-lg mb-12 relative z-10 max-w-2xl mx-auto">Desenvolvido com o feedback de centenas de profissionais para ser incrivelmente rápido e fácil de usar no dia a dia.</p>
             
-            <div className="relative z-10 max-w-4xl mx-auto bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 aspect-video flex items-center justify-center">
-              <LayoutDashboard className="w-24 h-24 text-slate-600" />
-              <p className="absolute text-slate-500 font-medium mt-32">Preview da Interface</p>
+            <div className="relative z-10 max-w-5xl mx-auto bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700/50 aspect-video ring-1 ring-white/10"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" alt="Dashboard Preview" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500" /></div>
+          </div>
+        </div>
+      </section>
+
+      
+      {/* Pricing Section */}
+      <section className="py-24 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4">Planos simples e transparentes.</h2>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto">Comece gratuitamente e faça upgrade apenas quando precisar de ferramentas mais avançadas para o seu crescimento.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* PRO Plan */}
+            <div className="bg-white rounded-3xl p-8 md:p-10 border border-slate-200 shadow-sm flex flex-col relative group hover:border-purple-200 hover:shadow-md transition-all">
+              <div className="mb-8">
+                <h3 className="text-2xl font-black text-slate-900 mb-2">PRO</h3>
+                <p className="text-slate-500 text-sm">O motor de crescimento essencial.</p>
+              </div>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className="text-5xl font-black text-slate-900">19.90€</span>
+                <span className="text-slate-500 font-medium">/mês</span>
+              </div>
+              <ul className="space-y-4 mb-10 flex-1">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 font-medium">Gestão de agenda inteligente</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 font-medium">Página online de reservas</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 font-medium">Lembretes automáticos (E-mail & SMS)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 font-medium">Destaque no Marketplace Glamzo</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 font-medium">Profissionais ilimitados</span>
+                </li>
+              </ul>
+              <Link to="/partner/signup" className="w-full py-4 rounded-xl border-2 border-slate-900 text-slate-900 font-bold text-center hover:bg-slate-900 hover:text-white transition-colors">
+                Começar Trial 14 Dias
+              </Link>
+            </div>
+
+            {/* Terminal Plan */}
+            <div className="bg-slate-900 rounded-3xl p-8 md:p-10 border border-purple-900 shadow-2xl shadow-purple-900/20 flex flex-col relative overflow-hidden transform md:-translate-y-4">
+              <div className="absolute top-0 right-0 -mr-4 -mt-4 w-32 h-32 bg-purple-600 rounded-full blur-3xl opacity-20"></div>
+              <div className="absolute top-4 right-4 bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                Recomendado
+              </div>
+              <div className="mb-8 relative z-10">
+                <h3 className="text-2xl font-black text-white mb-2">PRO + Terminal</h3>
+                <p className="text-purple-200 text-sm">Gestão completa e pagamentos físicos integrados.</p>
+              </div>
+              <div className="mb-4 flex flex-col relative z-10">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-black text-white">24.90€</span>
+                  <span className="text-purple-300 font-medium">/mês</span>
+                </div>
+                <span className="text-xs text-purple-300 mt-2">+ 9.90€ caução de terminal</span>
+              </div>
+              <ul className="space-y-4 mb-10 flex-1 relative z-10 mt-4">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <span className="text-slate-300 font-medium"><strong className="text-white">Tudo no PRO, e mais:</strong></span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-slate-300 font-medium">Terminal de pagamentos físico incluído</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-slate-300 font-medium">Taxas de processamento reduzidas</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-slate-300 font-medium">Aceitar pagamentos e sinais online</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-slate-300 font-medium">Campanhas de Marketing & CRM</span>
+                </li>
+              </ul>
+              <Link to="/partner/signup" className="w-full py-4 rounded-xl bg-purple-600 text-white font-bold text-center hover:bg-purple-700 transition-colors shadow-lg relative z-10">
+                Começar Trial 14 Dias
+              </Link>
             </div>
           </div>
         </div>

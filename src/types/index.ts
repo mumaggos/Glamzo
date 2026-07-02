@@ -31,7 +31,9 @@ export interface Business {
   website: string | null;
   is_verified: boolean;
   credits?: number; // System credits (default 40 for PRO partner)
-  is_promoted?: boolean; // Currently active marketing campaign
+  is_promoted?: boolean;
+  discount_active?: boolean;
+  discount_percent?: number; // Currently active marketing campaign
   promotion_ends_at?: string; // Expiration
   is_premium?: boolean; // 👑 Premium tag based on rating, bookings, etc.
   stripe_account_id?: string | null;
