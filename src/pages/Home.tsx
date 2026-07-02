@@ -4,7 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 import { PORTUGAL_GEO } from "../utils/geoData";
 import { MAIN_CATEGORIES } from "../utils/categoriesData";
 import { supabase } from "../lib/supabase";
-import { getPromotionStatus } from "../utils/marketingHelper";
 import {
   Sparkles,
   Search,
@@ -17,19 +16,125 @@ import {
   Compass,
   Home as HomeIcon,
   Heart,
+  CalendarDays,
+  Flame,
+  Award
 } from "lucide-react";
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-  Pin,
-} from "@vis.gl/react-google-maps";
 
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  "";
+// Helper distance function
+function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; 
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+  const d = R * c; 
+  return d;
+}
+
+const BusinessCard = ({ b }: { b: any }) => {
+  const isNew = (Date.now() - new Date(b.created_at).getTime()) < 15 * 24 * 60 * 60 * 1000;
+  const isTopPartner = (b.rating ?? 0) >= 4.8;
+  const isPromo = b.is_promoted;
+
+  return (
+    <Link
+      to={`/business/${b.slug}`}
+      className={`group bg-white border rounded-2xl overflow-hidden hover:shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between block relative h-full ${
+        isPromo
+          ? "border-purple-300 shadow-[0_4px_20px_rgba(147,51,234,0.04)]"
+          : "border-slate-200/80"
+      }`}
+    >
+      <div>
+        <div className="h-48 bg-slate-100 relative overflow-hidden">
+          <img
+            src={
+              b.cover_url ||
+              "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70"
+            }
+            alt={b.name}
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="192"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+
+          {/* Badges top-left */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start z-10">
+            {isPromo && (
+              <div className="bg-rose-500 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                <Flame className="w-3 h-3" />
+                <span>Promoção</span>
+              </div>
+            )}
+            {isNew && (
+              <div className="bg-blue-500 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Nova Loja</span>
+              </div>
+            )}
+            {isTopPartner && (
+              <div className="bg-slate-900 text-amber-400 border border-slate-700/50 font-mono text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                <Award className="w-3 h-3" />
+                <span>Top Partner</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Rating top-right */}
+          {(b.rating ?? 0) > 0 && (
+            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm border border-slate-100 z-10">
+              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-bold text-slate-900">{b.rating.toFixed(1)}</span>
+              {b.review_count > 0 && (
+                <span className="text-[10px] text-slate-500 font-medium">({b.review_count})</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-5">
+          <div className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-1.5 line-clamp-1">
+            {b.category}
+          </div>
+          <h3 className="text-base font-display font-bold text-slate-900 tracking-tight group-hover:text-purple-600 transition-colors line-clamp-1">
+            {b.name}
+          </h3>
+          <div className="flex items-center gap-1.5 mt-2.5 text-slate-500 text-xs font-medium">
+            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+            <span className="line-clamp-1">{b.city}, {b.district}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+const CarouselSection = ({ title, subtitle, businesses }: { title: string, subtitle?: string, businesses: any[] }) => {
+  if (!businesses || businesses.length === 0) return null;
+  return (
+    <section className="py-12 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div className="flex flex-col mb-8 gap-1.5">
+        <h2 className="text-2xl sm:text-3xl font-display font-medium text-slate-900 tracking-tight">{title}</h2>
+        {subtitle && <p className="text-slate-500 text-sm">{subtitle}</p>}
+      </div>
+      <div className="flex gap-5 overflow-x-auto pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {businesses.map(b => (
+           <div key={b.id} className="snap-start shrink-0 w-[280px] sm:w-[320px]">
+             <BusinessCard b={b} />
+           </div>
+        ))}
+      </div>
+    </section>
+  );
+};
 
 export default function Home() {
   const { user } = useAuth();
@@ -40,12 +145,10 @@ export default function Home() {
   const [selectedDistrict, setSelectedDistrict] = useState("All");
   const [selectedCity, setSelectedCity] = useState("All");
 
-  // Promoted Campaigns state
   const [promotedShops, setPromotedShops] = useState<any[]>([]);
-  const [dynamicCards, setDynamicCards] = useState<any[]>([]);
-
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapBusinesses, setMapBusinesses] = useState<any[]>([]);
+  const [dynamicCards, setDynamicCards] = useState<any[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -64,7 +167,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Fetch businesses for the map
+    // Exactly existing logic for fetching map businesses
     supabase
       .from("businesses")
       .select("*")
@@ -73,21 +176,18 @@ export default function Home() {
       .limit(50)
       .then(({ data }) => {
         if (data) {
-          // If we had a postgis database we could order by distance, but we'll just filter in memory
           setMapBusinesses(data);
         }
       });
   }, []);
 
   useEffect(() => {
-    // 1. Load promoted campaigns with instant SessionStorage cache fallback for 100ms render speeds
+    // Exactly existing logic for fetching promoted shops
     const cachedShops = sessionStorage.getItem("glamzo_promoted_shops");
     if (cachedShops) {
       try {
         setPromotedShops(JSON.parse(cachedShops));
-      } catch (e) {
-        console.warn("Failed to parse cached shops:", e);
-      }
+      } catch (e) {}
     }
 
     supabase
@@ -98,207 +198,76 @@ export default function Home() {
       .then(({ data }) => {
         if (data) {
           try {
-            const now = Date.now();
-            const filtered = data
-              .filter((b: any) => {
-                const isDemo = [
-                  "salao-spa-premium",
-                  "barbearia-braga-moderna",
-                  "estetica-beleza-braganca",
-                ].includes(b.slug);
-
-                if (!isDemo) {
-                  if (b.status !== 'active') return false;
-                  if (!b.subscription_active) return false;
-                  if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
-                  if (b.public_page_enabled === false) return false;
-                }
-                return true;
-              })
-              .slice(0, 3);
+            const filtered = data.filter((b: any) => {
+              const isDemo = ["salao-spa-premium", "barbearia-braga-moderna", "estetica-beleza-braganca"].includes(b.slug);
+              if (!isDemo) {
+                if (b.status !== 'active') return false;
+                if (!b.subscription_active) return false;
+                if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
+                if (b.public_page_enabled === false) return false;
+              }
+              return true;
+            }).slice(0, 3);
             setPromotedShops(filtered);
-            sessionStorage.setItem(
-              "glamzo_promoted_shops",
-              JSON.stringify(filtered),
-            );
-          } catch (e) {
-            console.error(e);
-          }
+            sessionStorage.setItem("glamzo_promoted_shops", JSON.stringify(filtered));
+          } catch (e) {}
         }
       });
 
-    // 2. Load custom CMS homepage cards with instant SessionStorage caching
+    // Exactly existing logic for fetching dynamic cards
     const loadDynamicCards = async () => {
       const cachedCards = sessionStorage.getItem("glamzo_homepage_cards");
       if (cachedCards) {
         try {
           setDynamicCards(JSON.parse(cachedCards));
-        } catch (e) {
-          console.warn("Failed to parse cached dynamic cards:", e);
-        }
+        } catch (e) {}
       }
-
       try {
         const { data, error } = await supabase
           .from("homepage_cards")
           .select("*")
           .eq("active", true)
           .order("display_order", { ascending: true });
-        if (error) {
-          console.warn(
-            "Could not query dynamic homepage_cards:",
-            error.message,
-          );
-        } else if (data && data.length > 0) {
+        if (!error && data && data.length > 0) {
           setDynamicCards(data);
           sessionStorage.setItem("glamzo_homepage_cards", JSON.stringify(data));
         }
-      } catch (err) {
-        console.warn("Error loadDynamicCards:", err);
-      }
+      } catch (err) {}
     };
     loadDynamicCards();
   }, []);
 
-  // Unified helper to map card title keywords into standard primary category filters
+  // Category Helpers
   const getMatchingCategoryName = (title: string): string => {
     const t = (title || "").toLowerCase().trim();
-    if (
-      t.includes("noiva") ||
-      t.includes("event") ||
-      t.includes("casam") ||
-      t.includes("brid") ||
-      t.includes("wed")
-    ) {
-      return "Noivas & Eventos";
-    }
-    if (
-      t.includes("cabel") ||
-      t.includes("barb") ||
-      t.includes("pente") ||
-      t.includes("hair") ||
-      t.includes("cut")
-    ) {
-      return "Cabelo & Barbearia";
-    }
-    if (
-      t.includes("nail") ||
-      t.includes("unh") ||
-      t.includes("pest") ||
-      t.includes("sobr") ||
-      t.includes("maqu") ||
-      t.includes("beauty") ||
-      t.includes("make")
-    ) {
-      return "Nails & Beauty";
-    }
-    if (
-      t.includes("estét") ||
-      t.includes("pele") ||
-      t.includes("corpo") ||
-      t.includes("laser") ||
-      t.includes("depil") ||
-      t.includes("skin")
-    ) {
-      return "Estética";
-    }
-    if (
-      t.includes("well") ||
-      t.includes("mass") ||
-      t.includes("spa") ||
-      t.includes("reik") ||
-      t.includes("terap") ||
-      t.includes("relax")
-    ) {
-      return "Wellness";
-    }
-    if (t.includes("domicíl") || t.includes("casa") || t.includes("home")) {
-      return "Ao domicílio";
-    }
+    if (t.includes("noiva") || t.includes("event") || t.includes("casam") || t.includes("brid") || t.includes("wed")) return "Noivas & Eventos";
+    if (t.includes("cabel") || t.includes("barb") || t.includes("pente") || t.includes("hair") || t.includes("cut")) return "Cabelo & Barbearia";
+    if (t.includes("nail") || t.includes("unh") || t.includes("pest") || t.includes("sobr") || t.includes("maqu") || t.includes("beauty") || t.includes("make")) return "Nails & Beauty";
+    if (t.includes("estét") || t.includes("pele") || t.includes("corpo") || t.includes("laser") || t.includes("depil") || t.includes("skin")) return "Estética";
+    if (t.includes("well") || t.includes("mass") || t.includes("spa") || t.includes("reik") || t.includes("terap") || t.includes("relax")) return "Wellness";
+    if (t.includes("domicíl") || t.includes("casa") || t.includes("home")) return "Ao domicílio";
     return title;
   };
 
   const getBestUnsplashCategoryFallback = (title: string): string => {
     const t = (title || "").toLowerCase().trim();
-    if (
-      t.includes("noiva") ||
-      t.includes("event") ||
-      t.includes("casam") ||
-      t.includes("brid") ||
-      t.includes("wed")
-    ) {
-      return "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600";
-    }
-    if (
-      t.includes("cabel") ||
-      t.includes("barb") ||
-      t.includes("pente") ||
-      t.includes("hair") ||
-      t.includes("cut")
-    ) {
-      return "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600";
-    }
-    if (
-      t.includes("nail") ||
-      t.includes("unh") ||
-      t.includes("pest") ||
-      t.includes("sobr") ||
-      t.includes("maqu") ||
-      t.includes("beauty") ||
-      t.includes("make")
-    ) {
-      return "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600";
-    }
-    if (
-      t.includes("estét") ||
-      t.includes("pele") ||
-      t.includes("corpo") ||
-      t.includes("laser") ||
-      t.includes("depil") ||
-      t.includes("skin")
-    ) {
-      return "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600";
-    }
-    if (
-      t.includes("well") ||
-      t.includes("mass") ||
-      t.includes("spa") ||
-      t.includes("reik") ||
-      t.includes("terap") ||
-      t.includes("relax")
-    ) {
-      return "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600";
-    }
-    if (t.includes("domicíl") || t.includes("casa") || t.includes("home")) {
-      return "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600";
-    }
-    return "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600";
+    if (t.includes("noiva") || t.includes("event") || t.includes("casam") || t.includes("brid") || t.includes("wed")) return "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400";
+    if (t.includes("cabel") || t.includes("barb") || t.includes("pente") || t.includes("hair") || t.includes("cut")) return "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=400";
+    if (t.includes("nail") || t.includes("unh") || t.includes("pest") || t.includes("sobr") || t.includes("maqu") || t.includes("beauty") || t.includes("make")) return "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=400";
+    if (t.includes("estét") || t.includes("pele") || t.includes("corpo") || t.includes("laser") || t.includes("depil") || t.includes("skin")) return "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=400";
+    if (t.includes("well") || t.includes("mass") || t.includes("spa") || t.includes("reik") || t.includes("terap") || t.includes("relax")) return "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400";
+    if (t.includes("domicíl") || t.includes("casa") || t.includes("home")) return "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400";
+    return "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400";
   };
 
-  // Memoize rendered categories so that input keystrokes do not trigger complete mapping loops
   const renderedCategories = useMemo(() => {
     if (dynamicCards.length > 0) {
       return dynamicCards.map((c) => {
         let imgUrl = c.image_url;
-        // Verify if image URL is local/placeholder/broken or empty, and inject fallback
-        if (
-          !imgUrl ||
-          imgUrl.startsWith("/assets/") ||
-          imgUrl.includes("localhost") ||
-          imgUrl.startsWith("/") ||
-          imgUrl === "null" ||
-          imgUrl === "undefined" ||
-          imgUrl.includes("photo-1594744803329-e58b31de215f")
-        ) {
+        if (!imgUrl || imgUrl.startsWith("/assets/") || imgUrl.includes("localhost") || imgUrl.startsWith("/") || imgUrl === "null" || imgUrl === "undefined" || imgUrl.includes("photo-1594744803329-e58b31de215f")) {
           imgUrl = getBestUnsplashCategoryFallback(c.title);
         }
-        return {
-          id: c.id,
-          name: c.title,
-          description: c.subtitle,
-          imageUrl: imgUrl,
-          emoji: c.emoji || "✨",
-        };
+        return { id: c.id, name: c.title, description: c.subtitle, imageUrl: imgUrl, emoji: c.emoji || "✨" };
       });
     }
     return MAIN_CATEGORIES;
@@ -308,461 +277,283 @@ export default function Home() {
     e.preventDefault();
     const queryParams = new URLSearchParams();
     if (typedQuery.trim()) queryParams.set("q", typedQuery.trim());
-    if (selectedDistrict !== "All")
-      queryParams.set("district", selectedDistrict);
+    if (selectedDistrict !== "All") queryParams.set("district", selectedDistrict);
     if (selectedCity !== "All") queryParams.set("city", selectedCity);
     navigate(`/explore?${queryParams.toString()}`);
   };
+
+  // Carousel Data Preparation
+  const allBusinesses = useMemo(() => {
+    const combined = [...promotedShops, ...mapBusinesses];
+    return Array.from(new Map(combined.map(b => [b.id, b])).values());
+  }, [promotedShops, mapBusinesses]);
+
+  const melhoresAvaliacoes = useMemo(() => allBusinesses.slice().sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0, 10), [allBusinesses]);
+  const maisReservados = useMemo(() => allBusinesses.slice().sort((a,b) => (b.review_count||0) - (a.review_count||0)).slice(0, 10), [allBusinesses]);
+  const novasLojas = useMemo(() => allBusinesses.slice().sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10), [allBusinesses]);
+  const topPartner = useMemo(() => allBusinesses.filter(b => (b.rating||0) >= 4.8), [allBusinesses]);
+  const promocoes = useMemo(() => allBusinesses.filter(b => b.is_promoted), [allBusinesses]);
+  
+  const recomendados = useMemo(() => {
+    if (userLocation) {
+      return allBusinesses.slice().sort((a,b) => {
+        const distA = getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, a.lat || 0, a.lng || 0);
+        const distB = getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, b.lat || 0, b.lng || 0);
+        const scoreA = (a.rating || 0) * 10 - distA;
+        const scoreB = (b.rating || 0) * 10 - distB;
+        return scoreB - scoreA;
+      }).slice(0, 10);
+    }
+    return melhoresAvaliacoes; // fallback
+  }, [allBusinesses, userLocation, melhoresAvaliacoes]);
+
+  // Cities Data Preparation
+  const topCities = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allBusinesses.forEach(b => {
+      if (b.city) counts[b.city] = (counts[b.city] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [allBusinesses]);
+
+  const cityPhotos: Record<string, string> = {
+    'Lisboa': 'https://images.unsplash.com/photo-1558694440-03ade9215d7b?auto=format&fit=crop&q=80&w=600',
+    'Porto': 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&q=80&w=600',
+    'Braga': 'https://images.unsplash.com/photo-1629806456073-ce6f6104c997?auto=format&fit=crop&q=80&w=600',
+    'Faro': 'https://images.unsplash.com/photo-1629731665427-d3eb97c83f99?auto=format&fit=crop&q=80&w=600',
+    'Coimbra': 'https://images.unsplash.com/photo-1621245781373-3051bc728a9b?auto=format&fit=crop&q=80&w=600',
+    'Aveiro': 'https://images.unsplash.com/photo-1563172082-986cbe91280b?auto=format&fit=crop&q=80&w=600',
+  };
+
+  const getCityPhoto = (cityName: string) => {
+    return cityPhotos[cityName] || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600';
+  };
+
   return (
-    <div
-      id="lifestyle-home-view"
-      className="min-h-screen bg-[#fafbfc] flex flex-col justify-between font-sans selection:bg-purple-100 selection:text-purple-900 pb-24"
-    >
-      {/* 1. Immersive Editorial Hero Section - Airbnb & Apple-inspired */}
-      <section className="relative pt-20 pb-16 border-b border-slate-100 bg-white">
-        {/* Simplified high-performance background decoration (no filter blurs) */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-purple-500/5 rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#fafbfc] flex flex-col justify-between font-sans selection:bg-purple-100 selection:text-purple-900 pb-24">
+      {/* 1. Modern Premium Hero Section */}
+      <section className="relative pt-24 pb-20 border-b border-slate-200 bg-white overflow-hidden">
+        {/* Background Premium Image Layer */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=2000" 
+            alt="Glamzo Premium Spa" 
+            className="w-full h-full object-cover opacity-15"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-[#fafbfc]" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 font-sans">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold tracking-wider text-purple-600 mb-6 uppercase block">
-              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              <span>Descubra e Agende nos Melhores Salões de Portugal</span>
-            </div>
-
-            <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900 leading-[1.08] mb-6">
-              O seu momento de beleza, <br />
-              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">
-                marcado num instante.
-              </span>
+          <div className="text-center max-w-4xl mx-auto mb-14">
+            <h1 className="text-5xl sm:text-7xl font-display font-medium tracking-tight text-slate-900 leading-[1.05] mb-6">
+              O seu momento de cuidado, <br className="hidden sm:block" />
+              <span className="text-purple-600">reservado com elegância.</span>
             </h1>
-
-            <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-2xl mx-auto leading-relaxed">
-              Encontre os melhores estúdios de cabeleireiro, estética, spa e
-              barbeiros em Portugal. Desfrute de agendamento automático 24/7 em
-              tempo real, confirmação imediata e pagamento online ultra-seguro.
+            <p className="text-sm sm:text-base text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed">
+              Descubra e reserve instantaneamente os melhores salões, barbearias e centros de estética em Portugal. Experiência premium, 24 horas por dia.
             </p>
           </div>
 
-          {/* Search bar widget - Stripe/Linear Style */}
+          {/* Search bar widget - Booking/Airbnb Style */}
           <form
             onSubmit={handleSearchSubmit}
-            className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgba(15,23,42,0.04)] max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center relative z-20"
-            id="home-search-container"
+            className="bg-white p-2.5 sm:p-3 rounded-3xl border border-slate-200 shadow-[0_15px_40px_rgba(15,23,42,0.06)] max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-2 items-center relative z-20"
           >
             {/* Find Service */}
-            <div className="md:col-span-4 relative">
-              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">
+            <div className="md:col-span-5 relative group px-2 sm:px-4 py-1">
+              <label className="block text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-0.5">
                 O que procura?
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-450">
-                  <Search className="w-4 h-4 text-slate-600" />
-                </span>
+              <div className="relative flex items-center">
+                <Search className="w-5 h-5 text-slate-400 mr-2 shrink-0 group-focus-within:text-purple-600 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Cabeleireiro, Barbearia, Spa..."
+                  placeholder="Cabeleireiro, Barbearia..."
                   value={typedQuery}
                   onChange={(e) => setTypedQuery(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200/70 pl-10 pr-3.5 py-3 rounded-xl text-xs sm:text-sm text-slate-805 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium placeholder-slate-400"
+                  className="w-full bg-transparent border-none p-0 text-sm sm:text-base text-slate-900 focus:ring-0 placeholder-slate-400 font-medium outline-none truncate"
                 />
               </div>
             </div>
+            
+            <div className="hidden md:block w-px h-10 bg-slate-200"></div>
 
-            {/* Select Distrito */}
-            <div className="md:col-span-3 relative">
-              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">
-                Escolher Distrito
+            {/* Select Local */}
+            <div className="md:col-span-4 relative group px-2 sm:px-4 py-1 border-t md:border-t-0 border-slate-100 md:border-none pt-3 md:pt-1">
+              <label className="block text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-0.5">
+                Localização
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-purple-600">
-                  <MapPin className="w-4 h-4" />
-                </span>
+              <div className="relative flex items-center">
+                <MapPin className="w-5 h-5 text-slate-400 mr-2 shrink-0 group-focus-within:text-purple-600 transition-colors" />
                 <select
-                  aria-label="Selecione uma opção"
                   value={selectedDistrict}
                   onChange={(e) => {
-                    const nextVal = e.target.value;
-                    setSelectedDistrict(nextVal);
+                    setSelectedDistrict(e.target.value);
                     setSelectedCity("All");
                   }}
-                  className="w-full bg-slate-50 border border-slate-200/70 pl-10 pr-3.5 py-3 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium cursor-pointer appearance-none"
+                  className="w-full bg-transparent border-none p-0 text-sm sm:text-base text-slate-900 focus:ring-0 font-medium cursor-pointer appearance-none outline-none truncate"
                 >
-                  <option value="All">Distritos de Portugal</option>
-                  {Object.keys(PORTUGAL_GEO)
-                    .sort()
-                    .map((dist) => (
-                      <option key={dist} value={dist}>
-                        {dist}
-                      </option>
-                    ))}
+                  <option value="All">Onde quer agendar?</option>
+                  {Object.keys(PORTUGAL_GEO).sort().map((dist) => (
+                    <option key={dist} value={dist}>{dist}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Select Cidade */}
-            <div className="md:col-span-3 relative">
-              <label className="block text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1.5 pl-1">
-                Escolher Cidade
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-450">
-                  <Compass className="w-4 h-4 text-slate-600" />
-                </span>
-                <select
-                  aria-label="Selecione uma opção"
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  disabled={selectedDistrict === "All"}
-                  className="w-full bg-slate-50 border border-slate-200/70 pl-10 pr-3.5 py-3 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium cursor-pointer appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="All">
-                    {selectedDistrict === "All"
-                      ? "Selecione o distrito"
-                      : "Todas as cidades"}
-                  </option>
-                  {selectedDistrict !== "All" &&
-                    (PORTUGAL_GEO[selectedDistrict] || []).map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="md:col-span-2 pt-4 md:pt-0">
+            {/* Submit */}
+            <div className="md:col-span-3 pt-3 md:pt-0 pl-0 md:pl-2">
               <button
                 type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl text-xs sm:text-sm tracking-wide transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-purple-200 hover:scale-[1.01]"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl text-sm sm:text-base tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-600/30 hover:shadow-purple-600/40 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <span>Explorar</span>
-                <ArrowRight className="w-4 h-4" />
+                <Search className="w-4 h-4" />
+                <span>Pesquisar</span>
               </button>
             </div>
           </form>
         </div>
       </section>
 
-      {/* 2. Visual Categories Grid - Airbnb Style */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center md:text-left mb-12">
-          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] font-bold uppercase text-purple-600 tracking-widest mb-3">
-            <span>Explorar Serviços</span>
+      {/* 2. Elegant Small Categories - Fresha Style */}
+      <section className="py-12 border-b border-slate-200/60 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {renderedCategories.map((cat) => (
+              <Link
+                key={cat.id || cat.name}
+                to={`/explore?category=${encodeURIComponent(getMatchingCategoryName(cat.name))}`}
+                className="snap-start shrink-0 group flex flex-col items-center gap-3 cursor-pointer w-[80px] sm:w-[96px]"
+              >
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden relative shadow-sm border border-slate-200 group-hover:border-purple-300 group-hover:shadow-md transition-all duration-300 bg-slate-50 flex items-center justify-center">
+                  <img
+                    src={cat.imageUrl}
+                    alt={cat.name}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                  />
+                  <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors" />
+                </div>
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-700 text-center leading-tight group-hover:text-purple-600 transition-colors">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
           </div>
-          <h2 className="text-2xl sm:text-4xl font-display font-medium tracking-tight text-slate-900">
-            Categorias de Elite
-          </h2>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl">
-            De cabeleireiros tradicionais de alto padrão a centros de alta
-            estética e atendimento premium.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {renderedCategories.map((cat, index) => (
-            <Link
-              key={cat.id || cat.name}
-              to={`/explore?category=${encodeURIComponent(getMatchingCategoryName(cat.name))}`}
-              className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:border-purple-300 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_rgba(15,23,42,0.04)] -translate-y-0 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src={cat.imageUrl}
-                  alt={cat.name}
-                  loading={index < 3 ? "eager" : "lazy"}
-                  fetchPriority={index < 3 ? "high" : "auto"}
-                  decoding="async"
-                  width="400"
-                  height="192"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null; // Prevent infinite loop
-                    const lower = (cat.name || "").toLowerCase();
-                    if (
-                      lower.includes("noiva") ||
-                      lower.includes("event") ||
-                      lower.includes("casam") ||
-                      lower.includes("brid")
-                    ) {
-                      e.currentTarget.src =
-                        "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600";
-                    } else if (
-                      lower.includes("cabel") ||
-                      lower.includes("barb")
-                    ) {
-                      e.currentTarget.src =
-                        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600";
-                    } else {
-                      e.currentTarget.src =
-                        "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600";
-                    }
-                  }}
-                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 grayscale-[10%] group-hover:grayscale-0"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xl bg-white/10 backdrop-blur-md w-10 h-10 rounded-lg flex items-center justify-center border border-white/10">
-                      {cat.emoji || "✨"}
-                    </span>
-                    <h3 className="text-base font-display font-bold text-white tracking-tight uppercase group-hover:text-purple-300 transition-colors">
-                      {cat.name}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <p className="text-xs text-slate-500 leading-relaxed min-h-[40px]">
-                  {cat.description}
-                </p>
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] font-black tracking-widest uppercase text-slate-550 group-hover:text-purple-600 transition-colors">
-                  <span>Descobrir {cat.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-purple-600" />
-                </div>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 
-      {/* 2.5 Promoted Campaigns Section - Minimal Modern Cards */}
-      {promotedShops.length > 0 && (
-        <section className="py-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 bg-slate-50/50 rounded-3xl mb-12">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-3">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 border border-rose-100 rounded text-[9px] font-bold uppercase text-rose-600 tracking-wider mb-2">
-                <Sparkles className="w-3 h-3 text-rose-500" />
-                <span>Salões em Destaque Glamzo</span>
-              </div>
-              <h2 className="text-2xl font-display font-medium tracking-tight text-slate-900">
-                Salões em Destaque
-              </h2>
-              <p className="text-slate-500 text-xs mt-1">
-                Descubra as principais campanhas de beleza e estúdios VIP
-                recomendados perto de si.
-              </p>
+      {/* 3. Carousels */}
+      <div className="bg-[#fafbfc] pt-4">
+        {promocoes.length > 0 && (
+          <CarouselSection title="Ofertas Especiais" subtitle="Aproveite descontos ativos agora mesmo." businesses={promocoes} />
+        )}
+        
+        {recomendados.length > 0 && (
+          <CarouselSection title="Recomendados para Si" subtitle="Com base na sua localização e preferências." businesses={recomendados} />
+        )}
+        
+        {topPartner.length > 0 && (
+          <CarouselSection title="Top Partners Glamzo" subtitle="Os espaços mais exclusivos e bem avaliados." businesses={topPartner} />
+        )}
+        
+        <CarouselSection title="Melhores Avaliações" subtitle="Favoritos dos nossos clientes." businesses={melhoresAvaliacoes} />
+        
+        <CarouselSection title="Novidades na Glamzo" subtitle="Descubra os espaços adicionados recentemente." businesses={novasLojas} />
+        
+        <CarouselSection title="Mais Reservados" subtitle="Os espaços com maior popularidade." businesses={maisReservados} />
+      </div>
+
+      {/* 4. Explore by City - Booking Style */}
+      {topCities.length > 0 && (
+        <section className="py-12 bg-white border-t border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="flex flex-col mb-8 gap-1.5">
+              <h2 className="text-2xl sm:text-3xl font-display font-medium text-slate-900 tracking-tight">Explorar por Cidade</h2>
+              <p className="text-slate-500 text-sm">Os melhores destinos de beleza e bem-estar.</p>
             </div>
-
-            <Link
-              to="/explore"
-              className="group inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 uppercase tracking-wider"
-            >
-              <span>Ver todos os salões</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
-            {promotedShops.map((b) => (
-              <Link
-                key={b.id}
-                to={`/business/${b.slug}`}
-                className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:border-purple-300/60 shadow-sm transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="h-44 relative overflow-hidden">
-                    <img
-                      src={
-                        b.cover_url ||
-                        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="176" viewBox="0 0 400 176"><rect width="400" height="176" fill="%23f8fafc"/><text x="50%" y="54%" font-family="system-ui, sans-serif" font-size="10" font-weight="950" fill="%237c3aed" opacity="0.3" letter-spacing="3" text-anchor="middle">GLAMZO PARTNER</text></svg>'
-                      }
-                      alt={b.name}
-                      loading="lazy"
-                      decoding="async"
-                      width="400"
-                      height="176"
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover group-hover:scale-101 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
-                    <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-                      <span className="bg-purple-600 text-white font-mono text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">
-                        {b.category}
-                      </span>
-                      <span className="bg-rose-500 text-white font-mono text-[8px] font-bold uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5" />
-                        <span>Destaque</span>
-                      </span>
-                    </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {topCities.map(city => (
+                <Link
+                  key={city.name}
+                  to={`/explore?city=${encodeURIComponent(city.name)}`}
+                  className="group relative h-48 sm:h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 block"
+                >
+                  <img
+                    src={getCityPhoto(city.name)}
+                    alt={city.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent" />
+                  
+                  <div className="absolute bottom-0 left-0 p-4 sm:p-5">
+                    <h3 className="text-white text-lg sm:text-xl font-display font-bold tracking-tight mb-0.5">{city.name}</h3>
+                    <p className="text-slate-200 text-xs sm:text-sm font-medium">{city.count} {city.count === 1 ? 'espaço' : 'espaços'}</p>
                   </div>
-
-                  <div className="p-5">
-                    <h3 className="text-base font-display font-medium text-slate-800 tracking-tight group-hover:text-purple-600 transition-colors uppercase">
-                      {b.name}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 mt-2 line-clamp-2 leading-relaxed">
-                      {b.description ||
-                        "Tratamentos estéticos de alta costura, equipe de alto gabarito e produtos importados."}
-                    </p>
-                    <div className="text-[10px] font-mono text-purple-600 mt-3 flex items-center gap-1">
-                      <span>📍</span> {b.city}, {b.district}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600 group-hover:bg-slate-100/50 transition-colors">
-                  <span className="group-hover:text-slate-900 transition-colors">
-                    Marcar neste estúdio
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform text-purple-600" />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* 2.7 Map Section - Hidden 
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col mb-8 gap-3">
-          <div className="inline-flex w-max items-center gap-1.5 px-2.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] font-bold uppercase text-purple-600 tracking-wider">
-            <MapPin className="w-3 h-3 text-purple-500" />
-            <span>Perto de si</span>
-          </div>
-          <h2 className="text-2xl font-display font-medium tracking-tight text-slate-900">
-            Descubra lojas à sua volta
-          </h2>
-          <p className="text-slate-500 text-xs mt-1 max-w-2xl">
-            Explore os melhores profissionais e espaços da sua zona, com marcação imediata.
-          </p>
-        </div>
-        
-        <div className="w-full h-[55vh] sm:h-[65vh] rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative bg-slate-100">
-          {API_KEY ? (
-            <APIProvider apiKey={API_KEY} version="weekly">
-              <Map
-                defaultCenter={userLocation || { lat: 39.3999, lng: -8.2245 }}
-                defaultZoom={userLocation ? 12 : 6}
-                center={userLocation || undefined}
-                mapId="GLAMZO_HOME_MAP"
-                internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
-                style={{ width: "100%", height: "100%" }}
-              >
-                {mapBusinesses.map((b) => {
-                  if (!b.lat || !b.lng) return null;
-                  const markerColor = (b.rating ?? 0) >= 4.5 ? "#9333ea" : "#3b82f6";
-                  return (
-                    <AdvancedMarker
-                      key={b.id}
-                      position={{ lat: b.lat, lng: b.lng }}
-                      title={b.name}
-                      onClick={() => {
-                        navigate(`/business/${b.slug}`);
-                      }}
-                    >
-                      <div className="relative cursor-pointer hover:scale-110 transition-transform">
-                        <Pin
-                          background={markerColor}
-                          borderColor={markerColor}
-                          glyphColor="#fff"
-                        />
-                        {(b.rating ?? 0) > 0 && (
-                          <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
-                            {b.rating.toFixed(1)}
-                          </div>
-                        )}
-                      </div>
-                    </AdvancedMarker>
-                  );
-                })}
-              </Map>
-            </APIProvider>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center text-slate-500">
-              <MapPin className="w-10 h-10 mb-4 text-slate-300" />
-              <p>O mapa não está disponível neste momento.</p>
-            </div>
-          )}
-        </div>
-      </section>
-      */}
-
-      {/* 3. Emotional Lifestyle Narrative (Values) - Clean Grid */}
-      <section className="py-20 border-t border-slate-100 bg-white">
+      {/* 5. Emotive Values */}
+      <section className="py-20 border-t border-slate-200 bg-[#fafbfc]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-4xl font-display font-medium text-slate-900 tracking-tight">
-              A melhor experiência de agendamento de beleza
-            </h2>
-            <p className="text-slate-600 text-xs sm:text-sm mt-2 max-w-sm mx-auto">
-              Descubra como a Glamzo simplifica os seus rituais de cuidado
-              pessoal de forma absolutamente fluida, elegante e moderna.
-            </p>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6.5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-slate-100/30">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
-                <Smile className="w-5 h-5 stroke-[2]" />
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-white text-purple-600 flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <CalendarDays className="w-7 h-7 stroke-[1.5]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">
-                Estúdios de Elite
-              </h3>
-              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Explore e filtre dezenas de cabeleireiros, spas e barbeiros
-                gabaritados de destaque, com opiniões avaliadas por clientes
-                reais e fotos autênticas.
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-2">Agendamento Fácil 24/7</h3>
+              <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
+                Acesse a disponibilidade real dos melhores profissionais e reserve instantaneamente a qualquer momento.
               </p>
             </div>
 
-            <div className="p-6.5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-slate-100/30">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
-                <Star className="w-5 h-5 stroke-[2]" />
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-white text-purple-600 flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <Star className="w-7 h-7 stroke-[1.5]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">
-                Agendamento Automático 24/7
-              </h3>
-              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Marque e desmarque os seus serviços e tratamentos favoritos a
-                qualquer hora do dia ou da noite, com confirmação garantida e em
-                tempo real.
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-2">Opiniões Reais</h3>
+              <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
+                Tome decisões baseadas em avaliações autênticas de clientes que visitaram os espaços.
               </p>
             </div>
 
-            <div className="p-6.5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-slate-100/30">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-5 border border-purple-100">
-                <ShieldCheck className="w-5 h-5 stroke-[2]" />
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-white text-purple-600 flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <ShieldCheck className="w-7 h-7 stroke-[1.5]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">
-                Checkout Seguro
-              </h3>
-              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                Pague as suas marcações de forma ultra-segura no checkout da
-                plataforma e desfrute de uma experiência VIP e fluida no salão
-                parceiro.
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-2">Garantia de Qualidade</h3>
+              <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
+                Uma seleção curada dos parceiros mais exclusivos para garantir uma experiência de excelência.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. SaaS Partner Portal CTA - Glamzo Pay Inspired */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
-        <div className="bg-[#f8fafc] border border-slate-200/50 rounded-3xl p-8 sm:p-14 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
-          <div className="absolute inset-0 bg-radial-[circle_at_left_bottom] from-purple-100/20 via-transparent to-transparent pointer-events-none" />
-
-          <div className="max-w-xl relative">
-            <span className="text-[9px] font-mono font-bold text-purple-600 uppercase tracking-widest block mb-2 leading-none">
-              PARA SALÕES, CLÍNICAS & PROFISSIONAIS
-            </span>
-            <h2 className="text-xl sm:text-3xl font-display font-medium text-slate-900 leading-snug tracking-tight">
-              Organize a sua agenda, receba pagamentos e faça crescer o seu
-              salão
+      {/* 6. Partner Portal CTA */}
+      <section className="py-16 bg-white border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 mb-4">
+              Impulsione o seu negócio de beleza
             </h2>
-            <p className="text-slate-500 text-xs mt-3 leading-relaxed">
-              Ative pagamentos imediatos, automatize confirmações de reserva e
-              faça a gestão integral da sua equipa na melhor plataforma para
-              cabeleireiros e estética.
+            <p className="text-slate-500 text-sm sm:text-base mb-8 leading-relaxed">
+              Junte-se a centenas de parceiros Glamzo e descubra a melhor plataforma para gerir reservas, aumentar clientes e simplificar pagamentos.
             </p>
-          </div>
-
-          <div className="relative shrink-0 w-full sm:w-auto">
             <Link
               to="/partner"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-7 py-3.5 rounded-xl font-bold transition-all shadow-sm text-xs tracking-wider uppercase cursor-pointer hover:scale-[1.01]"
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20 text-sm tracking-wider cursor-pointer hover:-translate-y-0.5"
             >
-              <span>Registar meu negócio</span>
+              <span>Registar meu espaço grátis</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

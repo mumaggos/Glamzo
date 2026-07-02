@@ -153,7 +153,7 @@ export default function Navbar() {
       )}
 
       {/* 2. FLOATING BOTTOM NAVIGATION BAR (APPLE & AIRBNB STYLE) */}
-      {!isDashboardOrAdmin && (
+      {!isDashboardOrAdmin && user && (
         <div 
           id="floating-bottom-nav" 
           className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[480px] ${
