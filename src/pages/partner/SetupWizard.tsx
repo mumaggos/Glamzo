@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
+import { MAIN_CATEGORIES } from '../../utils/categoriesData';
+import { PORTUGAL_GEO, getCoordinatesForCity } from '../../utils/geoData';
 import { 
   Building2, MapPin, Image as ImageIcon, Clock, Scissors, Users, 
   CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check
@@ -27,6 +29,7 @@ export default function SetupWizard() {
   const [saving, setSaving] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '', category: '', establishment_type: '', description: '', languages: [] as string[], phone: '', website: '',
@@ -59,8 +62,8 @@ export default function SetupWizard() {
         setFormData({
           name: data.name || '', category: data.category || '', establishment_type: data.establishment_type || '',
           description: data.description || '', languages: data.languages || [], phone: data.phone || '', website: data.website || '',
-          country: data.country || 'Portugal', district: data.district || '', county: data.county || '', city: data.city || '',
-          zip_code: data.zip_code || '', street: data.address_line_1 || '', number: data.address_line_2 || '',
+          country: data.country || 'Portugal', district: data.district || '', county: data.county || data.locality || '', city: data.city || '',
+          zip_code: data.zip_code || data.postal_code || '', street: data.address_line_1 || data.address || '', number: data.address_line_2 || data.door_number || '',
           logo_url: data.logo_url || '', cover_url: data.cover_url || '', gallery_urls: data.gallery_urls || [],
           schedule: data.schedule || {}, services_config: data.services_config || [], employees_config: data.employees_config || [],
           selected_plan: data.selected_plan || 'PRO', accepts_online_payments: data.accepts_online_payments || false
@@ -83,6 +86,21 @@ export default function SetupWizard() {
 
   const handleSaveAndNext = async () => {
     if (!businessId) return;
+    setErrorMsg(null);
+
+    // Validation
+    if (step === 1) {
+      if (!formData.name.trim() || !formData.category || !formData.phone.trim()) {
+        setErrorMsg('Por favor preencha o Nome, Categoria e Telefone.');
+        return;
+      }
+    } else if (step === 2) {
+      if (!formData.street.trim() || !formData.city.trim() || !formData.zip_code.trim() || !formData.district.trim() || !formData.county.trim()) {
+        setErrorMsg('Por favor preencha todos os campos obrigatórios da morada.');
+        return;
+      }
+    }
+
     setSaving(true);
     
     let updatePayload: any = {
@@ -91,9 +109,25 @@ export default function SetupWizard() {
     };
     
     if (step === 1) {
-      updatePayload = { ...updatePayload, name: formData.name, category: formData.category, establishment_type: formData.establishment_type, description: formData.description, languages: formData.languages, phone: formData.phone, website: formData.website };
+      updatePayload = { ...updatePayload, name: formData.name, category: formData.category, establishment_type: formData.establishment_type, description: formData.description, languages: formData.languages, phone: formData.phone };
     } else if (step === 2) {
-      updatePayload = { ...updatePayload, country: formData.country, district: formData.district, county: formData.county, city: formData.city, zip_code: formData.zip_code, address_line_1: formData.street, address_line_2: formData.number };
+      const coords = getCoordinatesForCity(formData.district, formData.city);
+      updatePayload = { 
+        ...updatePayload, 
+        country: formData.country, 
+        district: formData.district, 
+        county: formData.county, 
+        locality: formData.county,
+        city: formData.city, 
+        zip_code: formData.zip_code, 
+        postal_code: formData.zip_code,
+        address: formData.street,
+        address_line_1: formData.street, 
+        door_number: formData.number,
+        address_line_2: formData.number,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      };
     } else if (step === 3) {
       updatePayload = { ...updatePayload, logo_url: formData.logo_url, cover_url: formData.cover_url, gallery_urls: formData.gallery_urls };
     } else if (step === 4) {
@@ -181,35 +215,37 @@ export default function SetupWizard() {
       <div className="max-w-3xl mx-auto px-4 pt-8">
         <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200">
           
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-rose-50 text-rose-700 rounded-xl text-sm font-medium border border-rose-100 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
           {step === 1 && (
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-2xl font-bold text-slate-900">Dados da Loja</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Nome do Estabelecimento</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Nome do Estabelecimento *</label>
                   <input type="text" value={formData.name} onChange={e => updateForm('name', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="Ex: Glamzo Hair Salon" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Categoria</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Categoria *</label>
                   <select value={formData.category} onChange={e => updateForm('category', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500">
                     <option value="">Selecione...</option>
-                    <option value="Cabeleireiro">Cabeleireiro</option>
-                    <option value="Barbearia">Barbearia</option>
-                    <option value="Estética">Estética</option>
-                    <option value="Spa">Spa</option>
+                    {MAIN_CATEGORIES.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Descrição</label>
                   <textarea value={formData.description} onChange={e => updateForm('description', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 h-24" placeholder="Conte um pouco sobre o seu espaço..." />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Telefone</label>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Telefone *</label>
                   <input type="text" value={formData.phone} onChange={e => updateForm('phone', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="+351 900 000 000" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Website (Opcional)</label>
-                  <input type="text" value={formData.website} onChange={e => updateForm('website', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="www.exemplo.pt" />
                 </div>
               </div>
             </div>
@@ -225,20 +261,41 @@ export default function SetupWizard() {
                   <p className="text-xs text-slate-500 mt-1">Integração Autocomplete preparada.</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Rua</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Rua *</label>
                   <input type="text" value={formData.street} onChange={e => updateForm('street', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Número/Andar</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Número/Andar *</label>
                   <input type="text" value={formData.number} onChange={e => updateForm('number', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Código Postal</label>
-                  <input type="text" value={formData.zip_code} onChange={e => updateForm('zip_code', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Distrito *</label>
+                  <select value={formData.district} onChange={e => {
+                    updateForm('district', e.target.value);
+                    updateForm('county', ''); // reset county
+                  }} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500">
+                    <option value="">Selecione...</option>
+                    {Object.keys(PORTUGAL_GEO).sort().map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Cidade</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Localidade *</label>
+                  <select value={formData.county} onChange={e => updateForm('county', e.target.value)} disabled={!formData.district} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 disabled:opacity-50">
+                    <option value="">Selecione...</option>
+                    {formData.district && PORTUGAL_GEO[formData.district]?.sort().map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Cidade *</label>
                   <input type="text" value={formData.city} onChange={e => updateForm('city', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">Código Postal *</label>
+                  <input type="text" value={formData.zip_code} onChange={e => updateForm('zip_code', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500" />
                 </div>
               </div>
             </div>

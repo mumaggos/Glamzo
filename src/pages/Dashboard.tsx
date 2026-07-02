@@ -12,6 +12,8 @@ import {
   BookingStatus,
   PaymentStatus,
 } from "../types";
+import { MAIN_CATEGORIES } from '../utils/categoriesData';
+import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import {
   Building,
   LayoutGrid,
@@ -5452,6 +5454,28 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Categoria Principal
+                            </label>
+                            <select
+                              required
+                              value={business.category}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, category: e.target.value }
+                                    : null,
+                                )
+                              }
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                            >
+                              <option value="">Selecione...</option>
+                              {MAIN_CATEGORIES.map(cat => (
+                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
                               Telefone de Atendimento
                             </label>
                             <input
@@ -5474,23 +5498,55 @@ export default function Dashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Distrito / Concelho
+                              Distrito / Região
                             </label>
-                            <input
-                              type="text"
+                            <select
                               required
                               value={business.district}
                               onChange={(e) =>
                                 setBusiness((prev) =>
                                   prev
-                                    ? { ...prev, district: e.target.value }
+                                    ? { ...prev, district: e.target.value, locality: "" }
                                     : null,
                                 )
                               }
                               className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            />
+                            >
+                              <option value="">Selecione...</option>
+                              {Object.keys(PORTUGAL_GEO).sort().map((d) => (
+                                <option key={d} value={d}>
+                                  {d}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                           <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Localidade / Concelho
+                            </label>
+                            <select
+                              required
+                              value={business.locality || ""}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, locality: e.target.value }
+                                    : null,
+                                )
+                              }
+                              disabled={!business.district}
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans disabled:opacity-50"
+                            >
+                              <option value="">Selecione...</option>
+                              {business.district &&
+                                PORTUGAL_GEO[business.district]?.sort().map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                          <div className="sm:col-span-2">
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
                               Cidade (Freguesia)
                             </label>
