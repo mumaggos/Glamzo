@@ -89,6 +89,7 @@ import {
 import { realtimeService } from "../utils/realtimeService";
 import GlamzoLogo from "../components/GlamzoLogo";
 import { slugify, validateSlugUniqueness } from "../utils/slugify";
+import { getCoordinatesForCity } from "../utils/geoData";
 import { optimizeImageBeforeUpload } from "../utils/imageOptimizer";
 import DashboardAssistant from "../components/DashboardAssistant";
 import DashboardMessages from "../components/DashboardMessages";
@@ -2278,6 +2279,7 @@ export default function Dashboard() {
     e.preventDefault();
     if (!business) return;
     try {
+      const { latitude, longitude } = getCoordinatesForCity(business.district, business.city);
       const { error } = await supabase
         .from("businesses")
         .update({
@@ -2286,7 +2288,12 @@ export default function Dashboard() {
           phone: business.phone,
           district: business.district,
           city: business.city,
+          locality: business.locality || null,
           address: business.address,
+          postal_code: business.postal_code || null,
+          door_number: business.door_number || null,
+          latitude,
+          longitude,
           description: business.description,
           logo_url: business.logo_url,
           cover_url: business.cover_url,
@@ -5503,25 +5510,84 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        {/* Address */}
-                        <div className="text-left">
-                          <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                            Endereço de Portaria (Rua, Número, Código Postal)
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={business.address}
-                            onChange={(e) =>
-                              setBusiness((prev) =>
-                                prev
-                                  ? { ...prev, address: e.target.value }
-                                  : null,
-                              )
-                            }
-                            placeholder="Avenida da Liberdade Nº 42, 1250-142 Lisboa"
-                            className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                          />
+                        {/* Address Fields */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                          <div className="sm:col-span-2">
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Morada Física (Rua, Avenida)
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={business.address}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, address: e.target.value }
+                                    : null,
+                                )
+                              }
+                              placeholder="Rua da Liberdade"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Número da Porta
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={business.door_number || ""}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, door_number: e.target.value }
+                                    : null,
+                                )
+                              }
+                              placeholder="Nº 42"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Localidade
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={business.locality || ""}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, locality: e.target.value }
+                                    : null,
+                                )
+                              }
+                              placeholder="Freguesia"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                              Código Postal
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={business.postal_code || ""}
+                              onChange={(e) =>
+                                setBusiness((prev) =>
+                                  prev
+                                    ? { ...prev, postal_code: e.target.value }
+                                    : null,
+                                )
+                              }
+                              placeholder="1250-142"
+                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                            />
+                          </div>
                         </div>
 
                         {/* Biography description */}

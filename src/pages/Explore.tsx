@@ -1002,21 +1002,24 @@ export default function Explore() {
                             }}
                             title={b.name}
                             onClick={() => {
-                              // We could add an InfoWindow, but let's just make it redirect to the business page for now, or open a mini overlay
                               window.location.href = `/business/${b.slug}`;
                             }}
                           >
-                            <div className="relative cursor-pointer hover:scale-110 transition-transform">
-                              <Pin
-                                background={markerColor}
-                                borderColor={markerColor}
-                                glyphColor="#fff"
-                              />
-                              {(b.rating ?? 0) > 0 && (
-                                <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
-                                  {b.rating.toFixed(1)}
-                                </div>
-                              )}
+                            <div className="relative flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-transform origin-bottom z-10 hover:z-20">
+                              <div
+                                className="flex items-center justify-center shadow-md border-2 border-white"
+                                style={{
+                                  backgroundColor: markerColor,
+                                  width: '34px',
+                                  height: '34px',
+                                  borderRadius: '50% 50% 50% 0',
+                                  transform: 'rotate(-45deg)',
+                                }}
+                              >
+                                <span className="text-white text-[10px] font-bold font-mono tracking-tighter" style={{ transform: 'rotate(45deg)' }}>
+                                  {(b.rating ?? 0) > 0 ? b.rating.toFixed(1) : '-'}
+                                </span>
+                              </div>
                             </div>
                           </AdvancedMarker>
                         );

@@ -41,6 +41,7 @@ export default function Onboarding() {
   const [category, setCategory] = useState('Cabelo & Barbearia');
   const [district, setDistrict] = useState('Lisboa');
   const [city, setCity] = useState('Lisboa');
+  const [locality, setLocality] = useState('');
   const [doorNumber, setDoorNumber] = useState('');
   const [address, setAddress] = useState('');
   const [postalCode, setPostalCode] = useState('');
@@ -70,6 +71,7 @@ export default function Onboarding() {
         if (payload.name) setName(payload.name);
         if (payload.district) setDistrict(payload.district);
         if (payload.city) setCity(payload.city);
+        if (payload.locality) setLocality(payload.locality);
         if (payload.address) setAddress(payload.address);
         if (payload.door_number) setDoorNumber(payload.door_number);
         if (payload.postal_code) setPostalCode(payload.postal_code);
@@ -192,6 +194,7 @@ export default function Onboarding() {
         email: email || user.email || null,
         district,
         city,
+        locality: locality || null,
         address,
         postal_code: postalCode || null,
         door_number: doorNumber || null,
@@ -378,6 +381,17 @@ export default function Onboarding() {
                 onChange={(e) => setAddress(e.target.value)}
                 className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
                 placeholder="Ex: Rua de Portugal"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Localidade *</label>
+              <input
+                type="text"
+                required
+                value={locality}
+                onChange={(e) => setLocality(e.target.value)}
+                className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
+                placeholder="Ex: Freguesia ou Bairro"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
