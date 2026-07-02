@@ -164,6 +164,30 @@ export default function BusinessDetail() {
   }, [user, business?.id]);
 
   
+  
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      alert('Inicie sessão para adicionar aos favoritos');
+      return;
+    }
+    const isFav = !favoriteActive;
+    setFavoriteActive(isFav);
+    try {
+      await toggleFavorite(user.id, business!.id);
+    } catch(err) {}
+  };
+
+  const handleShareLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handleOpenBookingFromService = (svc: any) => {
+    if (svc) setSelectedService(svc);
+    setBookingOpen(true);
+  };
+
   return (
     <div id="business-detail-view" className="bg-white min-h-screen pb-24 font-sans text-slate-800">
       

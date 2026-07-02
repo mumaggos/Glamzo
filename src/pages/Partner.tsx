@@ -27,7 +27,7 @@ export default function Partner() {
       
       {/* Premium Hero */}
       <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 bg-slate-900 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center" />
+        <div className="absolute inset-0 opacity-20 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80')" }} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900" />
         
         <div className="max-w-5xl mx-auto relative z-10 text-center">
@@ -47,7 +47,7 @@ export default function Partner() {
           </p>
 
           <Link
-            to="/partner-signup"
+            to="/partner/signup"
             className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-transform hover:scale-105"
           >
             Começar Gratuitamente <ArrowRight className="w-5 h-5" />
@@ -148,7 +148,7 @@ export default function Partner() {
 
             <div className="mt-12 text-center">
               <Link
-                to="/partner-signup"
+                to="/partner/signup"
                 className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl transition-transform hover:scale-105"
               >
                 Criar Conta Gratuita <ArrowRight className="w-5 h-5" />
