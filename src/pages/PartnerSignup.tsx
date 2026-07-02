@@ -28,22 +28,26 @@ export default function PartnerSignup() {
     }
   }, [user, navigate]);
 
-    const handleSendCode = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      setErrorMsg('Insira o seu e-mail.');
+    if (password !== confirmPassword) {
+      setErrorMsg('As senhas não coincidem.');
       return;
     }
+    if (password.length < 6) {
+      setErrorMsg('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
+
     try {
-      // Usar signUp para criar a conta mas o utilizador precisa definir password?
-      // Ou usar signInWithOtp para enviar código de verificação para novo/existente.
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-          shouldCreateUser: true,
           data: { role: 'business' }
         }
       });
@@ -65,14 +69,6 @@ export default function PartnerSignup() {
       setErrorMsg('Código inválido.');
       return;
     }
-    if (password !== confirmPassword) {
-      setErrorMsg('As senhas não coincidem.');
-      return;
-    }
-    if (password.length < 6) {
-      setErrorMsg('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
 
     setLoading(true);
     setErrorMsg(null);
@@ -82,15 +78,8 @@ export default function PartnerSignup() {
       const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token: enteredCode,
-        type: 'email'
+        type: 'signup'
       });
-      if (verifyError) throw verifyError;
-      
-      // Update password since we used signInWithOtp
-      if (verifyData.user) {
-        await supabase.auth.updateUser({ password });
-      }
-
       if (verifyError || !verifyData.user || !verifyData.session) throw new Error('Código inválido ou expirado.');
 
       await supabase.from('profiles').update({ role: 'business' }).eq('id', verifyData.user.id);
@@ -140,135 +129,150 @@ export default function PartnerSignup() {
             </div>
           )}
 
-          
-          <form className="space-y-5 animate-fade-in" onSubmit={(e) => { e.preventDefault(); if (isOtpSent) { handleVerifyOtp(e); } else { handleSendCode(e); } }}>
-            <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                E-mail Profissional
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative rounded-xl shadow-sm flex-1">
+          {!isOtpSent ? (
+            <form className="space-y-5 animate-fade-in" onSubmit={handleSendCode}>
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                  E-mail Profissional
+                </label>
+                <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-slate-400" />
                   </div>
                   <input
                     type="email"
                     required
-                    disabled={isOtpSent}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400 disabled:opacity-60"
+                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
                     placeholder="geral@seusalao.pt"
                   />
                 </div>
-                {!isOtpSent && (
-                  <button
-                    type="button"
-                    onClick={handleSendCode}
-                    disabled={loading || !email}
-                    className="px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-50 whitespace-nowrap flex items-center justify-center min-w-[140px]"
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Enviar Código"}
-                  </button>
-                )}
               </div>
-            </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Senha
+                  </label>
+                  <div className="relative rounded-xl shadow-sm">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="block w-full px-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                      placeholder="Mín. 6 letras"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Confirmar Senha
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
+                    placeholder="Repita a senha"
+                  />
+                </div>
+              </div>
 
-            {isOtpSent && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Código de Verificação
+              <div className="flex items-start gap-2 pt-2 pb-2">
+                <input
+                  type="checkbox"
+                  id="terms-partner"
+                  required
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
+                />
+                <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
+                  Li e aceito os{' '}
+                  <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                    Termos para Parceiros
+                  </Link>{' '}
+                  e a{' '}
+                  <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
+                    Política de Privacidade e Tratamento GDPR
+                  </Link>.
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !acceptedTerms}
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>A enviar código...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Enviar Código de Verificação</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form className="space-y-5 animate-fade-in" onSubmit={handleVerifyOtp}>
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full mb-4">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Verifique o seu e-mail</h3>
+                <p className="text-sm text-slate-500 mt-2">
+                  Enviámos um código para <strong className="text-slate-800">{email}</strong>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 text-center">
+                  Código OTP
                 </label>
                 <input
                   type="text"
                   required
                   value={enteredCode}
                   onChange={(e) => setEnteredCode(e.target.value)}
-                  className="block w-full px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-slate-800"
-                  placeholder="00000000"
-                  maxLength={8}
+                  className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-3xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
+                  placeholder="000000"
+                  maxLength={6}
                 />
               </div>
-            )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Senha
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full px-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
-                    placeholder="Mín. 6 letras"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Confirmar Senha
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-400"
-                  placeholder="Repita a senha"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2 pt-2 pb-2">
-              <input
-                type="checkbox"
-                id="terms-partner"
-                required
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
-              />
-              <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
-                Li e aceito os{' '}
-                <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                  Termos para Parceiros
-                </Link>{' '}
-                e a{' '}
-                <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                  Política de Privacidade e Tratamento GDPR
-                </Link>.
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || !acceptedTerms || !isOtpSent || enteredCode.length < 6}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>A processar...</span>
-                </>
-              ) : (
-                <>
-                  <span>Confirmar Registo</span>
-                  <Check className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
+              <button
+                type="submit"
+                disabled={loading || enteredCode.length < 6}
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>A verificar...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Confirmar Registo</span>
+                    <Check className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
 
           <p className="mt-8 text-center text-xs text-slate-500">
             Deseja aceder a uma conta existente?{' '}

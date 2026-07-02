@@ -7,7 +7,6 @@ import {
   Scissors, Heart, Smile, Droplet, Sun, Zap, CheckCircle, Clock
 } from "lucide-react";
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import { getFallbackImageForCategory } from '../utils/categoryImages';
 
 const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || "";
 
@@ -74,7 +73,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
       <div className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-slate-50">
-        <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80" alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 w-full h-full object-cover opacity-[0.04] pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.04]" />
         
         <div className="max-w-5xl mx-auto relative z-10 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
@@ -84,51 +83,17 @@ export default function Home() {
             Descubra e reserve os melhores salões, spas e clínicas perto de si. Instantaneamente.
           </p>
           
-          <form ref={searchRef} onSubmit={handleSearch} className="max-w-3xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-xl shadow-purple-900/5 flex flex-col md:flex-row items-center border border-slate-200/60 relative">
-            
-            <div className="flex-1 w-full flex items-center px-4 py-3 md:py-2 border-b md:border-b-0 md:border-r border-slate-200 relative">
+          <form onSubmit={handleSearch} className="max-w-3xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-xl shadow-purple-900/5 flex flex-col md:flex-row items-center border border-slate-200/60">
+            <div className="flex-1 w-full flex items-center px-4 py-3 md:py-2 border-b md:border-b-0 md:border-r border-slate-200">
               <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
               <input 
                 type="text"
                 placeholder="Qual serviço procura?"
                 value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) => setQuery(e.target.value)}
                 className="w-full bg-transparent focus:outline-none text-slate-800 placeholder:text-slate-400 font-medium"
               />
-              
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-4 md:mt-6 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
-                  {suggestions.map((s, i) => (
-                    <div 
-                      key={i} 
-                      className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors"
-                      onClick={() => {
-                        if (s.type === 'category') {
-                          window.location.href = `/explore?cat=${encodeURIComponent(s.text)}`;
-                        } else if (s.slug) {
-                          window.location.href = `/${s.slug}`;
-                        }
-                      }}
-                    >
-                      {s.type === 'category' ? (
-                        <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold shrink-0">{s.icon}</div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0"><Search className="w-4 h-4" /></div>
-                      )}
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{s.text}</p>
-                        {s.type === 'business' && <p className="text-[10px] text-slate-500 uppercase tracking-wider">{s.category}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-
             <div className="flex-1 w-full flex items-center px-4 py-3 md:py-2">
               <MapPin className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
               <input 
@@ -218,13 +183,11 @@ export default function Home() {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="h-[400px] bg-slate-100 rounded-3xl overflow-hidden border border-slate-200">
-              
-              {API_KEY && API_KEY.startsWith('AIza') ? (
               <APIProvider apiKey={API_KEY}>
                 <Map 
-                  defaultCenter={userLoc || { lat: 38.7223, lng: -9.1393 }}
-                  defaultZoom={12}
-                  gestureHandling={'greedy'}
+                  defaultCenter={userLoc || { lat: 38.7223, lng: -9.1393 }} 
+                  defaultZoom={12} 
+                  gestureHandling={'greedy'} 
                   disableDefaultUI={true}
                   mapId="DEMO_MAP_ID"
                 >
@@ -237,20 +200,12 @@ export default function Home() {
                   ))}
                 </Map>
               </APIProvider>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-6 text-center">
-                  <MapPin className="w-12 h-12 mb-4 opacity-50" />
-                  <p className="font-bold text-slate-700">Mapa Indisponível</p>
-                  <p className="text-sm mt-2 max-w-xs">A integração do Google Maps requer configuração adicional.</p>
-                </div>
-              )}
-
             </div>
             <div className="flex flex-col gap-4 overflow-y-auto pr-2 max-h-[400px] scrollbar-thin scrollbar-thumb-slate-200">
               {nearMe.slice(0,5).map((shop, i) => (
                 <Link key={i} to={`/${shop.slug}`} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
                   <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                    <img src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={shop.cover_url || shop.logo_url || 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=200'} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="flex flex-col justify-center">
                     <h3 className="font-bold text-slate-900 line-clamp-1">{shop.name}</h3>
@@ -295,7 +250,7 @@ function ShopCarousel({ shops }: { shops: any[] }) {
         >
           <div className="relative aspect-[4/5] rounded-3xl overflow-hidden mb-3 bg-slate-100">
             <img 
-              src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} 
+              src={shop.cover_url || shop.logo_url || 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=400'} 
               alt={shop.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
@@ -311,7 +266,7 @@ function ShopCarousel({ shops }: { shops: any[] }) {
             <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
                {shop.logo_url && (
-                 <img src={shop.logo_url} alt={`Logotipo de ${shop.name}`} className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                 <img src={shop.logo_url} className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                )}
                <div className="flex-1 min-w-0">
                  <h3 className="text-white font-bold truncate text-sm">{shop.name}</h3>

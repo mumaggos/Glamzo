@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Business, Review } from '../types';
 import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
-import { getFallbackImageForCategory } from '../utils/categoryImages';
 import { startChatSession, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
 import { useAuth } from '../hooks/useAuth';
 import BookingModal from '../components/BookingModal';
@@ -94,43 +93,6 @@ export default function BusinessDetail() {
   const [sendingMessage, setSendingMessage] = useState(false);
 
   // Handles opening the chat drawer with the business
-
-  useEffect(() => {
-    async function loadData() {
-      if (!slug) return;
-      try {
-        setLoading(true);
-        // Try slug first, if no match, try id
-        let { data, error } = await supabase.from('businesses').select('*').eq('slug', slug).single();
-        if (error && error.code === 'PGRST116') {
-          // Fallback to ID
-          const res = await supabase.from('businesses').select('*').eq('id', slug).single();
-          data = res.data;
-          error = res.error;
-        }
-        
-        if (error) throw error;
-        setBusiness(data);
-
-        // Fetch services
-        if (data?.id) {
-          const { data: srvs } = await supabase.from('services').select('*').eq('business_id', data.id).eq('active', true);
-          setServices(srvs || []);
-          
-          const { data: hrs } = await supabase.from('business_hours').select('*').eq('business_id', data.id).order('day_of_week');
-          setBusinessHours(hrs || []);
-        }
-      } catch (err: any) {
-        console.error('Error fetching business:', err);
-        setErrorMsg('Loja não encontrada.');
-      } finally {
-        setLoading(false);
-        setLoadingServices(false);
-      }
-    }
-    loadData();
-  }, [slug]);
-
   const handleOpenChat = async () => {
     if (!user) {
       navigate(`/login?redirect=/business/${slug}`);
@@ -202,64 +164,13 @@ export default function BusinessDetail() {
   }, [user, business?.id]);
 
   
-  
-  const handleToggleFavorite = async () => {
-    if (!user) {
-      alert('Inicie sessão para adicionar aos favoritos');
-      return;
-    }
-    const isFav = !favoriteActive;
-    setFavoriteActive(isFav);
-    try {
-      await toggleFavorite(user.id, business!.id);
-    } catch(err) {}
-  };
-
-  const handleShareLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const handleOpenBookingFromService = (svc: any) => {
-    if (svc) setSelectedService(svc);
-    setBookingOpen(true);
-  };
-
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 font-medium">A carregar...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (errorMsg || !business) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-md">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Ops!</h2>
-          <p className="text-slate-500 mb-6">{errorMsg || 'A loja que procura não foi encontrada.'}</p>
-          <Link to="/explore" className="px-6 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-colors inline-block">
-            Explorar Lojas
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-
     <div id="business-detail-view" className="bg-white min-h-screen pb-24 font-sans text-slate-800">
       
       {/* Premium Cover Area */}
       <div className="relative h-[300px] md:h-[400px] w-full bg-slate-100">
         <img
-          src={business.cover_url || getFallbackImageForCategory(business.category)}
+          src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80'}
           alt={business.name}
           className="w-full h-full object-cover"
         />
@@ -282,7 +193,7 @@ export default function BusinessDetail() {
 
         <div className="absolute bottom-0 left-0 right-0 p-6 max-w-5xl mx-auto flex items-end gap-6">
           <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-1.5 shadow-xl shrink-0 relative overflow-hidden hidden sm:block">
-            <img src={business.logo_url || getFallbackImageForCategory(business.category)} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+            <img src={business.logo_url || 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=400&q=80'} alt="Logo" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div className="flex-1 pb-2">
             <div className="flex items-center gap-2 mb-2">
@@ -448,16 +359,7 @@ export default function BusinessDetail() {
                 </p>
                 <div className="w-full h-32 rounded-xl bg-slate-200 overflow-hidden ml-6 mb-3">
                   {/* Fake map or real map integration */}
-                  
-                {process.env.GOOGLE_MAPS_PLATFORM_KEY && process.env.GOOGLE_MAPS_PLATFORM_KEY.startsWith('AIza') ? (
-                  <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${business.latitude},${business.longitude}&zoom=15&size=400x200&key=${process.env.GOOGLE_MAPS_PLATFORM_KEY}`} className="w-full h-full object-cover" alt="Map" loading="lazy" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
-                    <MapPin className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-xs font-medium">Mapa indisponível</span>
-                  </div>
-                )}
-
+                  <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${business.latitude},${business.longitude}&zoom=15&size=400x200&key=${process.env.GOOGLE_MAPS_PLATFORM_KEY || ''}`} className="w-full h-full object-cover" alt="Map" />
                 </div>
               </div>
               

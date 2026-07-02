@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { 
   Search, MapPin, SlidersHorizontal, Star, Navigation, Map as MapIcon, List, Clock, Zap, Target
 } from "lucide-react";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { getFallbackImageForCategory } from '../utils/categoryImages';
 
 const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || "";
 
@@ -25,43 +24,7 @@ export default function Explore() {
   const initialCat = searchParams.get("cat") || "";
   const initialLoc = searchParams.get("loc") || "";
   
-  
   const [query, setQuery] = useState(initialQ);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (query.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-      
-      const { data } = await supabase
-        .from('businesses')
-        .select('name, slug, category')
-        .ilike('name', `%${query}%`)
-        .limit(5);
-        
-      const combined = (data || []).map(b => ({ type: 'business', text: b.name, slug: b.slug, category: b.category }));
-      setSuggestions(combined);
-    };
-    
-    const timer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const [location, setLocation] = useState(initialLoc);
   const [category, setCategory] = useState(initialCat);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -127,40 +90,17 @@ export default function Explore() {
       {/* Search & Filters Bar */}
       <div className="border-b border-slate-200 bg-white z-20 shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
-          
-          <div className="flex-1 w-full flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 relative" ref={searchRef}>
-            <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+          <div className="flex-1 w-full flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+            <Search className="w-4 h-4 text-slate-400 mr-2" />
             <input 
               type="text" 
               placeholder="Serviço ou espaço" 
               value={query}
-              onChange={e => { setQuery(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
+              onChange={e => setQuery(e.target.value)}
               className="bg-transparent w-full focus:outline-none text-sm font-medium"
             />
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 mt-2 w-[calc(100%+200px)] max-w-md bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50">
-                {suggestions.map((s, i) => (
-                  <div 
-                    key={i} 
-                    className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors"
-                    onClick={() => {
-                      if (s.slug) {
-                        window.location.href = `/${s.slug}`;
-                      }
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0"><Search className="w-4 h-4" /></div>
-                    <div>
-                      <p className="font-bold text-slate-900 text-sm">{s.text}</p>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{s.category}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="w-px h-4 bg-slate-300 mx-3 shrink-0" />
-            <MapPin className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+            <div className="w-px h-4 bg-slate-300 mx-3" />
+            <MapPin className="w-4 h-4 text-slate-400 mr-2" />
             <input 
               type="text" 
               placeholder="Localização" 
@@ -169,7 +109,6 @@ export default function Explore() {
               className="bg-transparent w-full focus:outline-none text-sm font-medium"
             />
           </div>
-
 
           <div className="flex overflow-x-auto hide-scrollbar gap-2 w-full md:w-auto">
             {FILTERS.map(f => (
@@ -210,7 +149,7 @@ export default function Explore() {
                 {businesses.map((shop, i) => (
                   <Link key={i} to={`/${shop.slug}`} className="flex flex-col sm:flex-row gap-4 p-4 rounded-3xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all group bg-white">
                     <div className="w-full sm:w-48 h-48 sm:h-36 shrink-0 rounded-2xl overflow-hidden bg-slate-100 relative">
-                      <img src={shop.cover_url || shop.logo_url || getFallbackImageForCategory(shop.category)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={shop.cover_url || shop.logo_url || 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       {shop.discount_active && (
                         <div className="absolute top-2 left-2 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                           -{shop.discount_percent}%
@@ -250,33 +189,23 @@ export default function Explore() {
         {/* Map View */}
         {(viewMode === 'map' || viewMode === 'split') && (
           <div className={`flex-1 h-full bg-slate-100 relative ${viewMode === 'split' ? 'hidden md:block' : 'block'}`}>
-            
-            {API_KEY && API_KEY.startsWith('AIza') ? (
-              <APIProvider apiKey={API_KEY}>
-                <Map 
-                  defaultCenter={mapCenter}
-                  defaultZoom={13}
-                  gestureHandling={'greedy'}
-                  disableDefaultUI={true}
-                  mapId="DEMO_MAP_ID"
-                >
-                  {businesses.map((shop, i) => shop.latitude && shop.longitude && (
-                    <AdvancedMarker key={i} position={{ lat: shop.latitude, lng: shop.longitude }}>
-                      <div className="bg-slate-900 px-3 py-1.5 rounded-full shadow-lg border-2 border-white text-sm font-bold text-white flex items-center gap-1.5 transform hover:scale-110 hover:bg-purple-600 hover:border-purple-200 transition-all cursor-pointer">
-                        <span>{(shop.rating || 5.0).toFixed(1)}</span>
-                      </div>
-                    </AdvancedMarker>
-                  ))}
-                </Map>
-              </APIProvider>
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-500 p-6 text-center">
-                <MapPin className="w-12 h-12 mb-4 opacity-50" />
-                <p className="font-bold text-slate-700">Mapa Indisponível</p>
-                <p className="text-sm mt-2 max-w-xs">A integração do Google Maps requer configuração adicional.</p>
-              </div>
-            )}
-
+            <APIProvider apiKey={API_KEY}>
+              <Map 
+                defaultCenter={mapCenter} 
+                defaultZoom={13} 
+                gestureHandling={'greedy'} 
+                disableDefaultUI={true}
+                mapId="DEMO_MAP_ID"
+              >
+                {businesses.map((shop, i) => shop.latitude && shop.longitude && (
+                  <AdvancedMarker key={i} position={{ lat: shop.latitude, lng: shop.longitude }}>
+                    <div className="bg-slate-900 px-3 py-1.5 rounded-full shadow-lg border-2 border-white text-sm font-bold text-white flex items-center gap-1.5 transform hover:scale-110 hover:bg-purple-600 hover:border-purple-200 transition-all cursor-pointer">
+                      <span>{(shop.rating || 5.0).toFixed(1)}</span>
+                    </div>
+                  </AdvancedMarker>
+                ))}
+              </Map>
+            </APIProvider>
           </div>
         )}
 
