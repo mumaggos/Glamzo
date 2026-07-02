@@ -3033,75 +3033,76 @@ export default function Dashboard() {
           className={`flex-1 ${agendaFullScreen ? "" : "overflow-y-auto p-4 sm:p-8 pb-36"} scrollbar-thin scrollbar-thumb-slate-900`}
           style={agendaFullScreen ? {} : { WebkitOverflowScrolling: "touch" }}
         >
-          {/* Active Trial State Reminder Header Banner (Only when card/subscription is real) */}
-          {resolvedSubscriptionStatus === "trialing" &&
-            business?.stripe_subscription_id &&
-            business.stripe_subscription_id.trim() !== "" && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 text-purple-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center border border-purple-500/25 shrink-0">
-                    <Sparkles className="w-4 h-4 animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="font-extrabold text-slate-900 leading-normal">
-                      Período de Testes Ativo —{" "}
-                      {business?.selected_plan === "app_tablet"
-                        ? "PRO Terminal"
-                        : "Glamzo PRO"}
-                    </p>
-                    <p className="text-[11px] text-purple-400">
-                      Tem acesso total a todas as funcionalidades profissionais
-                      premium por mais{" "}
-                      <span className="text-slate-900 font-bold">
-                        {trialDaysRemaining}{" "}
-                        {trialDaysRemaining === 1 ? "dia" : "dias"}
-                      </span>
-                      .
-                    </p>
-                  </div>
+          {/* Status Grid - Always Visible */}
+          {!agendaFullScreen && (
+            <div className="mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 animate-fade-in">
+              {/* Plano Atual */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Plano Atual</span>
+                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  {business?.selected_plan === 'app_tablet' || business?.selected_plan === 'TERMINAL' ? 'PRO TERMINAL' : 'Glamzo PRO'}
                 </div>
-                <button
-                  onClick={() =>
-                    handleSubscribePro(
-                      business?.selected_plan === "app_tablet"
-                        ? "TERMINAL"
-                        : "PRO",
-                    )
-                  }
-                  className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
-                >
-                  Gerir Subscrição
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      setIsVerifyingSub(true);
-                      setVerifyingText("A sincronizar com a Stripe...");
-                      const r = await fetch("/api/stripe/verify-subscription", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ businessId: business?.id }),
-                      });
-                      if (r.ok) {
-                        setGlobalSuccess(
-                          "Estado da subscrição sincronizado com sucesso.",
-                        );
-                        window.location.reload();
-                      } else {
-                        setGlobalError("Falha ao sincronizar subscrição.");
-                      }
-                    } catch (e: any) {
-                      setGlobalError(e.message || "Erro de ligação.");
-                    } finally {
-                      setIsVerifyingSub(false);
-                    }
-                  }}
-                  className="p-2.5 px-3.5 bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer shadow-sm shrink-0 self-start sm:self-auto"
-                >
-                  Sincronizar
-                </button>
               </div>
-            )}
+              
+              {/* Dias de Trial */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Período Teste</span>
+                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-emerald-500" />
+                  {resolvedSubscriptionStatus === 'trialing' ? `${trialDaysRemaining} Dias Restantes` : 'Ativo'}
+                </div>
+              </div>
+
+              {/* Data Renovação */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Renovação</span>
+                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                  {trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('pt-PT') : 'N/A'}
+                </div>
+              </div>
+
+              {/* Estado Stripe */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Assinatura</span>
+                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4 text-indigo-500" />
+                  {business?.stripe_subscription_id ? (
+                    <span className="text-emerald-600">Ativa</span>
+                  ) : (
+                    <span className="text-amber-500">Pendente</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Estado Connect */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Connect</span>
+                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
+                  <Landmark className="w-4 h-4 text-slate-700" />
+                  {business?.stripe_connect_status === 'active' ? (
+                    <span className="text-emerald-600">Ativo</span>
+                  ) : (
+                    <span className="text-slate-400">Inativo</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Estado Marketplace */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Marketplace</span>
+                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-rose-500" />
+                  {business?.status === 'active' ? (
+                    <span className="text-emerald-600">Visível</span>
+                  ) : (
+                    <span className="text-slate-400">Oculto</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Past Due Alert Banner */}
           {resolvedSubscriptionStatus === "past_due" && (
@@ -6839,7 +6840,7 @@ export default function Dashboard() {
                           Total Clientes
                         </span>
                         <span className="text-2xl font-black text-slate-900 font-mono">
-                          {customers.length}
+                          {clientsList.length}
                         </span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
                           Clientes registados na base

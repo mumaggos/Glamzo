@@ -37,3 +37,18 @@ FOR INSERT
 WITH CHECK (auth.uid() = owner_id);
 
 -- Opcional (apenas se não houver já uma constraint ou policy para RLS nas businesses)
+-- V1.5 Setup Wizard Additions
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS establishment_type TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS languages TEXT[] DEFAULT '{}';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS website TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS district TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS county TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS zip_code TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS street_number TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS logo_url TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS cover_url TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS gallery_urls TEXT[] DEFAULT '{}';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS schedule JSONB DEFAULT '{}';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'trialing';

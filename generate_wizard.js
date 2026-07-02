@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -8,14 +10,14 @@ import {
 } from 'lucide-react';
 
 const STEPS = [
-  { id: 1, title: 'Dados', icon: Building2 },
+  { id: 1, title: 'Dados da Loja', icon: Building2 },
   { id: 2, title: 'Morada', icon: MapPin },
   { id: 3, title: 'Imagens', icon: ImageIcon },
   { id: 4, title: 'Horário', icon: Clock },
   { id: 5, title: 'Serviços', icon: Scissors },
   { id: 6, title: 'Equipa', icon: Users },
   { id: 7, title: 'Plano', icon: Sparkles },
-  { id: 8, title: 'Pagamento', icon: Landmark },
+  { id: 8, title: 'Pagamentos', icon: Landmark },
   { id: 9, title: 'Resumo', icon: CheckCircle }
 ];
 
@@ -28,6 +30,7 @@ export default function SetupWizard() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   
+  // Form State
   const [formData, setFormData] = useState({
     name: '', category: '', establishment_type: '', description: '', languages: [] as string[], phone: '', website: '',
     country: 'Portugal', district: '', county: '', city: '', zip_code: '', street: '', number: '',
@@ -57,18 +60,37 @@ export default function SetupWizard() {
         setBusinessId(data.id);
         setStep(data.setup_step || 1);
         setFormData({
-          name: data.name || '', category: data.category || '', establishment_type: data.establishment_type || '',
-          description: data.description || '', languages: data.languages || [], phone: data.phone || '', website: data.website || '',
-          country: data.country || 'Portugal', district: data.district || '', county: data.county || '', city: data.city || '',
-          zip_code: data.zip_code || '', street: data.address_line_1 || '', number: data.address_line_2 || '',
-          logo_url: data.logo_url || '', cover_url: data.cover_url || '', gallery_urls: data.gallery_urls || [],
-          schedule: data.schedule || {}, services_config: data.services_config || [], employees_config: data.employees_config || [],
-          selected_plan: data.selected_plan || 'PRO', accepts_online_payments: data.accepts_online_payments || false
+          name: data.name || '',
+          category: data.category || '',
+          establishment_type: data.establishment_type || '',
+          description: data.description || '',
+          languages: data.languages || [],
+          phone: data.phone || '',
+          website: data.website || '',
+          country: data.country || 'Portugal',
+          district: data.district || '',
+          county: data.county || '',
+          city: data.city || '',
+          zip_code: data.zip_code || '',
+          street: data.address_line_1 || '',
+          number: data.address_line_2 || '',
+          logo_url: data.logo_url || '',
+          cover_url: data.cover_url || '',
+          gallery_urls: data.gallery_urls || [],
+          schedule: data.schedule || {},
+          services_config: data.services_config || [],
+          employees_config: data.employees_config || [],
+          selected_plan: data.selected_plan || 'PRO',
+          accepts_online_payments: data.accepts_online_payments || false
         });
       } else {
         const slug = 'temp-' + Date.now();
         const { data: newBiz, error: createError } = await supabase.from('businesses').insert({
-          owner_id: user!.id, name: 'Nova Loja', slug, status: 'setup', setup_step: 1
+          owner_id: user!.id,
+          name: 'Nova Loja',
+          slug,
+          status: 'setup',
+          setup_step: 1
         }).select('id').single();
         if (createError) throw createError;
         setBusinessId(newBiz.id);
@@ -90,6 +112,7 @@ export default function SetupWizard() {
       last_onboarding_update_at: new Date().toISOString()
     };
     
+    // Map formData to table columns based on step
     if (step === 1) {
       updatePayload = { ...updatePayload, name: formData.name, category: formData.category, establishment_type: formData.establishment_type, description: formData.description, languages: formData.languages, phone: formData.phone, website: formData.website };
     } else if (step === 2) {
@@ -109,11 +132,9 @@ export default function SetupWizard() {
     } else if (step === 9) {
       updatePayload = { 
         ...updatePayload, 
-        setup_step: 9, // freeze at 9
         setup_completed: true, 
         status: 'active',
-        subscription_status: 'trialing',
-        onboarding_completed_at: new Date().toISOString()
+        subscription_status: 'trialing'
       };
     }
 
@@ -148,8 +169,9 @@ export default function SetupWizard() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
+      {/* Header & Progress */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-slate-900">Configuração da Loja</h1>
             <span className="text-sm font-medium text-slate-500">Passo {step} de 9</span>
@@ -157,20 +179,20 @@ export default function SetupWizard() {
           <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-500 ease-out"
-              style={{ width: `${(step / 9) * 100}%` }}
+              style={{ width: \`\${(step / 9) * 100}%\` }}
             />
           </div>
-          <div className="flex justify-between mt-4 overflow-x-auto hide-scrollbar gap-2 pb-2">
+          <div className="flex justify-between mt-4 overflow-x-auto hide-scrollbar gap-4 pb-2">
             {STEPS.map((s) => {
               const Icon = s.icon;
               const isActive = s.id === step;
               const isPast = s.id < step;
               return (
-                <div key={s.id} className={`flex flex-col items-center min-w-[56px] gap-1.5 ${isActive ? 'opacity-100' : 'opacity-40'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : isPast ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                    {isPast ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                <div key={s.id} className={\`flex flex-col items-center min-w-[64px] gap-1.5 \${isActive ? 'opacity-100' : 'opacity-40'}\`}>
+                  <div className={\`w-10 h-10 rounded-full flex items-center justify-center \${isActive ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : isPast ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'}\`}>
+                    {isPast ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">{s.title}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap">{s.title}</span>
                 </div>
               );
             })}
@@ -178,6 +200,7 @@ export default function SetupWizard() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-3xl mx-auto px-4 pt-8">
         <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-200">
           
@@ -259,7 +282,7 @@ export default function SetupWizard() {
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-2xl font-bold text-slate-900">Horário de Funcionamento</h2>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-slate-500 text-sm">
-                Configuração para dias da semana.
+                Interface de Segunda a Domingo com opções de Copiar, Fechado e Pausa de Almoço.
               </div>
             </div>
           )}
@@ -268,7 +291,7 @@ export default function SetupWizard() {
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-2xl font-bold text-slate-900">Serviços</h2>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-slate-500 text-sm">
-                Criação de categorias e serviços com duração e preço.
+                Interface de configuração de Categorias, Serviços, Preço, Tempo, Imagem e Cor.
               </div>
             </div>
           )}
@@ -277,7 +300,7 @@ export default function SetupWizard() {
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-2xl font-bold text-slate-900">Equipa / Funcionários</h2>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-slate-500 text-sm">
-                Registo de staff e alocação de serviços.
+                Interface para adicionar Foto, Nome, Serviços prestados e Horário.
               </div>
             </div>
           )}
@@ -288,7 +311,7 @@ export default function SetupWizard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div 
                   onClick={() => updateForm('selected_plan', 'PRO')}
-                  className={`p-6 rounded-3xl border-2 cursor-pointer transition-all ${formData.selected_plan === 'PRO' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-200'}`}
+                  className={\`p-6 rounded-3xl border-2 cursor-pointer transition-all \${formData.selected_plan === 'PRO' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-200'}\`}
                 >
                   <h3 className="text-xl font-bold text-slate-900">PRO</h3>
                   <p className="text-sm text-slate-500 mt-2">Gestão completa da loja online.</p>
@@ -297,7 +320,7 @@ export default function SetupWizard() {
                 </div>
                 <div 
                   onClick={() => updateForm('selected_plan', 'TERMINAL')}
-                  className={`p-6 rounded-3xl border-2 cursor-pointer transition-all ${formData.selected_plan === 'TERMINAL' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-200'}`}
+                  className={\`p-6 rounded-3xl border-2 cursor-pointer transition-all \${formData.selected_plan === 'TERMINAL' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-200'}\`}
                 >
                   <h3 className="text-xl font-bold text-slate-900">PRO TERMINAL</h3>
                   <p className="text-sm text-slate-500 mt-2">Inclui Tablet dedicado + Caução.</p>
@@ -316,13 +339,13 @@ export default function SetupWizard() {
                 <div className="flex gap-4">
                   <button 
                     onClick={() => updateForm('accepts_online_payments', true)}
-                    className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.accepts_online_payments ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                    className={\`flex-1 py-3 rounded-xl font-bold text-sm transition-all \${formData.accepts_online_payments ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}\`}
                   >
                     Sim, ativar Stripe
                   </button>
                   <button 
                     onClick={() => updateForm('accepts_online_payments', false)}
-                    className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${!formData.accepts_online_payments ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                    className={\`flex-1 py-3 rounded-xl font-bold text-sm transition-all \${!formData.accepts_online_payments ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}\`}
                   >
                     Não, apenas local
                   </button>
@@ -348,13 +371,11 @@ export default function SetupWizard() {
             </div>
           )}
 
+          {/* Navigation */}
           <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between">
             <button 
               disabled={step === 1 || saving}
-              onClick={() => {
-                setStep(s => s - 1);
-                window.scrollTo(0,0);
-              }}
+              onClick={() => setStep(s => s - 1)}
               className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
             >
               <ArrowLeft className="w-4 h-4" /> Anterior
@@ -375,3 +396,5 @@ export default function SetupWizard() {
     </div>
   );
 }
+`
+fs.writeFileSync('src/pages/partner/SetupWizard.tsx', code);
