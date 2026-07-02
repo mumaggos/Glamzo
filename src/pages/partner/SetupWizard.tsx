@@ -71,14 +71,15 @@ export default function SetupWizard() {
       } else {
         const slug = 'temp-' + Date.now();
         const { data: newBiz, error: createError } = await supabase.from('businesses').insert({
-          owner_id: user!.id, name: 'Nova Loja', slug, status: 'setup', setup_step: 1
+          owner_id: user!.id, name: 'Nova Loja', slug
         }).select('id').single();
         if (createError) throw createError;
         setBusinessId(newBiz.id);
         setStep(1);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('Error loading or creating business:', err);
+      setErrorMsg(err.message || 'Erro a carregar a sua loja.');
     } finally {
       setLoading(false);
     }
@@ -103,57 +104,37 @@ export default function SetupWizard() {
 
     setSaving(true);
     
-    let updatePayload: any = {
-      setup_step: step + 1,
-      last_onboarding_update_at: new Date().toISOString()
-    };
+    let updatePayload: any = {};
     
     if (step === 1) {
-      updatePayload = { ...updatePayload, name: formData.name, category: formData.category, establishment_type: formData.establishment_type, description: formData.description, languages: formData.languages, phone: formData.phone };
+      updatePayload = { ...updatePayload, name: formData.name, category: formData.category, description: formData.description, phone: formData.phone };
     } else if (step === 2) {
       const coords = getCoordinatesForCity(formData.district, formData.city);
       updatePayload = { 
         ...updatePayload, 
-        country: formData.country, 
         district: formData.district, 
-        county: formData.county, 
-        locality: formData.county,
         city: formData.city, 
-        zip_code: formData.zip_code, 
-        postal_code: formData.zip_code,
+        locality: formData.county,
         address: formData.street,
-        address_line_1: formData.street, 
         door_number: formData.number,
-        address_line_2: formData.number,
+        postal_code: formData.zip_code,
         latitude: coords.latitude,
         longitude: coords.longitude
       };
     } else if (step === 3) {
-      updatePayload = { ...updatePayload, logo_url: formData.logo_url, cover_url: formData.cover_url, gallery_urls: formData.gallery_urls };
-    } else if (step === 4) {
-      updatePayload = { ...updatePayload, schedule: formData.schedule };
-    } else if (step === 5) {
-      updatePayload = { ...updatePayload, services_config: formData.services_config };
-    } else if (step === 6) {
-      updatePayload = { ...updatePayload, employees_config: formData.employees_config };
-    } else if (step === 7) {
-      updatePayload = { ...updatePayload, selected_plan: formData.selected_plan };
-    } else if (step === 8) {
-      updatePayload = { ...updatePayload, accepts_online_payments: formData.accepts_online_payments };
+      updatePayload = { ...updatePayload, logo_url: formData.logo_url, cover_url: formData.cover_url };
     } else if (step === 9) {
       updatePayload = { 
-        ...updatePayload, 
-        setup_step: 9, // freeze at 9
-        setup_completed: true, 
-        status: 'active',
-        subscription_status: 'trialing',
-        onboarding_completed_at: new Date().toISOString()
+        ...updatePayload,
+        status: 'active'
       };
     }
 
     try {
-      const { error } = await supabase.from('businesses').update(updatePayload).eq('id', businessId);
-      if (error) throw error;
+      if (Object.keys(updatePayload).length > 0) {
+        const { error } = await supabase.from('businesses').update(updatePayload).eq('id', businessId);
+        if (error) throw error;
+      }
       
       if (step === 9) {
         navigate('/partner/dashboard', { replace: true });
@@ -161,8 +142,9 @@ export default function SetupWizard() {
         setStep(prev => prev + 1);
         window.scrollTo(0,0);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setErrorMsg(err.message || 'Erro ao guardar');
     } finally {
       setSaving(false);
     }
