@@ -52,3 +52,7 @@ ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS cover_url TEXT;
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS gallery_urls TEXT[] DEFAULT '{}';
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS schedule JSONB DEFAULT '{}';
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'trialing';
+
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS locality TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS door_number TEXT;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS postal_code TEXT;

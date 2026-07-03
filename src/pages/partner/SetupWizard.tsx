@@ -71,7 +71,7 @@ export default function SetupWizard() {
       } else {
         const slug = 'temp-' + Date.now();
         const { data: newBiz, error: createError } = await supabase.from('businesses').insert({
-          owner_id: user!.id, name: 'Nova Loja', slug
+          owner_id: user!.id, name: 'Nova Loja', slug, category: 'Salão de Cabeleireiro'
         }).select('id').single();
         if (createError) throw createError;
         setBusinessId(newBiz.id);
