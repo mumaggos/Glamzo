@@ -181,8 +181,8 @@ export default function Home() {
   const searchResults = getFilteredResults();
 
   const BusinessCard = ({ b, horizontal = false }: { b: any, horizontal?: boolean, key?: string | number }) => (
-    <Link to={`/business/${b.slug}`} className={`group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex ${horizontal ? 'flex-row h-32' : 'flex-col min-w-[260px] max-w-[280px] shrink-0'}`}>
-      <div className={`relative overflow-hidden ${horizontal ? 'w-32 h-full shrink-0' : 'h-40'}`}>
+    <Link to={`/business/${b.slug}`} className={`group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex ${horizontal ? 'flex-row h-40' : 'flex-col min-w-[280px] max-w-[300px] sm:min-w-[320px] sm:max-w-[340px] shrink-0'}`}>
+      <div className={`relative overflow-hidden ${horizontal ? 'w-40 h-full shrink-0' : 'h-48 sm:h-56'}`}>
         <img src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} alt={b.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         {b.rating > 0 && (
@@ -244,15 +244,15 @@ export default function Home() {
       {/* 2. Small Elegant Category Cards */}
       {!isSearching && (
         <section className="pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-5xl mx-auto">
+          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4">
             {SMALL_CATEGORIES.map((cat) => (
               <button
                 key={cat.name}
                 onClick={() => handleCategoryClick(cat.name)}
-                className="flex items-center gap-2 bg-white border border-slate-200/80 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-md px-4 py-2.5 rounded-full transition-all duration-300 cursor-pointer group"
+                className="flex items-center justify-center gap-2 bg-white border border-slate-200/80 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-md px-5 py-3 rounded-full transition-all duration-300 cursor-pointer group shrink-0 snap-start"
               >
-                <span className="text-lg group-hover:scale-110 transition-transform">{cat.icon}</span>
-                <span className="text-[13px] font-semibold text-slate-700 group-hover:text-purple-700">{cat.name}</span>
+                <span className="text-xl group-hover:scale-110 transition-transform">{cat.icon}</span>
+                <span className="text-[13px] font-semibold text-slate-700 group-hover:text-purple-700 whitespace-nowrap">{cat.name}</span>
               </button>
             ))}
           </div>
@@ -316,7 +316,7 @@ export default function Home() {
               )}
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[500px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[600px] lg:h-[700px]">
               {/* List */}
               <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
                 {pertoDeMim.length > 0 ? pertoDeMim.map(b => (

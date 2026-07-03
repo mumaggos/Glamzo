@@ -38,6 +38,9 @@ export interface Business {
   charges_enabled?: boolean;
   payouts_enabled?: boolean;
   stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  selected_plan?: string | null;
+  setup_completed?: boolean;
   public_page_enabled?: boolean;
   qr_scans_count?: number;
   trial_used?: boolean;
