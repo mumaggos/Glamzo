@@ -22,12 +22,8 @@ export interface Business {
   email: string | null;
   district: string;
   city: string;
-  locality?: string | null;
   address: string;
-  door_number?: string | null;
   postal_code: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
   logo_url: string | null;
   cover_url: string | null;
   whatsapp: string | null;

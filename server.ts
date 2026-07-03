@@ -2112,16 +2112,9 @@ async function startServer() {
       express.static(path.join(distPath, "assets"), {
         maxAge: "1y",
         immutable: true,
-        fallthrough: true, // Let it fall through instead of throwing ENOENT
+        fallthrough: false,
       }),
     );
-    
-    // 1b. If an asset is still not found after express.static, return a 404 explicitly.
-    // This prevents the SPA fallback from sending index.html for missing .js/.css files,
-    // which causes "Unexpected token '<'" errors in the browser.
-    app.use("/assets", (req, res) => {
-      res.status(404).send("Asset not found. Please refresh the page if the application was recently updated.");
-    });
 
     // 2. Optimized caching for fallback root directory static assets
     app.use(

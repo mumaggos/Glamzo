@@ -12,8 +12,6 @@ import {
   BookingStatus,
   PaymentStatus,
 } from "../types";
-import { MAIN_CATEGORIES } from '../utils/categoriesData';
-import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import {
   Building,
   LayoutGrid,
@@ -91,7 +89,6 @@ import {
 import { realtimeService } from "../utils/realtimeService";
 import GlamzoLogo from "../components/GlamzoLogo";
 import { slugify, validateSlugUniqueness } from "../utils/slugify";
-import { getCoordinatesForCity } from "../utils/geoData";
 import { optimizeImageBeforeUpload } from "../utils/imageOptimizer";
 import DashboardAssistant from "../components/DashboardAssistant";
 import DashboardMessages from "../components/DashboardMessages";
@@ -2281,7 +2278,6 @@ export default function Dashboard() {
     e.preventDefault();
     if (!business) return;
     try {
-      const { latitude, longitude } = getCoordinatesForCity(business.district, business.city);
       const { error } = await supabase
         .from("businesses")
         .update({
@@ -2290,12 +2286,7 @@ export default function Dashboard() {
           phone: business.phone,
           district: business.district,
           city: business.city,
-          locality: business.locality || null,
           address: business.address,
-          postal_code: business.postal_code || null,
-          door_number: business.door_number || null,
-          latitude,
-          longitude,
           description: business.description,
           logo_url: business.logo_url,
           cover_url: business.cover_url,
@@ -3042,76 +3033,75 @@ export default function Dashboard() {
           className={`flex-1 ${agendaFullScreen ? "" : "overflow-y-auto p-4 sm:p-8 pb-36"} scrollbar-thin scrollbar-thumb-slate-900`}
           style={agendaFullScreen ? {} : { WebkitOverflowScrolling: "touch" }}
         >
-          {/* Status Grid - Always Visible */}
-          {!agendaFullScreen && (
-            <div className="mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 animate-fade-in">
-              {/* Plano Atual */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Plano Atual</span>
-                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  {business?.selected_plan === 'app_tablet' || business?.selected_plan === 'TERMINAL' ? 'PRO TERMINAL' : 'Glamzo PRO'}
+          {/* Active Trial State Reminder Header Banner (Only when card/subscription is real) */}
+          {resolvedSubscriptionStatus === "trialing" &&
+            business?.stripe_subscription_id &&
+            business.stripe_subscription_id.trim() !== "" && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 text-purple-300 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center border border-purple-500/25 shrink-0">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900 leading-normal">
+                      Período de Testes Ativo —{" "}
+                      {business?.selected_plan === "app_tablet"
+                        ? "PRO Terminal"
+                        : "Glamzo PRO"}
+                    </p>
+                    <p className="text-[11px] text-purple-400">
+                      Tem acesso total a todas as funcionalidades profissionais
+                      premium por mais{" "}
+                      <span className="text-slate-900 font-bold">
+                        {trialDaysRemaining}{" "}
+                        {trialDaysRemaining === 1 ? "dia" : "dias"}
+                      </span>
+                      .
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() =>
+                    handleSubscribePro(
+                      business?.selected_plan === "app_tablet"
+                        ? "TERMINAL"
+                        : "PRO",
+                    )
+                  }
+                  className="p-2.5 px-3.5 bg-purple-600 hover:bg-purple-550 text-[10px] text-white font-bold uppercase rounded-xl transition-all cursor-pointer shadow shadow-purple-950/40 shrink-0 self-start sm:self-auto"
+                >
+                  Gerir Subscrição
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsVerifyingSub(true);
+                      setVerifyingText("A sincronizar com a Stripe...");
+                      const r = await fetch("/api/stripe/verify-subscription", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ businessId: business?.id }),
+                      });
+                      if (r.ok) {
+                        setGlobalSuccess(
+                          "Estado da subscrição sincronizado com sucesso.",
+                        );
+                        window.location.reload();
+                      } else {
+                        setGlobalError("Falha ao sincronizar subscrição.");
+                      }
+                    } catch (e: any) {
+                      setGlobalError(e.message || "Erro de ligação.");
+                    } finally {
+                      setIsVerifyingSub(false);
+                    }
+                  }}
+                  className="p-2.5 px-3.5 bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer shadow-sm shrink-0 self-start sm:self-auto"
+                >
+                  Sincronizar
+                </button>
               </div>
-              
-              {/* Dias de Trial */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Período Teste</span>
-                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-emerald-500" />
-                  {resolvedSubscriptionStatus === 'trialing' ? `${trialDaysRemaining} Dias Restantes` : 'Ativo'}
-                </div>
-              </div>
-
-              {/* Data Renovação */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Renovação</span>
-                <div className="mt-1 font-black text-slate-900 text-sm flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-blue-500" />
-                  {trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('pt-PT') : 'N/A'}
-                </div>
-              </div>
-
-              {/* Estado Stripe */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Assinatura</span>
-                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-indigo-500" />
-                  {business?.stripe_subscription_id ? (
-                    <span className="text-emerald-600">Ativa</span>
-                  ) : (
-                    <span className="text-amber-500">Pendente</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Estado Connect */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Connect</span>
-                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
-                  <Landmark className="w-4 h-4 text-slate-700" />
-                  {business?.stripe_connect_status === 'active' ? (
-                    <span className="text-emerald-600">Ativo</span>
-                  ) : (
-                    <span className="text-slate-400">Inativo</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Estado Marketplace */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Marketplace</span>
-                <div className="mt-1 font-black text-sm flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-rose-500" />
-                  {business?.status === 'active' ? (
-                    <span className="text-emerald-600">Visível</span>
-                  ) : (
-                    <span className="text-slate-400">Oculto</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Past Due Alert Banner */}
           {resolvedSubscriptionStatus === "past_due" && (
@@ -5454,28 +5444,6 @@ export default function Dashboard() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Categoria Principal
-                            </label>
-                            <select
-                              required
-                              value={business.category}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, category: e.target.value }
-                                    : null,
-                                )
-                              }
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            >
-                              <option value="">Selecione...</option>
-                              {MAIN_CATEGORIES.map(cat => (
-                                <option key={cat.id} value={cat.name}>{cat.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
                               Telefone de Atendimento
                             </label>
                             <input
@@ -5498,55 +5466,23 @@ export default function Dashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
                           <div>
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Distrito / Região
+                              Distrito / Concelho
                             </label>
-                            <select
+                            <input
+                              type="text"
                               required
                               value={business.district}
                               onChange={(e) =>
                                 setBusiness((prev) =>
                                   prev
-                                    ? { ...prev, district: e.target.value, locality: "" }
+                                    ? { ...prev, district: e.target.value }
                                     : null,
                                 )
                               }
                               className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            >
-                              <option value="">Selecione...</option>
-                              {Object.keys(PORTUGAL_GEO).sort().map((d) => (
-                                <option key={d} value={d}>
-                                  {d}
-                                </option>
-                              ))}
-                            </select>
+                            />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Localidade / Concelho
-                            </label>
-                            <select
-                              required
-                              value={business.locality || ""}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, locality: e.target.value }
-                                    : null,
-                                )
-                              }
-                              disabled={!business.district}
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans disabled:opacity-50"
-                            >
-                              <option value="">Selecione...</option>
-                              {business.district &&
-                                PORTUGAL_GEO[business.district]?.sort().map((c) => (
-                                  <option key={c} value={c}>
-                                    {c}
-                                  </option>
-                                ))}
-                            </select>
-                          </div>
-                          <div className="sm:col-span-2">
                             <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
                               Cidade (Freguesia)
                             </label>
@@ -5566,84 +5502,25 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        {/* Address Fields */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
-                          <div className="sm:col-span-2">
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Morada Física (Rua, Avenida)
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={business.address}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, address: e.target.value }
-                                    : null,
-                                )
-                              }
-                              placeholder="Rua da Liberdade"
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Número da Porta
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={business.door_number || ""}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, door_number: e.target.value }
-                                    : null,
-                                )
-                              }
-                              placeholder="Nº 42"
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Localidade
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={business.locality || ""}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, locality: e.target.value }
-                                    : null,
-                                )
-                              }
-                              placeholder="Freguesia"
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
-                              Código Postal
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={business.postal_code || ""}
-                              onChange={(e) =>
-                                setBusiness((prev) =>
-                                  prev
-                                    ? { ...prev, postal_code: e.target.value }
-                                    : null,
-                                )
-                              }
-                              placeholder="1250-142"
-                              className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
-                            />
-                          </div>
+                        {/* Address */}
+                        <div className="text-left">
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 text-slate-500 mb-1.5">
+                            Endereço de Portaria (Rua, Número, Código Postal)
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={business.address}
+                            onChange={(e) =>
+                              setBusiness((prev) =>
+                                prev
+                                  ? { ...prev, address: e.target.value }
+                                  : null,
+                              )
+                            }
+                            placeholder="Avenida da Liberdade Nº 42, 1250-142 Lisboa"
+                            className="w-full bg-white border border-slate-200 p-3 rounded-xl text-slate-900 text-xs outline-none focus:border-purple-500 font-sans"
+                          />
                         </div>
 
                         {/* Biography description */}
@@ -6962,7 +6839,7 @@ export default function Dashboard() {
                           Total Clientes
                         </span>
                         <span className="text-2xl font-black text-slate-900 font-mono">
-                          {clientsList.length}
+                          {customers.length}
                         </span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
                           Clientes registados na base
