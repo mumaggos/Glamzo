@@ -6839,7 +6839,7 @@ export default function Dashboard() {
                           Total Clientes
                         </span>
                         <span className="text-2xl font-black text-slate-900 font-mono">
-                          {customers.length}
+                          {uniqueClientsMap.size}
                         </span>
                         <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
                           Clientes registados na base
