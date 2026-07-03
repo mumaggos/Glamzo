@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { DashboardOverview } from "../components/DashboardOverview";
 import { DashboardCalendar } from "../components/DashboardCalendar";
+import { DashboardLoja } from "../components/DashboardLoja";
 import {
   Business,
   Service,
@@ -3196,11 +3197,33 @@ export default function Dashboard() {
           )}
 
           {loading ? (
-            <div className="h-96 flex flex-col items-center justify-center text-slate-500 gap-2.5 animate-pulse">
-              <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
-              <span className="text-xs font-mono select-none">
-                A recolher dados reais de reservas...
-              </span>
+            <div className="w-full h-full space-y-6 animate-pulse p-2">
+              <div className="flex justify-between items-center mb-8">
+                <div className="w-64 h-10 bg-slate-200 rounded-2xl"></div>
+                <div className="w-32 h-10 bg-slate-200 rounded-2xl"></div>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 h-32 flex flex-col justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100"></div>
+                    <div className="w-1/2 h-6 bg-slate-100 rounded-md"></div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div className="lg:col-span-2 h-80 bg-white rounded-3xl border border-slate-200 p-6 space-y-4">
+                  <div className="w-1/3 h-6 bg-slate-100 rounded-md"></div>
+                  <div className="w-full h-40 bg-slate-50 rounded-2xl"></div>
+                </div>
+                <div className="h-80 bg-white rounded-3xl border border-slate-200 p-6 space-y-4">
+                  <div className="w-1/2 h-6 bg-slate-100 rounded-md"></div>
+                  <div className="space-y-3 mt-6">
+                    {[1,2,3].map(i => <div key={i} className="w-full h-12 bg-slate-50 rounded-xl"></div>)}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <>
@@ -3256,8 +3279,8 @@ export default function Dashboard() {
                     staff={staff}
                     onEventClick={(info) => {
                       const booking = info.event.extendedProps.booking;
-                      setSelectedBooking(booking);
-                      setIsViewBookingModalOpen(true);
+                      alert(`Reserva de: ${booking.customer_profile?.full_name || "Cliente"} às ${booking.start_time}`);
+                      
                     }}
                     onEventDrop={async (info) => {
                       const event = info.event;
@@ -5703,542 +5726,13 @@ export default function Dashboard() {
               {/* VIEW: MY WEBSITE & QR CODE PANEL (FASE 14+)          */}
               {/* ==================================================== */}
               {activeTab === "loja" && (
-                <div
-                  id="view-loja"
-                  className="space-y-6 animate-fade-in max-w-5xl"
-                >
-                  <div className="border-b border-slate-100 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-md border border-purple-500/20">
-                        Website
-                      </span>
-                      Página Online & QR Code
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Gira o website do seu salão, personalize o endereço
-                      exclusivo e descarregue o seu QR Code oficial.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* LEFT PANEL: CONFIGURATION & EXCLUSIVE LINK (8 cols) */}
-                    <div className="lg:col-span-7 space-y-6">
-                      <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-6 sm:p-7 space-y-5">
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                          <div>
-                            <h4 className="font-bold text-sm text-slate-900">
-                              Status do Website
-                            </h4>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Defina se a sua página está visível na internet.
-                            </p>
-                          </div>
-                          <button
-                            onClick={() =>
-                              setPublicPageEnabled(!publicPageEnabled)
-                            }
-                            className={`p-1.5 px-3 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
-                              publicPageEnabled
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                                : "bg-white text-slate-500 border border-slate-200"
-                            }`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${publicPageEnabled ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`}
-                            />
-                            <span>
-                              {publicPageEnabled
-                                ? "Ativo (Público)"
-                                : "Inativo (Offline)"}
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* URL Slug customization */}
-                        <div className="space-y-2.5">
-                          <label className="block text-xs font-extrabold text-slate-600 uppercase tracking-widest font-mono">
-                            Link Único Exclusivo (Slug)
-                          </label>
-                          <div className="relative bg-white border border-slate-200 rounded-xl px-3.5 py-3.5 flex items-center text-xs text-slate-500 font-mono select-none overflow-hidden">
-                            <span className="opacity-60 text-slate-500">
-                              {window.location.origin.replace(
-                                /^https?:\/\//,
-                                "",
-                              )}
-                              /
-                            </span>
-                            <input
-                              type="text"
-                              value={editSlugValue}
-                              onChange={(e) => {
-                                setEditSlugValue(
-                                  e.target.value
-                                    .toLowerCase()
-                                    .replace(/\s+/g, "-"),
-                                );
-                              }}
-                              placeholder="oseunome"
-                              className="flex-1 bg-transparent border-none text-slate-900 font-bold outline-none pl-0.5 select-text font-mono placeholder-slate-400"
-                            />
-                            {slugChecking && (
-                              <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin shrink-0 ml-1.5" />
-                            )}
-                            {!slugChecking &&
-                              slugCheckResult === "available" && (
-                                <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-1.5" />
-                              )}
-                            {!slugChecking && slugCheckResult === "taken" && (
-                              <X className="w-4 h-4 text-rose-500 shrink-0 ml-1.5" />
-                            )}
-                          </div>
-
-                          {/* Quick availability hints */}
-                          {slugCheckResult === "available" && (
-                            <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 font-mono">
-                              <Check className="w-3.5 h-3.5" /> Link disponível
-                              para reserva rápida!
-                            </p>
-                          )}
-                          {slugCheckResult === "taken" && (
-                            <p className="text-[10px] text-rose-450 font-bold flex items-center gap-1 font-mono">
-                              <X className="w-3.5 h-3.5" /> Link já se encontra
-                              ocupado ou indisponível.
-                            </p>
-                          )}
-
-                          <p className="text-[10px] text-slate-500 leading-normal">
-                            💡 Use um link focado na sua marca (ex:{" "}
-                            <span className="text-purple-400 select-all">
-                              hair-studio-lisboa
-                            </span>
-                            ). Evite maiúsculas, cedilhas ou caracteres
-                            especiais.
-                          </p>
-                        </div>
-
-                        <div className="pt-2 flex justify-end">
-                          <button
-                            type="button"
-                            onClick={handleSaveWebsiteConfig}
-                            disabled={savingWebsiteConfig}
-                            className="bg-purple-600 hover:bg-purple-700 hover:scale-[1.02] text-white font-extrabold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 uppercase tracking-wider"
-                          >
-                            {savingWebsiteConfig ? (
-                              <>
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                <span>A Gravar...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Check className="w-4 h-4" />
-                                <span>Gravar Link Público</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* GOOGLE SEARCH PREVIEW ENGINE (SEO PREVIEW MOCK) */}
-                      <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 sm:p-7 space-y-4">
-                        <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-extrabold">
-                          Pré-visualização SEO (Google)
-                        </span>
-                        <div className="space-y-1.5 bg-white border border-slate-100 p-4.5 rounded-2xl">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 bg-purple-950 border border-purple-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-purple-400 font-mono">
-                              G
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[10px] text-slate-500 leading-tight">
-                                Glamzo Portugal
-                              </span>
-                              <span className="text-[9px] text-slate-500 leading-none font-mono">
-                                {window.location.origin.replace(
-                                  /^https?:\/\//,
-                                  "",
-                                )}
-                                /{business?.slug}
-                              </span>
-                            </div>
-                          </div>
-                          <h4 className="text-[#8ab4f8] text-sm font-semibold hover:underline cursor-pointer leading-tight pt-1">
-                            {business?.name} | Agendamento Online no Glamzo
-                          </h4>
-                          <p className="text-[11px] text-slate-500 leading-normal line-clamp-2">
-                            {business?.description ||
-                              `Marque o seu serviço de estética ou barbearia em ${business?.district}, ${business?.city}. Reservas automáticas no Glamzo com confirmação instantânea.`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* RIGHT PANEL: LIVE AUTOMATIC QR CODE CARD (5 cols) */}
-                    <div className="lg:col-span-5 space-y-6">
-                      <div className="bg-slate-50 border border-slate-200/40 rounded-3xl p-6 sm:p-7 text-center flex flex-col items-center justify-center">
-                        <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-black mb-1.5 leading-none">
-                          QR Code de Alta Definição
-                        </span>
-                        <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-5">
-                          Digitalizar para Reservar
-                        </h4>
-
-                        {/* Interactive Canvas frame with professional safety bounding & max sizes */}
-                        <div className="p-5 bg-white border border-slate-200/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
-                          <div className="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                            <canvas
-                              ref={qrCanvasRef}
-                              style={{
-                                maxWidth: "190px",
-                                maxHeight: "190px",
-                                width: "100%",
-                                height: "auto",
-                              }}
-                              className="select-none"
-                            />
-                          </div>
-                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-500 text-slate-500 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
-                            <span>Integrado com Logo Glamzo</span>
-                          </div>
-                        </div>
-
-                        {/* Action controllers */}
-                        <div className="w-full grid grid-cols-2 gap-2 pt-6">
-                          <button
-                            onClick={handleDownloadPNG}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Código PNG</span>
-                          </button>
-                          <button
-                            onClick={handleDownloadSVG}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Código SVG</span>
-                          </button>
-                          <button
-                            onClick={handlePrintQRCode}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
-                          >
-                            <Printer className="w-3.5 h-3.5" />
-                            <span>Imprimir QR</span>
-                          </button>
-                          <button
-                            onClick={handleShareStore}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                            <span>
-                              {websiteLinkCopied ? "Copiado!" : "Partilhar"}
-                            </span>
-                          </button>
-                        </div>
-
-                        <div className="w-full pt-4 space-y-2">
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                `${window.location.origin}/${business?.slug}`,
-                              );
-                              setWebsiteLinkCopied(true);
-                              setTimeout(
-                                () => setWebsiteLinkCopied(false),
-                                2000,
-                              );
-                            }}
-                            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 hover:border-slate-200 rounded-2xl text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all cursor-pointer"
-                          >
-                            <span className="font-mono truncate mr-2 text-slate-600 select-all">
-                              {window.location.origin.replace(
-                                /^https?:\/\//,
-                                "",
-                              )}
-                              /{business?.slug}
-                            </span>
-                            <div className="flex items-center gap-1 uppercase tracking-wider text-[9px] text-purple-400 font-mono shrink-0">
-                              <Copy className="w-3 h-3" />
-                              <span>
-                                {websiteLinkCopied ? "Copiado" : "Copiar"}
-                              </span>
-                            </div>
-                          </button>
-
-                          <a
-                            href={`/${business?.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full block py-3 text-center bg-white border border-slate-200 hover:bg-slate-50 border-purple-900/30 text-purple-300 hover:text-purple-200 hover:border-purple-500 rounded-2xl text-[11px] font-bold transition-all cursor-pointer"
-                          >
-                            <span className="flex items-center justify-center gap-1.5">
-                              <span>Abrir Página Pública Oficial</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* IDENTIDADE VISUAL & CUSTOMIZATION */}
-                  <div className="bg-slate-50 border border-slate-200 p-6 rounded-3xl space-y-6 [box-shadow:0_15px_40px_rgba(0,0,0,0.1)] text-left">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-400" />
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 font-bold">
-                          Manual de Identidade Visual
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {/* Left Side: Uploads */}
-                      <div className="space-y-6">
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold tracking-widest">
-                            Logótipo do Estabelecimento
-                          </label>
-                          <div className="flex items-center gap-4">
-                            {business?.logo_url ? (
-                              <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-                                <img
-                                  src={business.logo_url}
-                                  alt="Logo"
-                                  className="w-full h-full object-cover"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-                                <Image className="w-6 h-6 text-slate-400" />
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <label className="bg-white border border-slate-200 hover:border-purple-400 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center gap-2">
-                                <Upload className="w-4 h-4 text-slate-400" />
-                                <span>Fazer Upload (PNG/JPG)</span>
-                                <input
-                                  type="file"
-                                  className="hidden"
-                                  accept="image/png, image/jpeg, image/webp"
-                                  onChange={handleUploadLogo}
-                                  disabled={uploadingLogo}
-                                />
-                              </label>
-                              {uploadingLogo && (
-                                <span className="text-[10px] text-purple-500 block mt-1">
-                                  A carregar imagem...
-                                </span>
-                              )}
-                              <p className="text-[10px] text-slate-500 mt-1">
-                                Formatos 1:1, tamanho max 5MB.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold tracking-widest">
-                            Fotografia de Capa
-                          </label>
-                          <div className="flex items-center gap-4">
-                            {business?.cover_url ? (
-                              <div className="w-24 h-16 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-                                <img
-                                  src={business.cover_url}
-                                  alt="Cover"
-                                  className="w-full h-full object-cover"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-24 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-                                <Image className="w-6 h-6 text-slate-400" />
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <label className="bg-white border border-slate-200 hover:border-purple-400 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center gap-2">
-                                <Upload className="w-4 h-4 text-slate-400" />
-                                <span>Fazer Upload da Capa</span>
-                                <input
-                                  type="file"
-                                  className="hidden"
-                                  accept="image/png, image/jpeg, image/webp"
-                                  onChange={handleUploadCover}
-                                  disabled={uploadingCover}
-                                />
-                              </label>
-                              {uploadingCover && (
-                                <span className="text-[10px] text-purple-500 block mt-1">
-                                  A carregar imagem...
-                                </span>
-                              )}
-                              <p className="text-[10px] text-slate-500 mt-1">
-                                Esta imagem será o fundo do seu perfil de loja.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right side: Mockup */}
-                      <div className="bg-[#fafbfc] border border-slate-200 rounded-2xl p-5 space-y-5 shadow-inner relative overflow-hidden group">
-                        {/* Top bar with url slug mock */}
-                        <div className="flex items-center justify-between text-slate-500">
-                          <div className="flex items-center gap-1.5 text-[10px] font-mono hover:text-slate-900 transition-colors">
-                            <Globe className="w-3.5 h-3.5 text-purple-400" />
-                            <span className="underline truncate max-w-[200px]">
-                              {window.location.host}/
-                              {business?.slug || "parceiro"}
-                            </span>
-                          </div>
-                          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                        </div>
-
-                        {/* Logo Display representation segment */}
-                        <div className="flex items-center gap-4 py-1">
-                          {business?.logo_url ? (
-                            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-lg relative z-10">
-                              <img
-                                src={business.logo_url}
-                                alt="Logo"
-                                className="w-full h-full object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-12 h-12 rounded-xl bg-purple-50 border-2 border-dashed border-purple-800/40 flex flex-col items-center justify-center shrink-0 shadow-sm grow-0 relative z-10">
-                              <Plus className="w-4 h-4 text-purple-400" />
-                            </div>
-                          )}
-                          <div className="relative z-10">
-                            <span className="block text-sm font-display font-black text-slate-900 tracking-tight">
-                              {business?.name || "Seu Salão"}
-                            </span>
-                            <span className="block text-[9px] text-slate-500 font-mono mt-0.5 uppercase tracking-widest">
-                              {business?.city || "Cidade"}, Portugal
-                            </span>
-                          </div>
-                        </div>
-
-                        {business?.cover_url && (
-                          <div className="absolute inset-0 z-0 opacity-[0.03]">
-                            <img
-                              src={business.cover_url}
-                              alt="Cover"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-
-                        {/* Fonts Division: Aa Outfit and Aa Inter layout like reference guide */}
-                        <div className="grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4 relative z-10">
-                          <div>
-                            <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">
-                              Display
-                            </span>
-                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                              <span className="block text-xs font-display font-black text-slate-900">
-                                Aa Outfit
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">
-                              Body Text
-                            </span>
-                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                              <span className="block text-xs font-sans font-bold text-slate-700">
-                                Aa Inter
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* BOTTOM BENTO GRAPHIC: VISISTS & SCANS STATS (Part 5) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-                    {/* Stat 1: Ticket Médio */}
-                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Ticket Médio
-                        </span>
-                        <span className="text-2xl font-black text-slate-900 font-mono">
-                          {bookings.filter(b => b.booking_status === "completed").length > 0 ? (bookings.filter(b => b.booking_status === "completed").reduce((sum, item) => sum + Number(item.total_price), 0) / bookings.filter(b => b.booking_status === "completed").length).toFixed(2) : "0.00"} €
-                        </span>
-                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
-                          Valor médio por marcação
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
-                        <DollarSign className="w-5 h-5 text-purple-400" />
-                      </div>
-                    </div>
-
-                    {/* Stat 2: Total Clientes */}
-                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Total Clientes
-                        </span>
-                        <span className="text-2xl font-black text-slate-900 font-mono">
-                          {uniqueClientsMap.size}
-                        </span>
-                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
-                          Clientes registados na base
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
-                        <Users className="w-5 h-5 text-purple-400" />
-                      </div>
-                    </div>
-
-                    {/* Stat 3: Leituras de QR Code */}
-                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Leituras QR Code
-                        </span>
-                        <span className="text-2xl font-black text-slate-900 font-mono">
-                          {business?.qr_scans_count || 0}
-                        </span>
-                        <p className="text-[9px] text-slate-500 font-bold font-mono">
-                          Leituras físicas ao balcão
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
-                        <QrCode className="w-5 h-5 text-purple-405" />
-                      </div>
-                    </div>
-
-                    {/* Stat 4: Reservas via QR */}
-                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
-                          Reservas via QR
-                        </span>
-                        <span className="text-2xl font-black text-slate-900 font-mono">
-                          {Math.round((business?.qr_scans_count || 0) * 0.18)}
-                        </span>
-                        <p className="text-[9px] text-slate-500 font-bold font-mono">
-                          Conversão estimada: 18%
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
-                        <Calendar className="w-5 h-5 text-purple-405" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <DashboardLoja 
+                  business={business}
+                  setBusiness={setBusiness}
+                  bookings={bookings}
+                  uniqueClientsCount={uniqueClientsMap.size}
+                />
               )}
-
-              {/* ==================================================== */}
-              {/* VIEW 11: GLAMZO TERMINAL INTERACTIVE (TABLET DECK)   */}
-              {/* ==================================================== */}
               {activeTab === "terminal" && (
                 <div
                   id="view-terminal"

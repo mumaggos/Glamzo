@@ -34,6 +34,10 @@ const SMALL_CATEGORIES = [
   { name: "Piercing", icon: "💎" },
 ];
 
+const CITIES = [
+  "Lisboa", "Porto", "Braga", "Coimbra", "Aveiro", "Faro", "Funchal", "Ponta Delgada"
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +47,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get("q") || "");
   const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Data States
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -82,7 +87,7 @@ export default function Home() {
         const loadedBiz = bizRes.data || [];
         setReviews(revData || []);
 
-        // Process ratings and distance
+        const now = new Date();
         const processed = loadedBiz.map(b => {
           const bReviews = (revData || []).filter(r => r.business_id === b.id);
           const rating = bReviews.length ? bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length : (b.is_premium ? 4.8 : 0);
@@ -90,7 +95,6 @@ export default function Home() {
           let hash = 0;
           for (let i = 0; i < b.name.length; i++) { hash = b.name.charCodeAt(i) + ((hash << 5) - hash); }
           const derivedPrice = 15 + Math.abs(hash % 8) * 5;
-
           const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude;
           const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude;
           
@@ -99,9 +103,11 @@ export default function Home() {
             distance = calculateDistanceInKm(userCoords.lat, userCoords.lng, lat, lng);
           }
 
-          return { ...b, rating, reviewsCount: bReviews.length || (b.is_premium ? 24 : 0), startPrice: derivedPrice, lat, lng, distance, isOpenNow: true }; // Simplified isOpenNow for UI
-        });
+          const createdDate = new Date(b.created_at);
+          const isNew = (now.getTime() - createdDate.getTime()) < 15 * 24 * 60 * 60 * 1000;
 
+          return { ...b, rating, reviewsCount: bReviews.length || (b.is_premium ? 24 : 0), startPrice: derivedPrice, lat, lng, distance, isOpenNow: true, isNew }; 
+        });
         setBusinesses(processed);
       } catch (e) {
         console.error(e);
@@ -131,6 +137,12 @@ export default function Home() {
     setSearchParams({ category: catName });
   };
 
+  const handleCityClick = (city: string) => {
+    setLocalSearchQuery(city);
+    setIsSearching(true);
+    setSearchParams({ q: city });
+  };
+
   const handleClearSearch = () => {
     setActiveCategory(null);
     setSearchQuery("");
@@ -139,12 +151,24 @@ export default function Home() {
     setSearchParams({});
   };
 
-  // Carousels Data (Home View)
-  const melhoresAvaliacoes = [...businesses].sort((a, b) => b.rating - a.rating).slice(0, 10);
-  const novasLojas = [...businesses].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10);
-  const maisReservadas = [...businesses].sort((a, b) => b.reviewsCount - a.reviewsCount).slice(0, 10);
-  const pertoDeMim = [...businesses].filter(b => b.distance !== null).sort((a, b) => a.distance - b.distance).slice(0, 10);
+  const handlePertoDeMimClick = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setFilterMaisPerto(true);
+        setIsSearching(true);
+      }, () => {
+        alert("Ative a localização no seu navegador.");
+      });
+    }
+  };
 
+  const topPartners = useMemo(() => businesses.filter(b => b.is_premium || b.is_verified), [businesses]);
+  const recomendados = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10), [businesses]);
+  const promocoes = useMemo(() => businesses.filter(b => b.is_promoted), [businesses]);
+  const melhoresAvaliacoes = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating).slice(0, 10), [businesses]);
+  const novasLojas = useMemo(() => [...businesses].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10), [businesses]);
+  
   // Search/Filter Results
   const getFilteredResults = () => {
     let res = [...businesses];
@@ -161,6 +185,7 @@ export default function Home() {
       const q = searchQuery.toLowerCase();
       res = res.filter(b => 
         b.name.toLowerCase().includes(q) || 
+        b.city.toLowerCase().includes(q) ||
         b.category.toLowerCase().includes(q) || 
         (b.description && b.description.toLowerCase().includes(q))
       );
@@ -169,7 +194,6 @@ export default function Home() {
     if (filterAbertoHoje) res = res.filter(b => b.isOpenNow);
     if (filterTopPartner) res = res.filter(b => b.is_premium || b.is_verified);
     if (filterPromocoes) res = res.filter(b => b.is_promoted);
-    if (filterPagamentoOnline) res = res.filter(b => true); // Assumed true for demo
     
     if (filterMaisPerto && userCoords) res.sort((a, b) => (a.distance || 999) - (b.distance || 999));
     else if (filterMaisBarato) res.sort((a, b) => a.startPrice - b.startPrice);
@@ -177,205 +201,281 @@ export default function Home() {
 
     return res;
   };
-
   const searchResults = getFilteredResults();
 
-  const BusinessCard = ({ b, horizontal = false }: { b: any, horizontal?: boolean, key?: string | number }) => (
-    <Link to={`/business/${b.slug}`} className={`group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex ${horizontal ? 'flex-row h-40' : 'flex-col min-w-[280px] max-w-[300px] sm:min-w-[320px] sm:max-w-[340px] shrink-0'}`}>
-      <div className={`relative overflow-hidden ${horizontal ? 'w-40 h-full shrink-0' : 'h-48 sm:h-56'}`}>
-        <img src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} alt={b.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+  const BusinessCard: React.FC<{ b: any, horizontal?: boolean }> = ({ b, horizontal = false }) => (
+    <Link to={`/business/${b.slug}`} className={`group bg-white rounded-3xl border border-slate-100/60 overflow-hidden hover:shadow-2xl hover:shadow-purple-900/5 transition-all duration-300 flex ${horizontal ? "flex-row h-40" : "flex-col min-w-[280px] max-w-[300px] sm:min-w-[320px] sm:max-w-[340px] shrink-0"}`}>
+      <div className={`relative overflow-hidden ${horizontal ? "w-40 h-full shrink-0" : "h-48 sm:h-56"}`}>
+        <img src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} alt={b.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        
+        {/* Badges Overlay */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {b.isNew && (
+            <span className="bg-purple-600 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md shadow-md">
+              Nova
+            </span>
+          )}
+          {(b.is_premium || b.is_verified) && (
+            <span className="bg-slate-900/90 backdrop-blur-sm text-amber-400 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md shadow-md flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> Top Partner
+            </span>
+          )}
+          {b.is_promoted && (
+            <span className="bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md shadow-md flex items-center gap-1">
+              <Tag className="w-3 h-3" /> Promoção
+            </span>
+          )}
+        </div>
+
+        {/* Rating Overlay */}
         {b.rating > 0 && (
-          <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur text-slate-900 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+          <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur text-slate-900 text-[10px] font-black px-2.5 py-1.5 rounded-xl flex items-center gap-1 shadow-lg">
             <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-            {b.rating.toFixed(1)} ({b.reviewsCount})
+            {b.rating.toFixed(1)} <span className="font-medium text-slate-500 ml-0.5 font-mono">({b.reviewsCount})</span>
           </div>
         )}
       </div>
-      <div className={`p-4 flex flex-col justify-between flex-1 ${horizontal ? 'py-3' : ''}`}>
+      <div className={`p-5 flex flex-col justify-between flex-1 ${horizontal ? "py-4" : ""}`}>
         <div>
-          <h3 className="font-display font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-purple-600 transition-colors">{b.name}</h3>
-          <p className="text-[11px] text-slate-500 mt-1 line-clamp-1 flex items-center gap-1">
-            <MapPin className="w-3 h-3" /> {b.city}, {b.district} {b.distance ? `· ${b.distance.toFixed(1)}km` : ''}
+          <h3 className="font-display font-bold text-slate-900 text-base line-clamp-1 group-hover:text-purple-600 transition-colors">{b.name}</h3>
+          <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 flex items-center gap-1.5 font-medium">
+            <MapPin className="w-3.5 h-3.5 text-slate-400" /> {b.city}, {b.district} {b.distance ? `· ${b.distance.toFixed(1)}km` : ''}
           </p>
         </div>
-        <div className="mt-3 flex items-center justify-between text-[11px] font-medium">
-          <span className="text-slate-600 bg-slate-50 px-2 py-1 rounded-md">{b.category}</span>
-          <span className="text-purple-600 font-bold">A partir de {b.startPrice}€</span>
+        <div className="mt-4 flex items-center justify-between text-[11px] font-semibold border-t border-slate-100/50 pt-3">
+          <span className="text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">{b.category}</span>
+          <div className="flex flex-col items-end">
+            <span className="text-[9px] text-slate-400 uppercase tracking-widest font-mono">A partir de</span>
+            <span className="text-purple-600 font-black text-sm">{b.startPrice}€</span>
+          </div>
         </div>
       </div>
     </Link>
   );
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
-      {/* 1. Beauty Marketplace Hero */}
+    <div className="min-h-screen bg-[#FDFDFD] font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
+      {/* 1. HERO SECTION */}
       {!isSearching && (
-        <section className="relative pt-24 pb-12 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-slate-900 leading-[1.1] mb-6">
-              Encontre o seu próximo <br />
-              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent italic pr-2">
-                profissional de beleza.
+        <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden">
+          {/* Subtle gradient background instead of solid image for cleaner premium look */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-white to-rose-50/30 -z-10" />
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600948836101-f9ffda59d250?auto=format&fit=crop&q=80')] opacity-[0.03] bg-cover bg-center -z-10 mix-blend-multiply" />
+          
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
+              Encontre o profissional <br />
+              <span className="bg-gradient-to-r from-purple-600 to-rose-500 bg-clip-text text-transparent">
+                perfeito perto de si.
               </span>
             </h1>
+            <p className="text-sm sm:text-base lg:text-lg text-slate-500 max-w-2xl mx-auto mb-10 font-medium">
+              Reserve facilmente os melhores barbeiros, cabeleireiros, salões de beleza, spas e clínicas em Portugal.
+            </p>
 
             {/* Smart Search Bar */}
-            <div className="max-w-3xl mx-auto bg-white p-2 sm:p-3 rounded-full border border-slate-200 shadow-lg shadow-slate-200/50 flex items-center relative z-20">
-              <Search className="w-5 h-5 text-slate-400 ml-3" />
-              <input
-                type="text"
-                placeholder="Pesquise por salão, serviço, tratamento..."
-                value={localSearchQuery}
-                onChange={(e) => setLocalSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none pl-3 pr-4 py-3 text-sm sm:text-base text-slate-800 focus:outline-none focus:ring-0 placeholder-slate-400 font-medium"
-              />
-              <button 
-                onClick={() => { if(localSearchQuery.trim()) setIsSearching(true); }}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-full text-sm tracking-wide transition-all shrink-0"
-              >
-                Procurar
-              </button>
+            <div className="w-full max-w-3xl relative">
+              <div className={`bg-white p-2.5 sm:p-3 rounded-full border border-slate-200/80 shadow-2xl shadow-purple-900/5 flex items-center relative z-20 transition-all duration-300 ${showSuggestions ? 'rounded-b-none border-b-0 shadow-none' : ''}`}>
+                <Search className="w-5 h-5 text-purple-400 ml-4 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Pesquise por salão, serviço, ou cidade..."
+                  value={localSearchQuery}
+                  onChange={(e) => {
+                    setLocalSearchQuery(e.target.value);
+                    if(e.target.value.length > 0) setShowSuggestions(true);
+                    else setShowSuggestions(false);
+                  }}
+                  onFocus={() => localSearchQuery.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className="w-full bg-transparent border-none pl-4 pr-4 py-3 text-base text-slate-800 focus:outline-none focus:ring-0 placeholder-slate-400 font-medium"
+                />
+                
+                <button 
+                  onClick={handlePertoDeMimClick}
+                  className="hidden sm:flex items-center gap-1.5 px-4 py-2 hover:bg-slate-50 text-slate-600 rounded-full text-xs font-bold transition-all border border-slate-100 shrink-0 mr-2"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-blue-500" /> Perto de Mim
+                </button>
+
+                <button 
+                  onClick={() => { if(localSearchQuery.trim()) setIsSearching(true); }}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 sm:px-8 rounded-full text-sm tracking-wide transition-all shrink-0 shadow-md"
+                >
+                  Procurar
+                </button>
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-slate-200/80 border-t-0 rounded-b-3xl shadow-2xl shadow-purple-900/10 z-30 overflow-hidden pt-2 pb-4 px-2">
+                  <div className="px-4 py-2 text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">Sugestões rápidas</div>
+                  {CITIES.filter(c => c.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(city => (
+                    <button key={city} onMouseDown={() => handleCityClick(city)} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-3 rounded-xl transition-colors">
+                      <MapPin className="w-4 h-4 text-slate-400" /> {city}
+                    </button>
+                  ))}
+                  {SMALL_CATEGORIES.filter(c => c.name.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(cat => (
+                    <button key={cat.name} onMouseDown={() => handleCategoryClick(cat.name)} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-3 rounded-xl transition-colors">
+                      <span className="text-lg">{cat.icon}</span> {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
       )}
 
-      {/* 2. Small Elegant Category Cards */}
+      {/* 2. CATEGORIES */}
       {!isSearching && (
-        <section className="pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4">
+        <section className="pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-6">
+          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-1">
             {SMALL_CATEGORIES.map((cat) => (
               <button
                 key={cat.name}
                 onClick={() => handleCategoryClick(cat.name)}
-                className="flex items-center justify-center gap-2 bg-white border border-slate-200/80 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-md px-5 py-3 rounded-full transition-all duration-300 cursor-pointer group shrink-0 snap-start"
+                className="flex items-center justify-center gap-2 bg-white border border-slate-200/60 hover:border-purple-300 hover:bg-purple-50/50 hover:shadow-lg shadow-sm px-6 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group shrink-0 snap-start"
               >
-                <span className="text-xl group-hover:scale-110 transition-transform">{cat.icon}</span>
-                <span className="text-[13px] font-semibold text-slate-700 group-hover:text-purple-700 whitespace-nowrap">{cat.name}</span>
+                <span className="text-xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">{cat.icon}</span>
+                <span className="text-[13px] font-bold text-slate-700 group-hover:text-purple-700 whitespace-nowrap">{cat.name}</span>
               </button>
             ))}
           </div>
         </section>
       )}
 
-      {/* 3. Dynamic Homepage Carousels */}
+      {/* 3. SECTIONS */}
       {!isSearching && (
-        <div className="space-y-16 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden">
+        <div className="space-y-20 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden">
           
-          {/* Melhores Avaliações */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-display font-medium text-slate-900 flex items-center gap-2">
-                <Star className="w-6 h-6 text-amber-500 fill-amber-500" /> Melhores Avaliações
-              </h2>
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
             </div>
-            <div className="flex overflow-x-auto gap-6 pb-6 no-scrollbar snap-x">
-              {melhoresAvaliacoes.map(b => (
-                <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
-              ))}
-            </div>
-          </section>
-
-          {/* Novas Lojas */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-display font-medium text-slate-900 flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-rose-500" /> Novas Lojas
-              </h2>
-            </div>
-            <div className="flex overflow-x-auto gap-6 pb-6 no-scrollbar snap-x">
-              {novasLojas.map(b => (
-                <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
-              ))}
-            </div>
-          </section>
-
-          {/* Mais Reservadas */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-display font-medium text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-6 h-6 text-purple-600" /> Mais Reservadas
-              </h2>
-            </div>
-            <div className="flex overflow-x-auto gap-6 pb-6 no-scrollbar snap-x">
-              {maisReservadas.map(b => (
-                <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
-              ))}
-            </div>
-          </section>
-
-          {/* Perto de Mim + Mapa e Lista Sincronizada (Homepage view) */}
-          <section className="bg-slate-50 p-6 sm:p-10 rounded-3xl border border-slate-100">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-display font-medium text-slate-900 flex items-center gap-2">
-                <MapPin className="w-6 h-6 text-blue-500" /> Perto de Mim
-              </h2>
-              {userCoords && (
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">GPS Ativo</span>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[600px] lg:h-[700px]">
-              {/* List */}
-              <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-                {pertoDeMim.length > 0 ? pertoDeMim.map(b => (
-                  <BusinessCard key={b.id} b={b} horizontal />
-                )) : (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                    <Navigation className="w-8 h-8 mb-3 text-slate-300" />
-                    <p className="text-sm">Ative a localização para ver as lojas mais próximas.</p>
+          ) : (
+            <>
+              {/* Top Partner Section */}
+              {topPartners.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        <ShieldCheck className="w-7 h-7 text-amber-500" /> Parceiros Top
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Os melhores profissionais avaliados pela plataforma.</p>
+                    </div>
                   </div>
-                )}
-              </div>
-              {/* Map */}
-              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-200 relative">
-                {API_KEY ? (
-                  <APIProvider apiKey={API_KEY}>
-                    <Map
-                      defaultCenter={userCoords || { lat: 38.7223, lng: -9.1393 }}
-                      defaultZoom={userCoords ? 13 : 6}
-                      mapId="HOME_PERTO_DE_MIM"
-                      disableDefaultUI
-                    >
-                      {pertoDeMim.map(b => (
-                        <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
-                          <Pin background="#3b82f6" borderColor="#2563eb" glyphColor="#fff" />
-                        </AdvancedMarker>
-                      ))}
-                    </Map>
-                  </APIProvider>
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">Mapa Indisponível</div>
-                )}
-              </div>
-            </div>
-          </section>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {topPartners.map(b => (
+                      <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
+              {/* Recomendados para Si */}
+              {recomendados.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        <ThumbsUp className="w-7 h-7 text-purple-500" /> Recomendados para si
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Com base na sua localização e avaliações de excelência.</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {recomendados.map(b => (
+                      <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Promoções */}
+              {promocoes.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        <Tag className="w-7 h-7 text-rose-500" /> Promoções Ativas
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Descontos exclusivos por tempo limitado.</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {promocoes.map(b => (
+                      <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Novas Lojas */}
+              {novasLojas.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        <Sparkles className="w-7 h-7 text-emerald-500" /> Acabaram de Chegar
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Conheça as novidades mais recentes no Glamzo.</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {novasLojas.map(b => (
+                      <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Explorar por Cidade */}
+              <section className="pt-10 border-t border-slate-100">
+                <h2 className="text-2xl font-display font-extrabold text-slate-900 mb-8 text-center">
+                  Explorar por Cidade
+                </h2>
+                <div className="flex flex-wrap justify-center gap-4">
+                  {CITIES.map(city => (
+                    <button 
+                      key={city} 
+                      onClick={() => handleCityClick(city)}
+                      className="px-6 py-3 bg-white border border-slate-200/80 hover:border-purple-400 hover:shadow-md rounded-xl font-bold text-slate-700 hover:text-purple-700 transition-all text-sm"
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+            </>
+          )}
         </div>
       )}
 
-      {/* 4. Active Search / Category Map View (Fresha Style) */}
+      {/* 4. ACTIVE SEARCH VIEW */}
       {isSearching && (
         <div className="flex-1 flex flex-col h-[calc(100vh-64px)]">
           {/* Top Search & Filter Bar */}
-          <div className="bg-white border-b border-slate-200 shadow-sm z-20 px-4 py-3 flex flex-col gap-3">
+          <div className="bg-white border-b border-slate-200/80 shadow-sm z-20 px-4 py-4 flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto w-full">
-              <div className="flex items-center gap-2 flex-1 max-w-2xl">
-                <button onClick={handleClearSearch} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 shrink-0">
+              <div className="flex items-center gap-3 flex-1 max-w-2xl">
+                <button onClick={handleClearSearch} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 shrink-0 transition-colors">
                   <ArrowRight className="w-5 h-5 rotate-180" />
                 </button>
                 <div className="flex-1 relative">
-                  <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-4 top-3.5 text-slate-400" />
                   <input
                     type="text"
                     value={localSearchQuery}
                     onChange={(e) => setLocalSearchQuery(e.target.value)}
-                    placeholder="Pesquisar profissionais..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Pesquisar profissionais, serviços, cidades..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-full pl-11 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                   />
                   {localSearchQuery && (
-                    <button onClick={() => setLocalSearchQuery("")} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+                    <button onClick={() => setLocalSearchQuery("")} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors">
                       <X className="w-4 h-4" />
                     </button>
                   )}
@@ -385,51 +485,55 @@ export default function Home() {
 
             {/* Filters Row */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-7xl mx-auto w-full pb-1">
-              <FilterToggle label="Aberto Hoje" icon={<Clock className="w-3 h-3"/>} active={filterAbertoHoje} onClick={() => setFilterAbertoHoje(!filterAbertoHoje)} />
-              <FilterToggle label="Mais perto" icon={<MapPin className="w-3 h-3"/>} active={filterMaisPerto} onClick={() => { setFilterMaisPerto(!filterMaisPerto); setFilterMaisBarato(false); setFilterMelhorAvaliacao(false); }} />
-              <FilterToggle label="Mais barato" icon={<Tag className="w-3 h-3"/>} active={filterMaisBarato} onClick={() => { setFilterMaisBarato(!filterMaisBarato); setFilterMaisPerto(false); setFilterMelhorAvaliacao(false); }} />
-              <FilterToggle label="Melhor avaliação" icon={<Star className="w-3 h-3"/>} active={filterMelhorAvaliacao} onClick={() => { setFilterMelhorAvaliacao(!filterMelhorAvaliacao); setFilterMaisPerto(false); setFilterMaisBarato(false); }} />
-              <FilterToggle label="Top Partner" icon={<ShieldCheck className="w-3 h-3"/>} active={filterTopPartner} onClick={() => setFilterTopPartner(!filterTopPartner)} />
-              <FilterToggle label="Pagamento Online" icon={<CreditCard className="w-3 h-3"/>} active={filterPagamentoOnline} onClick={() => setFilterPagamentoOnline(!filterPagamentoOnline)} />
-              <FilterToggle label="Promoções" icon={<Sparkles className="w-3 h-3"/>} active={filterPromocoes} onClick={() => setFilterPromocoes(!filterPromocoes)} />
+              <FilterToggle label="Aberto Hoje" icon={<Clock className="w-3.5 h-3.5"/>} active={filterAbertoHoje} onClick={() => setFilterAbertoHoje(!filterAbertoHoje)} />
+              <FilterToggle label="Mais perto" icon={<MapPin className="w-3.5 h-3.5"/>} active={filterMaisPerto} onClick={() => { setFilterMaisPerto(!filterMaisPerto); setFilterMaisBarato(false); setFilterMelhorAvaliacao(false); handlePertoDeMimClick(); }} />
+              <FilterToggle label="Mais barato" icon={<Tag className="w-3.5 h-3.5"/>} active={filterMaisBarato} onClick={() => { setFilterMaisBarato(!filterMaisBarato); setFilterMaisPerto(false); setFilterMelhorAvaliacao(false); }} />
+              <FilterToggle label="Melhor avaliação" icon={<Star className="w-3.5 h-3.5"/>} active={filterMelhorAvaliacao} onClick={() => { setFilterMelhorAvaliacao(!filterMelhorAvaliacao); setFilterMaisPerto(false); setFilterMaisBarato(false); }} />
+              <FilterToggle label="Top Partner" icon={<ShieldCheck className="w-3.5 h-3.5"/>} active={filterTopPartner} onClick={() => setFilterTopPartner(!filterTopPartner)} />
+              <FilterToggle label="Pagamento Online" icon={<CreditCard className="w-3.5 h-3.5"/>} active={filterPagamentoOnline} onClick={() => setFilterPagamentoOnline(!filterPagamentoOnline)} />
+              <FilterToggle label="Promoções" icon={<Sparkles className="w-3.5 h-3.5"/>} active={filterPromocoes} onClick={() => setFilterPromocoes(!filterPromocoes)} />
             </div>
           </div>
 
           {/* Map & List Split */}
-          <div className="flex-1 flex overflow-hidden max-w-[1600px] mx-auto w-full">
+          <div className="flex-1 flex overflow-hidden max-w-[1600px] mx-auto w-full bg-[#f8f9fb]">
             {/* Left: List */}
-            <div className="w-full md:w-[450px] lg:w-[500px] flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
-              <div className="p-4 border-b border-slate-200/50 flex justify-between items-center bg-white">
-                <h3 className="font-bold text-slate-800">Resultados ({searchResults.length})</h3>
-                {activeCategory && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-md font-semibold">{activeCategory}</span>}
+            <div className="w-full md:w-[450px] lg:w-[500px] flex flex-col bg-white border-r border-slate-200 overflow-y-auto custom-scrollbar">
+              <div className="p-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-10">
+                <h3 className="font-extrabold text-slate-800">Resultados <span className="text-slate-400 font-mono text-sm ml-1">({searchResults.length})</span></h3>
+                {activeCategory && <span className="text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md">{activeCategory}</span>}
               </div>
-              <div className="p-4 flex flex-col gap-4">
+              <div className="p-5 flex flex-col gap-5">
                 {searchResults.map(b => (
                   <BusinessCard key={b.id} b={b} horizontal />
                 ))}
                 {searchResults.length === 0 && (
-                  <div className="text-center p-10 text-slate-500">
-                    <p>Nenhum resultado encontrado.</p>
+                  <div className="text-center p-12 text-slate-500 flex flex-col items-center">
+                    <Search className="w-8 h-8 text-slate-300 mb-3" />
+                    <p className="font-medium">Nenhum resultado encontrado.</p>
+                    <p className="text-sm mt-1">Tente ajustar os filtros ou a pesquisa.</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Right: Map */}
-            <div className="hidden md:block flex-1 relative bg-slate-200">
+            <div className="hidden md:block flex-1 relative bg-slate-100">
               {API_KEY ? (
                 <APIProvider apiKey={API_KEY}>
                   <Map
                     defaultCenter={userCoords || { lat: 39.3999, lng: -8.2245 }}
                     defaultZoom={userCoords ? 12 : 7}
                     mapId="SEARCH_RESULTS_MAP"
+                    disableDefaultUI
                   >
                     {searchResults.map(b => (
                       <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
                         <Link to={`/business/${b.slug}`} className="relative cursor-pointer group">
                           <Pin background="#9333ea" borderColor="#7e22ce" glyphColor="#fff" />
-                          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-xs font-bold px-2 py-1 rounded-lg border border-slate-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50 pointer-events-none transform group-hover:-translate-y-1">
                             {b.name}
+                            <span className="block text-[9px] text-purple-600 font-mono mt-0.5">{b.rating.toFixed(1)} ★</span>
                           </div>
                         </Link>
                       </AdvancedMarker>
@@ -437,13 +541,14 @@ export default function Home() {
                   </Map>
                 </APIProvider>
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-medium">Google Maps API Key Required</div>
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-medium bg-slate-50">
+                  <MapIcon className="w-8 h-8 mr-2 text-slate-300" /> Mapa Indisponível
+                </div>
               )}
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }
@@ -451,8 +556,8 @@ export default function Home() {
 const FilterToggle = ({ label, icon, active, onClick }: { label: string, icon: React.ReactNode, active: boolean, onClick: () => void }) => (
   <button 
     onClick={onClick}
-    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap transition-all ${
-      active ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-[11px] font-bold whitespace-nowrap transition-all ${
+      active ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
     }`}
   >
     {icon} {label}
