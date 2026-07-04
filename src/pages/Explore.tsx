@@ -50,6 +50,34 @@ import {
   Marker,
 } from "@vis.gl/react-google-maps";
 
+const getCustomMarkerIcon = (rating: number) => {
+  const ratingText = rating > 0 ? `${rating.toFixed(1)} ★` : "Novo";
+  const bgColor = rating > 0 ? "#ffffff" : "#f5f3ff"; // white for rated, soft purple for new
+  const strokeColor = "#7c3aed"; // brand purple
+  const textColor = "#1e1b4b"; // deep indigo
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
+      <g>
+        <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
+              fill="${bgColor}" 
+              stroke="${strokeColor}" 
+              stroke-width="2" />
+        <text x="29" y="18" 
+              fill="${textColor}" 
+              font-size="10px" 
+              font-family="system-ui, -apple-system, sans-serif" 
+              font-weight="bold" 
+              text-anchor="middle">
+          ${ratingText}
+        </text>
+      </g>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`;
+};
+
 export default function Explore() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,7 +113,9 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     searchParams.get("category") || "All",
   );
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("All");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(
+    searchParams.get("subcategory") || "All"
+  );
   const [selectedDistrict, setSelectedDistrict] = useState<string>(
     searchParams.get("district") || "All",
   );
@@ -204,21 +234,24 @@ export default function Explore() {
     const params: Record<string, string> = {};
     if (searchQuery.trim()) params.q = searchQuery.trim();
     if (selectedCategory !== "All") params.category = selectedCategory;
+    if (selectedSubcategory !== "All") params.subcategory = selectedSubcategory;
     if (selectedDistrict !== "All") params.district = selectedDistrict;
     if (selectedCity !== "All") params.city = selectedCity;
     if (useNearMe) params.nearMe = "true";
     setSearchParams(params);
-  }, [searchQuery, selectedCategory, selectedDistrict, selectedCity, useNearMe]);
+  }, [searchQuery, selectedCategory, selectedSubcategory, selectedDistrict, selectedCity, useNearMe]);
 
   // Sync searchParams from URL to state when URL parameters change
   useEffect(() => {
     const category = searchParams.get("category") || "All";
+    const subcategory = searchParams.get("subcategory") || "All";
     const district = searchParams.get("district") || "All";
     const city = searchParams.get("city") || "All";
     const q = searchParams.get("q") || "";
     const nearMe = searchParams.get("nearMe") === "true";
 
     if (category !== selectedCategory) setSelectedCategory(category);
+    if (subcategory !== selectedSubcategory) setSelectedSubcategory(subcategory);
     if (district !== selectedDistrict) setSelectedDistrict(district);
     if (city !== selectedCity) setSelectedCity(city);
     if (q !== localSearchQuery) {
@@ -1083,13 +1116,10 @@ export default function Explore() {
                             lng: b.lng || -8.2245,
                           }}
                           title={b.name}
-                          label={{
-                            text: b.rating > 0 ? b.rating.toFixed(1) : '★',
-                            color: '#ffffff',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
+                          icon={{
+                            url: getCustomMarkerIcon(b.rating),
+                            anchor: { x: 29, y: 32 }
                           }}
-                          icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                           onClick={() => {
                             window.location.href = `/business/${b.slug}`;
                           }}

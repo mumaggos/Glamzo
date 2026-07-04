@@ -17,24 +17,22 @@ const API_KEY =
   (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
   "";
 
-const SMALL_CATEGORIES = [
-  { name: "Barbeiro", icon: "💈" },
-  { name: "Cabeleireiro", icon: "💇" },
-  { name: "Unhas", icon: "💅" },
-  { name: "Sobrancelhas", icon: "👁️" },
-  { name: "Pestanas", icon: "👁" },
-  { name: "Estética", icon: "🧖" },
-  { name: "Medicina Estética", icon: "💉" },
-  { name: "Massagens", icon: "💆" },
-  { name: "Depilação", icon: "🪒" },
-  { name: "Spa", icon: "💆" },
-  { name: "Maquilhagem", icon: "💄" },
-  { name: "Podologia", icon: "🦶" },
-  { name: "Nutrição", icon: "🥗" },
-  { name: "Bem-estar", icon: "🧘" },
-  { name: "Fisioterapia", icon: "🩺" },
-  { name: "Tatuagens", icon: "🎨" },
-  { name: "Piercing", icon: "💎" },
+const HOME_CATEGORIES = [
+  { name: "Cabelo & Barbearia", icon: "💇", url: "/explore?category=Cabelo %26 Barbearia" },
+  { name: "Nails & Beauty", icon: "💅", url: "/explore?category=Nails %26 Beauty" },
+  { name: "Estética", icon: "✨", url: "/explore?category=Estética" },
+  { name: "Wellness & Spa", icon: "💆", url: "/explore?category=Wellness" },
+  { name: "Ao Domicílio", icon: "🏠", url: "/explore?category=Ao domicílio" },
+  { name: "Noivas & Eventos", icon: "👰", url: "/explore?category=Noivas %26 Eventos" },
+  { name: "Barbeiro", icon: "💈", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" },
+  { name: "Cabeleireiro", icon: "✂️", url: "/explore?category=Cabelo %26 Barbearia" },
+  { name: "Unhas / Manicure", icon: "💅", url: "/explore?category=Nails %26 Beauty&subcategory=Manicure" },
+  { name: "Sobrancelhas", icon: "👁️", url: "/explore?category=Nails %26 Beauty&subcategory=Sobrancelhas" },
+  { name: "Pestanas", icon: "👁", url: "/explore?category=Nails %26 Beauty&subcategory=Pestanas" },
+  { name: "Massagens", icon: "💆", url: "/explore?category=Wellness&subcategory=Massagem Relaxante" },
+  { name: "Depilação", icon: "🪒", url: "/explore?category=Estética&subcategory=Depilação" },
+  { name: "Maquilhagem", icon: "💄", url: "/explore?category=Nails %26 Beauty&subcategory=Maquilhagem" },
+  { name: "Facial / Spa", icon: "🧖", url: "/explore?category=Estética&subcategory=Facial" }
 ];
 
 const CITIES = [
@@ -48,6 +46,34 @@ const mapStyles = [
   { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
   { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
 ];
+
+const getCustomMarkerIcon = (rating: number) => {
+  const ratingText = rating > 0 ? `${rating.toFixed(1)} ★` : "Novo";
+  const bgColor = rating > 0 ? "#ffffff" : "#f5f3ff"; // white for rated, soft purple for new
+  const strokeColor = "#7c3aed"; // brand purple
+  const textColor = "#1e1b4b"; // deep indigo
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
+      <g>
+        <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
+              fill="${bgColor}" 
+              stroke="${strokeColor}" 
+              stroke-width="2" />
+        <text x="29" y="18" 
+              fill="${textColor}" 
+              font-size="10px" 
+              font-family="system-ui, -apple-system, sans-serif" 
+              font-weight="bold" 
+              text-anchor="middle">
+          ${ratingText}
+        </text>
+      </g>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`;
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -357,8 +383,8 @@ export default function Home() {
                         <Sparkles className="w-3 h-3 text-purple-500" /> {b.name}
                       </button>
                     ))}
-                    {SMALL_CATEGORIES.filter(c => c.name.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(cat => (
-                      <button key={cat.name} onMouseDown={() => { navigate(`/explore?q=${encodeURIComponent(cat.name)}`); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
+                    {HOME_CATEGORIES.filter(c => c.name.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(cat => (
+                      <button key={cat.name} onMouseDown={() => { navigate(cat.url); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
                         <span>{cat.icon}</span> {cat.name}
                       </button>
                     ))}
@@ -432,7 +458,7 @@ export default function Home() {
                 {showServiceSuggestions && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2 animate-fade-in">
                     <div className="px-3.5 py-1 text-[9px] font-mono text-slate-400 uppercase tracking-widest font-bold">Serviços populares</div>
-                    {SMALL_CATEGORIES.filter(c => c.name.toLowerCase().includes(searchService.toLowerCase())).slice(0, 4).map(cat => (
+                    {HOME_CATEGORIES.filter(c => c.name.toLowerCase().includes(searchService.toLowerCase())).slice(0, 4).map(cat => (
                       <button key={cat.name} onMouseDown={() => { setSearchService(cat.name); setShowServiceSuggestions(false); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
                         <span>{cat.icon}</span> {cat.name}
                       </button>
@@ -464,22 +490,43 @@ export default function Home() {
 
       {/* 2. CATEGORIES */}
       {!isSearching && (
-        <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6 px-4 sm:px-6 lg:px-8 animate-fade-in">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {MAIN_CATEGORIES.map((cat) => (
-              <button
-                key={cat.name}
-                onClick={() => handleCategoryClick(cat.name)}
-                className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-white border border-slate-200/70 hover:border-purple-300 hover:bg-purple-50/40 hover:shadow-lg shadow-sm px-4 py-4 rounded-2xl transition-all duration-300 cursor-pointer group text-center sm:text-left"
-              >
-                <span className="text-2xl group-hover:scale-115 group-hover:-rotate-3 transition-transform duration-300 shrink-0">
-                  {cat.emoji}
-                </span>
-                <span className="text-[13px] font-bold text-slate-800 group-hover:text-purple-800 leading-tight">
-                  {cat.name}
-                </span>
-              </button>
-            ))}
+        <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6 px-4 sm:px-6 lg:px-8">
+          <div className="relative group">
+            {/* Left Scroll Button */}
+            <button 
+              onClick={() => scrollCategories('left')}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-150 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div 
+              ref={scrollContainerRef}
+              className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 scroll-smooth"
+            >
+              {HOME_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => navigate(cat.url)}
+                  className="flex items-center justify-center gap-2.5 bg-white border border-slate-200/70 hover:border-purple-300 hover:bg-purple-50/40 hover:shadow-lg shadow-sm px-6 py-4 rounded-2xl transition-all duration-300 cursor-pointer group shrink-0 snap-start"
+                >
+                  <span className="text-xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 shrink-0">
+                    {cat.icon}
+                  </span>
+                  <span className="text-[13px] font-bold text-slate-700 group-hover:text-purple-700 whitespace-nowrap leading-none">
+                    {cat.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Scroll Button */}
+            <button 
+              onClick={() => scrollCategories('right')}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-150 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         </section>
       )}
@@ -653,13 +700,10 @@ export default function Home() {
                             key={b.id} 
                             position={{ lat: b.lat, lng: b.lng }}
                             title={b.name}
-                            label={{
-                              text: b.rating > 0 ? b.rating.toFixed(1) : '★',
-                              color: '#ffffff',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
+                            icon={{
+                              url: getCustomMarkerIcon(b.rating || 0),
+                              anchor: { x: 29, y: 32 }
                             }}
-                            icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                             onClick={() => {
                               navigate("/business/" + b.slug);
                             }}
@@ -788,13 +832,10 @@ export default function Home() {
                         key={b.id} 
                         position={{ lat: b.lat, lng: b.lng }}
                         title={b.name}
-                        label={{
-                          text: b.rating > 0 ? b.rating.toFixed(1) : '★',
-                          color: '#ffffff',
-                          fontSize: '10px',
-                          fontWeight: 'bold',
+                        icon={{
+                          url: getCustomMarkerIcon(b.rating || 0),
+                          anchor: { x: 29, y: 32 }
                         }}
-                        icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                         onClick={() => {
                           navigate("/business/" + b.slug);
                         }}
