@@ -7,6 +7,7 @@ import {
   ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText
 } from 'lucide-react';
 import { generateUniqueSlug } from '../../utils/slugify';
+import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
 
 export default function SetupWizard() {
   const { user } = useAuth();
@@ -26,6 +27,11 @@ export default function SetupWizard() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
+  const [logoUrl, setLogoUrl] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
@@ -130,6 +136,10 @@ export default function SetupWizard() {
         setAddress(currentBiz.address || '');
         setCity(currentBiz.city || '');
         setPostalCode(currentBiz.postal_code || '');
+        setCategory(currentBiz.category || MAIN_CATEGORIES[0].name);
+        setLogoUrl(currentBiz.logo_url || '');
+        setCoverUrl(currentBiz.cover_url || '');
+        setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
         
         // Restore step
         const stepParam = searchParams.get('step');
@@ -194,6 +204,27 @@ export default function SetupWizard() {
     setStep(targetStep);
   };
 
+  
+  const uploadImage = async (file: File, bucket: string, setter: (url: string) => void) => {
+    try {
+      setUploadingImage(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${user?.id}/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file);
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      setter(data.publicUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Erro ao fazer upload da imagem.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleNext = async () => {
     setErrorMsg(null);
     if (!user || !business) return;
@@ -205,22 +236,54 @@ export default function SetupWizard() {
       }
       setLoading(true);
       try {
+        let lat = coordinates?.lat || null;
+        let lng = coordinates?.lng || null;
+        
+        if (window.google?.maps && !lat) {
+           try {
+             const geocoder = new window.google.maps.Geocoder();
+             const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
+             const result = await new Promise<any>((resolve, reject) => {
+               geocoder.geocode({ address: fullAddress }, (results, status) => {
+                 if (status === 'OK' && results?.[0]) resolve(results[0]);
+                 else reject(new Error('Geocoding failed'));
+               });
+             });
+             lat = result.geometry.location.lat();
+             lng = result.geometry.location.lng();
+           } catch(err) { console.warn('Geocoding failed', err); }
+        } else if (!lat) {
+           try {
+             const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
+             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+             const data = await res.json();
+             if (data && data.length > 0) {
+               lat = parseFloat(data[0].lat);
+               lng = parseFloat(data[0].lon);
+             }
+           } catch(err) { console.warn('Nominatim failed', err); }
+        }
+
         let slug = business.slug;
         if (slug.startsWith('loja-') && name) {
           slug = await generateUniqueSlug(name);
         }
-        const { error } = await supabase.from('businesses').update({
-          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2
-        }).eq('id', business.id);
+        const updateData = {
+          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2,
+          category, logo_url: logoUrl, cover_url: coverUrl,
+          latitude: lat, longitude: lng
+        };
+        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
-            await supabase.from('businesses').update({ name, phone, email, address, city, postal_code: postalCode, slug }).eq('id', business.id);
+            delete (updateData as any).setup_step;
+            await supabase.from('businesses').update(updateData).eq('id', business.id);
           } else {
             throw error;
           }
         }
-        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2 });
+        setBusiness({ ...business, ...updateData, setup_step: 2 });
         setStep(2);
       } catch (err: any) {
         setErrorMsg(err.message);
@@ -443,6 +506,14 @@ export default function SetupWizard() {
               <div className="space-y-4">
                 <div>
                   <input id="new-svc-name" type="text" placeholder="Nome do Serviço" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                </div>
+                <div>
+                  <select id="new-svc-cat" className="px-3 py-2 border border-slate-300 rounded text-sm w-full bg-white">
+                    <option value="">Selecione o Tipo de Serviço (Opcional)</option>
+                    {(SUBCATEGORIES_BY_MAIN[category] || []).map((sub: string) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input id="new-svc-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />

@@ -38,6 +38,12 @@ const CITIES = [
   "Lisboa", "Porto", "Braga", "Coimbra", "Aveiro", "Faro", "Funchal", "Ponta Delgada"
 ];
 
+
+const mapStyles = [
+  { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] }
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -79,10 +85,12 @@ export default function Home() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [bizRes, revData] = await Promise.all([
+        const [bizRes, revData, srvRes] = await Promise.all([
           supabase.from("businesses").select("*").eq("status", "active").eq("public_page_enabled", true),
-          fetchAllReviews()
+          fetchAllReviews(),
+          supabase.from("services").select("*").eq("is_active", true)
         ]);
+        const srvData = srvRes.data || [];
         
         const loadedBiz = bizRes.data || [];
         setReviews(revData || []);
@@ -95,6 +103,7 @@ export default function Home() {
           let hash = 0;
           for (let i = 0; i < b.name.length; i++) { hash = b.name.charCodeAt(i) + ((hash << 5) - hash); }
           const derivedPrice = 15 + Math.abs(hash % 8) * 5;
+          const bServices = srvData.filter((s: any) => s.business_id === b.id);
           const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude;
           const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude;
           
@@ -168,6 +177,11 @@ export default function Home() {
   const promocoes = useMemo(() => businesses.filter(b => b.is_promoted), [businesses]);
   const melhoresAvaliacoes = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating).slice(0, 10), [businesses]);
   const novasLojas = useMemo(() => [...businesses].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10), [businesses]);
+  
+  // New computed arrays
+  const maisReservados = useMemo(() => [...businesses].sort((a, b) => (reviews.filter((r: any) => r.business_id === b.id).length > reviews.filter((r: any) => r.business_id === a.id).length ? 1 : -1)).slice(0, 10), [businesses, reviews]);
+  const tendencias = useMemo(() => [...businesses].sort((a, b) => ((b.rating * reviews.filter((r: any) => r.business_id === b.id).length) - (a.rating * reviews.filter((r: any) => r.business_id === a.id).length))).slice(0, 10), [businesses, reviews]);
+  
   
   // Search/Filter Results
   const getFilteredResults = () => {
@@ -331,7 +345,7 @@ export default function Home() {
       {/* 2. CATEGORIES */}
       {!isSearching && (
         <section className="pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-6">
-          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-1">
+          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-1 after:content-[''] after:w-4 after:shrink-0">
             {SMALL_CATEGORIES.map((cat) => (
               <button
                 key={cat.name}
@@ -504,7 +518,12 @@ export default function Home() {
                 {activeCategory && <span className="text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md">{activeCategory}</span>}
               </div>
               <div className="p-5 flex flex-col gap-5">
-                {searchResults.map(b => (
+                {userCoords && (
+    <AdvancedMarker position={userCoords}>
+       <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>
+    </AdvancedMarker>
+  )}
+  {searchResults.map(b => (
                   <BusinessCard key={b.id} b={b} horizontal />
                 ))}
                 {searchResults.length === 0 && (
@@ -523,18 +542,18 @@ export default function Home() {
                 <APIProvider apiKey={API_KEY}>
                   <Map
                     defaultCenter={userCoords || { lat: 39.3999, lng: -8.2245 }}
+                    styles={mapStyles}
                     defaultZoom={userCoords ? 12 : 7}
                     mapId="SEARCH_RESULTS_MAP"
                     disableDefaultUI
                   >
                     {searchResults.map(b => (
                       <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
-                        <Link to={`/business/${b.slug}`} className="relative cursor-pointer group">
-                          <Pin background="#9333ea" borderColor="#7e22ce" glyphColor="#fff" />
-                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50 pointer-events-none transform group-hover:-translate-y-1">
-                            {b.name}
-                            <span className="block text-[9px] text-purple-600 font-mono mt-0.5">{b.rating.toFixed(1)} ★</span>
+                        <Link to={`/business/${b.slug}`} className="relative cursor-pointer group flex flex-col items-center">
+                          <div className="bg-slate-900 text-white px-2.5 py-1 rounded-full text-xs font-extrabold shadow-lg border-2 border-white flex items-center gap-1 hover:scale-110 transition-transform">
+                            {b.rating.toFixed(1)} <Star className="w-3 h-3 fill-current text-amber-400" />
                           </div>
+                          <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px]"></div>
                         </Link>
                       </AdvancedMarker>
                     ))}
