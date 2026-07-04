@@ -8,8 +8,19 @@ import {
   ShieldCheck, Zap, ThumbsUp, Home as HomeIcon, X, Loader2, ArrowRight,
   List, CreditCard, Tag
 } from "lucide-react";
-import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
+
+
+// Fix leaflet default marker icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -190,22 +201,51 @@ export default function Home() {
   const getFilteredResults = () => {
     let res = [...businesses];
     
+    const normalize = (str: string) => str ? str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+    
+    const isMatch = (b: any, term: string) => {
+       const q = normalize(term);
+       const qStem = q.endsWith('s') ? q.slice(0, -1) : q;
+       
+       const aliases: Record<string, string[]> = {
+         'unha': ['nail', 'unha', 'manic', 'pedic'],
+         'nail': ['nail', 'unha', 'manic', 'pedic'],
+         'cabel': ['cabel', 'hair', 'barb'],
+         'barb': ['barb', 'cabel', 'hair'],
+         'maquilh': ['maquilh', 'makeup', 'make up', 'maquiag'],
+         'makeup': ['maquilh', 'makeup', 'make up', 'maquiag'],
+         'pestana': ['pestana', 'lash', 'cilio'],
+         'lash': ['pestana', 'lash', 'cilio'],
+         'massag': ['massag', 'massagem', 'massage'],
+         'estetic': ['estetic', 'estética']
+       };
+       let searchTerms = [qStem, q];
+       for (const key of Object.keys(aliases)) {
+         if (qStem.includes(key)) {
+           searchTerms = [...searchTerms, ...aliases[key]];
+         }
+       }
+       
+       const bCat = normalize(b.category);
+       const bName = normalize(b.name);
+       const bDesc = normalize(b.description);
+       const bCity = normalize(b.city);
+       
+       const matchesAny = (text: string) => searchTerms.some(t => text.includes(t));
+       if (matchesAny(bCat) || matchesAny(bName) || matchesAny(bDesc) || matchesAny(bCity)) return true;
+       
+       if (b.services && b.services.length > 0) {
+         return b.services.some((s: any) => matchesAny(normalize(s.name)) || matchesAny(normalize(s.description)));
+       }
+       return false;
+    };
+    
     if (activeCategory) {
-      res = res.filter(b => 
-        b.category.toLowerCase().includes(activeCategory.toLowerCase()) || 
-        (b.description && b.description.toLowerCase().includes(activeCategory.toLowerCase())) ||
-        b.name.toLowerCase().includes(activeCategory.toLowerCase())
-      );
+      res = res.filter(b => isMatch(b, activeCategory));
     }
     
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      res = res.filter(b => 
-        b.name.toLowerCase().includes(q) || 
-        b.city.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q) || 
-        (b.description && b.description.toLowerCase().includes(q))
-      );
+      res = res.filter(b => isMatch(b, searchQuery));
     }
 
     if (filterAbertoHoje) res = res.filter(b => b.isOpenNow);
@@ -572,11 +612,7 @@ export default function Home() {
                 {activeCategory && <span className="text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md">{activeCategory}</span>}
               </div>
               <div className="p-5 flex flex-col gap-5">
-                {userCoords && (
-    <AdvancedMarker position={userCoords}>
-       <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>
-    </AdvancedMarker>
-  )}
+                
   {searchResults.map(b => (
                   <BusinessCard key={b.id} b={b} horizontal />
                 ))}
@@ -591,33 +627,51 @@ export default function Home() {
             </div>
 
             {/* Right: Map */}
-            <div className="hidden md:block flex-1 relative bg-slate-100">
-              {API_KEY ? (
-                <APIProvider apiKey={API_KEY}>
-                  <Map
-                    defaultCenter={userCoords || { lat: 39.3999, lng: -8.2245 }}
-                    styles={mapStyles}
-                    defaultZoom={userCoords ? 12 : 7}
-                    mapId="SEARCH_RESULTS_MAP"
-                    disableDefaultUI
+            <div className="hidden md:block flex-1 relative bg-slate-100 z-0">
+              <MapContainer 
+                center={userCoords ? [userCoords.lat, userCoords.lng] : [39.3999, -8.2245]} 
+                zoom={userCoords ? 12 : 7} 
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                />
+                
+                {userCoords && (
+                  <Marker position={[userCoords.lat, userCoords.lng]} icon={L.divIcon({
+                    className: 'custom-user-marker',
+                    html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                  })}>
+                  </Marker>
+                )}
+                
+                {searchResults.map(b => (
+                  <Marker 
+                    key={b.id} 
+                    position={[b.lat, b.lng]}
+                    icon={L.divIcon({
+                      className: 'custom-business-marker',
+                      html: `<div class="bg-slate-900 text-white px-2.5 py-1 rounded-full text-xs font-extrabold shadow-lg border-2 border-white flex items-center justify-center hover:scale-110 transition-transform whitespace-nowrap">${b.rating.toFixed(1)} <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star ml-1 text-amber-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>`,
+                      iconSize: [40, 24],
+                      iconAnchor: [20, 12]
+                    })}
                   >
-                    {searchResults.map(b => (
-                      <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
-                        <Link to={`/business/${b.slug}`} className="relative cursor-pointer group flex flex-col items-center">
-                          <div className="bg-slate-900 text-white px-2.5 py-1 rounded-full text-xs font-extrabold shadow-lg border-2 border-white flex items-center gap-1 hover:scale-110 transition-transform">
-                            {b.rating.toFixed(1)} <Star className="w-3 h-3 fill-current text-amber-400" />
-                          </div>
-                          <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px]"></div>
-                        </Link>
-                      </AdvancedMarker>
-                    ))}
-                  </Map>
-                </APIProvider>
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-medium bg-slate-50">
-                  <MapIcon className="w-8 h-8 mr-2 text-slate-300" /> Mapa Indisponível
-                </div>
-              )}
+                    <Popup className="rounded-xl overflow-hidden p-0 border-0 shadow-xl">
+                      <div className="flex flex-col w-[240px]">
+                         <img src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} className="w-full h-24 object-cover" />
+                         <div className="p-3">
+                           <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{b.name}</h4>
+                           <p className="text-xs text-slate-500 mt-1 line-clamp-1">{b.category}</p>
+                           <a href={"/business/" + b.slug} className="block w-full mt-3 text-center bg-slate-900 text-white text-xs font-bold py-2 rounded-lg">Ver Detalhes</a>
+                         </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
           </div>
         </div>
