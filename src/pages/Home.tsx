@@ -344,8 +344,8 @@ export default function Home() {
 
       {/* 2. CATEGORIES */}
       {!isSearching && (
-        <section className="pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-6">
-          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-1 after:content-[''] after:w-4 after:shrink-0">
+        <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6">
+          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-4 sm:px-6 lg:px-8 after:content-[''] after:w-4 sm:after:w-6 lg:after:w-8 after:shrink-0">
             {SMALL_CATEGORIES.map((cat) => (
               <button
                 key={cat.name}
@@ -376,7 +376,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <ShieldCheck className="w-7 h-7 text-amber-500" /> Parceiros Top
+                        💎 Top Partner
                       </h2>
                       <p className="text-sm text-slate-500 mt-1">Os melhores profissionais avaliados pela plataforma.</p>
                     </div>
@@ -395,7 +395,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <ThumbsUp className="w-7 h-7 text-purple-500" /> Recomendados para si
+                        ❤️ Recomendados para si
                       </h2>
                       <p className="text-sm text-slate-500 mt-1">Com base na sua localização e avaliações de excelência.</p>
                     </div>
@@ -414,7 +414,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <Tag className="w-7 h-7 text-rose-500" /> Promoções Ativas
+                        🎁 Promoções
                       </h2>
                       <p className="text-sm text-slate-500 mt-1">Descontos exclusivos por tempo limitado.</p>
                     </div>
@@ -433,7 +433,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <Sparkles className="w-7 h-7 text-emerald-500" /> Acabaram de Chegar
+                        🆕 Acabaram de chegar
                       </h2>
                       <p className="text-sm text-slate-500 mt-1">Conheça as novidades mais recentes no Glamzo.</p>
                     </div>
@@ -446,7 +446,58 @@ export default function Home() {
                 </section>
               )}
 
-              {/* Explorar por Cidade */}
+
+              {/* Mais Reservados */}
+              {maisReservados.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        🔥 Mais reservados
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Os espaços com mais procura na plataforma</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {maisReservados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  </div>
+                </section>
+              )}
+
+              {/* Tendências */}
+              {tendencias.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        ✨ Tendências
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Descubra o que está na moda</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {tendencias.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  </div>
+                </section>
+              )}
+
+              {/* Avaliações Recentes (Using melhoresAvaliacoes for now) */}
+              {melhoresAvaliacoes.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
+                        ⭐ Avaliações recentes
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Estabelecimentos com as melhores notas</p>
+                    </div>
+                  </div>
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                    {melhoresAvaliacoes.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  </div>
+                </section>
+              )}
+\n              {/* Explorar por Cidade */}
               <section className="pt-10 border-t border-slate-100">
                 <h2 className="text-2xl font-display font-extrabold text-slate-900 mb-8 text-center">
                   Explorar por Cidade
