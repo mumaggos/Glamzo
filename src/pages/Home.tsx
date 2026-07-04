@@ -8,7 +8,7 @@ import {
   ShieldCheck, Zap, ThumbsUp, Home as HomeIcon, X, Loader2, ArrowRight,
   List, CreditCard, Tag, Scissors
 } from "lucide-react";
-import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -107,13 +107,13 @@ export default function Home() {
       setLoading(true);
       try {
         const [bizRes, revData, srvRes] = await Promise.all([
-          supabase.from("businesses").select("*").eq("status", "active").eq("public_page_enabled", true),
+          supabase.from("businesses").select("*").eq("status", "active"),
           fetchAllReviews(),
           supabase.from("services").select("*").eq("is_active", true)
         ]);
         const srvData = srvRes.data || [];
         
-        const loadedBiz = bizRes.data || [];
+        const loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
         setReviews(revData || []);
 
         const now = new Date();
@@ -674,7 +674,6 @@ export default function Home() {
                       <Map
                         defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }}
                         defaultZoom={userCoords ? 13 : 8}
-                        mapId="HOMEPAGE_ACTIVE_STORES_MAP"
                         disableDefaultUI
                         clickableIcons={false}
                         styles={mapStyles}
@@ -682,22 +681,22 @@ export default function Home() {
                         style={{ width: '100%', height: '100%' }}
                       >
                         {userCoords && (
-                          <AdvancedMarker position={{ lat: userCoords.lat, lng: userCoords.lng }}>
-                            <div className="relative flex h-5 w-5 items-center justify-center">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-blue-600 border-2 border-white shadow-md"></span>
-                            </div>
-                          </AdvancedMarker>
+                          <Marker 
+                            position={{ lat: userCoords.lat, lng: userCoords.lng }}
+                            title="A sua localização"
+                            icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                          />
                         )}
                         {businesses.map(b => (
-                          <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
-                            <a href={"/business/" + b.slug} className="relative cursor-pointer group flex flex-col items-center">
-                              <div className="bg-slate-900 hover:bg-purple-600 text-white px-2.5 py-1 rounded-full text-xs font-extrabold shadow-lg border-2 border-white flex items-center gap-1 hover:scale-110 transition-all">
-                                {b.rating > 0 ? b.rating.toFixed(1) : 'Novo'} <Star className="w-3 h-3 fill-current text-amber-400" />
-                              </div>
-                              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px] group-hover:border-t-purple-600 transition-colors"></div>
-                            </a>
-                          </AdvancedMarker>
+                          <Marker 
+                            key={b.id} 
+                            position={{ lat: b.lat, lng: b.lng }}
+                            title={b.name}
+                            icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+                            onClick={() => {
+                              navigate("/business/" + b.slug);
+                            }}
+                          />
                         ))}
                       </Map>
                     </APIProvider>
@@ -804,7 +803,6 @@ export default function Home() {
                   <Map
                     defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 39.3999, lng: -8.2245 }}
                     defaultZoom={userCoords ? 12 : 7}
-                    mapId="SEARCH_RESULTS_MAP"
                     disableDefaultUI
                     clickableIcons={false}
                     styles={mapStyles}
@@ -812,22 +810,22 @@ export default function Home() {
                     style={{width: '100%', height: '100%'}}
                   >
                     {userCoords && (
-                      <AdvancedMarker position={{ lat: userCoords.lat, lng: userCoords.lng }}>
-                        <div className="relative flex h-5 w-5 items-center justify-center">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-blue-600 border-2 border-white shadow-md"></span>
-                        </div>
-                      </AdvancedMarker>
+                      <Marker 
+                        position={{ lat: userCoords.lat, lng: userCoords.lng }}
+                        title="A sua localização"
+                        icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                      />
                     )}
                     {searchResults.map(b => (
-                      <AdvancedMarker key={b.id} position={{ lat: b.lat, lng: b.lng }}>
-                        <a href={"/business/" + b.slug} className="relative cursor-pointer group flex flex-col items-center">
-                          <div className="bg-slate-900 text-white px-2.5 py-1 rounded-full text-xs font-extrabold shadow-lg border-2 border-white flex items-center gap-1 hover:scale-110 transition-transform">
-                            {b.rating.toFixed(1)} <Star className="w-3 h-3 fill-current text-amber-400" />
-                          </div>
-                          <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-slate-900 -mt-[1px]"></div>
-                        </a>
-                      </AdvancedMarker>
+                      <Marker 
+                        key={b.id} 
+                        position={{ lat: b.lat, lng: b.lng }}
+                        title={b.name}
+                        icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+                        onClick={() => {
+                          navigate("/business/" + b.slug);
+                        }}
+                      />
                     ))}
                   </Map>
                 </APIProvider>

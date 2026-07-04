@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Business, Booking } from '../types';
 import { supabase } from '../lib/supabase';
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import { getCoordinatesForCity } from '../utils/geoData';
 
 const mapStyles = [
@@ -899,12 +899,12 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
                           center={{ lat: editLat ?? 38.7223, lng: editLng ?? -9.1393 }}
                           defaultZoom={15}
                           zoom={15}
-                          mapId="DASHBOARD_LOJA_REPOSITION_MAP"
                           clickableIcons={false}
+                          styles={mapStyles}
                           options={{ clickableIcons: false, styles: mapStyles }}
                           style={{ width: '100%', height: '100%' }}
                         >
-                          <AdvancedMarker
+                          <Marker
                             position={{ lat: editLat ?? 38.7223, lng: editLng ?? -9.1393 }}
                             draggable={true}
                             onDragEnd={(e) => {

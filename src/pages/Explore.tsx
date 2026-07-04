@@ -47,8 +47,7 @@ import {
 import {
   APIProvider,
   Map,
-  AdvancedMarker,
-  Pin,
+  Marker,
 } from "@vis.gl/react-google-maps";
 
 export default function Explore() {
@@ -983,7 +982,6 @@ export default function Explore() {
                     <Map
                       defaultCenter={{ lat: 39.3999, lng: -8.2245 }} // Portugal center roughly
                       defaultZoom={6}
-                      mapId="GLAMZO_EXPLORE_MAP"
                       clickableIcons={false}
                       styles={mapStyles}
                       options={{ clickableIcons: false, styles: mapStyles }}
@@ -992,45 +990,27 @@ export default function Explore() {
                       ]}
                       style={{ width: "100%", height: "100%" }}
                     >
-                      {paginatedBusinesses.map((b) => {
-                        const markerColor =
-                          b.rating >= 4.9
-                            ? "#10b981"
-                            : b.rating >= 4.5
-                              ? "#9333ea"
-                              : b.rating >= 4.0
-                                ? "#3b82f6"
-                                : b.rating >= 3.5
-                                  ? "#f59e0b"
-                                  : "#ef4444";
-                        return (
-                          <AdvancedMarker
-                            key={b.id}
-                            position={{
-                              lat: b.lat || 39.3999,
-                              lng: b.lng || -8.2245,
-                            }}
-                            title={b.name}
-                            onClick={() => {
-                              // We could add an InfoWindow, but let's just make it redirect to the business page for now, or open a mini overlay
-                              window.location.href = `/business/${b.slug}`;
-                            }}
-                          >
-                            <div className="relative cursor-pointer hover:scale-110 transition-transform">
-                              <Pin
-                                background={markerColor}
-                                borderColor={markerColor}
-                                glyphColor="#fff"
-                              />
-                              {(b.rating ?? 0) > 0 && (
-                                <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
-                                  {b.rating.toFixed(1)}
-                                </div>
-                              )}
-                            </div>
-                          </AdvancedMarker>
-                        );
-                      })}
+                      {userCoords && (
+                        <Marker 
+                          position={{ lat: userCoords.latitude, lng: userCoords.longitude }}
+                          title="A sua localização"
+                          icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                        />
+                      )}
+                      {paginatedBusinesses.map((b) => (
+                        <Marker
+                          key={b.id}
+                          position={{
+                            lat: b.lat || 39.3999,
+                            lng: b.lng || -8.2245,
+                          }}
+                          title={b.name}
+                          icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+                          onClick={() => {
+                            window.location.href = `/business/${b.slug}`;
+                          }}
+                        />
+                      ))}
                     </Map>
                   </APIProvider>
                 ) : (
