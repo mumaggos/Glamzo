@@ -206,8 +206,57 @@ export default function Explore() {
     if (selectedCategory !== "All") params.category = selectedCategory;
     if (selectedDistrict !== "All") params.district = selectedDistrict;
     if (selectedCity !== "All") params.city = selectedCity;
+    if (useNearMe) params.nearMe = "true";
     setSearchParams(params);
-  }, [searchQuery, selectedCategory, selectedDistrict, selectedCity]);
+  }, [searchQuery, selectedCategory, selectedDistrict, selectedCity, useNearMe]);
+
+  // Sync searchParams from URL to state when URL parameters change
+  useEffect(() => {
+    const category = searchParams.get("category") || "All";
+    const district = searchParams.get("district") || "All";
+    const city = searchParams.get("city") || "All";
+    const q = searchParams.get("q") || "";
+    const nearMe = searchParams.get("nearMe") === "true";
+
+    if (category !== selectedCategory) setSelectedCategory(category);
+    if (district !== selectedDistrict) setSelectedDistrict(district);
+    if (city !== selectedCity) setSelectedCity(city);
+    if (q !== localSearchQuery) {
+      setLocalSearchQuery(q);
+      setSearchQuery(q);
+    }
+    if (nearMe !== useNearMe) {
+      if (nearMe && !userCoords && !geoLocating) {
+        setGeoLocating(true);
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              setUserCoords({
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+              });
+              setUseNearMe(true);
+              setGeoLocating(false);
+              setSelectedDistrict("All");
+              setSelectedCity("All");
+            },
+            (err) => {
+              console.warn("Geolocation failed on param load, using Lisbon fallback", err);
+              setUserCoords({ latitude: 38.7223, longitude: -9.1393 });
+              setUseNearMe(true);
+              setGeoLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+          );
+        } else {
+          setGeoLocating(false);
+        }
+      } else if (!nearMe) {
+        setUseNearMe(false);
+        setUserCoords(null);
+      }
+    }
+  }, [searchParams]);
 
   // Handle Geolocation activation
   const handleNearMeToggle = () => {

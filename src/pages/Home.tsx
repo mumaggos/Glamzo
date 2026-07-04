@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { fetchAllReviews } from "../utils/reviewsHelper";
+import { MAIN_CATEGORIES } from "../utils/categoriesData";
 import {
   Search, MapPin, Star, Clock, Sparkles, Navigation, 
   CheckCircle2, ChevronRight, ChevronLeft, SlidersHorizontal, Map as MapIcon, 
@@ -71,7 +72,8 @@ export default function Home() {
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
   const [searchService, setSearchService] = useState(searchParams.get("service") || "");
 
-  const [isSearching, setIsSearching] = useState(false);
+  const isSearching = false;
+  const setIsSearching = (val: boolean) => {};
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
@@ -148,19 +150,6 @@ export default function Home() {
     fetchData();
   }, [userCoords]);
 
-  // Debounce Search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(localSearchQuery);
-      if (localSearchQuery.trim().length > 0 || activeCategory || searchLocation || searchService) {
-        setIsSearching(true);
-      } else {
-        setIsSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [localSearchQuery, activeCategory, searchLocation, searchService]);
-
   const handleCategoryClick = (catName: string) => {
     navigate(`/explore?category=${encodeURIComponent(catName)}`);
   };
@@ -175,21 +164,11 @@ export default function Home() {
     setLocalSearchQuery("");
     setSearchLocation("");
     setSearchService("");
-    setIsSearching(false);
     setSearchParams({});
   };
 
   const handlePertoDeMimClick = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setFilterMaisPerto(true);
-        setIsSearching(true);
-        setSearchLocation("Perto de Mim");
-      }, () => {
-        alert("Ative a localização no seu navegador.");
-      });
-    }
+    navigate("/explore?nearMe=true");
   };
 
   const topPartners = useMemo(() => businesses.filter(b => b.is_premium || b.is_verified), [businesses]);
@@ -374,12 +353,12 @@ export default function Home() {
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2 animate-fade-in">
                     <div className="px-3.5 py-1 text-[9px] font-mono text-slate-400 uppercase tracking-widest font-bold">Lojas sugeridas</div>
                     {businesses.filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(b => (
-                      <button key={b.id} onMouseDown={() => { setLocalSearchQuery(b.name); setIsSearching(true); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
+                      <button key={b.id} onMouseDown={() => { navigate("/business/" + b.slug); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
                         <Sparkles className="w-3 h-3 text-purple-500" /> {b.name}
                       </button>
                     ))}
                     {SMALL_CATEGORIES.filter(c => c.name.toLowerCase().includes(localSearchQuery.toLowerCase())).slice(0, 3).map(cat => (
-                      <button key={cat.name} onMouseDown={() => { setLocalSearchQuery(cat.name); setIsSearching(true); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
+                      <button key={cat.name} onMouseDown={() => { navigate(`/explore?q=${encodeURIComponent(cat.name)}`); }} className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2">
                         <span>{cat.icon}</span> {cat.name}
                       </button>
                     ))}
@@ -485,39 +464,22 @@ export default function Home() {
 
       {/* 2. CATEGORIES */}
       {!isSearching && (
-        <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6 px-4 sm:px-6 lg:px-8">
-          <div className="relative group">
-            {/* Left Scroll Button */}
-            <button 
-              onClick={() => scrollCategories('left')}
-              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div 
-              ref={scrollContainerRef}
-              className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 scroll-smooth"
-            >
-              {SMALL_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.name}
-                  onClick={() => handleCategoryClick(cat.name)}
-                  className="flex items-center justify-center gap-2 bg-white border border-slate-200/60 hover:border-purple-300 hover:bg-purple-50/50 hover:shadow-lg shadow-sm px-6 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group shrink-0 snap-start"
-                >
-                  <span className="text-xl group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">{cat.icon}</span>
-                  <span className="text-[13px] font-bold text-slate-700 group-hover:text-purple-700 whitespace-nowrap">{cat.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Right Scroll Button */}
-            <button 
-              onClick={() => scrollCategories('right')}
-              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-100 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+        <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6 px-4 sm:px-6 lg:px-8 animate-fade-in">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {MAIN_CATEGORIES.map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => handleCategoryClick(cat.name)}
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-white border border-slate-200/70 hover:border-purple-300 hover:bg-purple-50/40 hover:shadow-lg shadow-sm px-4 py-4 rounded-2xl transition-all duration-300 cursor-pointer group text-center sm:text-left"
+              >
+                <span className="text-2xl group-hover:scale-115 group-hover:-rotate-3 transition-transform duration-300 shrink-0">
+                  {cat.emoji}
+                </span>
+                <span className="text-[13px] font-bold text-slate-800 group-hover:text-purple-800 leading-tight">
+                  {cat.name}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
       )}
