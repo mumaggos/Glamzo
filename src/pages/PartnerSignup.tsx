@@ -11,13 +11,13 @@ export default function PartnerSignup() {
   const { signUp, signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Multi-step form step (1: Account info, 2: Verification)
-  const [step, setStep] = useState(() => {
+  // Unified single-screen state
+  const [codeSent, setCodeSent] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('step') === 'verify' ? 2 : 1;
+    return params.get('step') === 'verify';
   });
 
-  // Form states - Step 1
+  // Form states
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,16 +35,16 @@ export default function PartnerSignup() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSignUpProcessActive, setIsSignUpProcessActive] = useState(false);
 
-  // Verification
-  const [verificationCode, setVerificationCode] = useState('');
+  // Verification code
   const [enteredCode, setEnteredCode] = useState('');
 
-  const handleNextStep = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.MouseEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     if (!fullName || !email || !password || !confirmPassword) {
-      setErrorMsg('Preencha todos os campos obrigatórios da sua conta.');
+      setErrorMsg('Preencha todos os campos obrigatórios da sua conta para podermos gerar o código.');
       return;
     }
 
@@ -70,12 +70,12 @@ export default function PartnerSignup() {
       // This will trigger Supabase to send the confirmation email
       await signUp(email, password, fullName, 'business');
 
-      setStep(2);
-      setSuccessMsg('Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.');
+      setCodeSent(true);
+      setSuccessMsg('Código enviado! Por favor, introduza o código recebido abaixo. Verifique também a pasta de Spam.');
     } catch (err: any) {
       console.error('Failed to trigger verification email or create profile', err);
       let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente novamente mais tarde.';
-      if (err.message?.includes('already registered')) {
+      if (err.message?.includes('already registered') || err.message?.toLowerCase().includes('already')) {
         userFriendlyMessage = 'Este e-mail já está em uso. Por favor, use um e-mail diferente ou faça login.';
       }
       setErrorMsg(userFriendlyMessage);
@@ -217,8 +217,8 @@ export default function PartnerSignup() {
               )}
             </div>
           ) : (
-            <form onSubmit={step === 1 ? handleNextStep : handleRegister} className="space-y-4">
-              <fieldset disabled={step === 2} className="space-y-4 disabled:opacity-60 transition-opacity">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Nome Completo do Responsável
@@ -230,9 +230,10 @@ export default function PartnerSignup() {
                     <input
                       type="text"
                       required
+                      disabled={codeSent}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
                       placeholder="ex. Profissional Responsável"
                     />
                   </div>
@@ -250,21 +251,27 @@ export default function PartnerSignup() {
                       <input
                         type="email"
                         required
+                        disabled={codeSent}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                        className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
                         placeholder="geral@oseunegocio.com"
                       />
                     </div>
-                    {step === 1 && (
-                       <button
-                         type="submit"
-                         disabled={loading || !acceptedTerms}
-                         className="flex items-center justify-center gap-1.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer whitespace-nowrap"
-                       >
-                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar Código'}
-                       </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleSendCode}
+                      disabled={loading || codeSent || !acceptedTerms}
+                      className="flex items-center justify-center gap-1.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                    >
+                      {loading && !codeSent ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : codeSent ? (
+                        'Código Enviado ✓'
+                      ) : (
+                        'Enviar Código'
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -277,9 +284,10 @@ export default function PartnerSignup() {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
+                        disabled={codeSent}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                        className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
                         placeholder="Mín. 6 letras"
                       />
                       <button
@@ -299,9 +307,10 @@ export default function PartnerSignup() {
                     <input
                       type="password"
                       required
+                      disabled={codeSent}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
+                      className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
                       placeholder="Repita a senha"
                     />
                   </div>
@@ -312,9 +321,10 @@ export default function PartnerSignup() {
                   <input
                     type="checkbox"
                     id="terms-partner"
+                    disabled={codeSent}
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
+                    className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer disabled:opacity-50"
                   />
                   <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
                     Li e aceito os{' '}
@@ -328,19 +338,19 @@ export default function PartnerSignup() {
                     .
                   </label>
                 </div>
-              </fieldset>
+              </div>
 
-              {step === 2 && (
-                <div className="mt-6 p-5 bg-purple-50/50 border border-purple-100 rounded-2xl animate-fade-in">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+              {codeSent && (
+                <div className="mt-6 p-5 bg-purple-50/50 border border-purple-100 rounded-2xl animate-fade-in space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 mt-0.5">
                       <Mail className="w-5 h-5" />
                     </div>
                     <div>
-                       <h4 className="font-bold text-slate-800 text-sm">Verifique o seu e-mail e Spam</h4>
-                       <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                         Enviámos um código para <strong>{email}</strong>. Por vezes pode ir parar à pasta de Spam ou Lixo.
-                       </p>
+                      <h4 className="font-bold text-slate-800 text-sm">Verifique a sua pasta de Spam/Lixo!</h4>
+                      <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                        Por vezes, o e-mail de verificação com o código de 6 dígitos pode ir parar à pasta de Spam, Lixo Comercial ou Promoções. Por favor verifique cuidadosamente.
+                      </p>
                     </div>
                   </div>
                   
@@ -355,12 +365,12 @@ export default function PartnerSignup() {
                       value={enteredCode}
                       onChange={(e) => setEnteredCode(e.target.value)}
                       className="block w-full px-4 py-4 bg-white border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                      placeholder="00000000"
+                      placeholder="000000"
                       maxLength={8}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3 pt-5">
+                  <div className="flex flex-col gap-3 pt-2">
                     <button
                       type="submit"
                       disabled={loading || enteredCode.length < 6}
@@ -404,13 +414,14 @@ export default function PartnerSignup() {
                     >
                       Não recebeu? Reenviar código
                     </button>
+                    
                     <button
                       type="button"
                       disabled={loading}
-                      onClick={() => setStep(1)}
-                      className="w-full py-1 text-[11px] font-medium text-slate-400 hover:text-slate-600"
+                      onClick={() => setCodeSent(false)}
+                      className="w-full py-1 text-[11px] font-medium text-slate-400 hover:text-slate-650"
                     >
-                      Editar dados da conta
+                      Alterar dados de acesso
                     </button>
                   </div>
                 </div>
