@@ -18,17 +18,20 @@ const API_KEY =
   "";
 
 const SMALL_CATEGORIES = [
-  { name: "Barbearias", icon: "💈" },
-  { name: "Cabeleireiros", icon: "💇" },
+  { name: "Barbeiro", icon: "💈" },
+  { name: "Cabeleireiro", icon: "💇" },
   { name: "Unhas", icon: "💅" },
-  { name: "Spa", icon: "💆" },
-  { name: "Maquilhagem", icon: "💄" },
+  { name: "Sobrancelhas", icon: "👁️" },
   { name: "Pestanas", icon: "👁" },
   { name: "Estética", icon: "🧖" },
   { name: "Medicina Estética", icon: "💉" },
-  { name: "Depilação", icon: "🪒" },
   { name: "Massagens", icon: "💆" },
-  { name: "Bem-estar", icon: "🏋️" },
+  { name: "Depilação", icon: "🪒" },
+  { name: "Spa", icon: "💆" },
+  { name: "Maquilhagem", icon: "💄" },
+  { name: "Podologia", icon: "🦶" },
+  { name: "Nutrição", icon: "🥗" },
+  { name: "Bem-estar", icon: "🧘" },
   { name: "Fisioterapia", icon: "🩺" },
   { name: "Tatuagens", icon: "🎨" },
   { name: "Piercing", icon: "💎" },
@@ -115,7 +118,7 @@ export default function Home() {
           const createdDate = new Date(b.created_at);
           const isNew = (now.getTime() - createdDate.getTime()) < 15 * 24 * 60 * 60 * 1000;
 
-          return { ...b, rating, reviewsCount: bReviews.length || (b.is_premium ? 24 : 0), startPrice: derivedPrice, lat, lng, distance, isOpenNow: true, isNew }; 
+          return { ...b, rating, reviewsCount: bReviews.length || (b.is_premium ? 24 : 0), startPrice: derivedPrice, lat, lng, distance, isOpenNow: true, isNew, services: bServices }; 
         });
         setBusinesses(processed);
       } catch (e) {
@@ -345,7 +348,7 @@ export default function Home() {
       {/* 2. CATEGORIES */}
       {!isSearching && (
         <section className="pb-16 max-w-7xl mx-auto relative z-20 -mt-6">
-          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-4 sm:px-6 lg:px-8 after:content-[''] after:w-4 sm:after:w-6 lg:after:w-8 after:shrink-0">
+          <div className="flex overflow-x-auto gap-3 sm:gap-4 no-scrollbar snap-x pb-4 pt-2 px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
             {SMALL_CATEGORIES.map((cat) => (
               <button
                 key={cat.name}
@@ -381,7 +384,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Os melhores profissionais avaliados pela plataforma.</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {topPartners.map(b => (
                       <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
                     ))}
@@ -400,7 +403,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Com base na sua localização e avaliações de excelência.</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {recomendados.map(b => (
                       <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
                     ))}
@@ -419,7 +422,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Descontos exclusivos por tempo limitado.</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {promocoes.map(b => (
                       <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
                     ))}
@@ -438,7 +441,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Conheça as novidades mais recentes no Glamzo.</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {novasLojas.map(b => (
                       <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>
                     ))}
@@ -458,7 +461,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Os espaços com mais procura na plataforma</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {maisReservados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
                   </div>
                 </section>
@@ -475,7 +478,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Descubra o que está na moda</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {tendencias.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
                   </div>
                 </section>
@@ -492,7 +495,7 @@ export default function Home() {
                       <p className="text-sm text-slate-500 mt-1">Estabelecimentos com as melhores notas</p>
                     </div>
                   </div>
-                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                  <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x px-4 sm:px-6 lg:px-8 after:content-[''] after:w-16 after:shrink-0">
                     {melhoresAvaliacoes.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
                   </div>
                 </section>
