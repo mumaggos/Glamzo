@@ -2,10 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { 
   Globe, ExternalLink, Download, Printer, Share2, Copy, Plus, 
   Image, Upload, Check, X, RefreshCw, Sparkles, DollarSign, Users, QrCode, Calendar,
-  MapPin, Clock, Instagram, Phone, Mail, FileText
+  MapPin, Clock, Instagram, Phone, Mail, FileText, Navigation, Compass, Search
 } from 'lucide-react';
 import { Business, Booking } from '../types';
 import { supabase } from '../lib/supabase';
+import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { getCoordinatesForCity } from '../utils/geoData';
+
+const mapStyles = [
+  { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
+];
 
 interface DashboardLojaProps {
   business: Business | null;
@@ -23,6 +32,179 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
   const [websiteLinkCopied, setWebsiteLinkCopied] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+
+  // States for Edit Profile Dialog
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(business?.name ?? '');
+  const [editPhone, setEditPhone] = useState(business?.phone ?? '');
+  const [editEmail, setEditEmail] = useState(business?.email ?? '');
+  const [editWebsite, setEditWebsite] = useState(business?.website ?? '');
+  const [editDistrict, setEditDistrict] = useState(business?.district ?? '');
+  const [editCity, setEditCity] = useState(business?.city ?? '');
+  const [editAddress, setEditAddress] = useState(business?.address ?? '');
+  const [editPostalCode, setEditPostalCode] = useState(business?.postal_code ?? '');
+  const [editDoorNumber, setEditDoorNumber] = useState(business?.door_number ?? '');
+  const [editDescription, setEditDescription] = useState(business?.description ?? '');
+  const [editInstagram, setEditInstagram] = useState(business?.instagram ?? '');
+  const [editLat, setEditLat] = useState<number | null>(business?.latitude ?? null);
+  const [editLng, setEditLng] = useState<number | null>(business?.longitude ?? null);
+
+  const [geoLocating, setGeoLocating] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Synchronize state when business changes
+  useEffect(() => {
+    if (business) {
+      setEditName(business.name ?? '');
+      setEditPhone(business.phone ?? '');
+      setEditEmail(business.email ?? '');
+      setEditWebsite(business.website ?? '');
+      setEditDistrict(business.district ?? '');
+      setEditCity(business.city ?? '');
+      setEditAddress(business.address ?? '');
+      setEditPostalCode(business.postal_code ?? '');
+      setEditDoorNumber(business.door_number ?? '');
+      setEditDescription(business.description ?? '');
+      setEditInstagram(business.instagram ?? '');
+      setEditLat(business.latitude ?? null);
+      setEditLng(business.longitude ?? null);
+    }
+  }, [business]);
+
+  const mapApiKey =
+    process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+    (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+    "";
+
+  const handleUseCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setGeoLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setEditLat(position.coords.latitude);
+          setEditLng(position.coords.longitude);
+          setGeoLocating(false);
+          alert("📍 Localização GPS capturada com sucesso!");
+        },
+        (error) => {
+          console.error("Erro ao obter geolocalização:", error);
+          alert("Não foi possível aceder ao GPS. Por favor, dê permissão de localização ao seu navegador.");
+          setGeoLocating(false);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      alert("Geolocalização não suportada no seu navegador.");
+    }
+  };
+
+  const handleGeocodeAddress = async () => {
+    if (!editAddress || !editCity) {
+      alert("Por favor, preencha o endereço e a cidade antes de obter as coordenadas.");
+      return;
+    }
+    setGeocoding(true);
+    const fullAddress = `${editAddress}, ${editDoorNumber || ''} ${editPostalCode || ''} ${editCity}, Portugal`;
+    
+    // 1. Try Google Maps Geocoder if loaded
+    if (window.google?.maps) {
+      try {
+        const geocoder = new window.google.maps.Geocoder();
+        const result = await new Promise<any>((resolve, reject) => {
+          geocoder.geocode({ address: fullAddress }, (results, status) => {
+            if (status === 'OK' && results?.[0]) resolve(results[0]);
+            else reject(new Error('Geocoding failed'));
+          });
+        });
+        setEditLat(result.geometry.location.lat());
+        setEditLng(result.geometry.location.lng());
+        alert("📍 Coordenadas atualizadas com sucesso a partir do Google Maps Geocoder!");
+        setGeocoding(false);
+        return;
+      } catch (err) {
+        console.warn('Google geocoding failed:', err);
+      }
+    }
+
+    // 2. Try Nominatim (OSM) as fallback
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setEditLat(parseFloat(data[0].lat));
+        setEditLng(parseFloat(data[0].lon));
+        alert("📍 Coordenadas atualizadas com sucesso a partir do localizador GPS alternativo!");
+      } else {
+        // Fallback to district/city center
+        const cityCoords = getCoordinatesForCity(editDistrict, editCity);
+        setEditLat(cityCoords.latitude);
+        setEditLng(cityCoords.longitude);
+        alert("Endereço exato não encontrado. Foram atribuídas as coordenadas padrão para a cidade.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao ligar ao serviço de geolocalização. Insira as coordenadas manualmente.");
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!business) return;
+    if (!editName.trim()) {
+      alert("O nome do estabelecimento é obrigatório.");
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('businesses')
+        .update({
+          name: editName,
+          phone: editPhone || null,
+          email: editEmail || null,
+          website: editWebsite || null,
+          district: editDistrict,
+          city: editCity,
+          address: editAddress,
+          postal_code: editPostalCode || null,
+          door_number: editDoorNumber || null,
+          description: editDescription || null,
+          instagram: editInstagram || null,
+          latitude: editLat,
+          longitude: editLng,
+        })
+        .eq('id', business.id);
+
+      if (error) throw error;
+
+      setBusiness(prev => prev ? {
+        ...prev,
+        name: editName,
+        phone: editPhone || null,
+        email: editEmail || null,
+        website: editWebsite || null,
+        district: editDistrict,
+        city: editCity,
+        address: editAddress,
+        postal_code: editPostalCode || null,
+        door_number: editDoorNumber || null,
+        description: editDescription || null,
+        instagram: editInstagram || null,
+        latitude: editLat,
+        longitude: editLng,
+      } : null);
+
+      setIsEditingProfile(false);
+      alert("Perfil guardado com sucesso!");
+    } catch (err: any) {
+      console.error(err);
+      alert(`Erro ao guardar alterações: ${err.message || err}`);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   useEffect(() => {
     if (business?.public_page_enabled !== undefined) {
@@ -279,8 +461,11 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
                       {business?.address}, {business?.city}
                     </p>
                   </div>
-                  <button className="bg-purple-50 text-purple-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-100 transition-colors">
-                    Editar Perfil
+                  <button 
+                    onClick={() => setIsEditingProfile(true)}
+                    className="bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Editar Perfil</span>
                   </button>
                 </div>
                 
@@ -480,6 +665,300 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
           </div>
         </div>
       </div>
+
+      {/* 4. Edit Profile Modal (Premium, Elegant, and Connected) */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col animate-scale-up">
+            
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-slate-150 flex items-center justify-between bg-slate-50 rounded-t-3xl shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-600 animate-pulse" />
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">Editar Perfil do Estabelecimento</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Atualize os seus dados e configure a sua localização exata para o mapa e distância.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsEditingProfile(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scrollable Form Body */}
+            <div className="p-6 sm:p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              
+              {/* Left Column: General Info */}
+              <div className="space-y-4">
+                <span className="text-[10px] font-mono tracking-widest uppercase block text-slate-400 font-extrabold pb-1 border-b border-slate-100">
+                  Informação Geral
+                </span>
+                
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Nome da Loja</label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                    placeholder="ex: Salão Premium Lisboa"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Telefone</label>
+                    <input
+                      type="text"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: 912345678"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">E-mail</label>
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: geral@loja.pt"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Website (Opcional)</label>
+                    <input
+                      type="text"
+                      value={editWebsite}
+                      onChange={(e) => setEditWebsite(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: www.loja.pt"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Instagram (Sem @)</label>
+                    <input
+                      type="text"
+                      value={editInstagram}
+                      onChange={(e) => setEditInstagram(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: salao_premium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Descrição</label>
+                  <textarea
+                    rows={4}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold resize-none"
+                    placeholder="Fale um pouco sobre o seu salão, especialidades, etc..."
+                  />
+                </div>
+              </div>
+
+              {/* Right Column: Address, Geocoding & GPS Mapping */}
+              <div className="space-y-4">
+                <span className="text-[10px] font-mono tracking-widest uppercase block text-slate-400 font-extrabold pb-1 border-b border-slate-100">
+                  Endereço & Localização Exata
+                </span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Distrito</label>
+                    <input
+                      type="text"
+                      value={editDistrict}
+                      onChange={(e) => setEditDistrict(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: Lisboa"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Cidade</label>
+                    <input
+                      type="text"
+                      value={editCity}
+                      onChange={(e) => setEditCity(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: Lisboa"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Morada / Rua</label>
+                  <input
+                    type="text"
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                    placeholder="ex: Avenida da Liberdade"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Código Postal</label>
+                    <input
+                      type="text"
+                      value={editPostalCode}
+                      onChange={(e) => setEditPostalCode(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: 1250-096"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-mono uppercase tracking-wider">Nº Porta</label>
+                    <input
+                      type="text"
+                      value={editDoorNumber}
+                      onChange={(e) => setEditDoorNumber(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-purple-550 focus:bg-white rounded-xl px-3.5 py-3 text-xs outline-none transition-all font-semibold"
+                      placeholder="ex: 12"
+                    />
+                  </div>
+                </div>
+
+                {/* Localização GPS / Mapa */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-widest font-mono">
+                      Coordenadas no Mapa
+                    </label>
+                    <div className="flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handleUseCurrentLocation}
+                        disabled={geoLocating}
+                        className="bg-purple-50 hover:bg-purple-100 text-purple-600 px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-purple-100"
+                      >
+                        {geoLocating ? (
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Navigation className="w-3 h-3 text-purple-550" />
+                        )}
+                        <span>GPS do Telemóvel</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleGeocodeAddress}
+                        disabled={geocoding}
+                        className="bg-slate-100 hover:bg-slate-250 text-slate-700 px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-slate-200"
+                      >
+                        {geocoding ? (
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Globe className="w-3 h-3" />
+                        )}
+                        <span>Obter de Morada</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[9px] text-slate-500 font-mono">Latitude</label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={editLat ?? ''}
+                        onChange={(e) => setEditLat(e.target.value ? parseFloat(e.target.value) : null)}
+                        className="w-full bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-semibold"
+                        placeholder="ex: 38.7223"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-slate-500 font-mono">Longitude</label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={editLng ?? ''}
+                        onChange={(e) => setEditLng(e.target.value ? parseFloat(e.target.value) : null)}
+                        className="w-full bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-semibold"
+                        placeholder="ex: -9.1393"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Interactive GPS Adjusting Map */}
+                  <div className="w-full h-44 rounded-2xl overflow-hidden border border-slate-200 relative shadow-inner">
+                    {mapApiKey ? (
+                      <APIProvider apiKey={mapApiKey} version="weekly">
+                        <Map
+                          defaultCenter={{ lat: editLat ?? 38.7223, lng: editLng ?? -9.1393 }}
+                          center={{ lat: editLat ?? 38.7223, lng: editLng ?? -9.1393 }}
+                          defaultZoom={15}
+                          zoom={15}
+                          mapId="DASHBOARD_LOJA_REPOSITION_MAP"
+                          clickableIcons={false}
+                          options={{ clickableIcons: false, styles: mapStyles }}
+                          style={{ width: '100%', height: '100%' }}
+                        >
+                          <AdvancedMarker
+                            position={{ lat: editLat ?? 38.7223, lng: editLng ?? -9.1393 }}
+                            draggable={true}
+                            onDragEnd={(e) => {
+                              const lat = e.latLng?.lat();
+                              const lng = e.latLng?.lng();
+                              if (typeof lat === 'number' && typeof lng === 'number') {
+                                setEditLat(lat);
+                                setEditLng(lng);
+                              }
+                            }}
+                          />
+                        </Map>
+                      </APIProvider>
+                    ) : (
+                      <div className="w-full h-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">
+                        Insira as coordenadas manualmente ou use os botões de geolocalização.
+                      </div>
+                    )}
+                  </div>
+                  <span className="block text-[10px] text-slate-400 font-semibold leading-normal">
+                    💡 Dica: Se estiver a registar a partir da loja, clique em <span className="text-purple-600">"GPS do Telemóvel"</span> para obter a localização exata, ou arraste o pino no mapa para ajustar!
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Footer Actions */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-150 flex items-center justify-end gap-3 rounded-b-3xl shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="px-5 py-2.5 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs font-bold text-slate-600 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={savingProfile}
+                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-purple-500/20"
+              >
+                {savingProfile ? (
+                  <><RefreshCw className="w-3.5 h-3.5 animate-spin" /><span>A Gravar...</span></>
+                ) : (
+                  <><Check className="w-4 h-4" /><span>Guardar Alterações</span></>
+                )}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

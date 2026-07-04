@@ -544,6 +544,13 @@ export default function Explore() {
     });
   }, [paginatedBusinesses, availabilities]);
 
+  const mapStyles = [
+    { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
+    { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+    { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
+  ];
+
   const mapApiKey =
     process.env.GOOGLE_MAPS_PLATFORM_KEY ||
     (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
@@ -977,6 +984,9 @@ export default function Explore() {
                       defaultCenter={{ lat: 39.3999, lng: -8.2245 }} // Portugal center roughly
                       defaultZoom={6}
                       mapId="GLAMZO_EXPLORE_MAP"
+                      clickableIcons={false}
+                      styles={mapStyles}
+                      options={{ clickableIcons: false, styles: mapStyles }}
                       internalUsageAttributionIds={[
                         "gmp_mcp_codeassist_v1_aistudio",
                       ]}

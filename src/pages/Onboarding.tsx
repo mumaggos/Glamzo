@@ -129,7 +129,48 @@ export default function Onboarding() {
 
     try {
       const businessSlug = await generateUniqueSlug(draft.step1.name);
-      const { latitude, longitude } = getCoordinatesForCity(draft.step2.district, draft.step2.city);
+      // Attempt to geocode the precise address first!
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      const fullAddress = `${draft.step2.address}, ${draft.step2.doorNumber || ''} ${draft.step2.postalCode || ''} ${draft.step2.city}, Portugal`;
+
+      // 1. Try Google Maps Geocoder if loaded
+      if (window.google?.maps) {
+        try {
+          const geocoder = new window.google.maps.Geocoder();
+          const result = await new Promise<any>((resolve, reject) => {
+            geocoder.geocode({ address: fullAddress }, (results, status) => {
+              if (status === 'OK' && results?.[0]) resolve(results[0]);
+              else reject(new Error('Geocoding failed'));
+            });
+          });
+          latitude = result.geometry.location.lat();
+          longitude = result.geometry.location.lng();
+        } catch (err) {
+          console.warn('Google geocoding in onboarding failed:', err);
+        }
+      }
+
+      // 2. Try Nominatim (OSM) as fallback
+      if (latitude === null || longitude === null) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            latitude = parseFloat(data[0].lat);
+            longitude = parseFloat(data[0].lon);
+          }
+        } catch (err) {
+          console.warn('Nominatim geocoding in onboarding failed:', err);
+        }
+      }
+
+      // 3. Last fallback: getCoordinatesForCity
+      if (latitude === null || longitude === null) {
+        const cityCoords = getCoordinatesForCity(draft.step2.district, draft.step2.city);
+        latitude = cityCoords.latitude;
+        longitude = cityCoords.longitude;
+      }
 
       const businessPayload = {
         owner_id: user.id,

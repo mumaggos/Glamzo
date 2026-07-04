@@ -676,7 +676,9 @@ export default function Home() {
                         defaultZoom={userCoords ? 13 : 8}
                         mapId="HOMEPAGE_ACTIVE_STORES_MAP"
                         disableDefaultUI
+                        clickableIcons={false}
                         styles={mapStyles}
+                        options={{ clickableIcons: false, styles: mapStyles }}
                         style={{ width: '100%', height: '100%' }}
                       >
                         {userCoords && (
@@ -804,7 +806,9 @@ export default function Home() {
                     defaultZoom={userCoords ? 12 : 7}
                     mapId="SEARCH_RESULTS_MAP"
                     disableDefaultUI
+                    clickableIcons={false}
                     styles={mapStyles}
+                    options={{ clickableIcons: false, styles: mapStyles }}
                     style={{width: '100%', height: '100%'}}
                   >
                     {userCoords && (

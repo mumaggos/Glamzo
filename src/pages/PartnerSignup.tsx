@@ -88,8 +88,8 @@ export default function PartnerSignup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (enteredCode.length < 6 || enteredCode.length > 8) {
-      setErrorMsg('Código de verificação inválido.');
+    if (enteredCode.length !== 8) {
+      setErrorMsg('O código de verificação deve ter exatamente 8 dígitos.');
       return;
     }
 
@@ -349,7 +349,7 @@ export default function PartnerSignup() {
                     <div>
                       <h4 className="font-bold text-slate-800 text-sm">Verifique a sua pasta de Spam/Lixo!</h4>
                       <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                        Por vezes, o e-mail de verificação com o código de 6 dígitos pode ir parar à pasta de Spam, Lixo Comercial ou Promoções. Por favor verifique cuidadosamente.
+                        Por vezes, o e-mail de verificação com o código de 8 dígitos pode ir parar à pasta de Spam, Lixo Comercial ou Promoções. Por favor verifique cuidadosamente.
                       </p>
                     </div>
                   </div>
@@ -365,7 +365,7 @@ export default function PartnerSignup() {
                       value={enteredCode}
                       onChange={(e) => setEnteredCode(e.target.value)}
                       className="block w-full px-4 py-4 bg-white border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                      placeholder="000000"
+                      placeholder="00000000"
                       maxLength={8}
                     />
                   </div>
@@ -373,7 +373,7 @@ export default function PartnerSignup() {
                   <div className="flex flex-col gap-3 pt-2">
                     <button
                       type="submit"
-                      disabled={loading || enteredCode.length < 6}
+                      disabled={loading || enteredCode.length !== 8}
                       className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (

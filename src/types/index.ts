@@ -45,6 +45,9 @@ export interface Business {
   qr_scans_count?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
+  door_number?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   created_at: string;
 }
 
