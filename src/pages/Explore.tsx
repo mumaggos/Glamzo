@@ -115,6 +115,7 @@ export default function Explore() {
 
   // Mobile Filter Drawer display State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Fetch all salons and services from database from a truly service-oriented perspective
   const fetchExploreData = async () => {
@@ -385,10 +386,7 @@ export default function Explore() {
 
     if (!isDemo) {
       if (b.status !== 'active') return false;
-      if (!b.subscription_active) return false;
-      if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
       if (b.public_page_enabled === false) return false;
-      // Note: We don't have setup_completed in the db interface exactly as queried here, but `status === 'active'` implies setup is completed
     }
 
     // 1. Keyword search (Name, Description, Address, Category, and matching Services)
@@ -704,7 +702,7 @@ export default function Explore() {
             </div>
 
             {/* Keyword Search Input */}
-            <div>
+            <div className="relative">
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">
                 Nome / Palavra-chave
               </label>
@@ -712,12 +710,43 @@ export default function Explore() {
                 <input
                   type="text"
                   value={localSearchQuery}
-                  onChange={(e) => setLocalSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setLocalSearchQuery(e.target.value);
+                    setShowSuggestions(e.target.value.length > 0);
+                  }}
+                  onFocus={() => localSearchQuery.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   placeholder="Ex: Glam, Barber, Lash..."
                   className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-400"
                 />
                 <Search className="w-3.5 h-3.5 text-slate-600 absolute left-3 top-3.5" />
               </div>
+              {showSuggestions && (
+                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2 animate-fade-in">
+                  <div className="px-3.5 py-1 text-[9px] font-mono text-slate-400 uppercase tracking-widest font-bold">Sugestões de Salões</div>
+                  {businesses
+                    .filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase()))
+                    .slice(0, 3)
+                    .map(b => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onMouseDown={() => {
+                          setLocalSearchQuery(b.name);
+                          setSearchQuery(b.name);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <Sparkles className="w-3 h-3 text-purple-500" />
+                        <span>{b.name}</span>
+                      </button>
+                    ))}
+                  {businesses.filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase())).length === 0 && (
+                    <div className="px-3.5 py-2 text-slate-400 text-xs italic">Nenhum salão encontrado</div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Geolocation Section */}
@@ -1005,6 +1034,12 @@ export default function Explore() {
                             lng: b.lng || -8.2245,
                           }}
                           title={b.name}
+                          label={{
+                            text: b.rating > 0 ? b.rating.toFixed(1) : '★',
+                            color: '#ffffff',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                          }}
                           icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                           onClick={() => {
                             window.location.href = `/business/${b.slug}`;

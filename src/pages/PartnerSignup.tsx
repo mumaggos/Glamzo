@@ -88,8 +88,8 @@ export default function PartnerSignup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (enteredCode.length !== 8) {
-      setErrorMsg('O código de verificação deve ter exatamente 8 dígitos.');
+    if (enteredCode.length !== 8 && enteredCode.length !== 6) {
+      setErrorMsg('O código de verificação deve ter 6 ou 8 dígitos.');
       return;
     }
 
@@ -373,7 +373,7 @@ export default function PartnerSignup() {
                   <div className="flex flex-col gap-3 pt-2">
                     <button
                       type="submit"
-                      disabled={loading || enteredCode.length !== 8}
+                      disabled={loading || (enteredCode.length !== 8 && enteredCode.length !== 6)}
                       className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (

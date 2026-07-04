@@ -162,16 +162,11 @@ export default function Home() {
   }, [localSearchQuery, activeCategory, searchLocation, searchService]);
 
   const handleCategoryClick = (catName: string) => {
-    setActiveCategory(catName);
-    setSearchService(catName);
-    setIsSearching(true);
-    setSearchParams({ category: catName });
+    navigate(`/explore?category=${encodeURIComponent(catName)}`);
   };
 
   const handleCityClick = (city: string) => {
-    setSearchLocation(city);
-    setIsSearching(true);
-    setSearchParams({ city: city });
+    navigate(`/explore?city=${encodeURIComponent(city)}`);
   };
 
   const handleClearSearch = () => {
@@ -470,8 +465,12 @@ export default function Home() {
               {/* Action Button */}
               <button 
                 onClick={() => {
-                  setSearchQuery(localSearchQuery);
-                  setIsSearching(true);
+                  const params = new URLSearchParams();
+                  if (localSearchQuery.trim()) params.set("q", localSearchQuery);
+                  if (searchLocation.trim()) params.set("city", searchLocation);
+                  if (searchService.trim()) params.set("service", searchService);
+                  if (activeCategory) params.set("category", activeCategory);
+                  navigate(`/explore?${params.toString()}`);
                 }}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-sm uppercase tracking-wider py-4 px-8 rounded-2xl md:self-end transition-all shadow-lg hover:shadow-xl hover:shadow-purple-900/10 shrink-0 flex items-center justify-center gap-2"
               >
@@ -692,6 +691,12 @@ export default function Home() {
                             key={b.id} 
                             position={{ lat: b.lat, lng: b.lng }}
                             title={b.name}
+                            label={{
+                              text: b.rating > 0 ? b.rating.toFixed(1) : '★',
+                              color: '#ffffff',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                            }}
                             icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                             onClick={() => {
                               navigate("/business/" + b.slug);
@@ -821,6 +826,12 @@ export default function Home() {
                         key={b.id} 
                         position={{ lat: b.lat, lng: b.lng }}
                         title={b.name}
+                        label={{
+                          text: b.rating > 0 ? b.rating.toFixed(1) : '★',
+                          color: '#ffffff',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                        }}
                         icon="https://maps.google.com/mapfiles/ms/icons/purple-dot.png"
                         onClick={() => {
                           navigate("/business/" + b.slug);
