@@ -4,77 +4,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { 
   Building2, Scissors, CreditCard, Landmark, CheckCircle, 
-  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText,
-  Camera, Upload
+  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText
 } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { generateUniqueSlug } from '../../utils/slugify';
-import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
-
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  "";
-
-const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (map && coordinates) {
-      map.panTo(coordinates);
-      map.setZoom(16);
-    }
-  }, [map, coordinates]);
-  return null;
-};
-
-const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: number; price: number }[]> = {
-  'Cabelo & Barbearia': [
-    { name: 'Corte de Cabelo Masculino', duration: 30, price: 15 },
-    { name: 'Barba Clássica', duration: 20, price: 10 },
-    { name: 'Corte + Barba', duration: 45, price: 22 },
-    { name: 'Corte de Cabelo Feminino', duration: 45, price: 25 },
-    { name: 'Lavagem & Brushing', duration: 30, price: 18 },
-    { name: 'Coloração Profissional', duration: 90, price: 40 },
-    { name: 'Corte Infantil', duration: 20, price: 12 },
-  ],
-  'Nails & Beauty': [
-    { name: 'Manicure Simples', duration: 30, price: 12 },
-    { name: 'Unhas de Gel', duration: 60, price: 25 },
-    { name: 'Pedicure Completa', duration: 45, price: 20 },
-    { name: 'Nail Art Especial', duration: 30, price: 10 },
-    { name: 'Design de Sobrancelhas', duration: 20, price: 8 },
-    { name: 'Aplicação de Pestanas', duration: 90, price: 45 },
-    { name: 'Maquilhagem Profissional', duration: 60, price: 35 },
-  ],
-  'Estética': [
-    { name: 'Limpeza de Pele Profunda', duration: 60, price: 35 },
-    { name: 'Depilação a Cera (Pernas)', duration: 30, price: 15 },
-    { name: 'Depilação Laser diodo', duration: 45, price: 30 },
-    { name: 'Tratamento Facial Hidratante', duration: 45, price: 40 },
-    { name: 'Tratamento Corporal Redutor', duration: 60, price: 45 },
-    { name: 'Microagulhamento', duration: 45, price: 50 },
-  ],
-  'Wellness': [
-    { name: 'Massagem Relaxante', duration: 50, price: 30 },
-    { name: 'Massagem Terapêutica', duration: 60, price: 40 },
-    { name: 'Massagem Desportiva', duration: 50, price: 35 },
-    { name: 'Drenagem Linfática', duration: 60, price: 35 },
-    { name: 'Sessão de Reflexologia', duration: 30, price: 20 },
-    { name: 'Sessão de Reiki', duration: 45, price: 25 },
-  ],
-  'Ao domicílio': [
-    { name: 'Barbeiro ao Domicílio', duration: 45, price: 25 },
-    { name: 'Cabeleireiro ao Domicílio', duration: 60, price: 35 },
-    { name: 'Manicure ao Domicílio', duration: 45, price: 20 },
-    { name: 'Massagem Relaxante ao Domicílio', duration: 60, price: 45 },
-  ],
-  'Noivas & Eventos': [
-    { name: 'Maquilhagem de Noiva', duration: 90, price: 80 },
-    { name: 'Penteado de Noiva', duration: 90, price: 80 },
-    { name: 'Maquilhagem para Convidados', duration: 45, price: 40 },
-    { name: 'Packs de Casamento Completo', duration: 180, price: 250 },
-  ],
-};
 
 export default function SetupWizard() {
   const { user } = useAuth();
@@ -94,45 +26,6 @@ export default function SetupWizard() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
-  const [logoUrl, setLogoUrl] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
-
-  const triggerGeocoding = async () => {
-    if (!address || !city) return;
-    try {
-      const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
-      let lat = null;
-      let lng = null;
-      
-      if (window.google?.maps) {
-        const geocoder = new window.google.maps.Geocoder();
-        const result = await new Promise<any>((resolve, reject) => {
-          geocoder.geocode({ address: fullAddress }, (results, status) => {
-            if (status === 'OK' && results?.[0]) resolve(results[0]);
-            else reject(new Error('Geocoding failed'));
-          });
-        });
-        lat = result.geometry.location.lat();
-        lng = result.geometry.location.lng();
-      } else {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          lat = parseFloat(data[0].lat);
-          lng = parseFloat(data[0].lon);
-        }
-      }
-      
-      if (lat && lng) {
-        setCoordinates({ lat, lng });
-      }
-    } catch (e) {
-      console.warn('Geocoding error:', e);
-    }
-  };
 
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
@@ -237,10 +130,6 @@ export default function SetupWizard() {
         setAddress(currentBiz.address || '');
         setCity(currentBiz.city || '');
         setPostalCode(currentBiz.postal_code || '');
-        setCategory(currentBiz.category || MAIN_CATEGORIES[0].name);
-        setLogoUrl(currentBiz.logo_url || '');
-        setCoverUrl(currentBiz.cover_url || '');
-        setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
         
         // Restore step
         const stepParam = searchParams.get('step');
@@ -305,39 +194,6 @@ export default function SetupWizard() {
     setStep(targetStep);
   };
 
-  
-  const uploadImage = async (file: File, bucket: string, setter: (url: string) => void) => {
-    try {
-      setUploadingImage(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${user?.id}/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file);
-      if (uploadError) {
-        // Fallback: use FileReader to read as Base64 so it works perfectly even if buckets aren't provisioned or set up yet!
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setter(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-        return;
-      }
-      
-      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      setter(data.publicUrl);
-    } catch (error) {
-      console.error('Error uploading image, using base64 fallback:', error);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setter(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleNext = async () => {
     setErrorMsg(null);
     if (!user || !business) return;
@@ -349,54 +205,22 @@ export default function SetupWizard() {
       }
       setLoading(true);
       try {
-        let lat = coordinates?.lat || null;
-        let lng = coordinates?.lng || null;
-        
-        if (window.google?.maps && !lat) {
-           try {
-             const geocoder = new window.google.maps.Geocoder();
-             const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
-             const result = await new Promise<any>((resolve, reject) => {
-               geocoder.geocode({ address: fullAddress }, (results, status) => {
-                 if (status === 'OK' && results?.[0]) resolve(results[0]);
-                 else reject(new Error('Geocoding failed'));
-               });
-             });
-             lat = result.geometry.location.lat();
-             lng = result.geometry.location.lng();
-           } catch(err) { console.warn('Geocoding failed', err); }
-        } else if (!lat) {
-           try {
-             const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
-             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
-             const data = await res.json();
-             if (data && data.length > 0) {
-               lat = parseFloat(data[0].lat);
-               lng = parseFloat(data[0].lon);
-             }
-           } catch(err) { console.warn('Nominatim failed', err); }
-        }
-
         let slug = business.slug;
         if (slug.startsWith('loja-') && name) {
           slug = await generateUniqueSlug(name);
         }
-        const updateData = {
-          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2,
-          category, logo_url: logoUrl, cover_url: coverUrl,
-          latitude: lat, longitude: lng
-        };
-        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+        const { error } = await supabase.from('businesses').update({
+          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2
+        }).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
-            delete (updateData as any).setup_step;
-            await supabase.from('businesses').update(updateData).eq('id', business.id);
+            await supabase.from('businesses').update({ name, phone, email, address, city, postal_code: postalCode, slug }).eq('id', business.id);
           } else {
             throw error;
           }
         }
-        setBusiness({ ...business, ...updateData, setup_step: 2 });
+        setBusiness({ ...business, name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2 });
         setStep(2);
       } catch (err: any) {
         setErrorMsg(err.message);
@@ -439,58 +263,25 @@ export default function SetupWizard() {
            }, { onConflict: 'business_id' });
         }
 
-        let res;
-        try {
-          res = await fetch('/api/stripe/create-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              businessId: business.id,
-              planName: selectedPlan,
-              successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
-              cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
-            })
-          });
-        } catch (fetchErr: any) {
-          console.warn('Stripe checkout fetch failed, auto-bypassing for preview/testing:', fetchErr);
-          await supabase.from('businesses').update({
-            plan: selectedPlan,
-            public_page_enabled: true
-          }).eq('id', business.id);
-          await updateSetupStep(4);
-          return;
-        }
-        
-        let data: any = {};
-        if (res && res.ok) {
-          try {
-            data = await res.json();
-          } catch (e) {
-            console.warn('Failed to parse Stripe JSON response');
-          }
-        } else if (res) {
-          try {
-            data = await res.json();
-          } catch (e) {}
-        }
-
+        const res = await fetch('/api/stripe/create-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: business.id,
+            planName: selectedPlan,
+            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
+          })
+        });
+        const data = await res.json();
         if (data.url) {
           window.location.href = data.url;
         } else {
-          console.warn('Stripe Checkout keys not configured, auto-bypassing for testing:', data.error);
-          await supabase.from('businesses').update({
-            plan: selectedPlan,
-            public_page_enabled: true
-          }).eq('id', business.id);
-          await updateSetupStep(4);
+          throw new Error(data.error || 'Failed to create checkout session');
         }
       } catch (e: any) {
-        console.warn('General checkout setup warning, auto-bypassing:', e);
-        await supabase.from('businesses').update({
-          plan: selectedPlan,
-          public_page_enabled: true
-        }).eq('id', business.id);
-        await updateSetupStep(4);
+        setErrorMsg(e.message);
+        setLoading(false);
       }
     } else if (step === 4) {
       await updateSetupStep(5);
@@ -599,85 +390,10 @@ export default function SetupWizard() {
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Informações da Loja</h2>
             <div className="space-y-4">
-              
-              {/* Cover & Profile Image Uploaders */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Imagens do Estabelecimento (Capa e Perfil)</label>
-                <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 h-44 sm:h-52 flex flex-col justify-end">
-                  {/* Cover image backdrop */}
-                  {coverUrl ? (
-                    <img src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-100/50">
-                      <Upload className="w-8 h-8 text-slate-300 mb-1" />
-                      <span className="text-xs font-medium">Carregar Foto de Capa</span>
-                    </div>
-                  )}
-                  {/* Cover photo input label */}
-                  <label className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow flex items-center gap-2 backdrop-blur-sm z-10">
-                    <Camera className="w-4 h-4" />
-                    <span>Alterar Capa</span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) uploadImage(file, 'banners', setCoverUrl);
-                      }} 
-                    />
-                  </label>
-
-                  {/* Profile photo overlapping avatar */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-                    <div className="relative w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden flex items-center justify-center group">
-                      {logoUrl ? (
-                        <img src={logoUrl} alt="Perfil" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-400">
-                          <Building2 className="w-8 h-8 text-slate-300" />
-                        </div>
-                      )}
-                      
-                      <label className="absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                        <Camera className="w-5 h-5 text-white" />
-                        <span className="text-[9px] font-bold text-white uppercase mt-1">Alterar</span>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) uploadImage(file, 'logos', setLogoUrl);
-                          }} 
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-500 text-center mt-2">Clique em "Alterar Capa" para o banner superior e passe o rato por cima do círculo central para alterar o seu perfil comercial.</p>
-              </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome do Estabelecimento *</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder="Ex: Barbearia Central" />
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Barbearia Central" />
               </div>
-
-              {/* Category selector */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria do Estabelecimento *</label>
-                <select 
-                  value={category} 
-                  onChange={e => setCategory(e.target.value)} 
-                  className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-slate-800"
-                >
-                  {MAIN_CATEGORIES.map(cat => (
-                    <option key={cat.name} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-slate-500 mt-1">Isso ajuda a interligar e filtrar os seus serviços para que os clientes o encontrem facilmente.</p>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Telefone *</label>
@@ -690,85 +406,18 @@ export default function SetupWizard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada Completa *</label>
-                <input type="text" value={address} onChange={e => setAddress(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
+                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
-                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
-                  <input type="text" value={city} onChange={e => setCity(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
               </div>
-
-              <div className="flex justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={triggerGeocoding}
-                  className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-purple-650" />
-                  <span>Encontrar no Mapa 📍</span>
-                </button>
-              </div>
-
-              {/* Draggable location on map */}
-              <div className="pt-2">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Localização Exata no Mapa *</label>
-                <p className="text-xs text-slate-500 mb-2.5">Arraste o marcador ou clique no mapa para posicionar o seu estabelecimento com precisão de modo a não haver erro de distância.</p>
-                <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
-                  {API_KEY ? (
-                    <APIProvider apiKey={API_KEY}>
-                      <Map
-                        defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
-                        defaultZoom={coordinates ? 15 : 7}
-                        mapId="SETUP_WIZARD_MAP_LOCATION"
-                        onClick={(e) => {
-                          if (e.detail.latLng) {
-                            setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
-                          }
-                        }}
-                        disableDefaultUI
-                        style={{ width: '100%', height: '100%' }}
-                      >
-                        <MapUpdater coordinates={coordinates} />
-                        <AdvancedMarker 
-                          position={coordinates || { lat: 39.3999, lng: -8.2245 }}
-                          draggable
-                          onDragEnd={(e) => {
-                            if (e.latLng) {
-                              setCoordinates({ lat: e.latLng.lat(), lng: e.latLng.lng() });
-                            }
-                          }}
-                        >
-                          <div className="relative flex flex-col items-center">
-                            <div className="bg-purple-600 text-white p-2 rounded-full shadow-xl border-2 border-white">
-                              <MapPin className="w-5 h-5 fill-current" />
-                            </div>
-                            <div className="absolute top-10 bg-slate-900 text-white text-[9px] font-bold px-2 py-1 rounded shadow-md whitespace-nowrap opacity-90">
-                              Arraste até à sua Loja
-                            </div>
-                          </div>
-                        </AdvancedMarker>
-                      </Map>
-                    </APIProvider>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                      <MapPin className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
-                      <span className="text-sm font-bold text-slate-700">Pré-visualização do Mapa</span>
-                      <span className="text-xs text-slate-500 mt-1 max-w-xs">Insira a morada correta acima. As coordenadas serão geradas automaticamente ou configuradas no mapa.</span>
-                      {coordinates && (
-                        <div className="mt-3 text-[10px] font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded">
-                          Coords: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
             </div>
           </div>
         )}
@@ -789,57 +438,11 @@ export default function SetupWizard() {
               ))}
             </div>
 
-            {/* Recommended Quick Add Services */}
-            <div className="mb-6 p-5 border border-purple-100 rounded-xl bg-purple-50/20">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Serviços Recomendados ({category})</h4>
-              <p className="text-xs text-slate-500 mb-3">Clique para adicionar instantaneamente os serviços mais solicitados:</p>
-              <div className="flex flex-wrap gap-2">
-                {(POPULAR_SERVICES_BY_CATEGORY[category] || POPULAR_SERVICES_BY_CATEGORY['Cabelo & Barbearia']).map((ps) => {
-                  const isAdded = services.some(s => s.name.toLowerCase() === ps.name.toLowerCase());
-                  return (
-                    <button
-                      key={ps.name}
-                      type="button"
-                      disabled={isAdded}
-                      onClick={async () => {
-                        const { data, error } = await supabase.from('services').insert({
-                          business_id: business.id,
-                          name: ps.name, 
-                          duration_minutes: ps.duration, 
-                          price: ps.price, 
-                          is_active: true
-                        }).select().maybeSingle();
-                        if (!error && data) {
-                          setServices([...services, data]);
-                        }
-                      }}
-                      className={`text-xs px-3.5 py-2 rounded-xl border font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isAdded 
-                          ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                          : 'bg-white border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm'
-                      }`}
-                    >
-                      <span>{isAdded ? '✓' : '+'}</span>
-                      <span>{ps.name} ({ps.price}€)</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
               <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Serviço</h4>
               <div className="space-y-4">
                 <div>
                   <input id="new-svc-name" type="text" placeholder="Nome do Serviço" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
-                </div>
-                <div>
-                  <select id="new-svc-cat" className="px-3 py-2 border border-slate-300 rounded text-sm w-full bg-white">
-                    <option value="">Selecione o Tipo de Serviço (Opcional)</option>
-                    {(SUBCATEGORIES_BY_MAIN[category] || []).map((sub: string) => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input id="new-svc-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />

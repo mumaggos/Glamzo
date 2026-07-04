@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -7,512 +7,630 @@ import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { 
   Building2, ArrowLeft, ArrowRight, Check, Store, Sparkles, 
-  MapPin, Phone, Globe, Image as ImageIcon, FileText, Loader2, Compass, Map as MapIcon,
-  CreditCard, Clock, Scissors, Users, User, Tablet
+  MapPin, Phone, Globe, Image, FileText, Loader2, Compass 
 } from 'lucide-react';
-
-const DRAFT_KEY = 'wizard_v1.5_draft';
-
-const defaultDraft = {
-  step1: { name: '', category: 'Cabelo & Barbearia', type: '', description: '', languages: [], phone: '', website: '' },
-  step2: { country: 'Portugal', district: 'Lisboa', city: 'Lisboa', postalCode: '', address: '', doorNumber: '' },
-  step3: { logoUrl: '', coverUrl: '', gallery: [] },
-  step4: { hours: [] },
-  step5: { services: [] },
-  step6: { staff: [] },
-  step7: { plan: 'PRO' }, // PRO, PRO_TERMINAL
-  step8: { onlinePayments: true }
-};
 
 export default function Onboarding() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 9;
-
-  const [draft, setDraft] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Storage
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
-
-  useEffect(() => {
+  // Redirect if business already exists
+  React.useEffect(() => {
     if (user) {
-      supabase.from('businesses').select('id, setup_completed').eq('owner_id', user.id).maybeSingle().then(({ data }) => {
-        if (data?.setup_completed) {
-          navigate('/dashboard', { replace: true });
-        } else {
-          const saved = localStorage.getItem(DRAFT_KEY);
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              setDraft(parsed.draft || defaultDraft);
-              setCurrentStep(parsed.step || 1);
-            } catch {
-              setDraft(defaultDraft);
-            }
-          } else {
-            setDraft(defaultDraft);
+      supabase
+        .from('businesses')
+        .select('id, stripe_customer_id, subscription_status')
+        .eq('owner_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) {
+            console.log("[Onboarding Redirect Check] Business already exists. Auto-redirecting to dashboard.", data);
+            navigate('/dashboard', { replace: true });
           }
-          setLoading(false);
-        }
-      });
-    } else {
-      // If not user, wait or redirect to login
-      const timer = setTimeout(() => {
-        if (!user) navigate('/partner/login', { replace: true });
-      }, 2000);
-      return () => clearTimeout(timer);
+        });
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (draft) {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ draft, step: currentStep }));
-    }
-  }, [draft, currentStep]);
+  // Multi-step progress tracker (1 to 7)
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 7;
 
-  const updateDraft = (stepKey: string, field: string, value: any) => {
-    setDraft((prev: any) => ({
-      ...prev,
-      [stepKey]: {
-        ...prev[stepKey],
-        [field]: value
+  // Form Fields
+  const [name, setName] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['Cabelo & Barbearia']);
+  const [category, setCategory] = useState('Cabelo & Barbearia');
+  const [district, setDistrict] = useState('Lisboa');
+  const [city, setCity] = useState('Lisboa');
+  const [doorNumber, setDoorNumber] = useState('');
+  const [address, setAddress] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [website, setWebsite] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+  const [description, setDescription] = useState('');
+
+  // Storage upload states
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
+  // General submission flags
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Re-hydrate any pending business data created by PartnerSignup that was blocked by email confirmation
+  React.useEffect(() => {
+    try {
+      const pendingDataStr = localStorage.getItem('pending_business_payload');
+      if (pendingDataStr) {
+        const payload = JSON.parse(pendingDataStr);
+        if (payload.name) setName(payload.name);
+        if (payload.district) setDistrict(payload.district);
+        if (payload.city) setCity(payload.city);
+        if (payload.address) setAddress(payload.address);
+        if (payload.door_number) setDoorNumber(payload.door_number);
+        if (payload.postal_code) setPostalCode(payload.postal_code);
+        if (payload.phone) setPhone(payload.phone);
+        if (payload.email) setEmail(payload.email);
+        if (payload.category) {
+           setCategory(payload.category);
+           setSelectedCategories([payload.category]);
+        }
+        if (payload.whatsapp) setWhatsapp(payload.whatsapp);
+        if (payload.description) setDescription(payload.description);
+        
+        // Clear it so it doesn't perpetually interfere
+        localStorage.removeItem('pending_business_payload');
       }
-    }));
-  };
+    } catch (e) {
+      console.warn('Could not parse pending business data:', e);
+    }
+  }, []);
 
   const handleNext = () => {
     setErrorMsg(null);
-    if (currentStep === 1 && !draft.step1.name.trim()) { setErrorMsg('Nome da loja é obrigatório.'); return; }
-    if (currentStep === 2 && !draft.step2.address.trim()) { setErrorMsg('Morada é obrigatória.'); return; }
-    
+    if (currentStep === 1 && !name.trim()) {
+      setErrorMsg('Por favor, informe o nome do seu negócio.');
+      return;
+    }
+    if (currentStep === 3 && !city.trim()) {
+      setErrorMsg('Por favor, informe a cidade do estabelecimento.');
+      return;
+    }
+    if (currentStep === 4 && !address.trim()) {
+      setErrorMsg('Por favor, informe o endereço físico completo.');
+      return;
+    }
+    if (currentStep === 5 && !phone.trim()) {
+      setErrorMsg('O telefone de contato comercial é obrigatório.');
+      return;
+    }
+
     if (currentStep < totalSteps) {
-      setCurrentStep(c => c + 1);
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
     setErrorMsg(null);
     if (currentStep > 1) {
-      setCurrentStep(c => c - 1);
+      setCurrentStep(currentStep - 1);
     }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'cover') => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    type === 'logo' ? setUploadingLogo(true) : setUploadingCover(true);
+
+    if (type === 'logo') setUploadingLogo(true);
+    else setUploadingCover(true);
     setErrorMsg(null);
+
     try {
+      // Direct WebP browser-side optimization & compression
       const optimized = await optimizeImageBeforeUpload(file);
       const filePath = `businesses/${user.id}-${type}-${Date.now()}.webp`;
-      const { error: uploadErr } = await supabase.storage.from('avatars').upload(filePath, optimized.blob, { contentType: 'image/webp', upsert: true });
-      if (uploadErr) throw uploadErr;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      updateDraft('step3', type === 'logo' ? 'logoUrl' : 'coverUrl', publicUrl);
+
+      // Upload optimized high-performance .webp file directly with Cache-Control
+      const { data, error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, optimized.blob, {
+          cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
+          contentType: 'image/webp',
+          upsert: true,
+        });
+
+      if (uploadErr) {
+        throw new Error(
+          `${uploadErr.message}. Experimente colar uma URL dinâmica como fallback caso o bucket de Storage não esteja com permissão pública.`
+        );
+      }
+
+      // Retrieve public URL from storage
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      if (type === 'logo') {
+        setLogoUrl(publicUrl);
+      } else {
+        setCoverUrl(publicUrl);
+      }
     } catch (err: any) {
-      setErrorMsg('Falha ao enviar imagem.');
+      console.error(err);
+      setErrorMsg(err.message || 'Falha ao enviar arquivo via Supabase Storage.');
     } finally {
-      type === 'logo' ? setUploadingLogo(false) : setUploadingCover(false);
+      setUploadingLogo(false);
+      setUploadingCover(false);
     }
   };
 
-  const submitAll = async () => {
+  const handleFinishOnboarding = async () => {
     if (!user) return;
     setSubmitting(true);
     setErrorMsg(null);
 
     try {
-      const businessSlug = await generateUniqueSlug(draft.step1.name);
-      // Attempt to geocode the precise address first!
-      let latitude: number | null = null;
-      let longitude: number | null = null;
-      const fullAddress = `${draft.step2.address}, ${draft.step2.doorNumber || ''} ${draft.step2.postalCode || ''} ${draft.step2.city}, Portugal`;
+      // 1. Generate unique URL slug based on business name
+      const businessSlug = await generateUniqueSlug(name);
 
-      // 1. Try Google Maps Geocoder if loaded
-      if (window.google?.maps) {
-        try {
-          const geocoder = new window.google.maps.Geocoder();
-          const result = await new Promise<any>((resolve, reject) => {
-            geocoder.geocode({ address: fullAddress }, (results, status) => {
-              if (status === 'OK' && results?.[0]) resolve(results[0]);
-              else reject(new Error('Geocoding failed'));
-            });
-          });
-          latitude = result.geometry.location.lat();
-          longitude = result.geometry.location.lng();
-        } catch (err) {
-          console.warn('Google geocoding in onboarding failed:', err);
-        }
-      }
+      // Get computed coordinates from district + city mapping
+      const { latitude, longitude } = getCoordinatesForCity(district, city);
 
-      // 2. Try Nominatim (OSM) as fallback
-      if (latitude === null || longitude === null) {
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            latitude = parseFloat(data[0].lat);
-            longitude = parseFloat(data[0].lon);
-          }
-        } catch (err) {
-          console.warn('Nominatim geocoding in onboarding failed:', err);
-        }
-      }
-
-      // 3. Last fallback: getCoordinatesForCity
-      if (latitude === null || longitude === null) {
-        const cityCoords = getCoordinatesForCity(draft.step2.district, draft.step2.city);
-        latitude = cityCoords.latitude;
-        longitude = cityCoords.longitude;
-      }
-
+      // 2. Prepare database model payload
       const businessPayload = {
         owner_id: user.id,
-        name: draft.step1.name,
+        name,
         slug: businessSlug,
-        description: draft.step1.description || null,
-        category: draft.step1.category || 'Cabelo & Barbearia',
-        phone: draft.step1.phone,
-        website: draft.step1.website || null,
-        district: draft.step2.district,
-        city: draft.step2.city,
-        address: draft.step2.address,
-        postal_code: draft.step2.postalCode || null,
-        door_number: draft.step2.doorNumber || null,
+        description: description || null,
+        category: selectedCategories[0] || 'Cabelo & Barbearia',
+        categories: selectedCategories, // Store multiple categories as text[]
+        phone,
+        email: email || user.email || null,
+        district,
+        city,
+        address,
+        postal_code: postalCode || null,
+        door_number: doorNumber || null,
         latitude,
         longitude,
-        logo_url: draft.step3.logoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&h=150&q=70',
-        cover_url: draft.step3.coverUrl || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=400&q=75',
-        status: 'active',
-        setup_completed: true,
+        logo_url: logoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&h=150&q=70', // Elegant default icon fallback
+        cover_url: coverUrl || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&h=400&q=75', // Elegant header fallback
+        whatsapp: whatsapp || null,
+        instagram: instagram || null,
+        website: website || null,
         is_verified: false,
-        subscription_status: 'trialing'
+        status: 'setup',
       };
 
-      // 1. Insert Business
-      let { data: bData, error: insertError } = await supabase.from('businesses').insert(businessPayload).select('id').single();
-      
+      // 3. Write record into businesses table with fallback in case columns are missing
+      let { error: insertError } = await supabase
+        .from('businesses')
+        .insert(businessPayload);
+
       if (insertError) {
-        // Fallback for missing columns
-        if (insertError.code === '42703' || insertError.message?.includes('column')) {
-          const fallback: any = { ...businessPayload };
-          delete fallback.latitude; delete fallback.longitude; delete fallback.door_number; delete fallback.setup_completed; delete fallback.subscription_status;
-          const retry = await supabase.from('businesses').insert(fallback).select('id').single();
-          insertError = retry.error;
-          bData = retry.data;
+        // If it failed because database schema doesn't have the new fields, retry without them
+        const isColumnErr = insertError.code === '42703' || insertError.message?.includes('column');
+        if (isColumnErr) {
+          console.warn('Geo, door number, or categories columns not available in table schema. Retrying fallback insertion...');
+          const fallbackPayload = { ...businessPayload };
+          delete (fallbackPayload as any).latitude;
+          delete (fallbackPayload as any).longitude;
+          delete (fallbackPayload as any).door_number;
+          delete (fallbackPayload as any).categories;
+
+          const retryResult = await supabase
+            .from('businesses')
+            .insert(fallbackPayload);
+          insertError = retryResult.error;
         }
-        if (insertError) throw insertError;
-      }
-      
-      const bId = bData?.id;
-
-      // 2. Insert Services if any (mocking basic insert)
-      if (bId && draft.step5.services.length > 0) {
-        const srvPayloads = draft.step5.services.map((s: any) => ({
-          business_id: bId,
-          name: s.name,
-          price: parseFloat(s.price) || 0,
-          duration_minutes: parseInt(s.duration) || 30,
-          is_active: true
-        }));
-        await supabase.from('services').insert(srvPayloads);
       }
 
-      // 3. Update Profile role
-      await supabase.from('profiles').update({ role: 'business' }).eq('id', user.id);
-      
-      // Clear draft
-      localStorage.removeItem(DRAFT_KEY);
+      if (insertError) {
+        throw insertError;
+      }
+
+      // 4. Update owner role to 'business' in profiles table
+      const { error: roleUpError } = await supabase
+        .from('profiles')
+        .update({ role: 'business' })
+        .eq('id', user.id);
+
+      if (roleUpError) {
+        console.warn('Silent issue attempting to update role:', roleUpError);
+      } else {
+        localStorage.setItem(`local_role_${user.id}`, 'business');
+      }
+
+      // 5. Force session and profile parameters reload
       await refreshProfile();
-      navigate('/dashboard', { replace: true });
 
+      // Go directly to newly populated business dashboard URL
+      navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Erro ao guardar dados. Tente novamente.');
+      setErrorMsg(err.message || 'Houve um erro de validação ao criar o seu estabelecimento físico no banco de dados. Verifique sua conexão.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading || !draft) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>;
-  }
-
-  const renderStep = () => {
+  // Helper metadata to show step summaries
+  const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 1: Dados da Loja</h2>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Nome Comercial *</label>
-              <input type="text" value={draft.step1.name} onChange={e => updateDraft('step1', 'name', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Ex: Glamour Spa" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Categoria</label>
-                <select value={draft.step1.category} onChange={e => updateDraft('step1', 'category', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
-                  <option value="Cabelo & Barbearia">Cabelo & Barbearia</option>
-                  <option value="Nails & Beauty">Nails & Beauty</option>
-                  <option value="Estética">Estética</option>
-                  <option value="Bem-Estar">Bem-Estar</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Telefone *</label>
-                <input type="text" value={draft.step1.phone} onChange={e => updateDraft('step1', 'phone', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Ex: 912 345 678" />
+            <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-rose-800">
+              <Store className="w-6 h-6 shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold">Seja bem-vindo ao Hub de Parceiros!</span>
+                <p className="text-slate-500 mt-0.5">Criaremos o seu estabelecimento no banco de dados para que você possa divulgar sua agenda profissional.</p>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Descrição</label>
-              <textarea value={draft.step1.description} onChange={e => updateDraft('step1', 'description', e.target.value)} rows={3} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Apresente o seu espaço..." />
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Nome Comercial do Estabelecimento *</label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-850"
+                placeholder="Ex: Glamour Spa & Cabelo"
+              />
             </div>
           </div>
         );
+
       case 2:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 2: Morada Exata (Para o Mapa)</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Distrito *</label>
-                <select value={draft.step2.district} onChange={e => { updateDraft('step2', 'district', e.target.value); updateDraft('step2', 'city', PORTUGAL_GEO[e.target.value]?.[0] || ''); }} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
-                  {Object.keys(PORTUGAL_GEO).map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Concelho / Cidade *</label>
-                <select value={draft.step2.city} onChange={e => updateDraft('step2', 'city', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
-                  {(PORTUGAL_GEO[draft.step2.district] || []).map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Morada (Rua/Avenida) *</label>
-              <input type="text" value={draft.step2.address} onChange={e => updateDraft('step2', 'address', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Rua de Exemplo" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Número *</label>
-                <input type="text" value={draft.step2.doorNumber} onChange={e => updateDraft('step2', 'doorNumber', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="123" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Código Postal *</label>
-                <input type="text" value={draft.step2.postalCode} onChange={e => updateDraft('step2', 'postalCode', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="1000-100" />
-              </div>
-            </div>
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2">
-              <MapIcon className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-800">Esta morada será usada para colocar o seu estabelecimento no mapa e nas pesquisas de clientes próximos de si.</p>
+            <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Categorias de beleza do seu estabelecimento (Selecione todas as aplicáveis)</span>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { key: 'Cabelo & Barbearia', label: '💇 Cabelo & Barbearia' },
+                { key: 'Nails & Beauty', label: '💅 Nails & Beauty' },
+                { key: 'Estética', label: '✨ Estética' },
+                { key: 'Wellness', label: '💆 Wellness' },
+                { key: 'Ao domicílio', label: '🏠 Ao domicílio' },
+                { key: 'Noivas & Eventos', label: '👰 Noivas & Eventos' }
+              ].map((c) => {
+                const isSelected = selectedCategories.includes(c.key);
+                return (
+                  <button
+                    type="button"
+                    key={c.key}
+                    onClick={() => {
+                      if (isSelected) {
+                        // Keep at least one category selected
+                        if (selectedCategories.length > 1) {
+                          setSelectedCategories(selectedCategories.filter(item => item !== c.key));
+                        }
+                      } else {
+                        setSelectedCategories([...selectedCategories, c.key]);
+                      }
+                    }}
+                    className={`p-3 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-rose-500 bg-rose-50/20 text-rose-700 font-bold'
+                        : 'border-slate-250 hover:bg-slate-50 text-slate-600'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
+
       case 3:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 3: Imagens</h2>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-              <div><h4 className="text-sm font-bold text-slate-800">Logo da Loja</h4><p className="text-xs text-slate-500">Proporção 1:1</p></div>
-              <label className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer">
-                {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Carregar'}
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'logo')} />
-              </label>
-            </div>
-            {draft.step3.logoUrl && <img src={draft.step3.logoUrl} alt="Logo" className="w-16 h-16 rounded-full object-cover border" />}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Distrito *</label>
+                <select aria-label="Selecione uma opção"
+                  value={district}
+                  onChange={(e) => {
+                    const nextDist = e.target.value;
+                    setDistrict(nextDist);
+                    if (PORTUGAL_GEO[nextDist] && PORTUGAL_GEO[nextDist].length > 0) {
+                      setCity(PORTUGAL_GEO[nextDist][0]);
+                    }
+                  }}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800 cursor-pointer"
+                >
+                  {Object.keys(PORTUGAL_GEO).sort().map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center mt-4">
-              <div><h4 className="text-sm font-bold text-slate-800">Capa da Loja</h4><p className="text-xs text-slate-500">Proporção 16:9</p></div>
-              <label className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer">
-                {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Carregar'}
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'cover')} />
-              </label>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Cidade / Concelho *</label>
+                <select aria-label="Selecione uma opção"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800 cursor-pointer"
+                >
+                  {(PORTUGAL_GEO[district] || []).map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            {draft.step3.coverUrl && <img src={draft.step3.coverUrl} alt="Capa" className="w-full h-32 rounded-xl object-cover border" />}
           </div>
         );
+
       case 4:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 4: Horário</h2>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
-              <Clock className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-              <p>Configure os seus horários de funcionamento (Segunda a Domingo). Poderá definir pausas para almoço e copiar os horários entre dias.</p>
-              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Configurar depois no Dashboard</button>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Morada Física Completa *</label>
+              <input
+                type="text"
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
+                placeholder="Ex: Rua de Portugal"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Número da Porta *</label>
+                <input
+                  type="text"
+                  required
+                  value={doorNumber}
+                  onChange={(e) => setDoorNumber(e.target.value)}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
+                  placeholder="Ex: 125, r/c esq"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Código Postal *</label>
+                <input
+                  type="text"
+                  required
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
+                  placeholder="Ex: 1000-100"
+                />
+              </div>
             </div>
           </div>
         );
+
       case 5:
         return (
-          <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 5: Serviços Iniciais</h2>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <div className="flex gap-2 mb-3">
-                <input id="newServiceName" type="text" placeholder="Nome (Ex: Corte Homem)" className="flex-1 px-3 py-2 border rounded-lg text-sm" />
-                <input id="newServicePrice" type="number" placeholder="Preço (€)" className="w-24 px-3 py-2 border rounded-lg text-sm" />
-                <button onClick={() => {
-                  const n = (document.getElementById('newServiceName') as HTMLInputElement).value;
-                  const p = (document.getElementById('newServicePrice') as HTMLInputElement).value;
-                  if (n && p) {
-                    updateDraft('step5', 'services', [...draft.step5.services, { name: n, price: p, duration: '30' }]);
-                    (document.getElementById('newServiceName') as HTMLInputElement).value = '';
-                    (document.getElementById('newServicePrice') as HTMLInputElement).value = '';
-                  }
-                }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Adicionar</button>
+          <div className="space-y-3 animate-fade-in">
+            <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Contactos de Atendimento</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">Telefone Comercial *</label>
+                <input
+                  type="text"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="block w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 text-slate-800"
+                  placeholder="Ex: +351 912 345 678"
+                />
               </div>
-              <ul className="space-y-2">
-                {draft.step5.services.map((s: any, idx: number) => (
-                  <li key={idx} className="bg-white p-2 rounded-lg border text-sm flex justify-between items-center font-medium text-slate-700">
-                    <span>{s.name}</span>
-                    <span className="text-purple-600 font-bold">{s.price}€</span>
-                  </li>
-                ))}
-              </ul>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">Link Whatsapp</label>
+                <input
+                  type="url"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="block w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 text-slate-800"
+                  placeholder="Ex: https://wa.me/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">E-mail Comercial (Opcional)</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 text-slate-800"
+                  placeholder="Ex: salao@email.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">@ Instagram</label>
+                <input
+                  type="text"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  className="block w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 text-slate-800"
+                  placeholder="Ex: @glam_beautysalon"
+                />
+              </div>
             </div>
           </div>
         );
+
       case 6:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 6: Funcionários</h2>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
-              <Users className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-              <p>Adicione profissionais à sua loja, associe-os aos serviços que executam e defina os horários individuais.</p>
-              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Apenas Eu (Adicionar mais tarde)</button>
+            <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1 text-left">Imagens do Salão</span>
+            
+            <div className="space-y-3.5">
+              {/* Logo upload block */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center gap-4 justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-700">Logo do Negócio (Proporção 1:1)</h4>
+                  <p className="text-[10px] text-slate-600 mt-0.5">Formatos suportados: PNG, JPG ou WEBP.</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <label className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer border-none transition-colors">
+                    {uploadingLogo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Carregar Imagem'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingLogo}
+                      onChange={(e) => handleFileUpload(e, 'logo')}
+                      className="hidden"
+                    />
+                  </label>
+                  {logoUrl && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+              </div>
+
+              {/* Cover upload block */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center gap-4 justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-700">Imagem de Capa (Proporção 16:9)</h4>
+                  <p className="text-[10px] text-slate-600 mt-0.5">Exibida no topo da página de detalhes do salão.</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <label className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer border-none transition-colors">
+                    {uploadingCover ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Carregar Imagem'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingCover}
+                      onChange={(e) => handleFileUpload(e, 'cover')}
+                      className="hidden"
+                    />
+                  </label>
+                  {coverUrl && <Check className="w-4 h-4 text-emerald-500" />}
+                </div>
+              </div>
+
+              {/* Direct URLs Fallbacks in case storage uploads fail or need explicit images */}
+              <div className="border-t border-slate-100 pt-3 space-y-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">URL Direta do Logo (Opcional)</label>
+                  <input
+                    type="url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="Cole um link de imagem direta para o logotipo"
+                    className="block w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mb-1">URL Direta da Capa (Opcional)</label>
+                  <input
+                    type="url"
+                    value={coverUrl}
+                    onChange={(e) => setCoverUrl(e.target.value)}
+                    placeholder="Cole um link de imagem direta para a capa"
+                    className="block w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         );
+
       case 7:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 7: Plano de Parceiro</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div onClick={() => updateDraft('step7', 'plan', 'PRO')} className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${draft.step7.plan === 'PRO' ? 'border-purple-600 bg-purple-50/50' : 'border-slate-200 bg-white'}`}>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-black text-lg text-slate-900">PRO</h3>
-                  {draft.step7.plan === 'PRO' && <Check className="w-5 h-5 text-purple-600" />}
-                </div>
-                <p className="text-2xl font-black text-purple-600 mb-1">14 dias grátis</p>
-                <p className="text-sm text-slate-500 mb-4">Depois 29.90€ / mês</p>
-                <ul className="text-sm text-slate-700 space-y-2 mb-4 font-medium">
-                  <li>✔️ Agenda Inteligente</li>
-                  <li>✔️ Lembretes SMS</li>
-                  <li>✔️ Presença no Marketplace</li>
-                </ul>
-              </div>
-              <div onClick={() => updateDraft('step7', 'plan', 'PRO_TERMINAL')} className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${draft.step7.plan === 'PRO_TERMINAL' ? 'border-purple-600 bg-purple-50/50' : 'border-slate-200 bg-white'}`}>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-black text-lg text-slate-900 flex items-center gap-2"><Tablet className="w-5 h-5" /> PRO + TERMINAL</h3>
-                  {draft.step7.plan === 'PRO_TERMINAL' && <Check className="w-5 h-5 text-purple-600" />}
-                </div>
-                <p className="text-2xl font-black text-purple-600 mb-1">14 dias grátis</p>
-                <p className="text-sm text-slate-500 mb-4">Depois 49.90€ / mês</p>
-                <ul className="text-sm text-slate-700 space-y-2 mb-4 font-medium">
-                  <li>✔️ Tudo do plano PRO</li>
-                  <li>✔️ Terminal Físico Glamzo</li>
-                  <li>✔️ Caução de 50€ aplicável</li>
-                </ul>
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Descrição dos Serviços *</label>
+              <textarea
+                required
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="block w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-600 transition-all text-slate-800"
+                placeholder="Apresente seu salão, os tratamentos de assinatura e o profissionalismo oferecido por suas equipes aqui..."
+              />
             </div>
           </div>
         );
-      case 8:
-        return (
-          <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 8: Pagamentos Online</h2>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              <CreditCard className="w-10 h-10 text-emerald-500 mb-4" />
-              <h3 className="font-bold text-slate-800 text-lg mb-2">Pretende receber pagamentos online?</h3>
-              <p className="text-sm text-slate-600 mb-6">Permita que os clientes paguem antecipadamente. Proteja-se contra faltas (no-shows).</p>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button onClick={() => updateDraft('step8', 'onlinePayments', true)} className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-colors ${draft.step8.onlinePayments ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-700 border-slate-200'}`}>
-                  Sim, ativar Stripe
-                </button>
-                <button onClick={() => updateDraft('step8', 'onlinePayments', false)} className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-colors ${!draft.step8.onlinePayments ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-200'}`}>
-                  Não, apenas no local
-                </button>
-              </div>
-              <p className="text-[10px] text-slate-500 mt-4">* Mesmo sem pagamentos online, a sua loja pode ficar ativa no marketplace.</p>
-            </div>
-          </div>
-        );
-      case 9:
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 9: Resumo e Publicação</h2>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-slate-100 overflow-hidden shrink-0 border">
-                  {draft.step3.logoUrl && <img src={draft.step3.logoUrl} alt="Logo" className="w-full h-full object-cover" />}
-                </div>
-                <div>
-                  <h3 className="font-black text-lg text-slate-900">{draft.step1.name}</h3>
-                  <p className="text-xs text-slate-500">{draft.step2.address}, {draft.step2.doorNumber} - {draft.step2.city}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl">
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">Plano:</span> <span className="font-bold text-purple-700">{draft.step7.plan}</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">Trial:</span> <span className="font-bold text-emerald-600">Ativo (14 dias)</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">Pagamentos:</span> <span className="font-bold">{draft.step8.onlinePayments ? 'Stripe Connect' : 'Apenas Local'}</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">Marketplace:</span> <span className="font-bold text-emerald-600">Ativo</span></div>
-              </div>
-            </div>
-            <button onClick={submitAll} disabled={submitting} className="w-full py-4 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white rounded-xl font-black text-lg uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl shadow-purple-500/20 disabled:opacity-50">
-              {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
-              Colocar Loja Online
-            </button>
-          </div>
-        );
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-purple-200">
-      <div className="max-w-3xl mx-auto pt-10 pb-20 px-4">
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-          
-          {/* Progress Bar */}
-          <div className="h-2 bg-slate-100 w-full">
-            <div className="h-full bg-gradient-to-r from-purple-500 to-rose-500 transition-all duration-500 ease-out" style={{ width: `${(currentStep / totalSteps) * 100}%` }} />
+    <div id="onboarding-view" className="min-h-[calc(110vh-64px)] bg-slate-50 flex items-center justify-center p-6 font-sans">
+      <div className="max-w-xl w-full bg-white border border-slate-100 rounded-2xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+        
+        {/* Dynamic Horizontal Progress Bar indicator */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
+          <div 
+            className="h-full bg-rose-600 transition-all duration-300" 
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          />
+        </div>
+
+        {/* Heading metadata */}
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <span className="text-[10px] font-mono tracking-widest uppercase font-black text-rose-600">
+              Passo {currentStep} de {totalSteps}
+            </span>
+            <h1 className="text-xl font-extrabold text-slate-850 mt-1">Registo do Estabelecimento</h1>
           </div>
-
-          <div className="p-6 sm:p-10">
-            {errorMsg && <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-bold">{errorMsg}</div>}
-            
-            <div className="min-h-[400px]">
-              {renderStep()}
-            </div>
-
-            {/* Navigation Footer */}
-            {currentStep < totalSteps && (
-              <div className="mt-10 pt-6 border-t border-slate-100 flex justify-between items-center">
-                {currentStep > 1 ? (
-                  <button onClick={handleBack} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 px-4 py-2">
-                    <ArrowLeft className="w-4 h-4" /> Voltar
-                  </button>
-                ) : <div />}
-                
-                <button onClick={handleNext} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-sm transition-all">
-                  Próximo Passo <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            
-            <div className="mt-8 text-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                A guardar automaticamente... Pode sair e continuar mais tarde.
-              </p>
-            </div>
+          <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 shadow-sm">
+            <Building2 className="w-5 h-5" />
           </div>
         </div>
+
+        {/* Action Error Alerts */}
+        {errorMsg && (
+          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold leading-relaxed">
+            {errorMsg}
+          </div>
+        )}
+
+        {/* Core dynamic body fields */}
+        <div className="mb-8 min-h-[180px]">
+          {renderStepContent()}
+        </div>
+
+        {/* Control navigation triggers */}
+        <div className="flex justify-between items-center pt-5 border-t border-slate-100">
+          {currentStep > 1 ? (
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar</span>
+            </button>
+          ) : (
+            <div />
+          )}
+
+          {currentStep < totalSteps ? (
+            <button
+              onClick={handleNext}
+              className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-5 py-2.5 rounded-xl cursor-pointer transition-all shadow-sm"
+            >
+              <span>Avançar</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={handleFinishOnboarding}
+              disabled={submitting}
+              className="flex items-center gap-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-6 py-2.5 rounded-xl cursor-pointer transition-all shadow-md shadow-rose-100 disabled:opacity-50"
+              id="btn-confirm-onboarding"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              <span>Concluir Cadastro Comercial</span>
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );

@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
-import { DashboardOverview } from "../components/DashboardOverview";
-import { DashboardCalendar } from "../components/DashboardCalendar";
-import { DashboardLoja } from "../components/DashboardLoja";
 import {
   Business,
   Service,
@@ -17,7 +14,6 @@ import {
 } from "../types";
 import {
   Building,
-  LayoutDashboard,
   LayoutGrid,
   Calendar,
   Scissors,
@@ -110,7 +106,6 @@ export default function Dashboard() {
 
   // Active tab of our dark high-contrast operational terminal
   const [activeTab, setActiveTab] = useState<
-    | "visao-geral"
     | "agenda"
     | "reservas"
     | "servicos"
@@ -124,7 +119,7 @@ export default function Dashboard() {
     | "campanhas"
     | "loja"
     | "mensagens"
-  >("visao-geral");
+  >("agenda");
 
   // Core Database States
   const [business, setBusiness] = useState<Business | null>(null);
@@ -2774,7 +2769,6 @@ export default function Dashboard() {
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {[
-                { id: "visao-geral", label: "Resumo", icon: LayoutDashboard },
                 { id: "agenda", label: "Agenda", icon: Calendar },
                 { id: "reservas", label: "Reservas", icon: CheckSquare },
                 { id: "clientes", label: "Clientes", icon: UsersRound },
@@ -2910,7 +2904,6 @@ export default function Dashboard() {
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {[
-              { id: "visao-geral", label: "Resumo", icon: LayoutDashboard },
               { id: "agenda", label: "Agenda", icon: Calendar },
               { id: "reservas", label: "Reservas", icon: CheckSquare },
               { id: "clientes", label: "Clientes", icon: UsersRound },
@@ -3020,35 +3013,6 @@ export default function Dashboard() {
               <p className="text-[10px] text-slate-500 font-mono">
                 📞 {business?.phone} • 📍 {business?.city || "Lisboa, Portugal"}
               </p>
-          {/* Global Status Banner V1.5 */}
-          {!agendaFullScreen && (
-            <div className="mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Plano Atual</span>
-                <span className="text-xs font-black text-purple-600">{business?.selected_plan === 'app_tablet' ? 'PRO + TERMINAL' : 'PRO'}</span>
-              </div>
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Estado Trial</span>
-                <span className={`text-xs font-black ${resolvedSubscriptionStatus === 'trialing' ? 'text-emerald-600' : 'text-slate-800'}`}>{resolvedSubscriptionStatus === 'trialing' ? `${trialDaysRemaining} dias restam` : 'Esgotado / Pago'}</span>
-              </div>
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Renovação</span>
-                <span className="text-xs font-bold text-slate-800">{resolvedSubscriptionStatus === 'trialing' ? 'Fim do Trial' : 'Mensal'}</span>
-              </div>
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Subscrição Stripe</span>
-                <span className={`text-xs font-black ${business?.stripe_subscription_id ? 'text-emerald-600' : 'text-amber-500'}`}>{business?.stripe_subscription_id ? 'Ativa' : 'Pendente'}</span>
-              </div>
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Stripe Connect</span>
-                <span className={`text-xs font-black ${business?.charges_enabled ? 'text-emerald-600' : 'text-amber-500'}`}>{business?.charges_enabled ? 'Configurado' : 'Requer Ação'}</span>
-              </div>
-              <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-slate-500 mb-0.5">Marketplace</span>
-                <span className={`text-xs font-black ${business?.status === 'active' ? 'text-emerald-600' : 'text-rose-500'}`}>{business?.status === 'active' ? 'Online' : 'Oculto'}</span>
-              </div>
-            </div>
-          )}
             </div>
           </div>
 
@@ -3197,129 +3161,795 @@ export default function Dashboard() {
           )}
 
           {loading ? (
-            <div className="w-full h-full space-y-6 animate-pulse p-2">
-              <div className="flex justify-between items-center mb-8">
-                <div className="w-64 h-10 bg-slate-200 rounded-2xl"></div>
-                <div className="w-32 h-10 bg-slate-200 rounded-2xl"></div>
-              </div>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 h-32 flex flex-col justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100"></div>
-                    <div className="w-1/2 h-6 bg-slate-100 rounded-md"></div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <div className="lg:col-span-2 h-80 bg-white rounded-3xl border border-slate-200 p-6 space-y-4">
-                  <div className="w-1/3 h-6 bg-slate-100 rounded-md"></div>
-                  <div className="w-full h-40 bg-slate-50 rounded-2xl"></div>
-                </div>
-                <div className="h-80 bg-white rounded-3xl border border-slate-200 p-6 space-y-4">
-                  <div className="w-1/2 h-6 bg-slate-100 rounded-md"></div>
-                  <div className="space-y-3 mt-6">
-                    {[1,2,3].map(i => <div key={i} className="w-full h-12 bg-slate-50 rounded-xl"></div>)}
-                  </div>
-                </div>
-              </div>
+            <div className="h-96 flex flex-col items-center justify-center text-slate-500 gap-2.5 animate-pulse">
+              <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
+              <span className="text-xs font-mono select-none">
+                A recolher dados reais de reservas...
+              </span>
             </div>
           ) : (
             <>
               {/* ==================================================== */}
-              {/* VIEW 0: VISAO GERAL (DASHBOARD)                      */}
-              {/* ==================================================== */}
-              {activeTab === "visao-geral" && (
-                <DashboardOverview 
-                  business={business}
-                  bookings={bookings}
-                  services={services}
-                  staff={staff}
-                  resolvedSubscriptionStatus={resolvedSubscriptionStatus}
-                  trialDaysRemaining={trialDaysRemaining}
-                  setActiveTab={setActiveTab}
-                />
-              )}
-
-              {/* ==================================================== */}
               {/* VIEW 1: AGENDA DIÁRIA (PREMIUM TABLET/TERMINAL GRID) */}
               {/* ==================================================== */}
               {activeTab === "agenda" && (
-                <div id="view-agenda" className="space-y-6 text-left animate-fade-in text-slate-700">
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
-                    <div>
+                <div
+                  id="view-agenda"
+                  className={`space-y-6 text-left animate-fade-in text-slate-700 ${agendaFullScreen ? "fixed inset-0 z-[9999] bg-slate-50 p-6 overflow-y-auto w-full h-full" : ""}`}
+                >
+                  <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 ${agendaFullScreen ? "fixed top-4 right-6 z-50 pointer-events-none" : "border-b border-slate-200 pb-5"}`}>
+                    <div className={agendaFullScreen ? "hidden" : ""}>
                       <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-purple-400" />
                         <span>Agenda do Salão</span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-1">
-                        Visualize, filtre e controle todas as marcações em tempo real de forma profissional.
+                        Visualize, filtre e controle todas as marcações em tempo
+                        real de forma profissional.
                       </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
+
+                    <div className={`flex flex-wrap items-center gap-3 w-full lg:w-auto pointer-events-auto ${agendaFullScreen ? "bg-white/80 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-slate-200/50" : ""}`}>
+                      <button
+                        onClick={() => setAgendaFullScreen(!agendaFullScreen)}
+                        className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-extrabold px-3 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-sm"
+                        title={
+                          agendaFullScreen ? "Sair de Tela Cheia" : "Tela Cheia"
+                        }
+                      >
+                        {agendaFullScreen ? (
+                          <Minimize className="w-4 h-4" />
+                        ) : (
+                          <Maximize className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      {/* Button to Trigger Manual Booking / Blocking */}
                       <button
                         onClick={() => {
                           setManualBookingType("booking");
                           setIsManualBookingOpen(true);
-                          if (services.length > 0) setManualServiceId(services[0].id);
-                          if (staff.length > 0) setManualStaffId(staff[0].id);
+                          if (services.length > 0) {
+                            setManualServiceId(services[0].id);
+                          }
+                          if (staff.length > 0) {
+                            setManualStaffId(staff[0].id);
+                          }
                         }}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30"
+                        className={`bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30 ${agendaFullScreen ? "hidden" : ""}`}
                       >
-                        <Calendar className="w-4 h-4 text-white" />
-                        <span>Nova Reserva</span>
+                        <Calendar className="w-4 h-4 text-slate-900" />
+                        <span className="text-slate-900">
+                          Agendar / Bloquear Horário
+                        </span>
                       </button>
+
+                      {/* Mode Navigation selector */}
+                      <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-xl flex items-center gap-1 font-sans text-xs">
+                        {(["today", "week", "month", "by_staff"] as const).map(
+                          (mode) => (
+                            <button
+                              key={mode}
+                              onClick={() => setAgendaMode(mode)}
+                              className={`px-4 py-2 rounded-xl border font-bold transition cursor-pointer text-[11px] uppercase tracking-wide ${
+                                agendaMode === mode
+                                  ? "bg-purple-600 border-purple-500 text-white shadow-md"
+                                  : "bg-slate-100 border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+                              }`}
+                            >
+                              {mode === "today"
+                                ? "Hoje"
+                                : mode === "week"
+                                  ? "Semanal"
+                                  : mode === "month"
+                                    ? "Mensal"
+                                    : "Por Profissional"}
+                            </button>
+                          ),
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  <DashboardCalendar 
-                    bookings={bookings}
-                    services={services}
-                    staff={staff}
-                    onEventClick={(info) => {
-                      const booking = info.event.extendedProps.booking;
-                      alert(`Reserva de: ${booking.customer_profile?.full_name || "Cliente"} às ${booking.start_time}`);
-                      
-                    }}
-                    onEventDrop={async (info) => {
-                      const event = info.event;
-                      const booking = event.extendedProps.booking;
-                      const newDate = event.start.toISOString().split('T')[0];
-                      const newStartTime = event.start.toTimeString().split(' ')[0].substring(0, 5);
-                      
-                      let endStr = event.end ? event.end.toTimeString().split(' ')[0].substring(0, 5) : booking.end_time;
-                      
-                      setLoading(true);
-                      const { error } = await supabase.from('bookings').update({
-                        booking_date: newDate,
-                        start_time: newStartTime,
-                        end_time: endStr
-                      }).eq('id', booking.id);
-                      
-                      if (error) {
-                        setGlobalError("Erro ao mover a marcação.");
-                        info.revert();
-                      } else {
-                        setGlobalSuccess("Marcação atualizada com sucesso.");
-                        loadTerminalData();
-                      }
-                      setLoading(false);
-                    }}
-                    onDateSelect={(info) => {
-                      const start = info.start;
-                      const date = start.toISOString().split('T')[0];
-                      const time = start.toTimeString().split(' ')[0].substring(0, 5);
-                      
-                      setSelectedAgendaDate(date);
-                      setManualBookingType("booking");
-                      setIsManualBookingOpen(true);
-                      // Pre-fill time/date logic can be added here if states allow
-                    }}
-                  />
+
+                  {/* Hourly timeline view of selectedAgendaDate or custom calendar switcher */}
+                  <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${agendaFullScreen ? "pt-16" : ""}`}>
+                    {/* Hourly Blocks (Timeline) - Elegant slate card replacing white card */}
+                    <div className={`${agendaFullScreen ? "lg:col-span-12" : "lg:col-span-8"} bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6`}>
+                      {/* ==================== TODAY VIEW (ADVANCED DRAG/DROP GRID) ==================== */}
+                      {agendaMode === "today" && (
+                        <div className="space-y-4">
+                          {/* Rich Interactive Date Selector and Scroller */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                            <div className="flex items-center gap-2">
+                              {/* Go back 1 day */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const d = new Date(
+                                    selectedAgendaDate + "T12:00:00",
+                                  );
+                                  d.setDate(d.getDate() - 1);
+                                  setSelectedAgendaDate(
+                                    d.toISOString().split("T")[0],
+                                  );
+                                }}
+                                className="p-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                title="Dia Anterior"
+                              >
+                                <ChevronLeft className="w-4 h-4" />
+                              </button>
+
+                              {/* Selected date and custom date selector */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-mono uppercase text-purple-400 font-extrabold tracking-wider bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
+                                  {new Date(
+                                    selectedAgendaDate + "T12:00:00",
+                                  ).toLocaleDateString("pt-PT", {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "short",
+                                  })}
+                                </span>
+
+                                <input
+                                  type="date"
+                                  style={{ colorScheme: "dark" }}
+                                  value={selectedAgendaDate}
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      setSelectedAgendaDate(e.target.value);
+                                    }
+                                  }}
+                                  className="bg-white text-slate-900 text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 cursor-pointer outline-none focus:border-purple-500 font-mono"
+                                />
+                              </div>
+
+                              {/* Go forward 1 day */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const d = new Date(
+                                    selectedAgendaDate + "T12:00:00",
+                                  );
+                                  d.setDate(d.getDate() + 1);
+                                  setSelectedAgendaDate(
+                                    d.toISOString().split("T")[0],
+                                  );
+                                }}
+                                className="p-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                title="Próximo Dia"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Back to Today button */}
+                            {selectedAgendaDate !==
+                              new Date().toISOString().split("T")[0] && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedAgendaDate(
+                                    new Date().toISOString().split("T")[0],
+                                  )
+                                }
+                                className="text-[10px] font-bold font-mono bg-purple-50 text-purple-300 hover:text-slate-900 hover:bg-purple-900/60 border border-purple-850 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                              >
+                                Voltar para Hoje
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="relative mt-6 overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm font-sans">
+                            {/* Real-time horizontal red line */}
+                            {selectedAgendaDate ===
+                              new Date().toISOString().split("T")[0] && (
+                              <div
+                                className="absolute left-0 right-0 border-t-2 border-rose-500 z-30 pointer-events-none"
+                                style={{
+                                  top: `${Math.max(0, (new Date().getHours() - 8) * 80 + (new Date().getMinutes() / 60) * 80) + 64}px`,
+                                }}
+                              >
+                                <div className="absolute -top-1.5 left-2 w-3 h-3 rounded-full bg-rose-500 shadow-md"></div>
+                              </div>
+                            )}
+
+                            <div className="flex min-w-max">
+                              {/* Left axis - Times (8:00 to 20:00) */}
+                              <div className="w-16 shrink-0 border-r border-slate-100 bg-slate-50 relative pt-16">
+                                {[
+                                  "08",
+                                  "09",
+                                  "10",
+                                  "11",
+                                  "12",
+                                  "13",
+                                  "14",
+                                  "15",
+                                  "16",
+                                  "17",
+                                  "18",
+                                  "19",
+                                  "20",
+                                ].map((hour) => (
+                                  <div
+                                    key={hour}
+                                    className="h-[80px] relative border-b border-slate-100 text-[10px] font-bold text-slate-400 text-center flex items-start justify-center pt-2"
+                                  >
+                                    {hour}:00
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Staff Columns */}
+                              {(staff.length > 0
+                                ? staff
+                                : [
+                                    {
+                                      id: "unassigned",
+                                      full_name: "Equipa",
+                                      is_active: true,
+                                    } as any,
+                                  ]
+                              ).map((st) => (
+                                <div
+                                  key={st.id}
+                                  className="flex-1 min-w-[220px] relative border-r border-slate-100"
+                                >
+                                  {/* Staff Header */}
+                                  <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-center flex-col px-2 sticky top-0 z-20">
+                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs mb-1 overflow-hidden shrink-0">
+                                      {st.avatar_url ? (
+                                        <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      ) : (
+                                        st.full_name?.charAt(0) || "E"
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-800 line-clamp-1">
+                                      {st.full_name}
+                                    </span>
+                                  </div>
+
+                                  {/* Hour Slots Container for Drag and Drop Dropzone */}
+                                  <div className="relative">
+                                    {[
+                                      "08",
+                                      "09",
+                                      "10",
+                                      "11",
+                                      "12",
+                                      "13",
+                                      "14",
+                                      "15",
+                                      "16",
+                                      "17",
+                                      "18",
+                                      "19",
+                                      "20",
+                                    ].map((hour) => {
+                                      const slotTime = `${hour}:00`;
+                                      return (
+                                        <div
+                                          key={slotTime}
+                                          className="h-[80px] border-b border-slate-100 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                          onDragOver={(e) => e.preventDefault()}
+                                          onDrop={(e) => {
+                                            e.preventDefault();
+                                            const bookingId =
+                                              e.dataTransfer.getData(
+                                                "bookingId",
+                                              );
+                                            if (bookingId)
+                                              handleDropBooking(
+                                                bookingId,
+                                                st.id === "unassigned"
+                                                  ? null
+                                                  : st.id,
+                                                slotTime,
+                                              );
+                                          }}
+                                          onClick={() => {
+                                            setManualStartTime(slotTime);
+                                            setManualBookingType("booking");
+                                            setManualDate(selectedAgendaDate);
+                                            setIsManualBookingOpen(true);
+                                            if (st.id !== "unassigned")
+                                              setManualStaffId(st.id);
+                                          }}
+                                        ></div>
+                                      );
+                                    })}
+
+                                    {/* Absolute positioned active bookings for this staff */}
+                                    {bookings
+                                      .filter(
+                                        (b) =>
+                                          b.booking_date ===
+                                            selectedAgendaDate &&
+                                          (b.staff_id === st.id ||
+                                            (!b.staff_id &&
+                                              st.id === "unassigned")),
+                                      )
+                                      .map((bk) => {
+                                        const startH = parseInt(
+                                          String(bk.start_time).split(":")[0] ||
+                                            "8",
+                                        );
+                                        const startM = parseInt(
+                                          String(bk.start_time).split(":")[1] ||
+                                            "0",
+                                        );
+                                        if (startH < 8 || startH > 20)
+                                          return null; // fallback bounds
+
+                                        const duration =
+                                          bk.service?.duration_minutes || 30;
+                                        const topPos =
+                                          (startH - 8) * 80 +
+                                          (startM / 60) * 80;
+                                        const height = Math.max(
+                                          30,
+                                          (duration / 60) * 80,
+                                        );
+
+                                        let statusColors =
+                                          "bg-blue-50 border border-blue-200 text-blue-900 border-l-4 border-l-blue-500";
+                                        if (bk.booking_status === "completed")
+                                          statusColors =
+                                            "bg-amber-50 border border-amber-200 text-amber-900 border-l-4 border-l-amber-500";
+                                        else if (
+                                          bk.booking_status === "confirmed"
+                                        )
+                                          statusColors =
+                                            "bg-purple-50 border border-purple-200 text-purple-900 border-l-4 border-l-purple-500";
+                                        else if (
+                                          bk.booking_status === "cancelled" ||
+                                          bk.booking_status === "no_show" ||
+                                          bk.notes?.startsWith("Bloqueio")
+                                        ) {
+                                          statusColors =
+                                            "bg-rose-50 border border-rose-200 text-rose-900 border-l-4 border-l-rose-500";
+                                        }
+
+                                        return (
+                                          <div
+                                            key={bk.id}
+                                            draggable
+                                            onDragStart={(e) => {
+                                              e.dataTransfer.setData(
+                                                "bookingId",
+                                                bk.id,
+                                              );
+                                            }}
+                                            className={`absolute left-1 right-1 rounded-md p-1.5 shadow-sm text-left overflow-hidden cursor-move transition-transform hover:z-30 hover:scale-[1.02] hover:shadow-md ${statusColors}`}
+                                            style={{
+                                              top: `${topPos}px`,
+                                              height: `${height - 2}px`,
+                                            }}
+                                          >
+                                            <div className="text-[8px] font-bold opacity-70 leading-tight truncate">
+                                              {bk.start_time} - {bk.end_time}
+                                            </div>
+                                            <div className="text-[10px] font-black truncate mt-0.5 leading-tight">
+                                              {getBookingDisplayName(bk)}
+                                            </div>
+                                            {!bk.notes?.startsWith(
+                                              "Bloqueio",
+                                            ) && (
+                                              <>
+                                                <div className="text-[9px] truncate opacity-90 leading-tight">
+                                                  {bk.service?.name}
+                                                </div>
+                                                <div className="text-[8px] opacity-75 mt-0.5 font-mono">
+                                                  {bk.booking_status ===
+                                                  "completed"
+                                                    ? "CONCLUÍDA"
+                                                    : bk.booking_status ===
+                                                        "pending"
+                                                      ? "PENDENTE"
+                                                      : "CONFIRMADA"}
+                                                </div>
+                                              </>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ==================== WEEKLY VIEW ==================== */}
+                      {agendaMode === "week" && (
+                        <div className="space-y-4">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Visualização Semanal Dinâmica • Multi-Colunas
+                          </span>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-7 gap-3 pt-2">
+                            {(() => {
+                              const baseDate = new Date(
+                                selectedAgendaDate + "T12:00:00",
+                              );
+                              const currentDayIdx = baseDate.getDay();
+                              const diffToMonday =
+                                baseDate.getDate() -
+                                currentDayIdx +
+                                (currentDayIdx === 0 ? -6 : 1);
+                              const weekdays = [
+                                "Seg",
+                                "Ter",
+                                "Qua",
+                                "Qui",
+                                "Sex",
+                                "Sáb",
+                                "Dom",
+                              ];
+
+                              return weekdays.map((dayLabel, idx) => {
+                                const targetDay = new Date(baseDate);
+                                targetDay.setDate(diffToMonday + idx);
+                                const dateStr = targetDay
+                                  .toISOString()
+                                  .split("T")[0];
+                                const bookingsThisDay = bookings.filter(
+                                  (b) => b.booking_date === dateStr,
+                                );
+
+                                return (
+                                  <div
+                                    key={dayLabel}
+                                    onClick={() => {
+                                      setSelectedAgendaDate(dateStr);
+                                      setAgendaMode("today");
+                                    }}
+                                    className="bg-slate-50/80 hover:bg-slate-100/80 hover:border-purple-200 cursor-pointer transition-all border border-slate-200 p-2.5 rounded-2xl space-y-2.5 min-h-[160px] text-left group"
+                                  >
+                                    <div className="border-b border-slate-200 pb-1.5 text-center group-hover:border-purple-200 transition-colors">
+                                      <span className="block text-[11px] font-extrabold text-purple-400 uppercase">
+                                        {dayLabel}
+                                      </span>
+                                      <span className="block text-[10px] font-mono font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                                        {targetDay.getDate()}
+                                      </span>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      {bookingsThisDay.length > 0 ? (
+                                        bookingsThisDay.map((bk) => (
+                                          <div
+                                            key={bk.id}
+                                            className={`p-2 rounded-xl border text-[9px] space-y-1 transition-all ${
+                                              bk.booking_status === "completed"
+                                                ? "bg-white border-slate-200 text-slate-500"
+                                                : "bg-purple-50 border-purple-200 text-purple-200"
+                                            }`}
+                                          >
+                                            <div className="font-mono font-bold text-[8px] text-purple-400">
+                                              {bk.start_time}
+                                            </div>
+                                            <div className="font-extrabold truncate text-slate-900">
+                                              {bk.customer?.full_name ||
+                                                bk.customer_profile
+                                                  ?.full_name ||
+                                                "Particular"}
+                                            </div>
+                                            <div className="text-[8px] text-slate-500 truncate">
+                                              💈 {bk.service?.name}
+                                            </div>
+                                            <div className="text-[8px] text-emerald-400 font-extrabold">
+                                              {bk.total_price}€
+                                            </div>
+                                            <div className="text-[8px] font-mono text-slate-500 truncate">
+                                              👥{" "}
+                                              {bk.staff?.full_name
+                                                ? bk.staff.full_name.split(
+                                                    " ",
+                                                  )[0]
+                                                : "Auto"}
+                                            </div>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <span className="block text-[8px] font-mono text-slate-500 text-center py-6">
+                                          Vazio
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ==================== MONTHLY VIEW ==================== */}
+                      {agendaMode === "month" && (
+                        <div className="space-y-4">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Visualização Mensal Dinâmica • Roster 35 Dias
+                          </span>
+
+                          <div className="grid grid-cols-7 gap-2 pt-2">
+                            {[
+                              "Seg",
+                              "Ter",
+                              "Qua",
+                              "Qui",
+                              "Sex",
+                              "Sáb",
+                              "Dom",
+                            ].map((lbl) => (
+                              <div
+                                key={lbl}
+                                className="text-center text-[10px] font-mono font-extrabold uppercase text-slate-500 pb-1"
+                              >
+                                {lbl}
+                              </div>
+                            ))}
+
+                            {(() => {
+                              const baseDate = new Date(
+                                selectedAgendaDate + "T12:00:00",
+                              );
+                              const year = baseDate.getFullYear();
+                              const month = baseDate.getMonth();
+                              const firstDayOfMonth = new Date(year, month, 1);
+                              const lastDayOfMonth = new Date(
+                                year,
+                                month + 1,
+                                0,
+                              );
+
+                              const gridCells = [];
+                              const offset =
+                                firstDayOfMonth.getDay() === 0
+                                  ? 6
+                                  : firstDayOfMonth.getDay() - 1;
+
+                              for (let o = offset; o > 0; o--) {
+                                gridCells.push(new Date(year, month, 1 - o));
+                              }
+                              for (
+                                let d = 1;
+                                d <= lastDayOfMonth.getDate();
+                                d++
+                              ) {
+                                gridCells.push(new Date(year, month, d));
+                              }
+                              while (gridCells.length < 35) {
+                                const nextDay =
+                                  gridCells.length -
+                                  lastDayOfMonth.getDate() -
+                                  offset +
+                                  1;
+                                gridCells.push(
+                                  new Date(year, month + 1, nextDay),
+                                );
+                              }
+
+                              return gridCells.map((dateObj, cellIdx) => {
+                                const dateStr = dateObj
+                                  .toISOString()
+                                  .split("T")[0];
+                                const isSameMonth =
+                                  dateObj.getMonth() === month;
+                                const isToday =
+                                  dateStr ===
+                                  new Date().toISOString().split("T")[0];
+                                const matchBookings = bookings.filter(
+                                  (b) => b.booking_date === dateStr,
+                                );
+
+                                return (
+                                  <div
+                                    key={cellIdx}
+                                    onClick={() => {
+                                      setSelectedAgendaDate(dateStr);
+                                      setAgendaMode("today");
+                                    }}
+                                    className={`min-h-[70px] bg-slate-50/60 p-2 border rounded-xl flex flex-col justify-between transition-all cursor-pointer hover:bg-slate-100/70 hover:border-purple-200 group ${
+                                      isSameMonth
+                                        ? "opacity-100 border-slate-200"
+                                        : "opacity-40 hover:opacity-85 border-slate-200"
+                                    } ${isToday ? "border-purple-500 bg-purple-50" : ""}`}
+                                  >
+                                    <span
+                                      className={`text-[9px] font-bold font-mono ${isToday ? "text-purple-400 font-extrabold" : isSameMonth ? "text-slate-700 group-hover:text-slate-900" : "text-slate-500"}`}
+                                    >
+                                      {dateObj.getDate()}
+                                    </span>
+
+                                    <div className="space-y-1 mt-1.5 flex-1">
+                                      {matchBookings.slice(0, 2).map((bk) => (
+                                        <div
+                                          key={bk.id}
+                                          className="text-[7.5px] px-1 py-0.5 rounded truncate leading-none bg-purple-50 border border-purple-200 text-purple-200 font-bold"
+                                        >
+                                          {bk.start_time}{" "}
+                                          {bk.service?.name
+                                            ? bk.service.name.substring(0, 8)
+                                            : "Srv"}
+                                        </div>
+                                      ))}
+                                      {matchBookings.length > 2 && (
+                                        <span className="block text-[6.5px] text-slate-500 text-center font-bold">
+                                          + {matchBookings.length - 2}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ==================== BY STAFF VIEW ==================== */}
+                      {agendaMode === "by_staff" && (
+                        <div className="space-y-4">
+                          <span className="text-[10px] font-mono uppercase bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-purple-400 font-extrabold tracking-wide inline-block">
+                            Escalas por Profissional • Dia Selecionado
+                          </span>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                            {staff.map((st) => {
+                              const staffBookingsToday = bookings.filter(
+                                (b) =>
+                                  b.staff_id === st.id &&
+                                  b.booking_date === selectedAgendaDate,
+                              );
+
+                              return (
+                                <div
+                                  key={st.id}
+                                  className="bg-slate-50/80 border border-slate-200 p-4.5 rounded-2xl space-y-4.5 min-h-[180px] text-left"
+                                >
+                                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden text-[10px]">
+                                      {st.avatar_url ? (
+                                        <img
+                                          src={st.avatar_url}
+                                          alt={st.full_name}
+                                          className="w-full h-full object-cover"
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      ) : (
+                                        st.full_name
+                                          .substring(0, 2)
+                                          .toUpperCase()
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h5 className="font-extrabold text-[12px] text-slate-900 leading-tight">
+                                        {st.full_name}
+                                      </h5>
+                                      <span className="text-[9px] text-slate-500 block font-bold">
+                                        {st.role_title || "Artista Escala"}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {staffBookingsToday.length > 0 ? (
+                                      staffBookingsToday.map((bk) => (
+                                        <div
+                                          key={bk.id}
+                                          className={`p-2.5 rounded-xl border text-[10px] space-y-1 ${
+                                            bk.booking_status === "completed"
+                                              ? "bg-white border-slate-200 text-slate-500"
+                                              : "bg-purple-950/30 border-purple-900/30 text-purple-200"
+                                          }`}
+                                        >
+                                          <div className="flex justify-between items-center text-[8.5px] font-mono">
+                                            <span className="font-bold text-purple-400">
+                                              {bk.start_time} - {bk.end_time}
+                                            </span>
+                                            <span className="uppercase text-slate-500 font-bold">
+                                              {bk.booking_status}
+                                            </span>
+                                          </div>
+                                          <div className="font-black text-slate-900 leading-tight">
+                                            {bk.customer?.full_name ||
+                                              bk.customer_profile?.full_name ||
+                                              "Particular"}
+                                          </div>
+                                          <div className="text-[9px] text-slate-500 truncate font-semibold">
+                                            💈 {bk.service?.name}
+                                          </div>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="h-16 bg-white/50 border border-dashed border-slate-200 border-slate-200 rounded-2xl flex items-center justify-center text-[10px] font-mono text-slate-500 shadow-sm">
+                                        Roster livre hoje
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Scaled Agenda Tools - Elegant clean banners */}
+                    <div className={`lg:col-span-4 space-y-6 ${agendaFullScreen ? "hidden" : ""}`}>
+                      <div className="bg-slate-50/60 border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest leading-none">
+                          Métricas Rápidas
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-white/40 p-4 rounded-2xl border border-slate-200 border-slate-200 text-center shadow-inner animate-fade-in">
+                            <span className="block text-[24px] font-black text-purple-450 text-purple-400 leading-none mb-1">
+                              {
+                                bookings.filter(
+                                  (b) => b.booking_status === "confirmed",
+                                ).length
+                              }
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                              Activas
+                            </span>
+                          </div>
+                          <div className="bg-white/40 p-4 rounded-2xl border border-slate-200 border-slate-200 text-center shadow-inner animate-fade-in">
+                            <span className="block text-[24px] font-black text-emerald-400 leading-none mb-1">
+                              {
+                                bookings.filter(
+                                  (b) => b.booking_status === "completed",
+                                ).length
+                              }
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                              Concluídas
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50/60 border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest leading-none">
+                          Escala Ativa
+                        </h4>
+                        <div className="space-y-2.5">
+                          {staff.length === 0 ? (
+                            <p className="text-[11px] text-slate-500 font-mono">
+                              Sem dados disponíveis. Os dados serão apresentados
+                              após atividade real.
+                            </p>
+                          ) : (
+                            staff.map((st) => (
+                              <div
+                                key={st.id}
+                                className="flex items-center justify-between text-xs bg-white/40 border border-slate-200 p-3 rounded-2xl"
+                              >
+                                <span className="font-extrabold text-slate-700 truncate">
+                                  {st.full_name}
+                                </span>
+                                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase brand-pulse flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                                  <span>
+                                    {st.is_active ? "Ativo" : "Pausa"}
+                                  </span>
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
+              {/* ==================================================== */}
+              {/* VIEW 2: RESERVAS TOTAIS (SEARCH + ACTIONS)            */}
+              {/* ==================================================== */}
               {activeTab === "reservas" && (
                 <div id="view-reservas" className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
@@ -5726,13 +6356,542 @@ export default function Dashboard() {
               {/* VIEW: MY WEBSITE & QR CODE PANEL (FASE 14+)          */}
               {/* ==================================================== */}
               {activeTab === "loja" && (
-                <DashboardLoja 
-                  business={business}
-                  setBusiness={setBusiness}
-                  bookings={bookings}
-                  uniqueClientsCount={uniqueClientsMap.size}
-                />
+                <div
+                  id="view-loja"
+                  className="space-y-6 animate-fade-in max-w-5xl"
+                >
+                  <div className="border-b border-slate-100 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-purple-100 text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-md border border-purple-500/20">
+                        Website
+                      </span>
+                      Página Online & QR Code
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Gira o website do seu salão, personalize o endereço
+                      exclusivo e descarregue o seu QR Code oficial.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* LEFT PANEL: CONFIGURATION & EXCLUSIVE LINK (8 cols) */}
+                    <div className="lg:col-span-7 space-y-6">
+                      <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-6 sm:p-7 space-y-5">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                          <div>
+                            <h4 className="font-bold text-sm text-slate-900">
+                              Status do Website
+                            </h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Defina se a sua página está visível na internet.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() =>
+                              setPublicPageEnabled(!publicPageEnabled)
+                            }
+                            className={`p-1.5 px-3 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
+                              publicPageEnabled
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                                : "bg-white text-slate-500 border border-slate-200"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${publicPageEnabled ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`}
+                            />
+                            <span>
+                              {publicPageEnabled
+                                ? "Ativo (Público)"
+                                : "Inativo (Offline)"}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* URL Slug customization */}
+                        <div className="space-y-2.5">
+                          <label className="block text-xs font-extrabold text-slate-600 uppercase tracking-widest font-mono">
+                            Link Único Exclusivo (Slug)
+                          </label>
+                          <div className="relative bg-white border border-slate-200 rounded-xl px-3.5 py-3.5 flex items-center text-xs text-slate-500 font-mono select-none overflow-hidden">
+                            <span className="opacity-60 text-slate-500">
+                              {window.location.origin.replace(
+                                /^https?:\/\//,
+                                "",
+                              )}
+                              /
+                            </span>
+                            <input
+                              type="text"
+                              value={editSlugValue}
+                              onChange={(e) => {
+                                setEditSlugValue(
+                                  e.target.value
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-"),
+                                );
+                              }}
+                              placeholder="oseunome"
+                              className="flex-1 bg-transparent border-none text-slate-900 font-bold outline-none pl-0.5 select-text font-mono placeholder-slate-400"
+                            />
+                            {slugChecking && (
+                              <RefreshCw className="w-3.5 h-3.5 text-purple-400 animate-spin shrink-0 ml-1.5" />
+                            )}
+                            {!slugChecking &&
+                              slugCheckResult === "available" && (
+                                <Check className="w-4 h-4 text-emerald-400 shrink-0 ml-1.5" />
+                              )}
+                            {!slugChecking && slugCheckResult === "taken" && (
+                              <X className="w-4 h-4 text-rose-500 shrink-0 ml-1.5" />
+                            )}
+                          </div>
+
+                          {/* Quick availability hints */}
+                          {slugCheckResult === "available" && (
+                            <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 font-mono">
+                              <Check className="w-3.5 h-3.5" /> Link disponível
+                              para reserva rápida!
+                            </p>
+                          )}
+                          {slugCheckResult === "taken" && (
+                            <p className="text-[10px] text-rose-450 font-bold flex items-center gap-1 font-mono">
+                              <X className="w-3.5 h-3.5" /> Link já se encontra
+                              ocupado ou indisponível.
+                            </p>
+                          )}
+
+                          <p className="text-[10px] text-slate-500 leading-normal">
+                            💡 Use um link focado na sua marca (ex:{" "}
+                            <span className="text-purple-400 select-all">
+                              hair-studio-lisboa
+                            </span>
+                            ). Evite maiúsculas, cedilhas ou caracteres
+                            especiais.
+                          </p>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={handleSaveWebsiteConfig}
+                            disabled={savingWebsiteConfig}
+                            className="bg-purple-600 hover:bg-purple-700 hover:scale-[1.02] text-white font-extrabold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 uppercase tracking-wider"
+                          >
+                            {savingWebsiteConfig ? (
+                              <>
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                <span>A Gravar...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4" />
+                                <span>Gravar Link Público</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* GOOGLE SEARCH PREVIEW ENGINE (SEO PREVIEW MOCK) */}
+                      <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 sm:p-7 space-y-4">
+                        <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-extrabold">
+                          Pré-visualização SEO (Google)
+                        </span>
+                        <div className="space-y-1.5 bg-white border border-slate-100 p-4.5 rounded-2xl">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 bg-purple-950 border border-purple-500/20 rounded-full flex items-center justify-center text-[10px] font-bold text-purple-400 font-mono">
+                              G
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] text-slate-500 leading-tight">
+                                Glamzo Portugal
+                              </span>
+                              <span className="text-[9px] text-slate-500 leading-none font-mono">
+                                {window.location.origin.replace(
+                                  /^https?:\/\//,
+                                  "",
+                                )}
+                                /{business?.slug}
+                              </span>
+                            </div>
+                          </div>
+                          <h4 className="text-[#8ab4f8] text-sm font-semibold hover:underline cursor-pointer leading-tight pt-1">
+                            {business?.name} | Agendamento Online no Glamzo
+                          </h4>
+                          <p className="text-[11px] text-slate-500 leading-normal line-clamp-2">
+                            {business?.description ||
+                              `Marque o seu serviço de estética ou barbearia em ${business?.district}, ${business?.city}. Reservas automáticas no Glamzo com confirmação instantânea.`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* RIGHT PANEL: LIVE AUTOMATIC QR CODE CARD (5 cols) */}
+                    <div className="lg:col-span-5 space-y-6">
+                      <div className="bg-slate-50 border border-slate-200/40 rounded-3xl p-6 sm:p-7 text-center flex flex-col items-center justify-center">
+                        <span className="text-[9px] font-mono tracking-widest uppercase block text-slate-550 font-black mb-1.5 leading-none">
+                          QR Code de Alta Definição
+                        </span>
+                        <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-5">
+                          Digitalizar para Reservar
+                        </h4>
+
+                        {/* Interactive Canvas frame with professional safety bounding & max sizes */}
+                        <div className="p-5 bg-white border border-slate-200/80 rounded-3xl [box-shadow:0_15px_35px_rgba(0,0,0,0.5)] space-y-3.5 flex flex-col items-center justify-center">
+                          <div className="bg-white p-2.5 rounded-2xl border border-slate-200 shadow-inner">
+                            <canvas
+                              ref={qrCanvasRef}
+                              style={{
+                                maxWidth: "190px",
+                                maxHeight: "190px",
+                                width: "100%",
+                                height: "auto",
+                              }}
+                              className="select-none"
+                            />
+                          </div>
+                          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-500 text-slate-500 font-bold uppercase font-mono tracking-wider pt-0.5 select-none">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
+                            <span>Integrado com Logo Glamzo</span>
+                          </div>
+                        </div>
+
+                        {/* Action controllers */}
+                        <div className="w-full grid grid-cols-2 gap-2 pt-6">
+                          <button
+                            onClick={handleDownloadPNG}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Código PNG</span>
+                          </button>
+                          <button
+                            onClick={handleDownloadSVG}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Código SVG</span>
+                          </button>
+                          <button
+                            onClick={handlePrintQRCode}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Imprimir QR</span>
+                          </button>
+                          <button
+                            onClick={handleShareStore}
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 hover:border-purple-650 hover:text-purple-400 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer font-mono"
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                            <span>
+                              {websiteLinkCopied ? "Copiado!" : "Partilhar"}
+                            </span>
+                          </button>
+                        </div>
+
+                        <div className="w-full pt-4 space-y-2">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `${window.location.origin}/${business?.slug}`,
+                              );
+                              setWebsiteLinkCopied(true);
+                              setTimeout(
+                                () => setWebsiteLinkCopied(false),
+                                2000,
+                              );
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 hover:border-slate-200 rounded-2xl text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all cursor-pointer"
+                          >
+                            <span className="font-mono truncate mr-2 text-slate-600 select-all">
+                              {window.location.origin.replace(
+                                /^https?:\/\//,
+                                "",
+                              )}
+                              /{business?.slug}
+                            </span>
+                            <div className="flex items-center gap-1 uppercase tracking-wider text-[9px] text-purple-400 font-mono shrink-0">
+                              <Copy className="w-3 h-3" />
+                              <span>
+                                {websiteLinkCopied ? "Copiado" : "Copiar"}
+                              </span>
+                            </div>
+                          </button>
+
+                          <a
+                            href={`/${business?.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full block py-3 text-center bg-white border border-slate-200 hover:bg-slate-50 border-purple-900/30 text-purple-300 hover:text-purple-200 hover:border-purple-500 rounded-2xl text-[11px] font-bold transition-all cursor-pointer"
+                          >
+                            <span className="flex items-center justify-center gap-1.5">
+                              <span>Abrir Página Pública Oficial</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* IDENTIDADE VISUAL & CUSTOMIZATION */}
+                  <div className="bg-slate-50 border border-slate-200 p-6 rounded-3xl space-y-6 [box-shadow:0_15px_40px_rgba(0,0,0,0.1)] text-left">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-purple-400" />
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 font-bold">
+                          Manual de Identidade Visual
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Left Side: Uploads */}
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold tracking-widest">
+                            Logótipo do Estabelecimento
+                          </label>
+                          <div className="flex items-center gap-4">
+                            {business?.logo_url ? (
+                              <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                                <img
+                                  src={business.logo_url}
+                                  alt="Logo"
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                <Image className="w-6 h-6 text-slate-400" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <label className="bg-white border border-slate-200 hover:border-purple-400 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center gap-2">
+                                <Upload className="w-4 h-4 text-slate-400" />
+                                <span>Fazer Upload (PNG/JPG)</span>
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  accept="image/png, image/jpeg, image/webp"
+                                  onChange={handleUploadLogo}
+                                  disabled={uploadingLogo}
+                                />
+                              </label>
+                              {uploadingLogo && (
+                                <span className="text-[10px] text-purple-500 block mt-1">
+                                  A carregar imagem...
+                                </span>
+                              )}
+                              <p className="text-[10px] text-slate-500 mt-1">
+                                Formatos 1:1, tamanho max 5MB.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold tracking-widest">
+                            Fotografia de Capa
+                          </label>
+                          <div className="flex items-center gap-4">
+                            {business?.cover_url ? (
+                              <div className="w-24 h-16 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                                <img
+                                  src={business.cover_url}
+                                  alt="Cover"
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-24 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                <Image className="w-6 h-6 text-slate-400" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <label className="bg-white border border-slate-200 hover:border-purple-400 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center gap-2">
+                                <Upload className="w-4 h-4 text-slate-400" />
+                                <span>Fazer Upload da Capa</span>
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  accept="image/png, image/jpeg, image/webp"
+                                  onChange={handleUploadCover}
+                                  disabled={uploadingCover}
+                                />
+                              </label>
+                              {uploadingCover && (
+                                <span className="text-[10px] text-purple-500 block mt-1">
+                                  A carregar imagem...
+                                </span>
+                              )}
+                              <p className="text-[10px] text-slate-500 mt-1">
+                                Esta imagem será o fundo do seu perfil de loja.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right side: Mockup */}
+                      <div className="bg-[#fafbfc] border border-slate-200 rounded-2xl p-5 space-y-5 shadow-inner relative overflow-hidden group">
+                        {/* Top bar with url slug mock */}
+                        <div className="flex items-center justify-between text-slate-500">
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono hover:text-slate-900 transition-colors">
+                            <Globe className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="underline truncate max-w-[200px]">
+                              {window.location.host}/
+                              {business?.slug || "parceiro"}
+                            </span>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                        </div>
+
+                        {/* Logo Display representation segment */}
+                        <div className="flex items-center gap-4 py-1">
+                          {business?.logo_url ? (
+                            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-lg relative z-10">
+                              <img
+                                src={business.logo_url}
+                                alt="Logo"
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl bg-purple-50 border-2 border-dashed border-purple-800/40 flex flex-col items-center justify-center shrink-0 shadow-sm grow-0 relative z-10">
+                              <Plus className="w-4 h-4 text-purple-400" />
+                            </div>
+                          )}
+                          <div className="relative z-10">
+                            <span className="block text-sm font-display font-black text-slate-900 tracking-tight">
+                              {business?.name || "Seu Salão"}
+                            </span>
+                            <span className="block text-[9px] text-slate-500 font-mono mt-0.5 uppercase tracking-widest">
+                              {business?.city || "Cidade"}, Portugal
+                            </span>
+                          </div>
+                        </div>
+
+                        {business?.cover_url && (
+                          <div className="absolute inset-0 z-0 opacity-[0.03]">
+                            <img
+                              src={business.cover_url}
+                              alt="Cover"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+
+                        {/* Fonts Division: Aa Outfit and Aa Inter layout like reference guide */}
+                        <div className="grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4 relative z-10">
+                          <div>
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">
+                              Display
+                            </span>
+                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                              <span className="block text-xs font-display font-black text-slate-900">
+                                Aa Outfit
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-[8px] font-mono uppercase text-slate-500 block mb-1">
+                              Body Text
+                            </span>
+                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                              <span className="block text-xs font-sans font-bold text-slate-700">
+                                Aa Inter
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM BENTO GRAPHIC: VISISTS & SCANS STATS (Part 5) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                    {/* Stat 1: Ticket Médio */}
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
+                          Ticket Médio
+                        </span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {bookings.filter(b => b.booking_status === "completed").length > 0 ? (bookings.filter(b => b.booking_status === "completed").reduce((sum, item) => sum + Number(item.total_price), 0) / bookings.filter(b => b.booking_status === "completed").length).toFixed(2) : "0.00"} €
+                        </span>
+                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
+                          Valor médio por marcação
+                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <DollarSign className="w-5 h-5 text-purple-400" />
+                      </div>
+                    </div>
+
+                    {/* Stat 2: Total Clientes */}
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
+                          Total Clientes
+                        </span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {customers.length}
+                        </span>
+                        <p className="text-[9px] text-slate-500 font-mono leading-none font-bold">
+                          Clientes registados na base
+                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <Users className="w-5 h-5 text-purple-400" />
+                      </div>
+                    </div>
+
+                    {/* Stat 3: Leituras de QR Code */}
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
+                          Leituras QR Code
+                        </span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {business?.qr_scans_count || 0}
+                        </span>
+                        <p className="text-[9px] text-slate-500 font-bold font-mono">
+                          Leituras físicas ao balcão
+                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <QrCode className="w-5 h-5 text-purple-405" />
+                      </div>
+                    </div>
+
+                    {/* Stat 4: Reservas via QR */}
+                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/40 relative overflow-hidden flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-extrabold block text-slate-500">
+                          Reservas via QR
+                        </span>
+                        <span className="text-2xl font-black text-slate-900 font-mono">
+                          {Math.round((business?.qr_scans_count || 0) * 0.18)}
+                        </span>
+                        <p className="text-[9px] text-slate-500 font-bold font-mono">
+                          Conversão estimada: 18%
+                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-450 border border-purple-500/10">
+                        <Calendar className="w-5 h-5 text-purple-405" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
+
+              {/* ==================================================== */}
+              {/* VIEW 11: GLAMZO TERMINAL INTERACTIVE (TABLET DECK)   */}
+              {/* ==================================================== */}
               {activeTab === "terminal" && (
                 <div
                   id="view-terminal"

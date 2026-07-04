@@ -47,43 +47,9 @@ import {
 import {
   APIProvider,
   Map,
-  Marker,
+  AdvancedMarker,
+  Pin,
 } from "@vis.gl/react-google-maps";
-
-const getCategoryDisplayName = (name: string) => {
-  if (name === "Wellness") return "Wellness & Spa";
-  if (name === "Ao domicílio") return "Ao Domicílio";
-  return name;
-};
-
-const getCustomMarkerIcon = (rating: number) => {
-  const finalRating = rating > 0 ? rating : 5.0;
-  const ratingText = `${finalRating.toFixed(1)} ★`;
-  const bgColor = "#7c3aed"; // Glamzo brand purple
-  const strokeColor = "#ffffff"; // White border
-  const textColor = "#ffffff"; // White text
-
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
-      <g>
-        <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
-              fill="${bgColor}" 
-              stroke="${strokeColor}" 
-              stroke-width="1.5" />
-        <text x="29" y="18" 
-              fill="${textColor}" 
-              font-size="10px" 
-              font-family="system-ui, -apple-system, sans-serif" 
-              font-weight="bold" 
-              text-anchor="middle">
-          ${ratingText}
-        </text>
-      </g>
-    </svg>
-  `;
-
-  return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`;
-};
 
 export default function Explore() {
   const { user } = useAuth();
@@ -114,15 +80,13 @@ export default function Explore() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchQuery(localSearchQuery);
-    }, 1000);
+    }, 150);
     return () => clearTimeout(handler);
   }, [localSearchQuery]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
     searchParams.get("category") || "All",
   );
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(
-    searchParams.get("subcategory") || "All"
-  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("All");
   const [selectedDistrict, setSelectedDistrict] = useState<string>(
     searchParams.get("district") || "All",
   );
@@ -152,7 +116,6 @@ export default function Explore() {
 
   // Mobile Filter Drawer display State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Fetch all salons and services from database from a truly service-oriented perspective
   const fetchExploreData = async () => {
@@ -169,26 +132,18 @@ export default function Explore() {
         supabase.from("business_hours").select("*"),
       ]);
 
-      let loadedBiz = (bizRes.data as Business[]) || [];
-      let loadedServices = servRes.data || [];
-      let loadedReviews = realRev || [];
-      let loadedHours = hoursRes.data || [];
+      if (bizRes.error) throw bizRes.error;
+      const loadedBiz = (bizRes.data as Business[]) || [];
+      setBusinesses(loadedBiz);
 
-      // Graceful fallback to rich local seeds if database is empty or connection fails
-      if (loadedBiz.length === 0 || bizRes.error) {
-        const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS, FALLBACK_HOURS } = await import("../utils/fallbackData");
-        loadedBiz = FALLBACK_BUSINESSES;
-        loadedServices = FALLBACK_SERVICES;
-        loadedReviews = FALLBACK_REVIEWS;
-        loadedHours = FALLBACK_HOURS;
+      if (!servRes.error && servRes.data) {
+        setServices(servRes.data);
       }
 
-      setBusinesses(loadedBiz);
-      setServices(loadedServices);
-      setReviews(loadedReviews || []);
+      setReviews(realRev || []);
 
       // Store hours locally for real-time status determination
-      const hoursData = loadedHours || [];
+      const hoursData = hoursRes.data || [];
 
       // Load promotion status for each business instantly using in-memory loaded properties
       const promoMap: Record<string, { is_promoted: boolean }> = {};
@@ -205,25 +160,10 @@ export default function Explore() {
       // Save hours in state if needed or we can map them in processedBusinesses
       (window as any).__exploreBusinessHours = hoursData;
     } catch (err: any) {
-      console.error("Error fetching live data in explore, applying fallback:", err);
-      try {
-        const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS, FALLBACK_HOURS } = await import("../utils/fallbackData");
-        setBusinesses(FALLBACK_BUSINESSES);
-        setServices(FALLBACK_SERVICES);
-        setReviews(FALLBACK_REVIEWS);
-        (window as any).__exploreBusinessHours = FALLBACK_HOURS;
-        
-        const promoMap: Record<string, { is_promoted: boolean }> = {};
-        FALLBACK_BUSINESSES.forEach((b) => {
-          promoMap[b.id] = { is_promoted: !!b.is_promoted };
-        });
-        setPromotions(promoMap);
-      } catch (innerErr) {
-        console.error("Critical fallback import failed in explore:", innerErr);
-        setErrorMsg(
-          "Falha ao descarregar base de dados de salões. Volte a tentar mais tarde.",
-        );
-      }
+      console.error("Error fetching businesses:", err);
+      setErrorMsg(
+        "Falha ao descarregar base de dados de salões. Volte a tentar mais tarde.",
+      );
     } finally {
       setLoading(false);
     }
@@ -264,72 +204,10 @@ export default function Explore() {
     const params: Record<string, string> = {};
     if (searchQuery.trim()) params.q = searchQuery.trim();
     if (selectedCategory !== "All") params.category = selectedCategory;
-    if (selectedSubcategory !== "All") params.subcategory = selectedSubcategory;
     if (selectedDistrict !== "All") params.district = selectedDistrict;
     if (selectedCity !== "All") params.city = selectedCity;
-    if (useNearMe) params.nearMe = "true";
-    setSearchParams(params, { replace: true });
-  }, [searchQuery, selectedCategory, selectedSubcategory, selectedDistrict, selectedCity, useNearMe]);
-
-  // Sync searchParams from URL to state when URL parameters change
-  useEffect(() => {
-    const category = searchParams.get("category") || "All";
-    const subcategory = searchParams.get("subcategory") || "All";
-    let district = searchParams.get("district") || "All";
-    const city = searchParams.get("city") || "All";
-    const q = searchParams.get("q") || "";
-    const nearMe = searchParams.get("nearMe") === "true";
-
-    // Auto-infer district if city is provided but district is "All"
-    if (district === "All" && city !== "All") {
-      for (const [dist, cities] of Object.entries(PORTUGAL_GEO)) {
-        if (cities.includes(city)) {
-          district = dist;
-          break;
-        }
-      }
-    }
-
-    if (category !== selectedCategory) setSelectedCategory(category);
-    if (subcategory !== selectedSubcategory) setSelectedSubcategory(subcategory);
-    if (district !== selectedDistrict) setSelectedDistrict(district);
-    if (city !== selectedCity) setSelectedCity(city);
-    if (q !== searchQuery) {
-      setLocalSearchQuery(q);
-      setSearchQuery(q);
-    }
-    if (nearMe !== useNearMe) {
-      if (nearMe && !userCoords && !geoLocating) {
-        setGeoLocating(true);
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              setUserCoords({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-              });
-              setUseNearMe(true);
-              setGeoLocating(false);
-              setSelectedDistrict("All");
-              setSelectedCity("All");
-            },
-            (err) => {
-              console.warn("Geolocation failed on param load, using Lisbon fallback", err);
-              setUserCoords({ latitude: 38.7223, longitude: -9.1393 });
-              setUseNearMe(true);
-              setGeoLocating(false);
-            },
-            { enableHighAccuracy: true, timeout: 5000 }
-          );
-        } else {
-          setGeoLocating(false);
-        }
-      } else if (!nearMe) {
-        setUseNearMe(false);
-        setUserCoords(null);
-      }
-    }
-  }, [searchParams]);
+    setSearchParams(params);
+  }, [searchQuery, selectedCategory, selectedDistrict, selectedCity]);
 
   // Handle Geolocation activation
   const handleNearMeToggle = () => {
@@ -508,7 +386,10 @@ export default function Explore() {
 
     if (!isDemo) {
       if (b.status !== 'active') return false;
+      if (!b.subscription_active) return false;
+      if (b.subscription_status !== 'active' && b.subscription_status !== 'trialing') return false;
       if (b.public_page_enabled === false) return false;
+      // Note: We don't have setup_completed in the db interface exactly as queried here, but `status === 'active'` implies setup is completed
     }
 
     // 1. Keyword search (Name, Description, Address, Category, and matching Services)
@@ -560,22 +441,12 @@ export default function Explore() {
 
     // 4. District / Cidade dropdown flow
     if (!useNearMe) {
-      const bDist = (b.district || "").toLowerCase().trim();
-      const bCity = (b.city || "").toLowerCase().trim();
-      
-      // Filter by City first if selectedCity is not All
-      if (selectedCity !== "All") {
-        if (bCity !== selectedCity.toLowerCase().trim()) return false;
-      }
-      
-      // Filter by District if selectedDistrict is not All
+      // Ignore district checks if radius distance search is active
       if (selectedDistrict !== "All") {
-        const allowedCities = (PORTUGAL_GEO[selectedDistrict] || []).map(c => c.toLowerCase().trim());
-        const isCityInDistrict = allowedCities.includes(bCity);
-        const isDistrictMatch = bDist === selectedDistrict.toLowerCase().trim();
-        
-        // Match if district matches OR if the city belongs to this district
-        if (!isDistrictMatch && !isCityInDistrict) return false;
+        if (b.district !== selectedDistrict) return false;
+      }
+      if (selectedCity !== "All") {
+        if (b.city !== selectedCity) return false;
       }
     }
 
@@ -673,13 +544,6 @@ export default function Explore() {
     });
   }, [paginatedBusinesses, availabilities]);
 
-  const mapStyles = [
-    { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-    { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
-  ];
-
   const mapApiKey =
     process.env.GOOGLE_MAPS_PLATFORM_KEY ||
     (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
@@ -765,7 +629,7 @@ export default function Explore() {
               }`}
             >
               <span>{cat.emoji}</span>
-              <span>{getCategoryDisplayName(cat.name)}</span>
+              <span>{cat.name}</span>
             </button>
           ))}
         </div>
@@ -775,7 +639,7 @@ export default function Explore() {
           SUBCATEGORIES_BY_MAIN[selectedCategory] && (
             <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl animate-fade-in shadow-sm">
               <span className="block text-[10px] font-bold uppercase text-purple-600 tracking-wider mb-2.5">
-                Subcategorias de {getCategoryDisplayName(selectedCategory)}
+                Subcategorias de {selectedCategory}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -834,7 +698,7 @@ export default function Explore() {
             </div>
 
             {/* Keyword Search Input */}
-            <div className="relative">
+            <div>
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">
                 Nome / Palavra-chave
               </label>
@@ -842,49 +706,12 @@ export default function Explore() {
                 <input
                   type="text"
                   value={localSearchQuery}
-                  onChange={(e) => {
-                    setLocalSearchQuery(e.target.value);
-                    setShowSuggestions(e.target.value.length > 0);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setSearchQuery(localSearchQuery);
-                      setShowSuggestions(false);
-                    }
-                  }}
-                  onFocus={() => localSearchQuery.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onChange={(e) => setLocalSearchQuery(e.target.value)}
                   placeholder="Ex: Glam, Barber, Lash..."
                   className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-400"
                 />
                 <Search className="w-3.5 h-3.5 text-slate-600 absolute left-3 top-3.5" />
               </div>
-              {showSuggestions && (
-                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2 animate-fade-in">
-                  <div className="px-3.5 py-1 text-[9px] font-mono text-slate-400 uppercase tracking-widest font-bold">Sugestões de Salões</div>
-                  {businesses
-                    .filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase()))
-                    .slice(0, 3)
-                    .map(b => (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onMouseDown={() => {
-                          setLocalSearchQuery(b.name);
-                          setSearchQuery(b.name);
-                          setShowSuggestions(false);
-                        }}
-                        className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
-                      >
-                        <Sparkles className="w-3 h-3 text-purple-500" />
-                        <span>{b.name}</span>
-                      </button>
-                    ))}
-                  {businesses.filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase())).length === 0 && (
-                    <div className="px-3.5 py-2 text-slate-400 text-xs italic">Nenhum salão encontrado</div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Geolocation Section */}
@@ -1149,38 +976,51 @@ export default function Explore() {
                     <Map
                       defaultCenter={{ lat: 39.3999, lng: -8.2245 }} // Portugal center roughly
                       defaultZoom={6}
-                      clickableIcons={false}
-                      styles={mapStyles}
-                      options={{ clickableIcons: false, styles: mapStyles }}
+                      mapId="GLAMZO_EXPLORE_MAP"
                       internalUsageAttributionIds={[
                         "gmp_mcp_codeassist_v1_aistudio",
                       ]}
                       style={{ width: "100%", height: "100%" }}
                     >
-                      {userCoords && (
-                        <Marker 
-                          position={{ lat: userCoords.latitude, lng: userCoords.longitude }}
-                          title="A sua localização"
-                          icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                        />
-                      )}
-                      {paginatedBusinesses.map((b) => (
-                        <Marker
-                          key={b.id}
-                          position={{
-                            lat: b.lat || 39.3999,
-                            lng: b.lng || -8.2245,
-                          }}
-                          title={b.name}
-                          icon={{
-                            url: getCustomMarkerIcon(b.rating),
-                            anchor: { x: 29, y: 32 }
-                          }}
-                          onClick={() => {
-                            window.location.href = `/business/${b.slug}`;
-                          }}
-                        />
-                      ))}
+                      {paginatedBusinesses.map((b) => {
+                        const markerColor =
+                          b.rating >= 4.9
+                            ? "#10b981"
+                            : b.rating >= 4.5
+                              ? "#9333ea"
+                              : b.rating >= 4.0
+                                ? "#3b82f6"
+                                : b.rating >= 3.5
+                                  ? "#f59e0b"
+                                  : "#ef4444";
+                        return (
+                          <AdvancedMarker
+                            key={b.id}
+                            position={{
+                              lat: b.lat || 39.3999,
+                              lng: b.lng || -8.2245,
+                            }}
+                            title={b.name}
+                            onClick={() => {
+                              // We could add an InfoWindow, but let's just make it redirect to the business page for now, or open a mini overlay
+                              window.location.href = `/business/${b.slug}`;
+                            }}
+                          >
+                            <div className="relative cursor-pointer hover:scale-110 transition-transform">
+                              <Pin
+                                background={markerColor}
+                                borderColor={markerColor}
+                                glyphColor="#fff"
+                              />
+                              {(b.rating ?? 0) > 0 && (
+                                <div className="absolute -top-3 -right-3 bg-white text-slate-900 text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm font-mono z-10">
+                                  {b.rating.toFixed(1)}
+                                </div>
+                              )}
+                            </div>
+                          </AdvancedMarker>
+                        );
+                      })}
                     </Map>
                   </APIProvider>
                 ) : (
@@ -1248,7 +1088,7 @@ export default function Explore() {
                           {/* Top-left Category Sticker & Promoted Spark */}
                           <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
                             <div className="bg-white/95 text-purple-700 font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm border border-purple-100">
-                              {getCategoryDisplayName(b.category)}
+                              {b.category}
                             </div>
                             {b.is_promoted && (
                               <div className="bg-purple-600 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1 border border-purple-500">
@@ -1357,7 +1197,7 @@ export default function Explore() {
                             <div className="flex items-center gap-1 mt-1 font-mono text-xs">
                               {b.reviewsCount > 0 ? (
                                 <>
-                                  <Star className="w-3.5 h-3.5 fill-purple-600 text-purple-600" />
+                                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                   <span className="font-extrabold text-slate-800">
                                     {b.rating.toFixed(1)}
                                   </span>

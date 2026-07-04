@@ -102,19 +102,3 @@ html, body {
 img, button, a {
   transform: translate3d(0, 0, 0);
 }
-
-/* Leaflet Custom Markers */
-.leaflet-div-icon.custom-business-marker,
-.leaflet-div-icon.custom-user-marker {
-  background: transparent;
-  border: none;
-}
-.leaflet-popup-content-wrapper {
-  padding: 0;
-  border-radius: 12px;
-  overflow: hidden;
-}
-.leaflet-popup-content {
-  margin: 0;
-  width: 240px !important;
-}
