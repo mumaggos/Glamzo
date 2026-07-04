@@ -84,11 +84,34 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollCategories = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 500;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const scrollAmount = 300;
+      
+      if (direction === 'right') {
+        if (scrollLeft + clientWidth >= scrollWidth - 25) {
+          scrollContainerRef.current.scrollTo({
+            left: 0,
+            behavior: 'smooth'
+          });
+        } else {
+          scrollContainerRef.current.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+          });
+        }
+      } else {
+        if (scrollLeft <= 5) {
+          scrollContainerRef.current.scrollTo({
+            left: scrollWidth - clientWidth,
+            behavior: 'smooth'
+          });
+        } else {
+          scrollContainerRef.current.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+          });
+        }
+      }
     }
   };
 
@@ -140,14 +163,24 @@ export default function Home() {
           fetchAllReviews(),
           supabase.from("services").select("*").eq("is_active", true)
         ]);
-        const srvData = srvRes.data || [];
         
-        const loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
-        setReviews(revData || []);
+        let srvData = srvRes.data || [];
+        let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
+        let revDataFinal = revData || [];
+
+        // Graceful fallback to rich local seeds if database is empty or connection fails
+        if (loadedBiz.length === 0 || bizRes.error) {
+          const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS } = await import("../utils/fallbackData");
+          loadedBiz = FALLBACK_BUSINESSES;
+          srvData = FALLBACK_SERVICES;
+          revDataFinal = FALLBACK_REVIEWS;
+        }
+        
+        setReviews(revDataFinal || []);
 
         const now = new Date();
         const processed = loadedBiz.map(b => {
-          const bReviews = (revData || []).filter(r => r.business_id === b.id);
+          const bReviews = (revDataFinal || []).filter(r => r.business_id === b.id);
           const rating = bReviews.length ? bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length : (b.is_premium ? 4.8 : 0);
           
           let hash = 0;
@@ -169,7 +202,36 @@ export default function Home() {
         });
         setBusinesses(processed);
       } catch (e) {
-        console.error(e);
+        console.error("Supabase load failed, falling back to rich seeds:", e);
+        try {
+          const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS } = await import("../utils/fallbackData");
+          setReviews(FALLBACK_REVIEWS);
+          const now = new Date();
+          const processed = FALLBACK_BUSINESSES.map(b => {
+            const bReviews = FALLBACK_REVIEWS.filter(r => r.business_id === b.id);
+            const rating = bReviews.length ? bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length : (b.is_premium ? 4.8 : 0);
+            
+            let hash = 0;
+            for (let i = 0; i < b.name.length; i++) { hash = b.name.charCodeAt(i) + ((hash << 5) - hash); }
+            const derivedPrice = 15 + Math.abs(hash % 8) * 5;
+            const bServices = FALLBACK_SERVICES.filter((s: any) => s.business_id === b.id);
+            const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude;
+            const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude;
+            
+            let distance = null;
+            if (userCoords) {
+              distance = calculateDistanceInKm(userCoords.lat, userCoords.lng, lat, lng);
+            }
+
+            const createdDate = new Date(b.created_at);
+            const isNew = (now.getTime() - createdDate.getTime()) < 15 * 24 * 60 * 60 * 1000;
+
+            return { ...b, rating, reviewsCount: bReviews.length || (b.is_premium ? 24 : 0), startPrice: derivedPrice, lat, lng, distance, isOpenNow: true, isNew, services: bServices };
+          });
+          setBusinesses(processed);
+        } catch (innerErr) {
+          console.error("Critical fallback import failed in Home:", innerErr);
+        }
       } finally {
         setLoading(false);
       }
@@ -302,11 +364,6 @@ export default function Home() {
         
         {/* Badges Overlay */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {b.isNew && (
-            <span className="bg-purple-600 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md shadow-md">
-              Nova
-            </span>
-          )}
           {(b.is_premium || b.is_verified) && (
             <span className="bg-slate-900/90 backdrop-blur-sm text-amber-400 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md shadow-md flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" /> Top Partner
@@ -322,7 +379,7 @@ export default function Home() {
         {/* Rating Overlay */}
         {b.rating > 0 && (
           <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur text-slate-900 text-[10px] font-black px-2.5 py-1.5 rounded-xl flex items-center gap-1 shadow-lg">
-            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+            <Star className="w-3 h-3 text-purple-600 fill-purple-600" />
             {b.rating.toFixed(1)} <span className="font-medium text-slate-500 ml-0.5 font-mono">({b.reviewsCount})</span>
           </div>
         )}

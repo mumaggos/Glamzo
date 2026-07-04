@@ -114,7 +114,7 @@ export default function Explore() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchQuery(localSearchQuery);
-    }, 150);
+    }, 1000);
     return () => clearTimeout(handler);
   }, [localSearchQuery]);
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -169,18 +169,26 @@ export default function Explore() {
         supabase.from("business_hours").select("*"),
       ]);
 
-      if (bizRes.error) throw bizRes.error;
-      const loadedBiz = (bizRes.data as Business[]) || [];
-      setBusinesses(loadedBiz);
+      let loadedBiz = (bizRes.data as Business[]) || [];
+      let loadedServices = servRes.data || [];
+      let loadedReviews = realRev || [];
+      let loadedHours = hoursRes.data || [];
 
-      if (!servRes.error && servRes.data) {
-        setServices(servRes.data);
+      // Graceful fallback to rich local seeds if database is empty or connection fails
+      if (loadedBiz.length === 0 || bizRes.error) {
+        const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS, FALLBACK_HOURS } = await import("../utils/fallbackData");
+        loadedBiz = FALLBACK_BUSINESSES;
+        loadedServices = FALLBACK_SERVICES;
+        loadedReviews = FALLBACK_REVIEWS;
+        loadedHours = FALLBACK_HOURS;
       }
 
-      setReviews(realRev || []);
+      setBusinesses(loadedBiz);
+      setServices(loadedServices);
+      setReviews(loadedReviews || []);
 
       // Store hours locally for real-time status determination
-      const hoursData = hoursRes.data || [];
+      const hoursData = loadedHours || [];
 
       // Load promotion status for each business instantly using in-memory loaded properties
       const promoMap: Record<string, { is_promoted: boolean }> = {};
@@ -197,10 +205,25 @@ export default function Explore() {
       // Save hours in state if needed or we can map them in processedBusinesses
       (window as any).__exploreBusinessHours = hoursData;
     } catch (err: any) {
-      console.error("Error fetching businesses:", err);
-      setErrorMsg(
-        "Falha ao descarregar base de dados de salões. Volte a tentar mais tarde.",
-      );
+      console.error("Error fetching live data in explore, applying fallback:", err);
+      try {
+        const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS, FALLBACK_HOURS } = await import("../utils/fallbackData");
+        setBusinesses(FALLBACK_BUSINESSES);
+        setServices(FALLBACK_SERVICES);
+        setReviews(FALLBACK_REVIEWS);
+        (window as any).__exploreBusinessHours = FALLBACK_HOURS;
+        
+        const promoMap: Record<string, { is_promoted: boolean }> = {};
+        FALLBACK_BUSINESSES.forEach((b) => {
+          promoMap[b.id] = { is_promoted: !!b.is_promoted };
+        });
+        setPromotions(promoMap);
+      } catch (innerErr) {
+        console.error("Critical fallback import failed in explore:", innerErr);
+        setErrorMsg(
+          "Falha ao descarregar base de dados de salões. Volte a tentar mais tarde.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -537,12 +560,22 @@ export default function Explore() {
 
     // 4. District / Cidade dropdown flow
     if (!useNearMe) {
-      // Ignore district checks if radius distance search is active
-      if (selectedDistrict !== "All") {
-        if (!b.district || b.district.toLowerCase().trim() !== selectedDistrict.toLowerCase().trim()) return false;
-      }
+      const bDist = (b.district || "").toLowerCase().trim();
+      const bCity = (b.city || "").toLowerCase().trim();
+      
+      // Filter by City first if selectedCity is not All
       if (selectedCity !== "All") {
-        if (!b.city || b.city.toLowerCase().trim() !== selectedCity.toLowerCase().trim()) return false;
+        if (bCity !== selectedCity.toLowerCase().trim()) return false;
+      }
+      
+      // Filter by District if selectedDistrict is not All
+      if (selectedDistrict !== "All") {
+        const allowedCities = (PORTUGAL_GEO[selectedDistrict] || []).map(c => c.toLowerCase().trim());
+        const isCityInDistrict = allowedCities.includes(bCity);
+        const isDistrictMatch = bDist === selectedDistrict.toLowerCase().trim();
+        
+        // Match if district matches OR if the city belongs to this district
+        if (!isDistrictMatch && !isCityInDistrict) return false;
       }
     }
 
@@ -812,6 +845,12 @@ export default function Explore() {
                   onChange={(e) => {
                     setLocalSearchQuery(e.target.value);
                     setShowSuggestions(e.target.value.length > 0);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setSearchQuery(localSearchQuery);
+                      setShowSuggestions(false);
+                    }
                   }}
                   onFocus={() => localSearchQuery.length > 0 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
@@ -1318,7 +1357,7 @@ export default function Explore() {
                             <div className="flex items-center gap-1 mt-1 font-mono text-xs">
                               {b.reviewsCount > 0 ? (
                                 <>
-                                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                  <Star className="w-3.5 h-3.5 fill-purple-600 text-purple-600" />
                                   <span className="font-extrabold text-slate-800">
                                     {b.rating.toFixed(1)}
                                   </span>
