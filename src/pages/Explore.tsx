@@ -50,11 +50,18 @@ import {
   Marker,
 } from "@vis.gl/react-google-maps";
 
+const getCategoryDisplayName = (name: string) => {
+  if (name === "Wellness") return "Wellness & Spa";
+  if (name === "Ao domicílio") return "Ao Domicílio";
+  return name;
+};
+
 const getCustomMarkerIcon = (rating: number) => {
-  const ratingText = rating > 0 ? `${rating.toFixed(1)} ★` : "Novo";
-  const bgColor = rating > 0 ? "#ffffff" : "#f5f3ff"; // white for rated, soft purple for new
-  const strokeColor = "#7c3aed"; // brand purple
-  const textColor = "#1e1b4b"; // deep indigo
+  const finalRating = rating > 0 ? rating : 5.0;
+  const ratingText = `${finalRating.toFixed(1)} ★`;
+  const bgColor = "#7c3aed"; // Glamzo brand purple
+  const strokeColor = "#ffffff"; // White border
+  const textColor = "#ffffff"; // White text
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
@@ -62,7 +69,7 @@ const getCustomMarkerIcon = (rating: number) => {
         <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
               fill="${bgColor}" 
               stroke="${strokeColor}" 
-              stroke-width="2" />
+              stroke-width="1.5" />
         <text x="29" y="18" 
               fill="${textColor}" 
               font-size="10px" 
@@ -238,23 +245,33 @@ export default function Explore() {
     if (selectedDistrict !== "All") params.district = selectedDistrict;
     if (selectedCity !== "All") params.city = selectedCity;
     if (useNearMe) params.nearMe = "true";
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
   }, [searchQuery, selectedCategory, selectedSubcategory, selectedDistrict, selectedCity, useNearMe]);
 
   // Sync searchParams from URL to state when URL parameters change
   useEffect(() => {
     const category = searchParams.get("category") || "All";
     const subcategory = searchParams.get("subcategory") || "All";
-    const district = searchParams.get("district") || "All";
+    let district = searchParams.get("district") || "All";
     const city = searchParams.get("city") || "All";
     const q = searchParams.get("q") || "";
     const nearMe = searchParams.get("nearMe") === "true";
+
+    // Auto-infer district if city is provided but district is "All"
+    if (district === "All" && city !== "All") {
+      for (const [dist, cities] of Object.entries(PORTUGAL_GEO)) {
+        if (cities.includes(city)) {
+          district = dist;
+          break;
+        }
+      }
+    }
 
     if (category !== selectedCategory) setSelectedCategory(category);
     if (subcategory !== selectedSubcategory) setSelectedSubcategory(subcategory);
     if (district !== selectedDistrict) setSelectedDistrict(district);
     if (city !== selectedCity) setSelectedCity(city);
-    if (q !== localSearchQuery) {
+    if (q !== searchQuery) {
       setLocalSearchQuery(q);
       setSearchQuery(q);
     }
@@ -522,10 +539,10 @@ export default function Explore() {
     if (!useNearMe) {
       // Ignore district checks if radius distance search is active
       if (selectedDistrict !== "All") {
-        if (b.district !== selectedDistrict) return false;
+        if (!b.district || b.district.toLowerCase().trim() !== selectedDistrict.toLowerCase().trim()) return false;
       }
       if (selectedCity !== "All") {
-        if (b.city !== selectedCity) return false;
+        if (!b.city || b.city.toLowerCase().trim() !== selectedCity.toLowerCase().trim()) return false;
       }
     }
 
@@ -715,7 +732,7 @@ export default function Explore() {
               }`}
             >
               <span>{cat.emoji}</span>
-              <span>{cat.name}</span>
+              <span>{getCategoryDisplayName(cat.name)}</span>
             </button>
           ))}
         </div>
@@ -725,7 +742,7 @@ export default function Explore() {
           SUBCATEGORIES_BY_MAIN[selectedCategory] && (
             <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl animate-fade-in shadow-sm">
               <span className="block text-[10px] font-bold uppercase text-purple-600 tracking-wider mb-2.5">
-                Subcategorias de {selectedCategory}
+                Subcategorias de {getCategoryDisplayName(selectedCategory)}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -1192,7 +1209,7 @@ export default function Explore() {
                           {/* Top-left Category Sticker & Promoted Spark */}
                           <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
                             <div className="bg-white/95 text-purple-700 font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm border border-purple-100">
-                              {b.category}
+                              {getCategoryDisplayName(b.category)}
                             </div>
                             {b.is_promoted && (
                               <div className="bg-purple-600 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1 border border-purple-500">

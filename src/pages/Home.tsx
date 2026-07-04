@@ -10,7 +10,7 @@ import {
   List, CreditCard, Tag, Scissors
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
+import { getCoordinatesForCity, calculateDistanceInKm, PORTUGAL_GEO } from "../utils/geoData";
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
   (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
@@ -48,10 +48,11 @@ const mapStyles = [
 ];
 
 const getCustomMarkerIcon = (rating: number) => {
-  const ratingText = rating > 0 ? `${rating.toFixed(1)} ★` : "Novo";
-  const bgColor = rating > 0 ? "#ffffff" : "#f5f3ff"; // white for rated, soft purple for new
-  const strokeColor = "#7c3aed"; // brand purple
-  const textColor = "#1e1b4b"; // deep indigo
+  const finalRating = rating > 0 ? rating : 5.0;
+  const ratingText = `${finalRating.toFixed(1)} ★`;
+  const bgColor = "#7c3aed"; // Glamzo brand purple
+  const strokeColor = "#ffffff"; // White border
+  const textColor = "#ffffff"; // White text
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
@@ -59,7 +60,7 @@ const getCustomMarkerIcon = (rating: number) => {
         <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
               fill="${bgColor}" 
               stroke="${strokeColor}" 
-              stroke-width="2" />
+              stroke-width="1.5" />
         <text x="29" y="18" 
               fill="${textColor}" 
               font-size="10px" 
@@ -83,7 +84,7 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollCategories = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 350;
+      const scrollAmount = 500;
       scrollContainerRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -181,7 +182,18 @@ export default function Home() {
   };
 
   const handleCityClick = (city: string) => {
-    navigate(`/explore?city=${encodeURIComponent(city)}`);
+    let district = "All";
+    for (const [dist, cities] of Object.entries(PORTUGAL_GEO)) {
+      if (cities.includes(city)) {
+        district = dist;
+        break;
+      }
+    }
+    if (district !== "All") {
+      navigate(`/explore?district=${encodeURIComponent(district)}&city=${encodeURIComponent(city)}`);
+    } else {
+      navigate(`/explore?city=${encodeURIComponent(city)}`);
+    }
   };
 
   const handleClearSearch = () => {
@@ -495,7 +507,7 @@ export default function Home() {
             {/* Left Scroll Button */}
             <button 
               onClick={() => scrollCategories('left')}
-              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-150 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -518,12 +530,14 @@ export default function Home() {
                   </span>
                 </button>
               ))}
+              {/* Extra spacer to allow smooth and full scrolling to the absolute end */}
+              <div className="w-16 shrink-0" />
             </div>
 
             {/* Right Scroll Button */}
             <button 
               onClick={() => scrollCategories('right')}
-              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-150 shadow-lg flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 hover:scale-105 transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
