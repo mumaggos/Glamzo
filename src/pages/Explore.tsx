@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { Business, Review } from "../types";
 import { fetchAllReviews } from "../utils/reviewsHelper";
@@ -12,7 +12,7 @@ import {
   Loader2, ArrowRight, X, Compass, Star, ChevronRight, Sliders, Navigation,
   Home, Zap, Clock, ThumbsUp, Heart, Map as MapIcon, List
 } from "lucide-react";
-import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
 const getCategoryDisplayName = (name: string) => {
   if (name === "Wellness") return "Wellness & Spa";
@@ -20,7 +20,7 @@ const getCategoryDisplayName = (name: string) => {
   return name;
 };
 
-// O Novo Marcador Oficial em Gota (Sincronizado com a Home)
+// O Marcador Oficial Glamzo
 const getCustomMarkerIcon = (rating: number) => {
   const finalRating = rating > 0 ? rating : 5.0;
   const ratingText = `${finalRating.toFixed(1)} ★`;
@@ -31,15 +31,8 @@ const getCustomMarkerIcon = (rating: number) => {
     <svg xmlns="http://www.w3.org/2000/svg" width="56" height="42" viewBox="0 0 56 42">
       <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.3))">
         <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z" 
-              fill="${bgColor}" 
-              stroke="#ffffff" 
-              stroke-width="1.5" />
-        <text x="28" y="19" 
-              fill="${textColor}" 
-              font-size="12px" 
-              font-family="Outfit, system-ui, sans-serif" 
-              font-weight="900" 
-              text-anchor="middle">
+              fill="${bgColor}" stroke="#ffffff" stroke-width="1.5" />
+        <text x="28" y="19" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
           ${ratingText}
         </text>
       </g>
@@ -48,8 +41,15 @@ const getCustomMarkerIcon = (rating: number) => {
   return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`;
 };
 
+const mapStyles = [
+  { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+];
+
 export default function Explore() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<"list" | "map">(searchParams.get("view") === "map" ? "map" : "list");
   
@@ -62,7 +62,6 @@ export default function Explore() {
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
   const [promotions, setPromotions] = useState<Record<string, { is_promoted: boolean }>>({});
 
-  // Pesquisa por Inputs de Texto Livre Inteligentes (Fresha/Uber style)
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
@@ -121,8 +120,7 @@ export default function Explore() {
       setServices(loadedServices);
       setReviews(loadedReviews || []);
 
-      const hoursData = loadedHours || [];
-      (window as any).__exploreBusinessHours = hoursData;
+      (window as any).__exploreBusinessHours = loadedHours || [];
 
       const promoMap: Record<string, { is_promoted: boolean }> = {};
       const now = Date.now();
@@ -134,7 +132,6 @@ export default function Explore() {
       setPromotions(promoMap);
 
     } catch (err: any) {
-      console.error("Erro ao carregar dados", err);
       setErrorMsg("Falha ao descarregar base de dados. Tente novamente.");
     } finally {
       setLoading(false);
@@ -190,7 +187,7 @@ export default function Explore() {
           setUseNearMe(false);
           setUserCoords(null);
           setGeoLocating(false);
-          alert("Não foi possível aceder ao GPS. Por favor digite a sua região no campo de localização.");
+          alert("Não foi possível aceder ao GPS. Por favor digite a sua região na barra de pesquisa.");
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
@@ -268,7 +265,6 @@ export default function Explore() {
       if (!matchName && !matchCat && !matchServices) return false;
     }
 
-    // CORREÇÃO ELITE: Pesquisa Inteligente que lê Concelho, Freguesia e Morada (Apanha Pedroso e Gaia escrevendo apenas Porto)
     if (searchLocation.trim() && !useNearMe) {
       const locQ = searchLocation.toLowerCase().trim();
       const matchCity = (b.city || "").toLowerCase().includes(locQ);
@@ -320,6 +316,8 @@ export default function Explore() {
 
   const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
 
+  const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
     <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
@@ -358,7 +356,6 @@ export default function Explore() {
     <div id="explore-view" className="min-h-screen bg-[#FDFDFD] py-10 flex flex-col selection:bg-purple-100 selection:text-purple-900 pb-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Cabeçalho */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold text-purple-600 uppercase mb-3 tracking-wider">
@@ -382,7 +379,6 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Categorias */}
         <div className="mb-8 overflow-x-auto pb-3 flex items-center gap-3 no-scrollbar scroll-smooth font-['Inter']">
           <button onClick={() => { setSelectedCategory("All"); setSelectedSubcategory("All"); }} className={`px-5 py-2.5 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${selectedCategory === "All" ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 shadow-sm"}`}>
             <Grid className="w-3.5 h-3.5" /> Ver Tudo
@@ -407,7 +403,6 @@ export default function Explore() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Filtros (Desktop) */}
           <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm font-['Inter']">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -465,7 +460,6 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* Grelha Resultados / Mapa */}
           <div className="lg:col-span-3 space-y-6">
             <div className="lg:hidden flex gap-2">
               <button onClick={() => setIsDrawerOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-3.5 px-4 text-xs font-bold shadow-md uppercase tracking-wider">
@@ -478,15 +472,15 @@ export default function Explore() {
                 <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
               </div>
             ) : viewMode === "map" ? (
-              <div className="w-full h-[70vh] rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
+              <div className="w-full h-[70vh] rounded-3xl overflow-hidden border border-slate-200 shadow-md relative">
                 {mapApiKey ? (
                   <APIProvider apiKey={mapApiKey}>
-                    <GoogleMap defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 7} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
+                    <Map defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 6} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
                       {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                       {paginatedBusinesses.map((b) => (
                         <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug}`)} />
                       ))}
-                    </GoogleMap>
+                    </Map>
                   </APIProvider>
                 ) : (
                   <div className="flex items-center justify-center h-full bg-slate-100 text-slate-500">API Key do Google Maps necessária.</div>
@@ -519,7 +513,7 @@ export default function Explore() {
         </div>
       </div>
 
-      {/* Gaveta Mobile (Scroll Corrigido) */}
+      {/* Gaveta Mobile */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
@@ -529,7 +523,6 @@ export default function Explore() {
               <button onClick={() => setIsDrawerOpen(false)} className="p-2"><X className="w-5 h-5" /></button>
             </div>
             
-            {/* CORREÇÃO ELITE: overflow-y-auto e max-h completo para o menu rodar de cima abaixo no telemóvel */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6 max-h-[calc(100vh-140px)] custom-scrollbar">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Serviço ou Nome</label>
