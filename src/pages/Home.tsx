@@ -18,12 +18,12 @@ const API_KEY =
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
 const HOME_CATEGORIES = [ 
-  { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Cabelo %26 Barbearia" }, 
-  { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" }, 
-  { name: "Nails & Beauty", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Nails %26 Beauty" }, 
-  { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Estética" }, 
-  { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Wellness" }, 
-  { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Noivas %26 Eventos" } 
+  { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia" }, 
+  { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" }, 
+  { name: "Nails & Beauty", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Nails %26 Beauty" }, 
+  { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Estética" }, 
+  { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Wellness" }, 
+  { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Noivas %26 Eventos" } 
 ]; 
 
 const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"]; 
@@ -75,6 +75,11 @@ const optimizeUnsplashUrl = (url: string) => {
     if (!optimized.includes("q=")) {
       optimized += "&q=75";
     }
+    if (!optimized.includes("fm=")) {
+      optimized += "&fm=webp";
+    } else {
+      optimized = optimized.replace(/fm=[^&]+/, "fm=webp");
+    }
     return optimized; 
   } 
   return url; 
@@ -93,6 +98,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true); 
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null); 
   const [mapVisible, setMapVisible] = useState(false); 
+  const mapRef = useRef<HTMLElement>(null); 
 
   const scrollCategories = (direction: 'left' | 'right') => { 
     if (scrollContainerRef.current) { 
@@ -111,8 +117,14 @@ export default function Home() {
   }, []); 
 
   useEffect(() => { 
-    const timer = setTimeout(() => setMapVisible(true), 2000); 
-    return () => clearTimeout(timer); 
+    const observer = new IntersectionObserver((entries) => { 
+      if (entries[0].isIntersecting) { 
+        setMapVisible(true); 
+        observer.disconnect(); 
+      } 
+    }, { rootMargin: '300px' }); // Carrega 300px antes de chegar ao mapa 
+    if (mapRef.current) observer.observe(mapRef.current); 
+    return () => observer.disconnect(); 
   }, []); 
 
   useEffect(() => { 
@@ -208,7 +220,7 @@ export default function Home() {
     <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100"> 
         <img  
-          src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75"}  
+          src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
           alt={b.name}  
           loading="lazy"  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
@@ -358,13 +370,13 @@ export default function Home() {
             <ChevronLeft className="w-5 h-5" /> 
           </button> 
           <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 no-scrollbar snap-x scroll-smooth"> 
-            {HOME_CATEGORIES.map((cat) => ( 
+            {HOME_CATEGORIES.map((cat, index) => ( 
               <button  
                 key={cat.name}  
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
-                <img src={cat.image} alt={cat.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
+                <img src={cat.image} alt={cat.name} loading={index < 3 ? "eager" : "lazy"} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']"> 
                   {cat.name} 
@@ -462,7 +474,7 @@ export default function Home() {
       </section> 
 
       {/* 5. MAPA INTELIGENTE GEOGRÁFICO */} 
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']"> 
+      <section ref={mapRef} className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']"> 
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4"> 
           <div> 
             <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🌍 Explorar no Mapa</h2> 
