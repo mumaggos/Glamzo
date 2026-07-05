@@ -20,19 +20,26 @@ const getCategoryDisplayName = (name: string) => {
   return name;
 };
 
+// O Novo Marcador Oficial em Gota (Sincronizado com a Home)
 const getCustomMarkerIcon = (rating: number) => {
   const finalRating = rating > 0 ? rating : 5.0;
   const ratingText = `${finalRating.toFixed(1)} ★`;
-  const bgColor = "#7c3aed";
-  const strokeColor = "#ffffff";
-  const textColor = "#ffffff";
+  const bgColor = "#9333ea"; 
+  const textColor = "#ffffff"; 
 
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
-      <g>
-        <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
-              fill="${bgColor}" stroke="${strokeColor}" stroke-width="1.5" />
-        <text x="29" y="18" fill="${textColor}" font-size="10px" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" text-anchor="middle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="42" viewBox="0 0 56 42">
+      <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.3))">
+        <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z" 
+              fill="${bgColor}" 
+              stroke="#ffffff" 
+              stroke-width="1.5" />
+        <text x="28" y="19" 
+              fill="${textColor}" 
+              font-size="12px" 
+              font-family="Outfit, system-ui, sans-serif" 
+              font-weight="900" 
+              text-anchor="middle">
           ${ratingText}
         </text>
       </g>
@@ -44,7 +51,7 @@ const getCustomMarkerIcon = (rating: number) => {
 export default function Explore() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "map">(searchParams.get("view") === "map" ? "map" : "list");
   
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -55,7 +62,7 @@ export default function Explore() {
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
   const [promotions, setPromotions] = useState<Record<string, { is_promoted: boolean }>>({});
 
-  // Pesquisa de Texto e Localização Livre
+  // Pesquisa por Inputs de Texto Livre Inteligentes (Fresha/Uber style)
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
@@ -80,7 +87,6 @@ export default function Explore() {
   const [minRating, setMinRating] = useState<number>(0);
   const [priceLevel, setPriceLevel] = useState<string>("All");
   const [filterHomeService, setFilterHomeService] = useState(false);
-  const [filterInstantBooking, setFilterInstantBooking] = useState(false);
   const [filterPremiumPartner, setFilterPremiumPartner] = useState(false);
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
 
@@ -153,7 +159,6 @@ export default function Explore() {
     setUserFavorites((prev) => isNowFav ? [...prev, businessId] : prev.filter((id) => id !== businessId));
   };
 
-  // Sync URL Params
   useEffect(() => {
     const params: Record<string, string> = {};
     if (searchQuery.trim()) params.q = searchQuery.trim();
@@ -161,8 +166,9 @@ export default function Explore() {
     if (selectedCategory !== "All") params.category = selectedCategory;
     if (selectedSubcategory !== "All") params.subcategory = selectedSubcategory;
     if (useNearMe) params.nearMe = "true";
+    if (viewMode === "map") params.view = "map";
     setSearchParams(params, { replace: true });
-  }, [searchQuery, searchLocation, selectedCategory, selectedSubcategory, useNearMe]);
+  }, [searchQuery, searchLocation, selectedCategory, selectedSubcategory, useNearMe, viewMode]);
 
   const handleNearMeToggle = () => {
     if (useNearMe) {
@@ -171,7 +177,7 @@ export default function Explore() {
       return;
     }
     setGeoLocating(true);
-    setSearchLocation(""); // Limpa o texto se usar GPS
+    setSearchLocation(""); 
     setLocalSearchLocation("");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -181,9 +187,10 @@ export default function Explore() {
           setGeoLocating(false);
         },
         (err) => {
-          setUserCoords({ latitude: 38.7223, longitude: -9.1393 });
-          setUseNearMe(true);
+          setUseNearMe(false);
+          setUserCoords(null);
           setGeoLocating(false);
+          alert("Não foi possível aceder ao GPS. Por favor digite a sua região no campo de localização.");
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
@@ -204,13 +211,11 @@ export default function Explore() {
     setMinRating(0);
     setPriceLevel("All");
     setFilterHomeService(false);
-    setFilterInstantBooking(false);
     setFilterPremiumPartner(false);
     setFilterAvailableToday(false);
     setItemsLimit(12);
   };
 
-  // Processamento de Dados (Igual à Home Page - Motor Real)
   const processedBusinesses = businesses.map((b) => {
     const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude;
     const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude;
@@ -255,7 +260,6 @@ export default function Explore() {
   });
 
   const filteredBusinesses = processedBusinesses.filter((b) => {
-    // 1. Keyword Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchName = b.name.toLowerCase().includes(q);
@@ -264,7 +268,7 @@ export default function Explore() {
       if (!matchName && !matchCat && !matchServices) return false;
     }
 
-    // 2. Location Search Inteligente (Texto Livre)
+    // CORREÇÃO ELITE: Pesquisa Inteligente que lê Concelho, Freguesia e Morada (Apanha Pedroso e Gaia escrevendo apenas Porto)
     if (searchLocation.trim() && !useNearMe) {
       const locQ = searchLocation.toLowerCase().trim();
       const matchCity = (b.city || "").toLowerCase().includes(locQ);
@@ -316,76 +320,57 @@ export default function Explore() {
 
   const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
 
-  const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
-  const mapStylesConfig = [
-    { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
-  ];
-
-  // Cartão Minimalista (Igual à Home Page)
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
-    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer">
+    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
         <img 
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
-          alt={b.name} 
-          loading="lazy" 
+          alt={b.name} loading="lazy" 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
         />
-        
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
           {b.is_promoted && (
-            <span className="bg-white text-slate-900 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
-              Destaque
-            </span>
+            <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">Destaque</span>
           )}
         </div>
-        
-        <button 
-          onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} 
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
-        >
+        <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
           <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
         </button>
       </div>
-
       <div className="flex justify-between items-start gap-2">
         <div>
-          <h3 className="font-bold text-slate-900 text-base line-clamp-1">{b.name}</h3>
+          <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
           <p className="text-sm text-slate-500 mt-0.5 truncate">{b.category} · {b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
         </div>
-        
-        <div className="flex items-center gap-1 text-sm font-semibold text-slate-900 shrink-0">
+        <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
           <Star className="w-3.5 h-3.5 fill-slate-900" />
           {b.rating > 0 ? b.rating.toFixed(1) : "Novo"}
         </div>
       </div>
-      
       <div className="mt-1 flex items-baseline gap-1">
-        <span className="font-semibold text-slate-900">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span>
+        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span>
         <span className="text-sm text-slate-500">preço base</span>
       </div>
     </Link>
   );
 
   return (
-    <div id="explore-view" className="min-h-screen bg-[#FDFDFD] py-10 font-sans selection:bg-purple-100 selection:text-purple-900 pb-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="explore-view" className="min-h-screen bg-[#FDFDFD] py-10 flex flex-col selection:bg-purple-100 selection:text-purple-900 pb-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Cabeçalho da Página */}
+        {/* Cabeçalho */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold text-purple-600 uppercase mb-3 tracking-wider">
               <Compass className="w-3.5 h-3.5 text-purple-500" />
               <span>Descoberta Inteligente Glamzo</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 tracking-tight leading-none">
+            <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-[#0f172a] tracking-tight leading-none font-['Outfit']">
               Explore {selectedCategory !== "All" ? selectedCategory : "os Melhores Espaços"}
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 font-['Inter']">
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button onClick={() => setViewMode("list")} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "list" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
                 <List className="w-4 h-4" /> Lista
@@ -397,8 +382,8 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Categorias Horizontais */}
-        <div className="mb-8 overflow-x-auto pb-3 flex items-center gap-3 no-scrollbar scroll-smooth">
+        {/* Categorias */}
+        <div className="mb-8 overflow-x-auto pb-3 flex items-center gap-3 no-scrollbar scroll-smooth font-['Inter']">
           <button onClick={() => { setSelectedCategory("All"); setSelectedSubcategory("All"); }} className={`px-5 py-2.5 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${selectedCategory === "All" ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 shadow-sm"}`}>
             <Grid className="w-3.5 h-3.5" /> Ver Tudo
           </button>
@@ -410,7 +395,7 @@ export default function Explore() {
         </div>
 
         {selectedCategory !== "All" && SUBCATEGORIES_BY_MAIN[selectedCategory] && (
-          <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl shadow-sm">
+          <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl shadow-sm font-['Inter']">
             <span className="block text-[10px] font-bold uppercase text-purple-600 tracking-wider mb-2.5">Subcategorias de {getCategoryDisplayName(selectedCategory)}</span>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setSelectedSubcategory("All")} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedSubcategory === "All" ? "bg-purple-50 text-purple-700 border border-purple-200" : "bg-slate-50 text-slate-600 border border-slate-200"}`}>Todas</button>
@@ -422,8 +407,8 @@ export default function Explore() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar de Filtros (Desktop) */}
-          <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm">
+          {/* Sidebar Filtros (Desktop) */}
+          <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm font-['Inter']">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-purple-600" /> Filtros
@@ -440,13 +425,13 @@ export default function Explore() {
             </div>
 
             <div>
-              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Localização</label>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Localização Livre</label>
               <div className="relative mb-2">
-                <input type="text" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Rua, Distrito..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <input type="text" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Concelho, Morada..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
               <button type="button" onClick={handleNearMeToggle} className={`w-full flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-xl border transition-all ${useNearMe ? "bg-purple-600 text-white border-purple-600" : "bg-white text-blue-600 border-slate-200 hover:bg-slate-50"}`}>
-                <Navigation className="w-4 h-4" /> {geoLocating ? "A localizar..." : "Usar a minha localização"}
+                <Navigation className="w-4 h-4" /> {geoLocating ? "A localizar..." : "Usar o meu GPS"}
               </button>
               {useNearMe && (
                 <div className="mt-3 grid grid-cols-3 gap-1.5">
@@ -472,12 +457,15 @@ export default function Explore() {
                 <input type="checkbox" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
               </label>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Parceiros Premium
+                <input type="checkbox" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Premium Partner
+              </label>
+              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" checked={filterAvailableToday} onChange={(e) => setFilterAvailableToday(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Aberto Hoje
               </label>
             </div>
           </div>
 
-          {/* Grelha de Resultados */}
+          {/* Grelha Resultados / Mapa */}
           <div className="lg:col-span-3 space-y-6">
             <div className="lg:hidden flex gap-2">
               <button onClick={() => setIsDrawerOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-3.5 px-4 text-xs font-bold shadow-md uppercase tracking-wider">
@@ -490,10 +478,10 @@ export default function Explore() {
                 <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
               </div>
             ) : viewMode === "map" ? (
-              <div className="w-full h-[70vh] rounded-3xl overflow-hidden border border-slate-200 shadow-md relative">
+              <div className="w-full h-[70vh] rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative">
                 {mapApiKey ? (
                   <APIProvider apiKey={mapApiKey}>
-                    <GoogleMap defaultCenter={{ lat: 39.3999, lng: -8.2245 }} defaultZoom={6} disableDefaultUI styles={mapStylesConfig} options={{ styles: mapStylesConfig }}>
+                    <GoogleMap defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 7} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
                       {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                       {paginatedBusinesses.map((b) => (
                         <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug}`)} />
@@ -522,8 +510,8 @@ export default function Explore() {
                 <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
                   <Search className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">Nenhum espaço encontrado</h3>
-                <p className="text-sm text-slate-500 mt-2 max-w-sm">Tente procurar noutra localização ou ajustar os seus filtros de pesquisa.</p>
+                <h3 className="text-xl font-bold text-slate-900 font-['Outfit']">Nenhum espaço encontrado</h3>
+                <p className="text-sm text-slate-500 mt-2 max-w-sm">Tente procurar noutra localização livre (ex: Pedroso, Funchal) ou ajustar os filtros.</p>
                 <button onClick={handleClearFilters} className="mt-6 px-6 py-3 border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50">Limpar Filtros</button>
               </div>
             )}
@@ -531,41 +519,42 @@ export default function Explore() {
         </div>
       </div>
 
-      {/* Gaveta Mobile de Filtros */}
+      {/* Gaveta Mobile (Scroll Corrigido) */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
-          <div className="w-full max-w-sm bg-white h-full shadow-2xl relative flex flex-col animate-slide-in-right overflow-hidden">
+          <div className="w-full max-w-sm bg-white h-full shadow-2xl relative flex flex-col animate-slide-in-right overflow-hidden font-['Inter']">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="font-bold text-slate-900">Filtros</h2>
+              <h2 className="font-bold text-slate-900 font-['Outfit']">Filtros Avançados</h2>
               <button onClick={() => setIsDrawerOpen(false)} className="p-2"><X className="w-5 h-5" /></button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            {/* CORREÇÃO ELITE: overflow-y-auto e max-h completo para o menu rodar de cima abaixo no telemóvel */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6 max-h-[calc(100vh-140px)] custom-scrollbar">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Serviço ou Nome</label>
                 <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Localização</label>
-                <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Cidade, Distrito..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
+                <label className="block text-xs font-bold text-slate-700 mb-2">Localização Livre</label>
+                <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Pedroso, Gaia, Funchal..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
                 <button type="button" onClick={handleNearMeToggle} className={`w-full py-3 rounded-xl text-sm font-bold flex justify-center gap-2 ${useNearMe ? "bg-purple-600 text-white" : "bg-blue-50 text-blue-600"}`}>
-                  <Navigation className="w-4 h-4" /> Usar GPS
+                  <Navigation className="w-4 h-4" /> Ativar GPS do Telemóvel
                 </button>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Preço Máximo</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Preço Inicial</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {[{ key: "All", label: "Qualquer valor" }, { key: "Low", label: "Abaixo de 25€" }, { key: "Medium", label: "Entre 25-45€" }, { key: "High", label: "Luxo (>45€)" }].map((p) => (
-                    <button key={p.key} onClick={() => setPriceLevel(p.key)} className={`py-2 text-xs font-semibold rounded-lg border ${priceLevel === p.key ? "bg-purple-600 text-white" : "bg-white text-slate-600"}`}>{p.label}</button>
+                  {[{ key: "All", label: "Todos" }, { key: "Low", label: "< 25€" }, { key: "Medium", label: "25-45€" }, { key: "High", label: "> 45€" }].map((p) => (
+                    <button key={p.key} onClick={() => setPriceLevel(p.key)} className={`py-2 text-xs font-semibold rounded-lg border ${priceLevel === p.key ? "bg-purple-600 text-white border-purple-600" : "bg-white text-slate-650"}`}>{p.label}</button>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div className="p-5 border-t border-slate-100 flex gap-3 bg-white">
+            <div className="p-5 border-t border-slate-100 flex gap-3 bg-white sticky bottom-0">
               <button onClick={handleClearFilters} className="w-1/3 py-3.5 border border-slate-200 rounded-xl font-bold text-sm">Limpar</button>
               <button onClick={() => setIsDrawerOpen(false)} className="w-2/3 py-3.5 bg-slate-900 text-white rounded-xl font-bold text-sm">Aplicar</button>
             </div>
