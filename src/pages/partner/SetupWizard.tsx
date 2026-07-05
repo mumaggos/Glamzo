@@ -92,7 +92,9 @@ export default function SetupWizard() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [doorNumber, setDoorNumber] = useState('');
   const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
@@ -100,11 +102,20 @@ export default function SetupWizard() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
+  // Auto-geocode debounced
+  useEffect(() => {
+    if (!address || !city || !postalCode) return;
+    const delayDebounceFn = setTimeout(() => {
+      triggerGeocoding();
+    }, 1500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [address, doorNumber, city, postalCode]);
+
   // CORREÇÃO ELITE: Chamada infalível ao Google Maps via REST API para garantir a morada do parceiro
   const triggerGeocoding = async () => {
     if (!address || !city) return;
     try {
-      const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
+      const fullAddress = `${address} ${doorNumber ? doorNumber + ',' : ''} ${postalCode} ${city}, ${district ? district + ',' : ''} Portugal`;
       let lat = null;
       let lng = null;
       
@@ -232,7 +243,9 @@ export default function SetupWizard() {
         setPhone(currentBiz.phone || '');
         setEmail(currentBiz.email || '');
         setAddress(currentBiz.address || '');
+        setDoorNumber(currentBiz.door_number || '');
         setCity(currentBiz.city || '');
+        setDistrict(currentBiz.district || '');
         setPostalCode(currentBiz.postal_code || '');
         setCategory(currentBiz.category || MAIN_CATEGORIES[0].name);
         setLogoUrl(currentBiz.logo_url || '');
@@ -340,7 +353,7 @@ export default function SetupWizard() {
     if (!user || !business) return;
 
     if (step === 1) {
-      if (!name || !phone || !address || !city || !postalCode) {
+      if (!name || !phone || !address || !city || !postalCode || !district) {
         setErrorMsg('Preencha os campos obrigatórios.');
         return;
       }
@@ -369,7 +382,7 @@ export default function SetupWizard() {
         const updateData = {
           id: business.id,
           owner_id: user.id,
-          name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2,
+          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
@@ -400,7 +413,7 @@ export default function SetupWizard() {
         await supabase.from('businesses').upsert({
           id: business.id,
           owner_id: user.id,
-          name, phone, email, address, city, postal_code: postalCode,
+          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
           onboarding_step: 3,
@@ -444,7 +457,7 @@ export default function SetupWizard() {
           await supabase.from('businesses').upsert({
             id: business.id,
             owner_id: user.id,
-            name, phone, email, address, city, postal_code: postalCode,
+            name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
             category, logo_url: logoUrl, cover_url: coverUrl,
             latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
             onboarding_step: 4,
@@ -507,7 +520,7 @@ export default function SetupWizard() {
         await supabase.from('businesses').upsert({
           id: business.id,
           owner_id: user.id,
-          name, phone, email, address, city, postal_code: postalCode,
+          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
           onboarding_step: 5,
@@ -730,11 +743,17 @@ export default function SetupWizard() {
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: ola@barbearia.pt" />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada Completa *</label>
-                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada *</label>
+                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Rua Direita" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nº Porta / Andar</label>
+                  <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 12, 1º Esq" />
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
                   <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
@@ -743,9 +762,14 @@ export default function SetupWizard() {
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
                   <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Distrito *</label>
+                  <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
+                </div>
               </div>
 
-              <div className="flex justify-end pt-1">
+              {/* Botão escondido pois a geolocalização é automática */}
+              <div className="hidden flex justify-end pt-1">
                 <button
                   type="button"
                   onClick={triggerGeocoding}
