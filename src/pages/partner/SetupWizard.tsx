@@ -367,16 +367,19 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
+          id: business.id,
+          owner_id: user.id,
           name, phone, email, address, city, postal_code: postalCode, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
-          latitude: lat, longitude: lng
+          latitude: lat, longitude: lng,
+          onboarding_step: 2
         };
-        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+        const { error } = await supabase.from('businesses').upsert(updateData);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
             delete (updateData as any).setup_step;
-            await supabase.from('businesses').update(updateData).eq('id', business.id);
+            await supabase.from('businesses').upsert(updateData);
           } else {
             throw error;
           }
@@ -392,6 +395,19 @@ export default function SetupWizard() {
       if (services.length === 0) {
         setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
         return;
+      }
+      try {
+        await supabase.from('businesses').upsert({
+          id: business.id,
+          owner_id: user.id,
+          name, phone, email, address, city, postal_code: postalCode,
+          category, logo_url: logoUrl, cover_url: coverUrl,
+          latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
+          onboarding_step: 3,
+          setup_step: 3
+        });
+      } catch (err) {
+        console.warn('Autosave step 2 failed:', err);
       }
       await updateSetupStep(3);
     } else if (step === 3) {
@@ -423,60 +439,66 @@ export default function SetupWizard() {
            }, { onConflict: 'business_id' });
         }
 
-        let res;
+        // Autosave onboarding step as 4
         try {
-          res = await fetch('/api/stripe/create-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              businessId: business.id,
-              planName: selectedPlan,
-              successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
-              cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
-            })
+          await supabase.from('businesses').upsert({
+            id: business.id,
+            owner_id: user.id,
+            name, phone, email, address, city, postal_code: postalCode,
+            category, logo_url: logoUrl, cover_url: coverUrl,
+            latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
+            onboarding_step: 4,
+            setup_step: 4
           });
-        } catch (fetchErr: any) {
-          console.warn('Stripe checkout fetch failed, auto-bypassing for preview/testing:', fetchErr);
-          await supabase.from('businesses').update({
-            plan: selectedPlan,
-            public_page_enabled: true
-          }).eq('id', business.id);
-          await updateSetupStep(4);
-          return;
-        }
-        
-        let data: any = {};
-        if (res && res.ok) {
-          try {
-            data = await res.json();
-          } catch (e) {
-            console.warn('Failed to parse Stripe JSON response');
-          }
-        } else if (res) {
-          try {
-            data = await res.json();
-          } catch (e) {}
+        } catch (err) {
+          console.warn('Autosave step 3 failed:', err);
         }
 
+        const res = await fetch('/api/stripe/create-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: business.id,
+            planName: selectedPlan,
+            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
+          })
+        });
+
+        if (!res.ok) {
+          let errorData: any = {};
+          try {
+            errorData = await res.json();
+          } catch (_) {}
+          throw new Error(errorData.error || 'Falha ao criar sessão de pagamento no Stripe.');
+        }
+
+        const data = await res.json();
         if (data.url) {
           window.location.href = data.url;
         } else {
-          console.warn('Stripe Checkout keys not configured, auto-bypassing for testing:', data.error);
-          await supabase.from('businesses').update({
-            plan: selectedPlan,
-            public_page_enabled: true
-          }).eq('id', business.id);
-          await updateSetupStep(4);
+          throw new Error(data.error || 'Não foi possível gerar o link de pagamento Stripe.');
         }
       } catch (e: any) {
-        console.warn('General checkout setup warning, auto-bypassing:', e);
-        await supabase.from('businesses').update({
-          plan: selectedPlan,
-          public_page_enabled: true
-        }).eq('id', business.id);
-        await updateSetupStep(4);
+        console.error('Checkout setup failed:', e);
+        setErrorMsg('Erro no pagamento Stripe: ' + (e.message || 'Falha na subscrição. Por favor, tente novamente.'));
+      } finally {
+        setLoading(false);
       }
     } else if (step === 4) {
+      try {
+        await supabase.from('businesses').upsert({
+          id: business.id,
+          owner_id: user.id,
+          name, phone, email, address, city, postal_code: postalCode,
+          category, logo_url: logoUrl, cover_url: coverUrl,
+          latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
+          onboarding_step: 5,
+          setup_step: 5
+        });
+      } catch (err) {
+        console.warn('Autosave step 4 failed:', err);
+      }
       await updateSetupStep(5);
     }
   };
@@ -666,16 +688,16 @@ export default function SetupWizard() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada Completa *</label>
-                <input type="text" value={address} onChange={e => setAddress(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
+                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Rua, Número, Andar" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
-                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
-                  <input type="text" value={city} onChange={e => setCity(e.target.value)} onBlur={triggerGeocoding} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
               </div>
 

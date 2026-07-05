@@ -41,6 +41,7 @@ export interface Business {
   stripe_subscription_id?: string | null;
   selected_plan?: string | null;
   setup_completed?: boolean;
+  onboarding_step?: number | null;
   public_page_enabled?: boolean;
   qr_scans_count?: number;
   trial_used?: boolean;

@@ -4,435 +4,350 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { 
   Building2, ArrowRight, ArrowLeft, Check, Sparkles, 
-  Mail, Loader2, KeyRound, Eye, EyeOff, User 
+  Mail, Loader2, KeyRound, Star, Calendar, ShieldCheck
 } from 'lucide-react';
 
 export default function PartnerSignup() {
-  const { signUp, signOut, user, profile, refreshProfile } = useAuth();
+  const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Unified single-screen state
-  const [codeSent, setCodeSent] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('step') === 'verify';
-  });
-
-  // Form states
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('email') || '';
-  });
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-
-  // Auxiliary states
+  // Onboarding frictionless step tracking
+  const [step, setStep] = useState<1 | 2>(1);
+  const [email, setEmail] = useState('');
+  const [enteredCode, setEnteredCode] = useState('');
+  
+  // States for UX feedback
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [isSignUpProcessActive, setIsSignUpProcessActive] = useState(false);
 
-  // Verification code
-  const [enteredCode, setEnteredCode] = useState('');
-
-  const handleSendCode = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleSendOTP = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!email) {
+      setErrorMsg('Por favor, introduza um e-mail válido.');
+      return;
+    }
     setErrorMsg(null);
     setSuccessMsg(null);
-
-    if (!fullName || !email || !password || !confirmPassword) {
-      setErrorMsg('Preencha todos os campos obrigatórios da sua conta para podermos gerar o código.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setErrorMsg('A palavra-passe deve conter pelo menos 6 caracteres.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMsg('As palavras-passe digitadas não coincidem.');
-      return;
-    }
-
-    if (!acceptedTerms) {
-      setErrorMsg('É obrigatório aceitar os Termos e a Política de Privacidade para prosseguir.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Normal flow: Create authentication credential & profile with role 'business'
-      // This will trigger Supabase to send the confirmation email
-      await signUp(email, password, fullName, 'business');
+      // Step 1: Request OTP sign in/up
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: window.location.origin + '/partner/setup'
+        }
+      });
 
-      setCodeSent(true);
-      setSuccessMsg('Código enviado! Por favor, introduza o código recebido abaixo. Verifique também a pasta de Spam.');
+      if (error) throw error;
+
+      setStep(2);
+      setSuccessMsg('Código enviado! Verifique o seu e-mail (e a pasta de Spam).');
     } catch (err: any) {
-      console.error('Failed to trigger verification email or create profile', err);
-      let userFriendlyMessage = err.message || 'Falha ao registar conta. Tente novamente mais tarde.';
-      if (err.message?.includes('already registered') || err.message?.toLowerCase().includes('already')) {
-        userFriendlyMessage = 'Este e-mail já está em uso. Por favor, use um e-mail diferente ou faça login.';
-      }
-      setErrorMsg(userFriendlyMessage);
-      setIsSignUpProcessActive(false);
+      console.error('OTP Send Error:', err);
+      setErrorMsg(err.message || 'Ocorreu um erro ao enviar o código de acesso.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (enteredCode.length !== 8 && enteredCode.length !== 6) {
-      setErrorMsg('O código de verificação deve ter 6 ou 8 dígitos.');
+    if (!enteredCode || enteredCode.length < 6) {
+      setErrorMsg('O código de verificação deve ter pelo menos 6 dígitos.');
       return;
     }
-
     setErrorMsg(null);
     setSuccessMsg(null);
     setLoading(true);
-    setIsSignUpProcessActive(true);
 
     try {
-      // 1. Verify the OTP code with Supabase
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email,
-        token: enteredCode,
-        type: 'signup'
+      // Step 2: Verify OTP code
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: enteredCode.trim(),
+        type: 'email'
       });
 
-      if (verifyError || !verifyData.user || !verifyData.session) {
-        throw new Error('O código inserido é inválido ou já expirou. Peça um novo código e tente novamente.');
+      if (error || !data.user) {
+        throw error || new Error('O código inserido é inválido ou já expirou.');
       }
-      
-      const authUser = verifyData.user;
-      
-      // Ensure the profile role is set to business
-      await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-      console.log('[PartnerOTP] código confirmado com sucesso. Atualizado profile para business.');
-      
-      const p = await refreshProfile();
-      console.log('[PartnerAuth] profile role=business carregado para user:', authUser.id);
 
-      const { resolvePartnerRoute } = await import('../utils/partnerRouting');
-      const route = await resolvePartnerRoute(authUser, 'business', supabase);
-      console.log('[PartnerRoute] redirect =>', route);
+      const authUser = data.user;
 
-      setSuccessMsg('E-mail verificado com sucesso! Por favor continue para configurar o seu estabelecimento.');
+      // Ensure local role is stored to prevent state mismatches during routing
+      localStorage.setItem(`local_role_${authUser.id}`, 'business');
+
+      // Sync user profile role in DB
+      const { data: profileCheck } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!profileCheck) {
+        await supabase.from('profiles').insert({
+          id: authUser.id,
+          email: email.trim().toLowerCase(),
+          role: 'business',
+          full_name: email.split('@')[0],
+          created_at: new Date().toISOString()
+        });
+      } else {
+        await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
+      }
+
+      await refreshProfile();
+      setSuccessMsg('Autenticação confirmada! A redirecionar...');
+      
       setTimeout(() => {
-        navigate(route, { replace: true });
-      }, 2000);
+        navigate('/partner/setup', { replace: true });
+      }, 1000);
     } catch (err: any) {
-      setIsSignUpProcessActive(false);
-      console.error('Partner Registration error:', err);
-      let userFriendlyMessage = err.message || 'Ocorreu um erro ao verificar a conta. Verifique os dados.';
-      setErrorMsg(userFriendlyMessage);
+      console.error('OTP Verification Error:', err);
+      setErrorMsg(err.message || 'Ocorreu um erro ao confirmar a sua autenticação.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div id="partner-signup-view" className="min-h-[calc(100vh-64px)] bg-slate-50 text-slate-800 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-purple-200 selection:text-purple-900">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl animate-fade-in text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200 rounded-full text-xs font-semibold text-purple-700 mb-4 uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 animate-pulse text-purple-600" />
-          <span>Inscrição Glamzo Parceiros</span>
+    <div id="partner-signup-view" className="min-h-[calc(100vh-64px)] flex font-sans selection:bg-purple-200 selection:text-purple-900 bg-slate-50">
+      {/* Left Column: Visual/Promo Split Screen */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#120a21] via-[#1a0e30] to-[#241344] text-white p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.15),transparent_45%)]" />
+        
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-xs font-semibold text-purple-300 uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+            <span>Glamzo Pro</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight mt-6 leading-tight max-w-md font-display uppercase">
+            Aumente a Faturação do Seu Salão<span className="text-purple-400 font-black">.</span>
+          </h1>
+          <p className="text-sm text-slate-300 mt-4 leading-relaxed max-w-sm">
+            Adira à maior rede de salões e estéticas de elite. Gira a sua agenda, atraia novos clientes e processe pagamentos com zero fricção.
+          </p>
         </div>
-        <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
-          Criar Conta Profissional<span className="text-purple-600 font-black">.</span>
-        </h2>
-        <p className="mt-2 text-xs text-slate-500 font-medium max-w-sm mx-auto">
-          Gira a sua agenda de reservas, faturação e visibilidade de forma simples a partir de uma plataforma de elite dedicada.
-        </p>
+
+        <div className="relative z-10 space-y-6">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300 shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Agenda Inteligente Sem Esforço</h4>
+              <p className="text-xs text-slate-300 mt-0.5">Automatize as suas marcações e elimine as faltas com SMS e e-mails automáticos.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300 shrink-0">
+              <Star className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Visibilidade de Elite</h4>
+              <p className="text-xs text-slate-300 mt-0.5">Destaque-se nos motores de busca e receba avaliações verificadas de clientes reais.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300 shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Segurança nos Pagamentos</h4>
+              <p className="text-xs text-slate-300 mt-0.5">Receba depósitos seguros e garanta as suas receitas com taxas de reserva ou no-show.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 text-xs text-slate-400 border-t border-slate-800/60 pt-6 flex justify-between items-center">
+          <span>&copy; {new Date().getFullYear()} Glamzo Technologies</span>
+          <span>Suporte Técnico 24/7</span>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white border border-slate-100 py-8 px-6 rounded-2xl shadow-sm sm:px-10">
+      {/* Right Column: Dynamic Form UI */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-white">
+        <div className="mx-auto w-full max-w-md space-y-8 animate-fade-in">
           
-          <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-5">
-            <h3 className="text-lg font-bold text-slate-800">Dados da Empresa</h3>
+          <div className="space-y-3">
+            <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
+              Acesso de Parceiro<span className="text-purple-600 font-black">.</span>
+            </h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Introduza o seu e-mail comercial. Enviaremos um código seguro de acesso imediato sem necessidade de passwords complexas.
+            </p>
           </div>
 
           {errorMsg && (
-            <div className="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
+            <div className="p-4 bg-rose-50 border border-rose-150 text-rose-700 rounded-xl text-xs font-semibold">
               <p>{errorMsg}</p>
-              {(errorMsg.includes('já está registado') || errorMsg.includes('já está associado') || errorMsg.toLowerCase().includes('already')) && (
-                <div className="mt-2.5 text-left">
-                  <Link 
-                    to={`/partner/login?email=${encodeURIComponent(email)}`} 
-                    className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-extrabold hover:underline"
-                  >
-                    <span>Iniciar Sessão como Parceiro Comercial &rarr;</span>
-                  </Link>
-                </div>
-              )}
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold animate-pulse">
+            <div className="p-4 bg-emerald-50 border border-emerald-150 text-emerald-700 rounded-xl text-xs font-semibold">
               <p>{successMsg}</p>
             </div>
           )}
 
-          {/* Active Session Detection Bypass */}
-          {user && !isSignUpProcessActive ? (
-            <div className="space-y-6 text-center py-4 animate-fade-in">
-              <div className="p-4 bg-purple-50 border border-purple-100 rounded-2xl">
-                <p className="text-sm font-bold text-slate-900 mb-2">Sessão Ativa Detetada!</p>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Está atualmente ligado como <span className="font-semibold text-purple-600">{profile?.full_name || user.email}</span> ({profile?.role === 'customer' ? 'Conta de Cliente' : 'Conta de Parceiro'}).
-                </p>
-              </div>
-              {profile?.role === 'customer' ? (
-                <div className="space-y-3">
-                  <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
-                    As contas de Cliente e de Parceiro/Loja são totalmente independentes de modo a garantir a separação de dashboards. Por favor, termine a sessão da sua conta de cliente para poder criar o registo comercial do seu salão.
-                  </p>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await signOut();
-                        window.location.reload();
-                      } catch (e) {}
-                    }}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
-                  >
-                    <span>Terminar Sessão de Cliente</span>
-                  </button>
-                </div>
-              ) : (
+          {user ? (
+            <div className="space-y-6 text-center py-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <p className="text-sm font-bold text-slate-900">Sessão Ativa Detetada!</p>
+              <p className="text-xs text-slate-600">
+                Está atualmente ligado como <span className="font-semibold text-purple-600">{profile?.full_name || user.email}</span>.
+              </p>
+              
+              <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => navigate('/dashboard')}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
+                  onClick={() => navigate('/partner/setup')}
+                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                 >
-                  <span>Ir para o Painel do Salão</span>
+                  <span>Continuar Configuração</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
-              )}
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    window.location.reload();
+                  }}
+                  className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800"
+                >
+                  Utilizar Outra Conta (Sair)
+                </button>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Nome Completo do Responsável
-                  </label>
-                  <div className="relative rounded-xl shadow-sm">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
-                      <User className="w-4 h-4" />
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      disabled={codeSent}
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
-                      placeholder="ex. Profissional Responsável"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    E-mail Comercial de Acesso
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="relative rounded-xl shadow-sm flex-1">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
+            <div className="space-y-6">
+              {step === 1 ? (
+                <form onSubmit={handleSendOTP} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      E-mail Comercial
+                    </label>
+                    <div className="relative rounded-xl shadow-sm">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <Mail className="w-4 h-4" />
                       </span>
                       <input
                         type="email"
                         required
-                        disabled={codeSent}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
+                        className="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800 placeholder:text-slate-400"
                         placeholder="geral@oseunegocio.com"
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleSendCode}
-                      disabled={loading || codeSent || !acceptedTerms}
-                      className="flex items-center justify-center gap-1.5 px-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold font-sans text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer whitespace-nowrap"
-                    >
-                      {loading && !codeSent ? (
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : codeSent ? (
-                        'Código Enviado ✓'
-                      ) : (
-                        'Enviar Código'
-                      )}
-                    </button>
-                  </div>
-                </div>
+                        <span>A enviar código...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Receber Código de Acesso</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                      Palavra-passe
-                    </label>
-                    <div className="relative rounded-xl shadow-sm">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        disabled={codeSent}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="block w-full px-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
-                        placeholder="Mín. 6 letras"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-slate-650"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                      Confirmar Senha
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      disabled={codeSent}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600 disabled:opacity-60"
-                      placeholder="Repita a senha"
-                    />
-                  </div>
-                </div>
-
-                {/* Checkbox Terms */}
-                <div className="flex items-start gap-2 pt-2 pb-2">
-                  <input
-                    type="checkbox"
-                    id="terms-partner"
-                    disabled={codeSent}
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-purple-600 bg-white border-slate-300 rounded focus:ring-purple-500 cursor-pointer disabled:opacity-50"
-                  />
-                  <label htmlFor="terms-partner" className="text-xs text-slate-600 leading-relaxed px-1 cursor-pointer">
-                    Li e aceito os{' '}
-                    <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                      Termos para Parceiros
+                  <div className="text-[11px] text-slate-400 text-center leading-relaxed">
+                    Ao continuar, concorda com os nossos{' '}
+                    <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:underline">
+                      Termos de Serviço
                     </Link>{' '}
-                    e a{' '}
-                    <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:text-purple-700 underline">
-                      Política de Privacidade e Tratamento GDPR
+                    e{' '}
+                    <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:underline">
+                      Política de Privacidade
                     </Link>
                     .
-                  </label>
-                </div>
-              </div>
-
-              {codeSent && (
-                <div className="mt-6 p-5 bg-purple-50/50 border border-purple-100 rounded-2xl animate-fade-in space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 mt-0.5">
-                      <Mail className="w-5 h-5" />
-                    </div>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOTP} className="space-y-5">
+                  <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-100 text-xs text-purple-800 leading-relaxed flex items-start gap-2.5">
+                    <Mail className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-bold text-slate-800 text-sm">Verifique a sua pasta de Spam/Lixo!</h4>
-                      <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                        Por vezes, o e-mail de verificação com o código de 8 dígitos pode ir parar à pasta de Spam, Lixo Comercial ou Promoções. Por favor verifique cuidadosamente.
-                      </p>
+                      Enviámos um código de acesso seguro para o e-mail <span className="font-bold text-purple-900">{email}</span>. Verifique também a pasta de <strong>Spam / Lixo Comercial</strong>.
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="verify-code" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
-                      Insira o Código de Verificação
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
+                      Código de 6 Dígitos
                     </label>
                     <input
-                      id="verify-code"
                       type="text"
                       required
                       value={enteredCode}
                       onChange={(e) => setEnteredCode(e.target.value)}
-                      className="block w-full px-4 py-4 bg-white border border-slate-200 rounded-xl text-center text-2xl font-mono tracking-[0.2em] sm:tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800"
-                      placeholder="00000000"
-                      maxLength={8}
+                      className="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800"
+                      placeholder="000000"
+                      maxLength={6}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3 pt-2">
+                  <div className="space-y-3 pt-2">
                     <button
                       type="submit"
-                      disabled={loading || (enteredCode.length !== 8 && enteredCode.length !== 6)}
-                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                      disabled={loading || enteredCode.length < 6}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>A verificar...</span>
+                          <span>A verificar código...</span>
                         </>
                       ) : (
                         <>
-                          <span>Confirmar Código e Registar</span>
+                          <span>Confirmar e Aceder</span>
                           <Check className="w-4 h-4" />
                         </>
                       )}
                     </button>
-                    
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={async () => {
-                        setLoading(true);
-                        setErrorMsg(null);
-                        setSuccessMsg(null);
-                        try {
-                          const { error } = await supabase.auth.resend({
-                            type: 'signup',
-                            email: email,
-                          });
-                          if (error) throw error;
-                          setSuccessMsg('Novo código enviado! Verifique o seu e-mail e SPAM.');
-                        } catch (err: any) {
-                          console.error('Resend error:', err);
-                          setErrorMsg('Falha ao reenviar código: ' + err.message);
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
-                      className="w-full py-2 text-[11px] font-bold text-slate-500 hover:text-slate-800 uppercase tracking-wider"
-                    >
-                      Não recebeu? Reenviar código
-                    </button>
-                    
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={() => setCodeSent(false)}
-                      className="w-full py-1 text-[11px] font-medium text-slate-400 hover:text-slate-650"
-                    >
-                      Alterar dados de acesso
-                    </button>
+
+                    <div className="flex justify-between items-center text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep(1);
+                          setEnteredCode('');
+                        }}
+                        className="inline-flex items-center gap-1 font-bold text-slate-500 hover:text-slate-800"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>Alterar E-mail</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        className="font-bold text-purple-600 hover:text-purple-700 hover:underline"
+                      >
+                        Reenviar Código
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </form>
               )}
-            </form>
+            </div>
           )}
 
-          <p className="mt-8 text-center text-xs text-slate-500">
-            Deseja aceder a uma conta existente?{' '}
-            <Link to="/partner/login" className="font-bold text-purple-600 hover:text-purple-700">
-              Iniciar sessão profissional
+          <p className="text-center text-xs text-slate-500 border-t border-slate-100 pt-6">
+            Deseja aceder como cliente?{' '}
+            <Link to="/login" className="font-bold text-purple-600 hover:text-purple-700">
+              Ir para Login Geral
             </Link>
           </p>
 
