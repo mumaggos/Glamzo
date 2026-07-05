@@ -285,6 +285,19 @@ export default function BusinessDetail() {
       if (!business?.id) return;
       setLoadingBookingMetadata(true);
       try {
+        if (business.id.startsWith("f1b5eeb5")) {
+          setStaff([
+            { id: "st-1", business_id: business.id, full_name: "Ana Silva", role_title: "Cabeleireira Senior", is_active: true, created_at: new Date().toISOString() },
+            { id: "st-2", business_id: business.id, full_name: "Rui Costa", role_title: "Esteticista / Massagista", is_active: true, created_at: new Date().toISOString() }
+          ]);
+          
+          const { FALLBACK_HOURS } = await import('../utils/fallbackData');
+          const hours = FALLBACK_HOURS.filter(h => h.business_id === business.id);
+          setBusinessHours(hours);
+          setExistingBookings([]);
+          return;
+        }
+
         const { data: staffData } = await supabase
           .from('staff')
           .select('*')
@@ -378,22 +391,33 @@ export default function BusinessDetail() {
 
         if (error) throw error;
         
-        if (data) {
-          if (data.subscription_status === 'suspended') {
+        let bizData = data;
+        if (!bizData) {
+          const { FALLBACK_BUSINESSES } = await import('../utils/fallbackData');
+          const found = FALLBACK_BUSINESSES.find(b => b.slug === slug);
+          if (found) {
+            bizData = found;
+          }
+        }
+
+        if (bizData) {
+          if (bizData.subscription_status === 'suspended') {
             setErrorMsg('Este estabelecimento encontra-se temporariamente suspenso pela administração do Glamzo.');
             setBusiness(null);
           } else {
-            setBusiness(data as Business);
+            setBusiness(bizData as Business);
             
             // Increment qr_scans_count silently if source=qrcode
             const params = new URLSearchParams(window.location.search);
             if (params.get('source') === 'qrcode' || params.get('ref') === 'qrcode') {
               try {
-                const currentScans = data.qr_scans_count || 0;
-                await supabase
-                  .from('businesses')
-                  .update({ qr_scans_count: currentScans + 1 })
-                  .eq('id', data.id);
+                if (!bizData.id.startsWith("f1b5eeb5")) {
+                  const currentScans = bizData.qr_scans_count || 0;
+                  await supabase
+                    .from('businesses')
+                    .update({ qr_scans_count: currentScans + 1 })
+                    .eq('id', bizData.id);
+                }
               } catch (qrErr) {
                 console.warn('Could not increment qr_scans_count:', qrErr);
               }
@@ -404,7 +428,17 @@ export default function BusinessDetail() {
         }
       } catch (err: any) {
         console.error('Error fetching salon detail:', err);
-        setErrorMsg('Ocorreu uma falha ao comunicar com o servidor. Verifique a sua ligação à internet.');
+        try {
+          const { FALLBACK_BUSINESSES } = await import('../utils/fallbackData');
+          const found = FALLBACK_BUSINESSES.find(b => b.slug === slug);
+          if (found) {
+            setBusiness(found as Business);
+          } else {
+            setErrorMsg('Ocorreu uma falha ao comunicar com o servidor. Verifique a sua ligação à internet.');
+          }
+        } catch (innerErr) {
+          setErrorMsg('Ocorreu uma falha ao comunicar com o servidor. Verifique a sua ligação à internet.');
+        }
       } finally {
         setLoading(false);
       }
@@ -429,6 +463,13 @@ export default function BusinessDetail() {
       if (!business?.id) return;
       setLoadingServices(true);
       try {
+        if (business.id.startsWith("f1b5eeb5")) {
+          const { FALLBACK_SERVICES } = await import('../utils/fallbackData');
+          const servicesList = FALLBACK_SERVICES.filter(s => s.business_id === business.id);
+          setServices(servicesList || []);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('services')
           .select(`
