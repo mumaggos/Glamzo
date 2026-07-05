@@ -3,8 +3,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { fetchAllReviews } from "../utils/reviewsHelper";
 import {
-  Search, MapPin, Clock, Navigation, 
-  ChevronRight, ChevronLeft, Map as MapIcon, 
+  Search, MapPin, Navigation, ChevronRight, ChevronLeft, Map as MapIcon, 
   ShieldCheck, Loader2, Heart, CalendarCheck, Zap, Star
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
@@ -21,8 +20,7 @@ const HOME_CATEGORIES = [
   { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75", url: "/explore?category=Noivas %26 Eventos" }
 ];
 
-const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"];
-
+const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal"];
 const mapStyles = [{ featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] }];
 
 const getCustomMarkerIcon = (rating: number) => {
@@ -34,22 +32,16 @@ const getCustomMarkerIcon = (rating: number) => {
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Otimização: Só carrega o mapa após 2 segundos para não travar a renderização inicial
   const [mapLoaded, setMapLoaded] = useState(false);
-  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const timer = setTimeout(() => setMapLoaded(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
-  const [showLocSuggestions, setShowLocSuggestions] = useState(false);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,45 +59,56 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleSearchSubmit = () => {
-    navigate(`/explore?q=${searchQuery}&city=${searchLocation}`);
-  };
+  const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
+    <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']">
+      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
+        <img src={b.cover_url} alt={b.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+      </div>
+      <h3 className="font-bold text-slate-900">{b.name}</h3>
+      <p className="text-sm text-slate-500">{b.category} · {b.city}</p>
+    </Link>
+  );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] font-['Inter'] flex flex-col">
+    <div className="min-h-screen bg-[#FDFDFD] font-['Inter']">
+      {/* Hero Section Completa */}
       <section className="relative pt-24 pb-20 bg-[#fafbfc]">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/60 via-white to-rose-50/30 -z-10" />
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-4xl sm:text-7xl font-extrabold text-[#0f172a] mb-5 font-['Outfit']">
-            O seu momento de beleza, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-rose-500">marcado num instante.</span>
-          </h1>
-          <p className="text-lg text-slate-500 mb-10">Descubra e reserve online os melhores salões ao seu redor.</p>
-          
-          <div className="w-full max-w-4xl bg-white p-2 rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.04)] border border-slate-200/60 flex flex-col md:flex-row gap-1">
-             <input type="text" placeholder="Serviço ou Salão" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 p-4 bg-transparent outline-none text-sm" />
-             <input type="text" placeholder="Localização" value={searchLocation} onChange={(e) => setSearchLocation(e.target.value)} className="flex-1 p-4 bg-transparent outline-none text-sm" />
-             <button onClick={handleSearchSubmit} className="bg-[#0f172a] text-white px-10 py-4 rounded-2xl font-bold text-sm">Pesquisar</button>
+          <h1 className="text-4xl sm:text-7xl font-extrabold text-[#0f172a] mb-5 font-['Outfit']">O seu momento de beleza, <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-rose-500">marcado num instante.</span></h1>
+          <div className="w-full max-w-4xl bg-white p-2 rounded-3xl shadow-lg border flex flex-col md:flex-row gap-1">
+             <input type="text" className="flex-1 p-4 bg-transparent outline-none" placeholder="O que procura?" />
+             <input type="text" className="flex-1 p-4 bg-transparent outline-none" placeholder="Localização" />
+             <button className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold">Pesquisar</button>
           </div>
         </div>
       </section>
 
-      <section className="py-16 max-w-7xl mx-auto px-4 w-full">
+      {/* Categorias */}
+      <section className="py-16 max-w-7xl mx-auto px-4">
         <h2 className="text-2xl font-bold mb-6 font-['Outfit']">O que procura hoje?</h2>
         <div ref={scrollContainerRef} className="flex overflow-x-auto gap-6 pb-4">
           {HOME_CATEGORIES.map((cat) => (
             <button key={cat.name} onClick={() => navigate(cat.url)} className="relative h-40 w-40 rounded-2xl overflow-hidden shrink-0">
               <img src={cat.image} alt={cat.name} loading="lazy" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/20" />
               <span className="absolute bottom-3 left-3 text-white font-bold">{cat.name}</span>
             </button>
           ))}
         </div>
       </section>
 
+      {/* Seções de Lojas (Recomendados, Novas, etc) */}
+      <div className="max-w-7xl mx-auto px-4 py-16 space-y-16">
+        {!loading && (
+          <>
+             <section><h2 className="text-2xl font-bold mb-6">❤️ Recomendados</h2><div className="flex gap-6 overflow-x-auto">{businesses.slice(0,5).map(b => <BusinessCard key={b.id} b={b} />)}</div></section>
+             <section><h2 className="text-2xl font-bold mb-6">🆕 Novas Lojas</h2><div className="flex gap-6 overflow-x-auto">{businesses.slice(5,10).map(b => <BusinessCard key={b.id} b={b} />)}</section>
+          </>
+        )}
+      </div>
+
       {/* Mapa Lazy Loaded */}
       <section className="py-16 max-w-7xl mx-auto px-4 w-full">
-        <h2 className="text-3xl font-bold mb-8 font-['Outfit']">Explorar no Mapa</h2>
+        <h2 className="text-3xl font-bold mb-8 font-['Outfit']">🌍 Explorar no Mapa</h2>
         <div className="h-[500px] rounded-3xl overflow-hidden bg-slate-100">
           {mapLoaded && API_KEY ? (
              <APIProvider apiKey={API_KEY}>
@@ -116,9 +119,7 @@ export default function Home() {
                </Map>
              </APIProvider>
           ) : (
-             <div className="flex items-center justify-center h-full">
-               <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
-             </div>
+             <div className="flex items-center justify-center h-full"><Loader2 className="w-10 h-10 animate-spin text-purple-600" /></div>
           )}
         </div>
       </section>
