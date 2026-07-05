@@ -63,6 +63,23 @@ const getCustomMarkerIcon = (rating: number) => {
   return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`; 
 }; 
 
+const optimizeUnsplashUrl = (url: string) => { 
+  if (!url) return ""; 
+  if (url.includes("images.unsplash.com")) { 
+    let optimized = url; 
+    optimized = optimized.replace(/w=\d+/, "w=200"); 
+    optimized = optimized.replace(/q=\d+/, "q=75"); 
+    if (!optimized.includes("w=")) {
+      optimized += "&w=200";
+    }
+    if (!optimized.includes("q=")) {
+      optimized += "&q=75";
+    }
+    return optimized; 
+  } 
+  return url; 
+}; 
+
 export default function Home() { 
   const navigate = useNavigate(); 
   const [searchParams] = useSearchParams(); 
@@ -75,6 +92,7 @@ export default function Home() {
   const [businesses, setBusinesses] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true); 
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null); 
+  const [mapVisible, setMapVisible] = useState(false); 
 
   const scrollCategories = (direction: 'left' | 'right') => { 
     if (scrollContainerRef.current) { 
@@ -90,6 +108,11 @@ export default function Home() {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); 
       }); 
     } 
+  }, []); 
+
+  useEffect(() => { 
+    const timer = setTimeout(() => setMapVisible(true), 2000); 
+    return () => clearTimeout(timer); 
   }, []); 
 
   useEffect(() => { 
@@ -176,7 +199,6 @@ export default function Home() {
   const recomendados = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10), [businesses]); 
   const novasLojas = useMemo(() => [...businesses].filter(b => b.isNew).slice(0, 10), [businesses]); 
 
-  // CORREÇÃO ELITE: O mapa da Home mostra sempre todo o inventário para que se possa navegar de Gaia às Ilhas livremente 
   const mapBusinesses = useMemo(() => { 
     return businesses; 
   }, [businesses]); 
@@ -186,7 +208,7 @@ export default function Home() {
     <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100"> 
         <img  
-          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"}  
+          src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75"}  
           alt={b.name}  
           loading="lazy"  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
@@ -342,7 +364,7 @@ export default function Home() {
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
-                <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
+                <img src={cat.image} alt={cat.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']"> 
                   {cat.name} 
@@ -451,40 +473,46 @@ export default function Home() {
           </button> 
         </div> 
 
-        <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
-          {API_KEY ? ( 
-            <APIProvider apiKey={API_KEY}> 
-              <Map 
-                defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
-                defaultZoom={userCoords ? 13 : 8} 
-                disableDefaultUI 
-                clickableIcons={false} 
-                styles={mapStyles} 
-                options={{ clickableIcons: false, styles: mapStyles }} 
-                style={{ width: '100%', height: '100%' }} 
-              > 
-                {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />} 
-                {mapBusinesses.map((b: any) => ( 
-                  <Marker  
-                    key={b.id}  
-                    position={{ lat: b.lat, lng: b.lng }} 
-                    title={b.name} 
-                    icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 29, y: 32 } }} 
-                    onClick={() => navigate("/business/" + b.slug)} 
-                  /> 
-                ))} 
-              </Map> 
-            </APIProvider> 
+        {mapVisible ? ( 
+          API_KEY ? ( 
+            <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
+              <APIProvider apiKey={API_KEY}> 
+                <Map 
+                  defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
+                  defaultZoom={userCoords ? 13 : 8} 
+                  disableDefaultUI 
+                  clickableIcons={false} 
+                  styles={mapStyles} 
+                  options={{ clickableIcons: false, styles: mapStyles }} 
+                  style={{ width: '100%', height: '100%' }} 
+                > 
+                  {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />} 
+                  {mapBusinesses.map((b: any) => ( 
+                    <Marker  
+                      key={b.id}  
+                      position={{ lat: b.lat, lng: b.lng }} 
+                      title={b.name} 
+                      icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 29, y: 32 } }} 
+                      onClick={() => navigate("/business/" + b.slug)} 
+                    /> 
+                  ))} 
+                </Map> 
+              </APIProvider> 
+            </div> 
           ) : ( 
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 font-medium bg-slate-50 p-4 text-center"> 
+            <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-50 flex flex-col items-center justify-center text-slate-400 font-medium p-4 text-center"> 
               <MapIcon className="w-10 h-10 mb-2 text-slate-300 animate-pulse" />  
               <span className="text-sm font-bold text-slate-700">Mapa de Lojas</span> 
               <span className="text-xs text-slate-500 mt-1 max-w-xs">Chave da API do Google Maps não configurada.</span> 
             </div> 
-          )} 
-        </div> 
+          ) 
+        ) : ( 
+          <div className="h-[500px] bg-slate-100 rounded-3xl flex items-center justify-center"> 
+            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" /> 
+          </div> 
+        )} 
       </section> 
 
     </div> 
   ); 
-}  
+} 
