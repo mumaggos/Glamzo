@@ -10,11 +10,6 @@ export default function Login() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (window.location.hash.includes('type=recovery')) {
-      navigate({ pathname: '/update-password', hash: window.location.hash }, { replace: true });
-      return;
-    }
-
     if (!authLoading && user && profile) {
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');

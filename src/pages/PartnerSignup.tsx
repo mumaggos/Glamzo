@@ -15,6 +15,7 @@ export default function PartnerSignup() {
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
   const [enteredCode, setEnteredCode] = useState('');
+  const [password, setPassword] = useState('');
   
   // States for UX feedback
   const [loading, setLoading] = useState(false);
@@ -63,6 +64,11 @@ export default function PartnerSignup() {
       setErrorMsg('O código de verificação deve ter pelo menos 6 dígitos.');
       return;
     }
+    if (!password || password.length < 6) {
+      setErrorMsg('A palavra-passe deve ter pelo menos 6 caracteres.');
+      return;
+    }
+    
     setErrorMsg(null);
     setSuccessMsg(null);
     setLoading(true);
@@ -99,6 +105,9 @@ export default function PartnerSignup() {
       }
 
       const authUser = signInData.user;
+      
+      // Update the user's password to the one they defined
+      await supabase.auth.updateUser({ password: password });
 
       // Ensure local role is stored to prevent state mismatches during routing
       localStorage.setItem(`local_role_${authUser.id}`, 'business');
@@ -302,10 +311,30 @@ export default function PartnerSignup() {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
+                      Definir Palavra-passe
+                    </label>
+                    <div className="relative rounded-xl shadow-sm">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <KeyRound className="w-4 h-4" />
+                      </span>
+                      <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="block w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800"
+                        placeholder="Mínimo de 6 caracteres"
+                        minLength={6}
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-3 pt-2">
                     <button
                       type="submit"
-                      disabled={loading || enteredCode.length < 6}
+                      disabled={loading || enteredCode.length < 6 || password.length < 6}
                       className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50 cursor-pointer"
                     >
                       {loading ? (
