@@ -3,9 +3,9 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { fetchAllReviews } from "../utils/reviewsHelper";
 import {
-  Search, MapPin, Navigation, 
+  Search, MapPin, Clock, Navigation, 
   ChevronRight, ChevronLeft, Map as MapIcon, 
-  ShieldCheck, Loader2, Heart, CalendarCheck, Zap, Star
+  ShieldCheck, Loader2, ArrowRight, Heart, CalendarCheck, Zap, Star
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
@@ -16,7 +16,7 @@ const API_KEY =
   (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
   "";
 
-// Categorias Fotográficas (Macro-categorias)
+// Categorias Fotográficas Premium (Estilo Treatwell)
 const HOME_CATEGORIES = [
   { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80", url: "/explore?category=Cabelo %26 Barbearia" },
   { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" },
@@ -26,7 +26,7 @@ const HOME_CATEGORIES = [
   { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=400&q=80", url: "/explore?category=Noivas %26 Eventos" }
 ];
 
-const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro"];
+const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"];
 
 const mapStyles = [
   { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
@@ -35,25 +35,25 @@ const mapStyles = [
   { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
 ];
 
+// O Novo Marcador Oficial em Gota (Estilo Uber / Glamzo #9333ea)
 const getCustomMarkerIcon = (rating: number) => {
   const finalRating = rating > 0 ? rating : 5.0;
   const ratingText = `${finalRating.toFixed(1)} ★`;
-  const bgColor = "#7c3aed";
-  const strokeColor = "#ffffff";
-  const textColor = "#ffffff";
+  const bgColor = "#9333ea"; 
+  const textColor = "#ffffff"; 
 
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
-      <g>
-        <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
+    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="42" viewBox="0 0 56 42">
+      <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.3))">
+        <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z" 
               fill="${bgColor}" 
-              stroke="${strokeColor}" 
+              stroke="#ffffff" 
               stroke-width="1.5" />
-        <text x="29" y="18" 
+        <text x="28" y="19" 
               fill="${textColor}" 
-              font-size="10px" 
-              font-family="system-ui, -apple-system, sans-serif" 
-              font-weight="bold" 
+              font-size="12px" 
+              font-family="Outfit, system-ui, sans-serif" 
+              font-weight="900" 
               text-anchor="middle">
           ${ratingText}
         </text>
@@ -68,12 +68,10 @@ export default function Home() {
   const [searchParams] = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Estados de Pesquisa Inteligente (Texto Livre)
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
 
-  // Estados de Dados
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
@@ -175,18 +173,17 @@ export default function Home() {
   }, [businesses, userCoords]);
 
   const topPartners = useMemo(() => businesses.filter(b => b.is_premium || b.is_verified), [businesses]);
-  const promocoes = useMemo(() => businesses.filter(b => b.is_promoted), [businesses]);
   const recomendados = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10), [businesses]);
   const novasLojas = useMemo(() => [...businesses].filter(b => b.isNew).slice(0, 10), [businesses]);
 
+  // CORREÇÃO ELITE: O mapa da Home mostra sempre todo o inventário para que se possa navegar de Gaia às Ilhas livremente
   const mapBusinesses = useMemo(() => {
-    if (userCoords) return businesses.filter(b => b.distance !== null && b.distance <= 20);
-    return recomendados;
-  }, [businesses, userCoords, recomendados]);
+    return businesses;
+  }, [businesses]);
 
-  // Cartão Minimalista (Estilo Airbnb)
+  // Cartão Minimalista de Elite (Estilo Airbnb)
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
-    <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer">
+    <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
         <img 
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
@@ -197,7 +194,7 @@ export default function Home() {
         
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
           {b.is_promoted && (
-            <span className="bg-white text-slate-900 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
+            <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
               Destaque
             </span>
           )}
@@ -205,7 +202,7 @@ export default function Home() {
         
         <button 
           onClick={(e) => { e.preventDefault(); }} 
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md"
+          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
         >
           <Heart className="w-6 h-6 fill-black/20 stroke-white stroke-[1.5]" />
         </button>
@@ -213,45 +210,44 @@ export default function Home() {
 
       <div className="flex justify-between items-start gap-2">
         <div>
-          <h3 className="font-bold text-slate-900 text-base line-clamp-1">{b.name}</h3>
+          <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
           <p className="text-sm text-slate-500 mt-0.5 truncate">{b.category} · {b.city}</p>
         </div>
         
-        <div className="flex items-center gap-1 text-sm font-semibold text-slate-900 shrink-0">
+        <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
           <Star className="w-3.5 h-3.5 fill-slate-900" />
           {b.rating > 0 ? b.rating.toFixed(1) : "Novo"}
         </div>
       </div>
       
       <div className="mt-1 flex items-baseline gap-1">
-        <span className="font-semibold text-slate-900">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span>
+        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span>
         <span className="text-sm text-slate-500">preço base</span>
       </div>
     </Link>
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
+    <div className="min-h-screen bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950">
       
-      {/* 1. HERO SECTION & PESQUISA (DESIGN CLEAN E LUMINOSO) */}
-      <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-slate-50/50">
-        {/* Fundo Leve com tom Roxo e Rosa da marca, sem escuridão */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-white to-rose-50/40 -z-10" />
+      {/* 1. HERO SECTION & PESQUISA (IDENTIDADE GLAMZO REFINADA) */}
+      <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-[#fafbfc]">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/60 via-white to-rose-50/30 -z-10" />
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center">
           
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-5">
-            O seu próximo momento <br className="hidden sm:block" />
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight text-[#0f172a] leading-[1.1] mb-5 font-['Outfit']">
+            O seu momento de beleza, <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-rose-500">
-              começa aqui.
+              marcado num instante.
             </span>
           </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-slate-500 font-medium max-w-2xl mb-10">
-            Descubra e reserve online os melhores salões de beleza, barbearias e spas ao seu redor. Instantâneo e sem complicações.
+          <p className="text-sm sm:text-base lg:text-lg text-slate-500 font-medium max-w-2xl mb-10 font-['Inter']">
+            Descubra e reserve online os melhores salões de beleza, barbearias e spas ao seu redor. Rápido, seguro e sem complicações.
           </p>
 
-          {/* O MOTOR DE RESERVAS ARQUITETÓNICO */}
-          <div className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200/60">
+          {/* MOTOR DE RESERVAS ARQUITETÓNICO COM CANTOS SUAVES */}
+          <div className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.04)] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200/60 font-['Inter']">
             
             {/* Campo 1: O que procura */}
             <div className="flex-1 relative group">
@@ -259,7 +255,7 @@ export default function Home() {
                 <Search className="w-5 h-5" />
               </div>
               <div className="px-12 py-3 hover:bg-slate-50 rounded-xl transition-colors cursor-text h-full flex flex-col justify-center">
-                <label className="block text-[10px] font-extrabold text-slate-800 uppercase tracking-widest mb-0.5 text-left">Tratamento ou Salão</label>
+                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">Tratamento ou Salão</label>
                 <input
                   type="text"
                   placeholder="Ex: Corte, Manicure..."
@@ -273,13 +269,13 @@ export default function Home() {
             <div className="hidden md:block w-px bg-slate-100 my-2" />
             <div className="block md:hidden h-px bg-slate-50 mx-4" />
 
-            {/* Campo 2: Onde (Texto Livre + Scroll) */}
+            {/* Campo 2: Onde (Pesquisa Livre e Scroll Corrigido) */}
             <div className="flex-1 relative group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
                 <MapPin className="w-5 h-5" />
               </div>
               <div className="px-12 py-3 hover:bg-slate-50 rounded-xl transition-colors cursor-text h-full flex flex-col justify-center">
-                <label className="block text-[10px] font-extrabold text-slate-800 uppercase tracking-widest mb-0.5 text-left">Localização</label>
+                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">Localização</label>
                 <input
                   type="text"
                   placeholder="Onde se encontra?"
@@ -301,7 +297,7 @@ export default function Home() {
                       <Search className="w-4 h-4 text-slate-400" /> Pesquisar por "{searchLocation}"
                     </button>
                   )}
-                  <div className="px-4 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Cidades Populares</div>
+                  <div className="px-4 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Sugestões</div>
                   {SUGGESTED_CITIES.filter(c => c.toLowerCase().includes(searchLocation.toLowerCase())).map(city => (
                     <button key={city} onMouseDown={() => { setSearchLocation(city); setShowLocSuggestions(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-2 transition-colors">
                       <MapPin className="w-4 h-4 text-slate-300" /> {city}
@@ -313,14 +309,14 @@ export default function Home() {
 
             <button 
               onClick={handleSearchSubmit} 
-              className="w-full md:w-auto bg-slate-900 hover:bg-purple-600 text-white font-bold text-sm py-4 md:py-0 px-10 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shrink-0 mt-2 md:mt-0"
+              className="w-full md:w-auto bg-[#0f172a] hover:bg-[#9333ea] text-white font-bold text-sm py-4 md:py-0 px-10 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shrink-0 mt-2 md:mt-0"
             >
               Pesquisar
             </button>
           </div>
 
-          {/* Garantias de Valor (Prova Social Real) */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-semibold text-slate-500">
+          {/* Garantias Reais de Confiança (Sem Dados Falsos) */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-semibold text-slate-500 font-['Inter']">
             <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-500" /> Confirmação Imediata</span>
             <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" />
             <span className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-purple-500" /> Disponibilidade 24/7</span>
@@ -330,10 +326,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. CATEGORIAS VISUAIS PREMIUM */}
+      {/* 2. CATEGORIAS FOTOGRÁFICAS PREMIUM */}
       <section className="pb-12 pt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-display font-extrabold text-slate-900">O que procura hoje?</h2>
+          <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">O que procura hoje?</h2>
         </div>
         <div className="relative group">
           <button onClick={() => scrollCategories('left')} className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all">
@@ -348,7 +344,7 @@ export default function Home() {
               >
                 <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
-                <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md">
+                <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
                   {cat.name}
                 </span>
               </button>
@@ -360,7 +356,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. CONTEÚDO E SEÇÕES DA PÁGINA INICIAL */}
+      {/* 3. CONTEÚDO DINÂMICO */}
       <div className="space-y-16 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-20">
@@ -371,8 +367,8 @@ export default function Home() {
             {locaisProximos.length > 0 && (
               <section>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-display font-extrabold text-slate-900">📍 Perto de si</h2>
-                  <p className="text-sm text-slate-500 mt-1">A menos de 20 minutos de distância da sua localização.</p>
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">📍 Perto de si</h2>
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">Espaços com vagas nas redondezas da sua localização.</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
                   {locaisProximos.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
@@ -383,8 +379,8 @@ export default function Home() {
             {recomendados.length > 0 && (
               <section>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-display font-extrabold text-slate-900">❤️ Recomendados para si</h2>
-                  <p className="text-sm text-slate-500 mt-1">Os espaços com melhores avaliações no Glamzo.</p>
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">❤️ Recomendados para si</h2>
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">Os espaços com melhores notas reais no Glamzo.</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
                   {recomendados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
@@ -395,23 +391,11 @@ export default function Home() {
             {novasLojas.length > 0 && (
               <section>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-display font-extrabold text-slate-900">🆕 Acabaram de chegar</h2>
-                  <p className="text-sm text-slate-500 mt-1">As mais recentes adições à plataforma.</p>
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🆕 Acabaram de chegar</h2>
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">As mais recentes novidades adicionadas à nossa rede.</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
                   {novasLojas.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
-                </div>
-              </section>
-            )}
-
-            {topPartners.length > 0 && (
-              <section>
-                <div className="mb-6">
-                  <h2 className="text-2xl font-display font-extrabold text-slate-900">💎 Top Partner</h2>
-                  <p className="text-sm text-slate-500 mt-1">Profissionais verificados pela plataforma.</p>
-                </div>
-                <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
-                  {topPartners.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
                 </div>
               </section>
             )}
@@ -419,62 +403,55 @@ export default function Home() {
         )}
       </div>
 
-      {/* 4. PROPOSTA DE VALOR */}
-      <section className="py-16 sm:py-24 bg-purple-50/50 border-y border-purple-100">
+      {/* 4. PROPOSTA DE VALOR REAIS */}
+      <section className="py-16 sm:py-24 bg-purple-50/40 border-y border-purple-100 font-['Inter']">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-slate-900 mb-4">Porquê marcar com o Glamzo?</h2>
-            <p className="text-slate-600 text-base">A plataforma que simplifica a forma como cuida de si.</p>
+            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-[#0f172a] mb-4 font-['Outfit']">Porquê marcar com o Glamzo?</h2>
+            <p className="text-slate-600 text-base">A plataforma ibérica que moderniza e simplifica a forma como cuida de si.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16">
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-white text-purple-600 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
-                <CalendarCheck className="w-8 h-8" />
+              <div className="w-14 h-14 bg-white text-purple-600 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
+                <CalendarCheck className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Marcações 24/7</h3>
-              <p className="text-slate-500 leading-relaxed text-sm">Não espere que o salão abra para ligar. Encontre horários disponíveis e reserve a qualquer hora do dia ou da noite.</p>
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Marcações 24/7</h3>
+              <p className="text-slate-500 leading-relaxed text-sm">Não espere que o salão abra para telefonar. Encontre horários disponíveis e reserve a qualquer hora do dia ou da noite, instantaneamente.</p>
             </div>
             
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-white text-rose-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
-                <Star className="w-8 h-8" />
+              <div className="w-14 h-14 bg-white text-rose-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
+                <Star className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Profissionais de Topo</h3>
-              <p className="text-slate-500 leading-relaxed text-sm">Leia avaliações 100% verificadas de clientes reais. Saiba a qualidade do serviço antes de se sentar na cadeira.</p>
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Parceiros de Confiança</h3>
+              <p className="text-slate-500 leading-relaxed text-sm">Aceda a portefólios e leia avaliações 100% autênticas de clientes reais. Garanta a qualidade do serviço antes da sua visita.</p>
             </div>
             
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-white text-emerald-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
-                <ShieldCheck className="w-8 h-8" />
+              <div className="w-14 h-14 bg-white text-emerald-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6">
+                <ShieldCheck className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Segurança Total</h3>
-              <p className="text-slate-500 leading-relaxed text-sm">Sem custos ocultos e com a garantia de que o seu lugar está reservado. Altere a sua marcação facilmente na plataforma.</p>
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Gestão Sem Esforço</h3>
+              <p className="text-slate-500 leading-relaxed text-sm">Sem taxas ocultas e com segurança total. Remarque, altere ou cancele as suas marcações diretamente através do seu painel de cliente.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. MAPA INTELIGENTE */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      {/* 5. MAPA INTELIGENTE GEOGRÁFICO */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']">
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-display font-extrabold text-slate-900 flex items-center justify-center sm:justify-start gap-2.5">
-              🌍 Explorar no Mapa
-            </h2>
-            <p className="text-slate-500 mt-2">
-              {userCoords ? "Veja as lojas ao seu redor." : "Explore geograficamente as opções disponíveis."}
-            </p>
+            <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🌍 Explorar no Mapa</h2>
+            <p className="text-slate-500 mt-2">Navegue geograficamente e descubra espaços premium por todo o país.</p>
           </div>
-          <button 
-            onClick={() => navigate('/explore?view=map')} 
-            className="text-sm font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-colors"
-          >
+          <button onClick={() => navigate('/explore?view=map')} className="text-sm font-bold text-purple-600 hover:text-purple-700 bg-purple-50 px-5 py-2.5 rounded-xl transition-colors">
             Ver Mapa Completo
           </button>
         </div>
 
-        <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-lg relative bg-slate-100">
+        <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100">
           {API_KEY ? (
             <APIProvider apiKey={API_KEY}>
               <Map
@@ -486,22 +463,13 @@ export default function Home() {
                 options={{ clickableIcons: false, styles: mapStyles }}
                 style={{ width: '100%', height: '100%' }}
               >
-                {userCoords && (
-                  <Marker 
-                    position={{ lat: userCoords.lat, lng: userCoords.lng }}
-                    title="A sua localização"
-                    icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                  />
-                )}
+                {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                 {mapBusinesses.map((b: any) => (
                   <Marker 
                     key={b.id} 
                     position={{ lat: b.lat, lng: b.lng }}
                     title={b.name}
-                    icon={{
-                      url: getCustomMarkerIcon(b.rating || 0),
-                      anchor: { x: 29, y: 32 }
-                    }}
+                    icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 29, y: 32 } }}
                     onClick={() => navigate("/business/" + b.slug)}
                   />
                 ))}
