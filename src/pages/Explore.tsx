@@ -3,49 +3,16 @@ import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { Business, Review } from "../types";
 import { fetchAllReviews } from "../utils/reviewsHelper";
-import {
-  PORTUGAL_GEO,
-  getCoordinatesForCity,
-  calculateDistanceInKm,
-} from "../utils/geoData";
-import {
-  MAIN_CATEGORIES,
-  SUBCATEGORIES_BY_MAIN,
-} from "../utils/categoriesData";
+import { calculateDistanceInKm, getCoordinatesForCity } from "../utils/geoData";
+import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData";
 import { useAuth } from "../hooks/useAuth";
+import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
 import {
-  toggleFavorite,
-  fetchCustomerFavorites,
-} from "../utils/marketingHelper";
-import {
-  Search,
-  MapPin,
-  Grid,
-  Store,
-  Sparkles,
-  SlidersHorizontal,
-  CheckCircle2,
-  Loader2,
-  ArrowRight,
-  X,
-  Compass,
-  Star,
-  ChevronRight,
-  Sliders,
-  Navigation,
-  Home,
-  Zap,
-  Clock,
-  ThumbsUp,
-  Heart,
-  Map as MapIcon,
-  List,
+  Search, MapPin, Grid, Store, Sparkles, SlidersHorizontal, CheckCircle2,
+  Loader2, ArrowRight, X, Compass, Star, ChevronRight, Sliders, Navigation,
+  Home, Zap, Clock, ThumbsUp, Heart, Map as MapIcon, List
 } from "lucide-react";
-import {
-  APIProvider,
-  Map,
-  Marker,
-} from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, Marker } from "@vis.gl/react-google-maps";
 
 const getCategoryDisplayName = (name: string) => {
   if (name === "Wellness") return "Wellness & Spa";
@@ -64,21 +31,13 @@ const getCustomMarkerIcon = (rating: number) => {
     <svg xmlns="http://www.w3.org/2000/svg" width="58" height="38" viewBox="0 0 58 38">
       <g>
         <path d="M 6 2 H 52 A 4 4 0 0 1 56 6 V 24 A 4 4 0 0 1 52 28 H 33 L 29 32 L 25 28 H 6 A 4 4 0 0 1 2 24 V 6 A 4 4 0 0 1 6 2 Z" 
-              fill="${bgColor}" 
-              stroke="${strokeColor}" 
-              stroke-width="1.5" />
-        <text x="29" y="18" 
-              fill="${textColor}" 
-              font-size="10px" 
-              font-family="system-ui, -apple-system, sans-serif" 
-              font-weight="bold" 
-              text-anchor="middle">
+              fill="${bgColor}" stroke="${strokeColor}" stroke-width="1.5" />
+        <text x="29" y="18" fill="${textColor}" font-size="10px" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" text-anchor="middle">
           ${ratingText}
         </text>
       </g>
     </svg>
   `;
-
   return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`;
 };
 
@@ -86,52 +45,37 @@ export default function Explore() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [availabilities, setAvailabilities] = useState<
-    Record<string, { label: string; available: boolean }>
-  >({});
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  
+  const [businesses, setBusinesses] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
-  const [promotions, setPromotions] = useState<
-    Record<string, { is_promoted: boolean }>
-  >({});
+  const [promotions, setPromotions] = useState<Record<string, { is_promoted: boolean }>>({});
 
+  // Pesquisa de Texto e Localização Livre
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [localSearchQuery, setLocalSearchQuery] = useState(
-    searchParams.get("q") || "",
-  );
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get("q") || "");
+  const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
+  const [localSearchLocation, setLocalSearchLocation] = useState(searchParams.get("city") || "");
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchQuery(localSearchQuery);
-    }, 1000);
+      setSearchLocation(localSearchLocation);
+    }, 800);
     return () => clearTimeout(handler);
-  }, [localSearchQuery]);
-  
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    searchParams.get("category") || "All",
-  );
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(
-    searchParams.get("subcategory") || "All"
-  );
-  const [selectedDistrict, setSelectedDistrict] = useState<string>(
-    searchParams.get("district") || "All",
-  );
-  const [selectedCity, setSelectedCity] = useState<string>(
-    searchParams.get("city") || "All",
-  );
+  }, [localSearchQuery, localSearchLocation]);
 
-  const [userCoords, setUserCoords] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get("category") || "All");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(searchParams.get("subcategory") || "All");
+
+  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; } | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
-  const [useNearMe, setUseNearMe] = useState(false);
-  const [nearMeRadius, setNearMeRadius] = useState<number>(10);
+  const [useNearMe, setUseNearMe] = useState(searchParams.get("nearMe") === "true");
+  const [nearMeRadius, setNearMeRadius] = useState<number>(20);
 
   const [minRating, setMinRating] = useState<number>(0);
   const [priceLevel, setPriceLevel] = useState<string>("All");
@@ -140,25 +84,21 @@ export default function Explore() {
   const [filterPremiumPartner, setFilterPremiumPartner] = useState(false);
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
 
-  const [itemsLimit, setItemsLimit] = useState(6);
+  const [itemsLimit, setItemsLimit] = useState(12);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const fetchExploreData = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
       const [bizRes, servRes, realRev, hoursRes] = await Promise.all([
-        supabase
-          .from("businesses")
-          .select("*")
-          .order("created_at", { ascending: false }),
-        supabase.from("services").select("*"),
+        supabase.from("businesses").select("*").eq("status", "active"),
+        supabase.from("services").select("*").eq("is_active", true),
         fetchAllReviews(),
         supabase.from("business_hours").select("*"),
       ]);
 
-      let loadedBiz = (bizRes.data as Business[]) || [];
+      let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
       let loadedServices = servRes.data || [];
       let loadedReviews = realRev || [];
       let loadedHours = hoursRes.data || [];
@@ -176,21 +116,20 @@ export default function Explore() {
       setReviews(loadedReviews || []);
 
       const hoursData = loadedHours || [];
+      (window as any).__exploreBusinessHours = hoursData;
 
       const promoMap: Record<string, { is_promoted: boolean }> = {};
       const now = Date.now();
       loadedBiz.forEach((b) => {
         const isPromoted = !!b.is_promoted;
         const endsAt = b.promotion_ends_at;
-        const active =
-          isPromoted && (!endsAt || new Date(endsAt).getTime() > now);
-        promoMap[b.id] = { is_promoted: active };
+        promoMap[b.id] = { is_promoted: isPromoted && (!endsAt || new Date(endsAt).getTime() > now) };
       });
       setPromotions(promoMap);
 
-      (window as any).__exploreBusinessHours = hoursData;
     } catch (err: any) {
-      console.error("Error fetching live data in explore:", err);
+      console.error("Erro ao carregar dados", err);
+      setErrorMsg("Falha ao descarregar base de dados. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -201,96 +140,29 @@ export default function Explore() {
   }, []);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchCustomerFavorites(user.id).then((favs) => {
-        setUserFavorites(favs);
-      });
-    } else {
-      setUserFavorites([]);
-    }
+    if (user?.id) fetchCustomerFavorites(user.id).then(setUserFavorites);
+    else setUserFavorites([]);
   }, [user]);
 
   const handleToggleFavorite = async (businessId: string) => {
     if (!user) {
-      alert("Por favor, inicie sessão para guardar os seus estabelecimentos favoritos!");
+      alert("Por favor, inicie sessão para guardar favoritos!");
       return;
     }
     const isNowFav = await toggleFavorite(user.id, businessId);
-    if (isNowFav) {
-      setUserFavorites((prev) => [...prev, businessId]);
-    } else {
-      setUserFavorites((prev) => prev.filter((id) => id !== businessId));
-    }
+    setUserFavorites((prev) => isNowFav ? [...prev, businessId] : prev.filter((id) => id !== businessId));
   };
 
+  // Sync URL Params
   useEffect(() => {
     const params: Record<string, string> = {};
     if (searchQuery.trim()) params.q = searchQuery.trim();
+    if (searchLocation.trim() && !useNearMe) params.city = searchLocation.trim();
     if (selectedCategory !== "All") params.category = selectedCategory;
     if (selectedSubcategory !== "All") params.subcategory = selectedSubcategory;
-    if (selectedDistrict !== "All") params.district = selectedDistrict;
-    if (selectedCity !== "All") params.city = selectedCity;
     if (useNearMe) params.nearMe = "true";
     setSearchParams(params, { replace: true });
-  }, [searchQuery, selectedCategory, selectedSubcategory, selectedDistrict, selectedCity, useNearMe]);
-
-  useEffect(() => {
-    const category = searchParams.get("category") || "All";
-    const subcategory = searchParams.get("subcategory") || "All";
-    let district = searchParams.get("district") || "All";
-    const city = searchParams.get("city") || "All";
-    const q = searchParams.get("q") || "";
-    const nearMe = searchParams.get("nearMe") === "true";
-
-    if (district === "All" && city !== "All") {
-      for (const [dist, cities] of Object.entries(PORTUGAL_GEO)) {
-        if (cities.includes(city)) {
-          district = dist;
-          break;
-        }
-      }
-    }
-
-    if (category !== selectedCategory) setSelectedCategory(category);
-    if (subcategory !== selectedSubcategory) setSelectedSubcategory(subcategory);
-    if (district !== selectedDistrict) setSelectedDistrict(district);
-    if (city !== selectedCity) setSelectedCity(city);
-    if (q !== searchQuery) {
-      setLocalSearchQuery(q);
-      setSearchQuery(q);
-    }
-    if (nearMe !== useNearMe) {
-      if (nearMe && !userCoords && !geoLocating) {
-        setGeoLocating(true);
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              setUserCoords({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-              });
-              setUseNearMe(true);
-              setGeoLocating(false);
-              setSelectedDistrict("All");
-              setSelectedCity("All");
-            },
-            (err) => {
-              console.warn("Geolocation failed on param load", err);
-              setUserCoords({ latitude: 38.7223, longitude: -9.1393 });
-              setUseNearMe(true);
-              setGeoLocating(false);
-            },
-            { enableHighAccuracy: true, timeout: 5000 }
-          );
-        } else {
-          setGeoLocating(false);
-        }
-      } else if (!nearMe) {
-        setUseNearMe(false);
-        setUserCoords(null);
-      }
-    }
-  }, [searchParams]);
+  }, [searchQuery, searchLocation, selectedCategory, selectedSubcategory, useNearMe]);
 
   const handleNearMeToggle = () => {
     if (useNearMe) {
@@ -298,44 +170,35 @@ export default function Explore() {
       setUserCoords(null);
       return;
     }
-
     setGeoLocating(true);
-    setErrorMsg(null);
+    setSearchLocation(""); // Limpa o texto se usar GPS
+    setLocalSearchLocation("");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserCoords({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
+          setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
           setUseNearMe(true);
           setGeoLocating(false);
-          setSelectedDistrict("All");
-          setSelectedCity("All");
         },
         (err) => {
           setUserCoords({ latitude: 38.7223, longitude: -9.1393 });
           setUseNearMe(true);
           setGeoLocating(false);
-          setErrorMsg(
-            "Não foi possível adquirir a localização exata. Ativamos Lisboa como teste para demonstrar as distâncias.",
-          );
         },
-        { enableHighAccuracy: true, timeout: 5000 },
+        { enableHighAccuracy: true, timeout: 5000 }
       );
     } else {
       setGeoLocating(false);
-      setErrorMsg("O seu navegador não suporta geolocalização.");
     }
   };
 
   const handleClearFilters = () => {
     setLocalSearchQuery("");
     setSearchQuery("");
+    setLocalSearchLocation("");
+    setSearchLocation("");
     setSelectedCategory("All");
     setSelectedSubcategory("All");
-    setSelectedDistrict("All");
-    setSelectedCity("All");
     setUseNearMe(false);
     setUserCoords(null);
     setMinRating(0);
@@ -344,178 +207,87 @@ export default function Explore() {
     setFilterInstantBooking(false);
     setFilterPremiumPartner(false);
     setFilterAvailableToday(false);
-    setItemsLimit(6);
+    setItemsLimit(12);
   };
 
+  // Processamento de Dados (Igual à Home Page - Motor Real)
   const processedBusinesses = businesses.map((b) => {
     const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude;
     const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude;
 
     let distance: number | null = null;
     if (userCoords) {
-      distance = calculateDistanceInKm(
-        userCoords.latitude,
-        userCoords.longitude,
-        lat,
-        lng,
-      );
+      distance = calculateDistanceInKm(userCoords.latitude, userCoords.longitude, lat, lng);
     }
 
-    // AVALIAÇÕES REAIS
     const bizReviews = reviews.filter((r) => r.business_id === b.id);
-    let rating = 0;
-    let reviewsCount = 0;
+    let rating = bizReviews.length > 0 ? bizReviews.reduce((sum, r) => sum + r.rating, 0) / bizReviews.length : 0;
+    let reviewsCount = bizReviews.length;
 
-    if (bizReviews.length > 0) {
-      reviewsCount = bizReviews.length;
-      rating = bizReviews.reduce((sum, r) => sum + r.rating, 0) / bizReviews.length;
-    } else {
-      const initialDesignSeeds = [
-        "salao-spa-premium",
-        "barbearia-braga-moderna",
-        "estetica-beleza-braganca",
-      ];
-      if (initialDesignSeeds.includes(b.slug)) {
-        let hash = 0;
-        for (let i = 0; i < b.name.length; i++) {
-          hash = b.name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        rating = 4.0 + Math.abs(hash % 11) / 10;
-        reviewsCount = 12 + Math.abs(hash % 150);
-      }
-    }
-
-    // PREÇOS E PROMOÇÕES REAIS LIGADAS AO SETUP WIZARD
     const bServices = services.filter((s) => s.business_id === b.id);
     let realStartPrice = 0;
     let hasRealPromotion = !!promotions[b.id]?.is_promoted || !!b.is_promoted;
 
     if (bServices.length > 0) {
       const prices = bServices.map((s: any) => {
-        const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || 
-                            (s.price_promotion != null && s.price_promotion > 0);
-        if (hasDiscount) {
-          hasRealPromotion = true;
-          return s.discount_price || s.price_promotion;
-        }
-        return s.price;
+        const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0);
+        if (hasDiscount) hasRealPromotion = true;
+        return s.discount_price || s.price_promotion || s.price;
       }).filter((p: number) => p != null && !isNaN(p));
-
-      if (prices.length > 0) {
-        realStartPrice = Math.min(...prices);
-      }
+      if (prices.length > 0) realStartPrice = Math.min(...prices);
     }
 
-    // HORÁRIOS REAIS
     const storedHoursList = (window as any).__exploreBusinessHours || [];
     const bizHours = storedHoursList.filter((h: any) => h.business_id === b.id);
     const currentDayIndex = new Date().getDay();
     const todayHour = bizHours.find((h: any) => h.weekday === currentDayIndex);
 
     let isOpenNow = false;
-    if (todayHour) {
-      if (!todayHour.is_closed) {
-        const now = new Date();
-        const currentHours = String(now.getHours()).padStart(2, "0");
-        const currentMinutes = String(now.getMinutes()).padStart(2, "0");
-        const currentTimeStr = `${currentHours}:${currentMinutes}`;
-        isOpenNow = currentTimeStr >= todayHour.open_time && currentTimeStr <= todayHour.close_time;
-      }
-    } else {
-      if (currentDayIndex !== 0) {
-        const now = new Date();
-        const currentHours = String(now.getHours()).padStart(2, "0");
-        const currentMinutes = String(now.getMinutes()).padStart(2, "0");
-        const currentTimeStr = `${currentHours}:${currentMinutes}`;
-        isOpenNow = currentTimeStr >= "09:00" && currentTimeStr <= "19:00";
-      }
+    if (todayHour && !todayHour.is_closed) {
+      const now = new Date();
+      const currentTimeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      isOpenNow = currentTimeStr >= todayHour.open_time && currentTimeStr <= todayHour.close_time;
     }
 
     const isPremiumVal = !!b.is_premium || (rating >= 4.5 && reviewsCount >= 1 && b.is_verified);
 
-    return {
-      ...b,
-      lat,
-      lng,
-      distance,
-      rating,
-      reviewsCount,
-      startPrice: realStartPrice,
-      isOpenNow,
-      is_promoted: hasRealPromotion,
-      is_premium: isPremiumVal,
-    };
+    return { ...b, lat, lng, distance, rating, reviewsCount, startPrice: realStartPrice, isOpenNow, is_promoted: hasRealPromotion, is_premium: isPremiumVal };
   });
 
   const filteredBusinesses = processedBusinesses.filter((b) => {
-    const isDemo = [
-      "salao-spa-premium",
-      "barbearia-braga-moderna",
-      "estetica-beleza-braganca",
-    ].includes(b.slug);
-
-    if (!isDemo) {
-      if (b.status !== 'active') return false;
-      if (b.public_page_enabled === false) return false;
-    }
-
+    // 1. Keyword Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchName = b.name.toLowerCase().includes(q);
-      const matchDesc = (b.description || "").toLowerCase().includes(q);
-      const matchAddress = (b.address || "").toLowerCase().includes(q);
       const matchCat = b.category.toLowerCase().includes(q);
-
-      const matchServices = services.some(
-        (s) =>
-          s.business_id === b.id &&
-          (s.name.toLowerCase().includes(q) ||
-            (s.description || "").toLowerCase().includes(q)),
-      );
-
-      if (!matchName && !matchDesc && !matchAddress && !matchCat && !matchServices)
-        return false;
+      const matchServices = services.some(s => s.business_id === b.id && s.name.toLowerCase().includes(q));
+      if (!matchName && !matchCat && !matchServices) return false;
     }
 
-    if (selectedCategory !== "All") {
-      const matchPrimary = b.category === selectedCategory;
-      const matchMultiple = Array.isArray(b.categories) && b.categories.includes(selectedCategory);
-      if (!matchPrimary && !matchMultiple) return false;
-    }
-
-    if (selectedSubcategory !== "All") {
-      const bDesc = (b.description || "").toLowerCase();
-      const subLower = selectedSubcategory.toLowerCase();
-      if (!bDesc.includes(subLower) && !b.category.toLowerCase().includes(subLower)) {
-        return false;
-      }
-    }
-
-    if (!useNearMe) {
-      const bDist = (b.district || "").toLowerCase().trim();
-      const bCity = (b.city || "").toLowerCase().trim();
-      
-      if (selectedCity !== "All") {
-        if (bCity !== selectedCity.toLowerCase().trim()) return false;
-      }
-      
-      if (selectedDistrict !== "All") {
-        const allowedCities = (PORTUGAL_GEO[selectedDistrict] || []).map(c => c.toLowerCase().trim());
-        const isCityInDistrict = allowedCities.includes(bCity);
-        const isDistrictMatch = bDist === selectedDistrict.toLowerCase().trim();
-        
-        if (!isDistrictMatch && !isCityInDistrict) return false;
-      }
+    // 2. Location Search Inteligente (Texto Livre)
+    if (searchLocation.trim() && !useNearMe) {
+      const locQ = searchLocation.toLowerCase().trim();
+      const matchCity = (b.city || "").toLowerCase().includes(locQ);
+      const matchDist = (b.district || "").toLowerCase().includes(locQ);
+      const matchAddress = (b.address || "").toLowerCase().includes(locQ);
+      if (!matchCity && !matchDist && !matchAddress) return false;
     }
 
     if (useNearMe && userCoords && b.distance !== null) {
       if (b.distance > nearMeRadius) return false;
     }
 
-    if (minRating > 0) {
-      if (b.rating < minRating) return false;
+    if (selectedCategory !== "All") {
+      if (b.category !== selectedCategory && !(Array.isArray(b.categories) && b.categories.includes(selectedCategory))) return false;
     }
 
+    if (selectedSubcategory !== "All") {
+      const subLower = selectedSubcategory.toLowerCase();
+      if (!(b.description || "").toLowerCase().includes(subLower) && !b.category.toLowerCase().includes(subLower)) return false;
+    }
+
+    if (minRating > 0 && b.rating < minRating) return false;
+    
     if (priceLevel !== "All") {
       if (priceLevel === "Low" && b.startPrice >= 25) return false;
       if (priceLevel === "Medium" && (b.startPrice < 25 || b.startPrice > 45)) return false;
@@ -523,25 +295,12 @@ export default function Explore() {
     }
 
     if (filterHomeService) {
-      const isDomicil =
-        b.category === "Ao domicílio" ||
-        (b.description || "").toLowerCase().includes("domicílio") ||
-        (b.description || "").toLowerCase().includes("casa");
+      const isDomicil = b.category === "Ao domicílio" || (b.description || "").toLowerCase().includes("domicílio");
       if (!isDomicil) return false;
     }
 
-    if (filterInstantBooking) {
-      const supportsInstant = b.name.length % 2 === 0;
-      if (!supportsInstant) return false;
-    }
-
-    if (filterPremiumPartner) {
-      if (!b.is_verified) return false;
-    }
-
-    if (filterAvailableToday) {
-      if (!b.isOpenNow) return false;
-    }
+    if (filterPremiumPartner && !b.is_verified) return false;
+    if (filterAvailableToday && !b.isOpenNow) return false;
 
     return true;
   });
@@ -549,1019 +308,266 @@ export default function Explore() {
   const sortedBusinesses = [...filteredBusinesses].sort((x, y) => {
     if (x.is_promoted && !y.is_promoted) return -1;
     if (!x.is_promoted && y.is_promoted) return 1;
-
-    if (useNearMe && x.distance !== null && y.distance !== null) {
-      return x.distance - y.distance;
-    }
-
+    if (useNearMe && x.distance !== null && y.distance !== null) return x.distance - y.distance;
     if (x.is_verified && !y.is_verified) return -1;
     if (!x.is_verified && y.is_verified) return 1;
     return y.rating - x.rating;
   });
 
-  const paginatedBusinesses = sortedBusinesses.slice(
-    0,
-    viewMode === "map" ? 50 : itemsLimit,
-  );
+  const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
 
-  useEffect(() => {
-    paginatedBusinesses.forEach((b) => {
-      if (availabilities[b.id] === undefined) {
-        setAvailabilities((prev) => ({
-          ...prev,
-          [b.id]: { label: "A verificar...", available: false },
-        }));
-        fetch(`/api/availability/${b.id}`)
-          .then((res) => res.json())
-          .then((data) => {
-            setAvailabilities((prev) => ({ ...prev, [b.id]: data }));
-          })
-          .catch((err) => {
-            setAvailabilities((prev) => ({
-              ...prev,
-              [b.id]: { label: "Ver detalhes", available: false },
-            }));
-          });
-      }
-    });
-  }, [paginatedBusinesses, availabilities]);
-
-  const mapStyles = [
+  const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+  const mapStylesConfig = [
     { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
     { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-    { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] }
+    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
   ];
 
-  const mapApiKey =
-    process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-    (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-    "";
+  // Cartão Minimalista (Igual à Home Page)
+  const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
+    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer">
+      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
+        <img 
+          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
+          alt={b.name} 
+          loading="lazy" 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+        />
+        
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {b.is_promoted && (
+            <span className="bg-white text-slate-900 text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
+              Destaque
+            </span>
+          )}
+        </div>
+        
+        <button 
+          onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} 
+          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
+        >
+          <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
+        </button>
+      </div>
+
+      <div className="flex justify-between items-start gap-2">
+        <div>
+          <h3 className="font-bold text-slate-900 text-base line-clamp-1">{b.name}</h3>
+          <p className="text-sm text-slate-500 mt-0.5 truncate">{b.category} · {b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
+        </div>
+        
+        <div className="flex items-center gap-1 text-sm font-semibold text-slate-900 shrink-0">
+          <Star className="w-3.5 h-3.5 fill-slate-900" />
+          {b.rating > 0 ? b.rating.toFixed(1) : "Novo"}
+        </div>
+      </div>
+      
+      <div className="mt-1 flex items-baseline gap-1">
+        <span className="font-semibold text-slate-900">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span>
+        <span className="text-sm text-slate-500">preço base</span>
+      </div>
+    </Link>
+  );
 
   return (
-    <div
-      id="explore-view"
-      className="min-h-screen bg-[#fafbfc] py-10 font-sans text-slate-600 selection:bg-purple-100 selection:text-purple-950 pb-28"
-    >
+    <div id="explore-view" className="min-h-screen bg-[#FDFDFD] py-10 font-sans selection:bg-purple-100 selection:text-purple-900 pb-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Cabeçalho da Página */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold text-purple-600 uppercase mb-3 tracking-wider">
               <Compass className="w-3.5 h-3.5 text-purple-500" />
               <span>Descoberta Inteligente Glamzo</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-display font-medium text-slate-900 tracking-tight leading-none">
-              Explore{" "}
-              {selectedCategory !== "All"
-                ? selectedCategory
-                : "os Melhores Espaços"}
+            <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 tracking-tight leading-none">
+              Explore {selectedCategory !== "All" ? selectedCategory : "os Melhores Espaços"}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl font-normal leading-relaxed">
-              Marketplace premium de estética com faturamento integrado,
-              estimativa de inteligência geográfica e marcações em tempo real.
-            </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "list" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-              >
+              <button onClick={() => setViewMode("list")} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "list" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
                 <List className="w-4 h-4" /> Lista
               </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "map" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-              >
+              <button onClick={() => setViewMode("map")} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "map" ? "bg-white text-purple-700 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
                 <MapIcon className="w-4 h-4" /> Mapa
               </button>
-            </div>
-            <div className="text-[11px] font-bold text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm font-mono flex items-center gap-1.5 shrink-0 hidden sm:flex">
-              <span>Encontrados:</span>
-              <span className="font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">
-                {sortedBusinesses.length} estúdios
-              </span>
             </div>
           </div>
         </div>
 
+        {/* Categorias Horizontais */}
         <div className="mb-8 overflow-x-auto pb-3 flex items-center gap-3 no-scrollbar scroll-smooth">
-          <button
-            onClick={() => {
-              setSelectedCategory("All");
-              setSelectedSubcategory("All");
-            }}
-            className={`px-5 py-3 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${
-              selectedCategory === "All"
-                ? "bg-purple-600 text-white border-purple-600 shadow-sm"
-                : "bg-white text-slate-650 hover:text-slate-900 hover:bg-slate-50 border-slate-250/70 shadow-sm"
-            }`}
-          >
-            <Grid className="w-3.5 h-3.5" />
-            <span>Ver Tudo</span>
+          <button onClick={() => { setSelectedCategory("All"); setSelectedSubcategory("All"); }} className={`px-5 py-2.5 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${selectedCategory === "All" ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 shadow-sm"}`}>
+            <Grid className="w-3.5 h-3.5" /> Ver Tudo
           </button>
-
           {MAIN_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(cat.name);
-                setSelectedSubcategory("All");
-              }}
-              className={`px-5 py-3 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${
-                selectedCategory === cat.name
-                  ? "bg-purple-600 text-white border-purple-600 shadow-sm"
-                  : "bg-white text-slate-650 hover:text-slate-900 hover:bg-slate-50 border-slate-250/70 shadow-sm"
-              }`}
-            >
-              <span>{cat.emoji}</span>
-              <span>{getCategoryDisplayName(cat.name)}</span>
+            <button key={cat.id} onClick={() => { setSelectedCategory(cat.name); setSelectedSubcategory("All"); }} className={`px-5 py-2.5 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${selectedCategory === cat.name ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 shadow-sm"}`}>
+              <span>{cat.emoji}</span> <span>{getCategoryDisplayName(cat.name)}</span>
             </button>
           ))}
         </div>
 
-        {selectedCategory !== "All" &&
-          SUBCATEGORIES_BY_MAIN[selectedCategory] && (
-            <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl animate-fade-in shadow-sm">
-              <span className="block text-[10px] font-bold uppercase text-purple-600 tracking-wider mb-2.5">
-                Subcategorias de {getCategoryDisplayName(selectedCategory)}
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedSubcategory("All")}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    selectedSubcategory === "All"
-                      ? "bg-purple-50 text-purple-700 border border-purple-150 font-bold"
-                      : "bg-slate-50 hover:bg-slate-100 text-slate-650 border border-slate-200/65"
-                  }`}
-                >
-                  Todas Subcategorias
-                </button>
-                {SUBCATEGORIES_BY_MAIN[selectedCategory].map((sub) => (
-                  <button
-                    key={sub}
-                    onClick={() => setSelectedSubcategory(sub)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                      selectedSubcategory === sub
-                        ? "bg-purple-600 text-white font-bold border border-purple-500"
-                        : "bg-slate-50 hover:bg-slate-100 text-slate-650 border border-slate-200/65"
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
+        {selectedCategory !== "All" && SUBCATEGORIES_BY_MAIN[selectedCategory] && (
+          <div className="mb-8 p-4 bg-white border border-slate-200/60 rounded-2xl shadow-sm">
+            <span className="block text-[10px] font-bold uppercase text-purple-600 tracking-wider mb-2.5">Subcategorias de {getCategoryDisplayName(selectedCategory)}</span>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setSelectedSubcategory("All")} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedSubcategory === "All" ? "bg-purple-50 text-purple-700 border border-purple-200" : "bg-slate-50 text-slate-600 border border-slate-200"}`}>Todas</button>
+              {SUBCATEGORIES_BY_MAIN[selectedCategory].map((sub) => (
+                <button key={sub} onClick={() => setSelectedSubcategory(sub)} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedSubcategory === sub ? "bg-purple-600 text-white border-purple-600" : "bg-slate-50 text-slate-600 border border-slate-200"}`}>{sub}</button>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="hidden lg:block bg-white p-6 border border-slate-205 rounded-2xl space-y-7 self-start shadow-sm">
+          {/* Sidebar de Filtros (Desktop) */}
+          <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-purple-600" />
-                Filtros De Elite
+                <Sliders className="w-4 h-4 text-purple-600" /> Filtros
               </span>
-              {(searchQuery ||
-                selectedCategory !== "All" ||
-                selectedDistrict !== "All" ||
-                useNearMe ||
-                minRating > 0 ||
-                priceLevel !== "All" ||
-                filterHomeService ||
-                filterInstantBooking ||
-                filterPremiumPartner ||
-                filterAvailableToday) && (
-                <button
-                  onClick={handleClearFilters}
-                  className="text-[10px] font-extrabold text-purple-400 hover:text-purple-300 uppercase tracking-wider transition-colors"
-                >
-                  Limpar
-                </button>
-              )}
+              <button onClick={handleClearFilters} className="text-[10px] font-extrabold text-purple-600 hover:text-purple-700 uppercase tracking-wider">Limpar</button>
             </div>
 
-            <div className="relative">
-              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">
-                Nome / Palavra-chave
-              </label>
+            <div>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Serviço ou Nome</label>
               <div className="relative">
-                <input
-                  type="text"
-                  value={localSearchQuery}
-                  onChange={(e) => {
-                    setLocalSearchQuery(e.target.value);
-                    setShowSuggestions(e.target.value.length > 0);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setSearchQuery(localSearchQuery);
-                      setShowSuggestions(false);
-                    }
-                  }}
-                  onFocus={() => localSearchQuery.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder="Ex: Glam, Barber, Lash..."
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-400"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-600 absolute left-3 top-3.5" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Ex: Manicure, Barbearia..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
-              {showSuggestions && (
-                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2 animate-fade-in">
-                  <div className="px-3.5 py-1 text-[9px] font-mono text-slate-400 uppercase tracking-widest font-bold">Sugestões de Salões</div>
-                  {businesses
-                    .filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase()))
-                    .slice(0, 3)
-                    .map(b => (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onMouseDown={() => {
-                          setLocalSearchQuery(b.name);
-                          setSearchQuery(b.name);
-                          setShowSuggestions(false);
-                        }}
-                        className="w-full text-left px-3.5 py-2 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
-                      >
-                        <Sparkles className="w-3 h-3 text-purple-500" />
-                        <span>{b.name}</span>
-                      </button>
-                    ))}
-                  {businesses.filter(b => b.name.toLowerCase().includes(localSearchQuery.toLowerCase())).length === 0 && (
-                    <div className="px-3.5 py-2 text-slate-400 text-xs italic">Nenhum salão encontrado</div>
-                  )}
+            </div>
+
+            <div>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Localização</label>
+              <div className="relative mb-2">
+                <input type="text" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Rua, Distrito..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              </div>
+              <button type="button" onClick={handleNearMeToggle} className={`w-full flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-xl border transition-all ${useNearMe ? "bg-purple-600 text-white border-purple-600" : "bg-white text-blue-600 border-slate-200 hover:bg-slate-50"}`}>
+                <Navigation className="w-4 h-4" /> {geoLocating ? "A localizar..." : "Usar a minha localização"}
+              </button>
+              {useNearMe && (
+                <div className="mt-3 grid grid-cols-3 gap-1.5">
+                  {[1, 5, 10, 20, 50, 100].map(r => (
+                    <button key={r} onClick={() => setNearMeRadius(r)} className={`py-1.5 text-[10px] font-bold rounded-lg border ${nearMeRadius === r ? "bg-purple-100 text-purple-700 border-purple-300" : "bg-slate-50 text-slate-600 border-slate-200"}`}>{r} km</button>
+                  ))}
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider pl-0.5">
-                  Proximidade Física
-                </span>
-                <button
-                  type="button"
-                  onClick={handleNearMeToggle}
-                  className={`inline-flex items-center gap-1 text-[9px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
-                    useNearMe
-                      ? "bg-purple-50 border-purple-200 text-purple-700"
-                      : "bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  <Navigation className="w-3 h-3 text-purple-600" />
-                  <span>Perto de mim</span>
-                </button>
-              </div>
-
-              {geoLocating ? (
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-600 py-2">
-                  <Loader2 className="w-3 h-3 text-purple-600 animate-spin" />
-                  <span>A obter coordenadas GPS...</span>
-                </div>
-              ) : useNearMe ? (
-                <div className="space-y-3.5 p-3.5 bg-purple-50/50 rounded-2xl border border-purple-100 transition-all">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
-                      GPS Ativo ({nearMeRadius} km)
-                    </span>
-                    <button
-                      onClick={() => {
-                        setUseNearMe(false);
-                        setUserCoords(null);
-                      }}
-                      className="text-slate-505 text-xs hover:text-slate-900"
-                    >
-                      × Desativar
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[1, 3, 5, 10, 25, 50].map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setNearMeRadius(r)}
-                        className={`py-1 text-[10px] font-bold rounded-lg border text-center transition-all ${
-                          nearMeRadius === r
-                            ? "bg-purple-600 text-white border-purple-600 shadow-sm"
-                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                        }`}
-                      >
-                        {r} km
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">
-                      Distrito
-                    </label>
-                    <select
-                      aria-label="Selecione uma opção"
-                      value={selectedDistrict}
-                      onChange={(e) => {
-                        setSelectedDistrict(e.target.value);
-                        setSelectedCity("All");
-                      }}
-                      className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-805 focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
-                    >
-                      <option value="All">Todos os distritos</option>
-                      {Object.keys(PORTUGAL_GEO)
-                        .sort()
-                        .map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">
-                      Cidade
-                    </label>
-                    <select
-                      aria-label="Selecione uma opção"
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      disabled={selectedDistrict === "All"}
-                      className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-805 focus:ring-2 focus:ring-purple-500/20 cursor-pointer disabled:opacity-50"
-                    >
-                      <option value="All">Todas as cidades</option>
-                      {selectedDistrict !== "All" &&
-                        (PORTUGAL_GEO[selectedDistrict] || []).map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 pl-0.5">
-                Avaliação Mínima
-              </label>
-              <div className="flex items-center gap-1.5">
-                {[0, 4, 4.5, 4.8].map((score) => (
-                  <button
-                    key={score}
-                    type="button"
-                    onClick={() => setMinRating(score)}
-                    className={`flex-1 py-1 px-1.5 text-[10px] font-bold rounded-lg border text-center transition-all ${
-                      minRating === score
-                        ? "bg-purple-600 border-purple-600 text-white"
-                        : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {score === 0 ? "Qualquer" : `${score}★`}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 pl-0.5">
-                Preço Inicial
-              </label>
+            <div>
+              <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Preço Inicial</label>
               <div className="flex gap-1.5">
-                {[
-                  { key: "All", label: "Todos" },
-                  { key: "Low", label: "< 25€" },
-                  { key: "Medium", label: "25-45€" },
-                  { key: "High", label: "> 45€" },
-                ].map((p) => (
-                  <button
-                    key={p.key}
-                    type="button"
-                    onClick={() => setPriceLevel(p.key)}
-                    className={`flex-1 py-1 text-[10px] font-bold rounded-lg border text-center transition-all ${
-                      priceLevel === p.key
-                        ? "bg-purple-600 border-purple-600 text-white"
-                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
+                {[{ key: "All", label: "Todos" }, { key: "Low", label: "< 25€" }, { key: "Medium", label: "25-45€" }, { key: "High", label: "> 45€" }].map((p) => (
+                  <button key={p.key} onClick={() => setPriceLevel(p.key)} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg border text-center ${priceLevel === p.key ? "bg-purple-600 text-white border-purple-600" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"}`}>{p.label}</button>
                 ))}
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 space-y-3.5">
-              <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">
-                Atendimento
-              </span>
-
-              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filterHomeService}
-                  onChange={(e) => setFilterHomeService(e.target.checked)}
-                  className="rounded border-slate-300 text-purple-600 bg-white focus:ring-purple-500/10"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5 text-purple-550" />
-                  Ao domicílio
-                </span>
+            <div className="space-y-3.5 pt-2">
+              <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider pl-0.5">Preferências</span>
+              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
               </label>
-
-              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filterInstantBooking}
-                  onChange={(e) => setFilterInstantBooking(e.target.checked)}
-                  className="rounded border-slate-300 text-purple-600 bg-white focus:ring-purple-500/10"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-purple-550" />
-                  Reserva imediata
-                </span>
-              </label>
-
-              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filterPremiumPartner}
-                  onChange={(e) => setFilterPremiumPartner(e.target.checked)}
-                  className="rounded border-slate-300 text-purple-600 bg-white focus:ring-purple-500/10"
-                />
-                <span className="flex items-center gap-1.5">
-                  <ThumbsUp className="w-3.5 h-3.5 text-purple-550" />
-                  Parceiro Premium
-                </span>
-              </label>
-
-              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filterAvailableToday}
-                  onChange={(e) => setFilterAvailableToday(e.target.checked)}
-                  className="rounded border-slate-300 text-purple-600 bg-white focus:ring-purple-500/10"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-purple-550" />
-                  Disponível hoje
-                </span>
+              <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Parceiros Premium
               </label>
             </div>
           </div>
 
-          <div className="lg:col-span-3 space-y-8">
+          {/* Grelha de Resultados */}
+          <div className="lg:col-span-3 space-y-6">
             <div className="lg:hidden flex gap-2">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-purple-600 text-white rounded-xl py-3 px-4 text-xs font-bold shadow-md cursor-pointer uppercase tracking-wider"
-              >
-                <SlidersHorizontal className="w-4 h-4 text-white" />
-                <span>
-                  Filtrar Estabelecimentos ({sortedBusinesses.length})
-                </span>
+              <button onClick={() => setIsDrawerOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-3.5 px-4 text-xs font-bold shadow-md uppercase tracking-wider">
+                <SlidersHorizontal className="w-4 h-4" /> Filtrar ({sortedBusinesses.length})
               </button>
             </div>
 
             {loading ? (
-              <div className="min-h-[45vh] flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
-                <Loader2 className="w-9 h-9 text-purple-500 animate-spin" />
-                <span className="text-xs text-slate-600 font-mono">
-                  A procurar o teu lugar ideal...
-                </span>
-              </div>
-            ) : errorMsg ? (
-              <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm">
-                {errorMsg}
+              <div className="min-h-[45vh] flex flex-col items-center justify-center gap-4 bg-white rounded-3xl border border-slate-100 p-8">
+                <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
               </div>
             ) : viewMode === "map" ? (
-              <div className="w-full h-[65vh] rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative">
+              <div className="w-full h-[70vh] rounded-3xl overflow-hidden border border-slate-200 shadow-md relative">
                 {mapApiKey ? (
-                  <APIProvider apiKey={mapApiKey} version="weekly">
-                    <Map
-                      defaultCenter={{ lat: 39.3999, lng: -8.2245 }}
-                      defaultZoom={6}
-                      clickableIcons={false}
-                      styles={mapStyles}
-                      options={{ clickableIcons: false, styles: mapStyles }}
-                      style={{ width: "100%", height: "100%" }}
-                    >
-                      {userCoords && (
-                        <Marker 
-                          position={{ lat: userCoords.latitude, lng: userCoords.longitude }}
-                          title="A sua localização"
-                          icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                        />
-                      )}
+                  <APIProvider apiKey={mapApiKey}>
+                    <GoogleMap defaultCenter={{ lat: 39.3999, lng: -8.2245 }} defaultZoom={6} disableDefaultUI styles={mapStylesConfig} options={{ styles: mapStylesConfig }}>
+                      {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                       {paginatedBusinesses.map((b) => (
-                        <Marker
-                          key={b.id}
-                          position={{
-                            lat: b.lat || 39.3999,
-                            lng: b.lng || -8.2245,
-                          }}
-                          title={b.name}
-                          icon={{
-                            url: getCustomMarkerIcon(b.rating),
-                            anchor: { x: 29, y: 32 }
-                          }}
-                          onClick={() => {
-                            window.location.href = `/business/${b.slug}`;
-                          }}
-                        />
+                        <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug}`)} />
                       ))}
-                    </Map>
+                    </GoogleMap>
                   </APIProvider>
                 ) : (
-                  <div className="bg-slate-100 flex items-center justify-center h-full font-sans">
-                    <div className="p-8 text-center max-w-[520px]">
-                      <h2>Google Maps API Key Required for Maps</h2>
-                      <p className="mt-2 text-sm text-slate-500">
-                        Please add <code className="bg-slate-200 px-1 py-0.5 rounded">GOOGLE_MAPS_PLATFORM_KEY</code> to AI Studio Secrets to use this feature.
-                      </p>
-                    </div>
-                  </div>
+                  <div className="flex items-center justify-center h-full bg-slate-100 text-slate-500">API Key do Google Maps necessária.</div>
                 )}
               </div>
             ) : paginatedBusinesses.length > 0 ? (
-              <div className="space-y-6">
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8"
-                  id="explore-grid-container"
-                >
-                  {paginatedBusinesses.map((b) => (
-                    <Link
-                      key={b.id}
-                      to={`/business/${b.slug}`}
-                      className={`group bg-white border rounded-2xl overflow-hidden hover:shadow-[0_10px_35px_rgba(15,23,42,0.05)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between block relative ${
-                        b.is_promoted
-                          ? "border-purple-300 shadow-[0_4px_25px_rgba(147,51,234,0.03)]"
-                          : "border-slate-200/80"
-                      }`}
-                    >
-                      <div>
-                        <div className="h-52 bg-slate-100 relative overflow-hidden">
-                          <img
-                            src={
-                              b.cover_url ||
-                              "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=70"
-                            }
-                            alt={b.name}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-
-                          <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
-                            <div className="bg-white/95 text-purple-700 font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm border border-purple-100">
-                              {getCategoryDisplayName(b.category)}
-                            </div>
-                            {b.is_promoted && (
-                              <div className="bg-purple-600 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1 border border-purple-500">
-                                <Sparkles className="w-2.5 h-2.5 text-white" />
-                                <span>Destaque</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
-                            {b.is_verified && (
-                              <div className="bg-emerald-50 text-emerald-700 font-bold shadow-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-100 text-[9px] select-none">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                                <span className="uppercase tracking-wider">
-                                  Verificado
-                                </span>
-                              </div>
-                            )}
-
-                            {(b.rating ?? 4.5) > 4.7 && (
-                              <div className="bg-amber-50 text-amber-800 font-bold shadow-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-amber-200 text-[9px] select-none">
-                                <Sparkles className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                                <span className="uppercase tracking-wider">
-                                  Premium Partner
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleToggleFavorite(b.id);
-                            }}
-                            className="absolute bottom-4 right-4 w-9 h-9 rounded-full bg-white/95 shadow-md hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer text-slate-600 hover:text-rose-500 z-20 border border-slate-100"
-                            title="Guardar nos Favoritos"
-                          >
-                            <Heart
-                              className={`w-4 h-4 transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 text-rose-500" : "text-slate-600"}`}
-                            />
-                          </button>
-                        </div>
-
-                        <div className="p-6 relative">
-                          <div className="w-14 h-14 rounded-2xl overflow-hidden border-4 border-white bg-slate-50 shadow-md absolute -mt-14 left-6 z-10 hover:rotate-2 transition-transform select-none">
-                            <img
-                              src={
-                                b.logo_url ||
-                                "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=64&q=70"
-                              }
-                              alt="logo"
-                              loading="lazy"
-                              decoding="async"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-
-                          <div className="pt-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
-                                  b.isOpenNow
-                                    ? "bg-[#EBFDF5] text-emerald-700 border-[#A7F3D0]"
-                                    : "bg-slate-100 text-slate-500 border-slate-200/60"
-                                }`}
-                              >
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${b.isOpenNow ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
-                                />
-                                {b.isOpenNow ? "Aberto agora" : "Fechado"}
-                              </span>
-
-                              {b.distance !== null && (
-                                <span className="text-[10px] font-bold font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">
-                                  📍 {b.distance.toFixed(1)} km de si
-                                </span>
-                              )}
-                            </div>
-
-                            <h3 className="text-lg font-bold text-slate-950 tracking-tight leading-snug group-hover:text-purple-600 transition-colors uppercase flex items-center gap-2 flex-wrap font-display">
-                              <span>{b.name}</span>
-                              {b.is_premium && (
-                                <span
-                                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 select-none shrink-0"
-                                >
-                                  👑 Premium
-                                </span>
-                              )}
-                            </h3>
-
-                            <div className="flex items-center gap-1 mt-1 font-mono text-xs">
-                              {b.reviewsCount > 0 ? (
-                                <>
-                                  <Star className="w-3.5 h-3.5 fill-purple-600 text-purple-600" />
-                                  <span className="font-extrabold text-slate-800">
-                                    {b.rating.toFixed(1)}
-                                  </span>
-                                  <span className="text-slate-500">
-                                    ({b.reviewsCount} {b.reviewsCount === 1 ? "avaliação" : "avaliações"})
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-slate-600 font-medium">
-                                  Sem avaliações ainda
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="text-xs text-slate-500 mt-3 line-clamp-2 leading-relaxed">
-                              {b.description ||
-                                "Tratamentos estéticos de alta qualidade e profissionais especializados."}
-                            </p>
-
-                            <div className="mt-3 relative">
-                              {availabilities[b.id]?.label ===
-                              "A verificar..." ? (
-                                <div className="text-[10px] text-slate-500 flex items-center gap-1.5 opacity-70 animate-pulse bg-slate-100 rounded-lg px-2 py-1 w-fit border border-slate-200">
-                                  <Loader2 className="w-3 h-3 animate-spin" /> A verificar vagas
-                                </div>
-                              ) : availabilities[b.id]?.available ? (
-                                <div
-                                  className={`text-[10px] font-bold text-slate-700 flex items-center gap-1.5 px-2.5 py-1 rounded-lg w-fit border shadow-sm ${availabilities[b.id].label.includes("hoje") ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-purple-50 border-purple-200 text-purple-800"}`}
-                                >
-                                  {availabilities[b.id].label.includes("hoje") ? <span>🟢</span> : <span>🟣</span>}
-                                  {availabilities[b.id].label}
-                                </div>
-                              ) : availabilities[b.id]?.label &&
-                                availabilities[b.id].label !== "A verificar..." ? (
-                                <div className="text-[10px] font-bold text-slate-600 flex items-center gap-1.5 px-2.5 py-1 rounded-lg w-fit border bg-slate-50 border-slate-200 shadow-sm">
-                                  <span>⚪</span>
-                                  {availabilities[b.id].label}
-                                </div>
-                              ) : null}
-                            </div>
-
-                            {services.filter((s) => s.business_id === b.id).length > 0 && (
-                              <div className="mt-4 pt-3 border-t border-slate-100">
-                                <span className="text-[9px] font-bold text-slate-600 block mb-2 uppercase tracking-wider">
-                                  Menu de Serviços
-                                </span>
-                                <div className="space-y-1.5">
-                                  {services
-                                    .filter((s) => s.business_id === b.id)
-                                    .slice(0, 3)
-                                    .map((s) => (
-                                      <div
-                                        key={s.id}
-                                        className="flex justify-between items-center text-xs text-slate-650 font-medium"
-                                      >
-                                        <span className="truncate pr-2">{s.name}</span>
-                                        <span className="font-mono font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-100/50 text-[10px] shrink-0">
-                                          {s.discount_price ? s.discount_price : s.price}€
-                                        </span>
-                                      </div>
-                                    ))}
-                                  {services.filter((s) => s.business_id === b.id).length > 3 && (
-                                    <div className="text-[10px] text-slate-600 font-semibold italic mt-2">
-                                      + {services.filter((s) => s.business_id === b.id).length - 3} outro(s) serviço(s) no menu
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {(b.category === "Ao domicílio" ||
-                              (b.description || "").toLowerCase().includes("domicílio") ||
-                              (b.description || "").toLowerCase().includes("casa")) && (
-                              <div className="mt-3 inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 border border-purple-100 rounded-md text-[9px] font-bold text-purple-600 uppercase tracking-wider">
-                                <Home className="w-3 h-3 text-purple-500" />
-                                <span>Atendimento ao Domicílio</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                        <div className="flex flex-col">
-                          <span className="text-[9px] text-slate-600 font-bold uppercase tracking-wider leading-none">
-                            A partir de
-                          </span>
-                          <span className="text-lg font-bold text-slate-900 font-mono mt-0.5">
-                            {b.startPrice ?? 0}€
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-xl transition-all shadow-sm cursor-pointer">
-                          <span>Confirmar Reserva</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} />)}
                 </div>
-
                 {sortedBusinesses.length > itemsLimit && (
-                  <div className="text-center pt-8 border-t border-slate-100 font-sans">
-                    <button
-                      onClick={() => setItemsLimit(itemsLimit + 6)}
-                      className="px-8 py-3.5 border border-slate-200 hover:border-purple-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-all shadow-sm"
-                    >
-                      Carregar Mais Estabelecimentos
+                  <div className="text-center pt-10">
+                    <button onClick={() => setItemsLimit(itemsLimit + 12)} className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-colors">
+                      Carregar mais resultados
                     </button>
-                    <p className="text-[10px] text-slate-600 mt-2 font-mono">
-                      Exibindo {paginatedBusinesses.length} de{" "}
-                      {sortedBusinesses.length} registados em Portugal.
-                    </p>
                   </div>
                 )}
-              </div>
+              </>
             ) : (
-              <div
-                id="no-explore-results"
-                className="bg-white p-16 sm:p-24 border border-slate-150 rounded-2xl text-center flex flex-col items-center shadow-xs"
-              >
-                <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 border border-purple-100">
-                  <Store className="w-8 h-8" />
+              <div className="bg-white p-16 sm:p-24 border border-slate-200 rounded-3xl text-center flex flex-col items-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
+                  <Search className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800">
-                  Nenhum estúdio comercial correspondente
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 max-w-sm mt-3 leading-relaxed">
-                  Não existem estúdios de beleza ou bem-estar ativos que cumpram
-                  os filtros avançados definidos neste momento.
-                </p>
-                <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={handleClearFilters}
-                    className="px-6 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
-                  >
-                    Limpar Filtros
-                  </button>
-                  <Link
-                    to="/partner/signup"
-                    className="flex-1 flex items-center justify-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-sm"
-                  >
-                    <span>Registar meu salão</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
+                <h3 className="text-xl font-bold text-slate-900">Nenhum espaço encontrado</h3>
+                <p className="text-sm text-slate-500 mt-2 max-w-sm">Tente procurar noutra localização ou ajustar os seus filtros de pesquisa.</p>
+                <button onClick={handleClearFilters} className="mt-6 px-6 py-3 border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50">Limpar Filtros</button>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {/* Gaveta Mobile de Filtros */}
       {isDrawerOpen && (
-        <div
-          className="fixed inset-0 z-50 overflow-hidden lg:hidden"
-          id="mobile-filter-drawer"
-        >
-          <div
-            className="absolute inset-0 bg-slate-900/60 transition-opacity duration-150 ease-out"
-            onClick={() => setIsDrawerOpen(false)}
-          />
-
-          <div className="absolute inset-y-0 right-0 max-w-full flex">
-            <div className="w-screen max-w-md bg-white border-l border-slate-200 flex flex-col p-6 shadow-2xl relative transition-transform duration-200 ease-out translate-x-0 transform-gpu text-slate-800">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-purple-600" />
-                  Filtros Mobile
-                </h2>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-1 text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  <X className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
+          <div className="w-full max-w-sm bg-white h-full shadow-2xl relative flex flex-col animate-slide-in-right overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <h2 className="font-bold text-slate-900">Filtros</h2>
+              <button onClick={() => setIsDrawerOpen(false)} className="p-2"><X className="w-5 h-5" /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Serviço ou Nome</label>
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Localização</label>
+                <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Cidade, Distrito..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
+                <button type="button" onClick={handleNearMeToggle} className={`w-full py-3 rounded-xl text-sm font-bold flex justify-center gap-2 ${useNearMe ? "bg-purple-600 text-white" : "bg-blue-50 text-blue-600"}`}>
+                  <Navigation className="w-4 h-4" /> Usar GPS
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-1 space-y-6">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 pl-0.5">
-                    Palavra-chave
-                  </label>
-                  <input
-                    type="text"
-                    value={localSearchQuery}
-                    onChange={(e) => setLocalSearchQuery(e.target.value)}
-                    placeholder="Ex: Barber, Unhas..."
-                    className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:border-purple-500 rounded-xl text-xs text-slate-800 placeholder-slate-400"
-                  />
-                </div>
-
-                <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                      Calculadora de GPS
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleNearMeToggle()}
-                      className={`text-[10px] font-bold px-3 py-1 rounded-full border transition-all ${
-                        useNearMe
-                          ? "bg-purple-600 border-purple-600 text-white"
-                          : "bg-white border-purple-200 text-purple-700 shadow-sm"
-                      }`}
-                    >
-                      📍 Perto de mim: {useNearMe ? "Ativado" : "Desativado"}
-                    </button>
-                  </div>
-                  {useNearMe && (
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {[1, 3, 5, 10, 25, 50].map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setNearMeRadius(r)}
-                          className={`py-1.5 text-[10px] font-bold rounded-lg border text-center transition-all ${
-                            nearMeRadius === r
-                              ? "bg-purple-600 border-purple-500 text-white"
-                              : "bg-white border-slate-200 text-slate-600"
-                          }`}
-                        >
-                          {r} km
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {!useNearMe && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                        Distrito
-                      </label>
-                      <select
-                        aria-label="Selecione uma opção"
-                        value={selectedDistrict}
-                        onChange={(e) => {
-                          setSelectedDistrict(e.target.value);
-                          setSelectedCity("All");
-                        }}
-                        className="block w-full px-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs"
-                      >
-                        <option value="All">Distritos</option>
-                        {Object.keys(PORTUGAL_GEO)
-                          .sort()
-                          .map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                        Cidade
-                      </label>
-                      <select
-                        aria-label="Selecione uma opção"
-                        value={selectedCity}
-                        onChange={(e) => setSelectedCity(e.target.value)}
-                        disabled={selectedDistrict === "All"}
-                        className="block w-full px-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs disabled:opacity-40"
-                      >
-                        <option value="All">Cidades</option>
-                        {selectedDistrict !== "All" &&
-                          (PORTUGAL_GEO[selectedDistrict] || []).map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-2 pl-0.5">
-                    Classificação Mínima
-                  </label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[0, 4, 4.5, 4.8].map((score) => (
-                      <button
-                        key={score}
-                        type="button"
-                        onClick={() => setMinRating(score)}
-                        className={`py-2 text-[10px] font-bold rounded-lg border text-center transition-all ${
-                          minRating === score
-                            ? "bg-purple-600 border-purple-600 text-white"
-                            : "bg-slate-50 border-slate-200 text-slate-600"
-                        }`}
-                      >
-                        {score === 0 ? "Qualquer" : `${score} ★`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t border-slate-150">
-                  <span className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                    Outras Preferências
-                  </span>
-
-                  <label className="flex items-center gap-3 text-xs font-semibold text-slate-600 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterHomeService}
-                      onChange={(e) => setFilterHomeService(e.target.checked)}
-                      className="rounded border-slate-200 accent-purple-600 text-purple-600 focus:ring-purple-500/10"
-                    />
-                    <span>Atendimento ao domicílio</span>
-                  </label>
-
-                  <label className="flex items-center gap-3 text-xs font-semibold text-slate-600 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterInstantBooking}
-                      onChange={(e) => setFilterInstantBooking(e.target.checked)}
-                      className="rounded border-slate-200 accent-purple-600 text-purple-600 focus:ring-purple-500/10"
-                    />
-                    <span>Suporta reserva imediata</span>
-                  </label>
-
-                  <label className="flex items-center gap-3 text-xs font-semibold text-slate-600 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterPremiumPartner}
-                      onChange={(e) => setFilterPremiumPartner(e.target.checked)}
-                      className="rounded border-slate-200 accent-purple-600 text-purple-600 focus:ring-purple-500/10"
-                    />
-                    <span>Apenas parceiros premium</span>
-                  </label>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Preço Máximo</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[{ key: "All", label: "Qualquer valor" }, { key: "Low", label: "Abaixo de 25€" }, { key: "Medium", label: "Entre 25-45€" }, { key: "High", label: "Luxo (>45€)" }].map((p) => (
+                    <button key={p.key} onClick={() => setPriceLevel(p.key)} className={`py-2 text-xs font-semibold rounded-lg border ${priceLevel === p.key ? "bg-purple-600 text-white" : "bg-white text-slate-600"}`}>{p.label}</button>
+                  ))}
                 </div>
               </div>
+            </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex gap-3">
-                <button
-                  onClick={handleClearFilters}
-                  className="w-1/3 py-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  Limpar
-                </button>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="w-2/3 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer uppercase tracking-wider transition-all"
-                >
-                  Aplicar Filtros ({sortedBusinesses.length})
-                </button>
-              </div>
+            <div className="p-5 border-t border-slate-100 flex gap-3 bg-white">
+              <button onClick={handleClearFilters} className="w-1/3 py-3.5 border border-slate-200 rounded-xl font-bold text-sm">Limpar</button>
+              <button onClick={() => setIsDrawerOpen(false)} className="w-2/3 py-3.5 bg-slate-900 text-white rounded-xl font-bold text-sm">Aplicar</button>
             </div>
           </div>
         </div>
