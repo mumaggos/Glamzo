@@ -110,9 +110,12 @@ export default function Home() {
 
   useEffect(() => { 
     if (navigator.geolocation) { 
-      navigator.geolocation.getCurrentPosition((pos) => { 
-        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); 
-      }); 
+      const gpsTimer = setTimeout(() => {
+        navigator.geolocation.getCurrentPosition((pos) => { 
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); 
+        }); 
+      }, 300);
+      return () => clearTimeout(gpsTimer);
     } 
   }, []); 
 
@@ -189,7 +192,12 @@ export default function Home() {
         setLoading(false); 
       } 
     }; 
-    fetchData(); 
+    
+    const fetchTimer = setTimeout(() => {
+      fetchData(); 
+    }, 150);
+
+    return () => clearTimeout(fetchTimer);
   }, [userCoords]); 
 
   const handleSearchSubmit = () => { 
@@ -203,13 +211,25 @@ export default function Home() {
   }; 
 
   const locaisProximos = useMemo(() => { 
+    if (!businesses || businesses.length === 0) return [];
     if (!userCoords) return []; 
     return [...businesses].filter(b => b.distance !== null && b.distance < 20).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 10); 
   }, [businesses, userCoords]); 
 
-  const topPartners = useMemo(() => businesses.filter(b => b.is_premium || b.is_verified), [businesses]); 
-  const recomendados = useMemo(() => [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10), [businesses]); 
-  const novasLojas = useMemo(() => [...businesses].filter(b => b.isNew).slice(0, 10), [businesses]); 
+  const topPartners = useMemo(() => {
+    if (!businesses || businesses.length === 0) return [];
+    return businesses.filter(b => b.is_premium || b.is_verified);
+  }, [businesses]); 
+
+  const recomendados = useMemo(() => {
+    if (!businesses || businesses.length === 0) return [];
+    return [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10);
+  }, [businesses]); 
+
+  const novasLojas = useMemo(() => {
+    if (!businesses || businesses.length === 0) return [];
+    return [...businesses].filter(b => b.isNew).slice(0, 10);
+  }, [businesses]);  
 
   const mapBusinesses = useMemo(() => { 
     return businesses; 
