@@ -182,6 +182,9 @@ app.post("/api/emails/send", async (req, res) => {
       case "payment_failed":
         await EmailService.sendPaymentFailedEmail(to, data);
         break;
+      case "abandoned_cart":
+        await EmailService.sendAbandonedCartEmail(to);
+        break;
       default:
         return res.status(400).json({ error: "Unknown email type" });
     }
@@ -190,6 +193,133 @@ app.post("/api/emails/send", async (req, res) => {
   } catch (err: any) {
     console.error(`[EmailService] Failed to send email:`, err);
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Partner Custom OTP Verification System
+const partnerOTPs = new Map<string, { code: string; expires: number }>();
+
+app.post("/api/auth/send-partner-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "O e-mail é obrigatório." });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Check if profile with this email already exists in profiles
+    const admin = getSupabaseAdmin();
+    const { data: profileCheck, error: profileErr } = await admin
+      .from("profiles")
+      .select("id, email, role")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (profileCheck) {
+      return res.status(400).json({
+        error: "Este e-mail já está registado na nossa plataforma. Por favor, utilize a página de Login de Parceiros para aceder."
+      });
+    }
+
+    // 2. Generate a random 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Store the OTP in memory (valid for 10 minutes)
+    partnerOTPs.set(cleanEmail, {
+      code,
+      expires: Date.now() + 10 * 60 * 1000
+    });
+
+    console.log(`[PartnerOTP] Generated code ${code} for ${cleanEmail}`);
+
+    // 4. Send the OTP code via Resend
+    await EmailService.sendVerificationCodeEmail(
+      cleanEmail,
+      cleanEmail.split("@")[0],
+      code
+    );
+
+    res.json({ success: true, message: "Código de verificação enviado!" });
+  } catch (err: any) {
+    console.error("[PartnerOTP] Error sending OTP:", err);
+    res.status(500).json({ error: "Erro ao enviar o código de verificação: " + err.message });
+  }
+});
+
+app.post("/api/auth/verify-partner-otp", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).json({ error: "E-mail e código são obrigatórios." });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const otpData = partnerOTPs.get(cleanEmail);
+
+    if (!otpData) {
+      return res.status(400).json({ error: "Não foi solicitado nenhum código para este e-mail ou o código já expirou." });
+    }
+
+    if (otpData.expires < Date.now()) {
+      partnerOTPs.delete(cleanEmail);
+      return res.status(400).json({ error: "O código de verificação expirou. Por favor, peça um novo código." });
+    }
+
+    if (otpData.code !== code.trim()) {
+      return res.status(400).json({ error: "O código inserido está incorreto." });
+    }
+
+    // OTP is valid! Let's delete it from memory so it can't be reused
+    partnerOTPs.delete(cleanEmail);
+
+    // Now, create the user in Supabase Auth on the server side using the admin client
+    const admin = getSupabaseAdmin();
+    const deterministicPassword = 'Partner_' + cleanEmail.replace(/[^a-zA-Z0-9]/g, '') + '_2026!';
+
+    let userId: string;
+    
+    try {
+      const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+        email: cleanEmail,
+        password: deterministicPassword,
+        email_confirm: true,
+        user_metadata: {
+          role: 'business'
+        }
+      });
+
+      if (createError) {
+        if (createError.message?.includes("already") || createError.status === 422) {
+          return res.status(400).json({ error: "Este e-mail já possui uma conta criada. Por favor, faça login." });
+        }
+        throw createError;
+      }
+
+      userId = newUser.user.id;
+    } catch (createErr: any) {
+      console.error("[PartnerOTP] Error creating user via Admin API:", createErr);
+      return res.status(500).json({ error: "Erro ao criar conta de parceiro: " + createErr.message });
+    }
+
+    // Sync profile role
+    await admin.from('profiles').upsert({
+      id: userId,
+      email: cleanEmail,
+      role: 'business',
+      full_name: cleanEmail.split('@')[0],
+      created_at: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true, 
+      message: "Código verificado com sucesso!", 
+      email: cleanEmail,
+      password: deterministicPassword 
+    });
+  } catch (err: any) {
+    console.error("[PartnerOTP] Error verifying OTP:", err);
+    res.status(500).json({ error: "Erro ao verificar o código: " + err.message });
   }
 });
 

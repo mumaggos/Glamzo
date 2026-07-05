@@ -462,6 +462,29 @@ Retorne apenas o JSON limpo e sem formatação Markdown.`;
 }
 
 // ==========================================
+// 8. ABANDONED CART EMAIL RECOVERY
+// ==========================================
+
+export async function sendAbandonedCartEmail(email: string): Promise<boolean> {
+  try {
+    const res = await fetch('/api/emails/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'abandoned_cart',
+        to: email
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to send abandoned cart email:', err);
+    return false;
+  }
+}
+
+// ==========================================
 // LOCAL PERSISTENCE HELPERS
 // ==========================================
 

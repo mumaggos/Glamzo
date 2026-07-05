@@ -151,5 +151,20 @@ export const EmailService = {
       subject: 'Falha no pagamento da Subscrição - Glamzo',
       html
     });
+  },
+
+  async sendAbandonedCartEmail(to: string) {
+    const resend = getResendClient();
+    if (!resend) {
+      console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+      return null;
+    }
+    
+    return resend.emails.send({
+      from: getEmailFrom(),
+      to,
+      subject: 'A sua loja Glamzo está quase pronta!',
+      html: `<p>Notámos que não completou o registo. Precisa de ajuda? Clique aqui para terminar: <a href="https://glamzo.pt/partner/setup">https://glamzo.pt/partner/setup</a></p>`
+    });
   }
 };

@@ -32,16 +32,20 @@ export default function PartnerSignup() {
     setLoading(true);
 
     try {
-      // Step 1: Request OTP sign in/up
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: window.location.origin + '/partner/setup'
-        }
+      // Step 1: Request OTP from backend instead of direct Supabase magic link
+      const response = await fetch('/api/auth/send-partner-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email.trim().toLowerCase() })
       });
 
-      if (error) throw error;
+      const resData = await response.json();
+
+      if (!response.ok || resData.error) {
+        throw new Error(resData.error || 'Ocorreu um erro ao enviar o código de acesso.');
+      }
 
       setStep(2);
       setSuccessMsg('Código enviado! Verifique o seu e-mail (e a pasta de Spam).');
@@ -64,40 +68,40 @@ export default function PartnerSignup() {
     setLoading(true);
 
     try {
-      // Step 2: Verify OTP code
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: enteredCode.trim(),
-        type: 'email'
+      // Step 2: Verify OTP code with backend
+      const response = await fetch('/api/auth/verify-partner-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          code: enteredCode.trim()
+        })
       });
 
-      if (error || !data.user) {
-        throw error || new Error('O código inserido é inválido ou já expirou.');
+      const resData = await response.json();
+
+      if (!response.ok || resData.error) {
+        throw new Error(resData.error || 'O código inserido é inválido ou já expirou.');
       }
 
-      const authUser = data.user;
+      const { email: verifiedEmail, password: tempPassword } = resData;
+
+      // Step 3: Log in client side using the verified user's secure credentials
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: verifiedEmail,
+        password: tempPassword
+      });
+
+      if (signInError || !signInData.user) {
+        throw signInError || new Error('Falha ao iniciar sessão após verificação do código.');
+      }
+
+      const authUser = signInData.user;
 
       // Ensure local role is stored to prevent state mismatches during routing
       localStorage.setItem(`local_role_${authUser.id}`, 'business');
-
-      // Sync user profile role in DB
-      const { data: profileCheck } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (!profileCheck) {
-        await supabase.from('profiles').insert({
-          id: authUser.id,
-          email: email.trim().toLowerCase(),
-          role: 'business',
-          full_name: email.split('@')[0],
-          created_at: new Date().toISOString()
-        });
-      } else {
-        await supabase.from('profiles').update({ role: 'business' }).eq('id', authUser.id);
-      }
 
       await refreshProfile();
       setSuccessMsg('Autenticação confirmada! A redirecionar...');

@@ -412,8 +412,8 @@ export default function SetupWizard() {
       await updateSetupStep(3);
     } else if (step === 3) {
       if (selectedPlan === 'TERMINAL') {
-        if (!shippingName || !shippingPhone || !shippingAddress || !shippingCity || !shippingPostalCode) {
-          setErrorMsg('Preencha os dados de envio do terminal.');
+        if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
+          setErrorMsg('Erro de Validação: Preencha todos os dados de envio do terminal (Nome, Telefone, Morada, Código Postal e Cidade) para continuar.');
           return;
         }
       }
@@ -430,11 +430,11 @@ export default function SetupWizard() {
         if (selectedPlan === 'TERMINAL') {
            await supabase.from('tablet_orders').upsert({
              business_id: business.id,
-             shipping_name: shippingName,
-             shipping_phone: shippingPhone,
-             shipping_address: shippingAddress,
-             shipping_city: shippingCity,
-             shipping_postal_code: shippingPostalCode,
+             shipping_name: shippingName.trim(),
+             shipping_phone: shippingPhone.trim(),
+             shipping_address: shippingAddress.trim(),
+             shipping_city: shippingCity.trim(),
+             shipping_postal_code: shippingPostalCode.trim(),
              status: 'pending'
            }, { onConflict: 'business_id' });
         }
@@ -454,6 +454,22 @@ export default function SetupWizard() {
           console.warn('Autosave step 3 failed:', err);
         }
 
+        // Check trial_used from database to ensure no trial repetition
+        let trialUsed = false;
+        try {
+          const { data: bRec } = await supabase
+            .from('businesses')
+            .select('trial_used')
+            .eq('id', business.id)
+            .maybeSingle();
+          if (bRec) {
+            trialUsed = bRec.trial_used === true;
+          }
+        } catch (e) {
+          console.warn('Could not read trial_used, fallback to state:', e);
+          trialUsed = business?.trial_used === true;
+        }
+
         const res = await fetch('/api/stripe/create-subscription', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -461,7 +477,8 @@ export default function SetupWizard() {
             businessId: business.id,
             planName: selectedPlan,
             successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled'
+            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled',
+            force_no_trial: trialUsed
           })
         });
 
@@ -534,8 +551,35 @@ export default function SetupWizard() {
     if (!business) return;
     setLoading(true);
     try {
+      // Query database for latest subscription information
+      const { data: latest, error: fetchErr } = await supabase
+        .from('businesses')
+        .select('subscription_active, stripe_subscription_id, status')
+        .eq('id', business.id)
+        .maybeSingle();
+
+      if (fetchErr) throw fetchErr;
+
+      const hasActiveSub = latest?.subscription_active || latest?.stripe_subscription_id;
+
+      if (!hasActiveSub) {
+        // Safe fallback: keep status as 'setup' or 'pending'
+        const currentStatus = latest?.status || 'setup';
+        const targetStatus = currentStatus === 'active' ? 'setup' : currentStatus;
+        
+        await supabase.from('businesses').update({
+          status: targetStatus,
+          public_page_enabled: false
+        }).eq('id', business.id);
+
+        setErrorMsg('Erro de Segurança: Não foi encontrada uma subscrição ativa para este espaço. Por favor, assine um plano de subscrição na etapa anterior para que possamos ativar o seu website público.');
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.from('businesses').update({ 
         status: 'active',
+        public_page_enabled: true,
         setup_completed: true,
         onboarding_completed_at: new Date().toISOString()
       }).eq('id', business.id);
@@ -543,7 +587,7 @@ export default function SetupWizard() {
       if (error && error.code !== '42703') {
         throw error;
       } else if (error && error.code === '42703') {
-        await supabase.from('businesses').update({ status: 'active' }).eq('id', business.id);
+        await supabase.from('businesses').update({ status: 'active', public_page_enabled: true }).eq('id', business.id);
       }
       
       navigate('/partner/dashboard', { replace: true });
