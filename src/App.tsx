@@ -18,6 +18,10 @@ function SessionGuard() {
     // We only enforce strict redirects for internal roles. Customer logic remains default.
     if (profile.role === 'admin' || profile.role === 'business') {
       const path = location.pathname;
+      
+      // Allow them to stay on the update password page during recovery flow
+      if (path === '/update-password') return;
+
       const isAuthPage = path === '/login' || path === '/partner/login' || path === '/admin/login' || path === '/partner/signup';
       const permittedAdmin = profile.role === 'admin' && path.startsWith('/admin');
       const permittedBusiness = profile.role === 'business' && (
