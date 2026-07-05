@@ -45,20 +45,24 @@
     
     <!-- OTIMIZAÇÃO EXTREMA: Google Tag Manager carregado via script dinâmico para NUNCA bloquear o ecrã do telemóvel -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          var script = document.createElement('script');
-          script.src = "https://www.googletagmanager.com/gtag/js?id=G-E31ZJPB2LM";
-          script.defer = true;
-          document.head.appendChild(script);
-          
-          gtag('js', new Date());
-          gtag('config', 'G-E31ZJPB2LM');
-        }, 800); // 800ms de atraso. O utilizador nem nota, mas o processador do telemóvel agradece!
-      });
+      let gtmLoaded = false;
+      let gtagLoaded = false; // Defesa contra ReferenceError se a verificação usar o nome original
+      const loadGTM = () => {
+        if (gtmLoaded || gtagLoaded) return;
+        gtmLoaded = true;
+        gtagLoaded = true;
+        const script = document.createElement('script');
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-E31ZJPB2LM';
+        script.async = true;
+        document.head.appendChild(script);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-E31ZJPB2LM');
+      };
+      window.addEventListener('scroll', loadGTM, {once: true, passive: true});
+      window.addEventListener('touchstart', loadGTM, {once: true, passive: true});
+      setTimeout(loadGTM, 3000); // Fallback seguro
     </script>
   </head>
   <body>

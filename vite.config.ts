@@ -5,7 +5,41 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      {
+        name: 'vite-plugin-async-css-and-inline',
+        enforce: 'post' as const,
+        transformIndexHtml(html, ctx) {
+          if (!ctx || !ctx.bundle) return html;
+          
+          let newHtml = html;
+          let cssContent = '';
+          
+          // Localizar o ficheiro CSS gerado no bundle de produção
+          for (const [fileName, asset] of Object.entries(ctx.bundle)) {
+            if (fileName.endsWith('.css') && 'source' in asset) {
+              cssContent += asset.source;
+            }
+          }
+          
+          if (cssContent) {
+            // Injetar o CSS crítico diretamente na head
+            const styleTag = `\n    <style id="critical-css">\n${cssContent}\n    </style>`;
+            newHtml = newHtml.replace('</head>', `${styleTag}\n</head>`);
+          }
+          
+          // Tornar o carregamento do ficheiro de estilos CSS assíncrono (não bloqueante)
+          newHtml = newHtml.replace(
+            /<link\s+rel="stylesheet"\s+href="([^"]+\.css)"\s*\/?>/gi,
+            '<link rel="preload" href="$1" as="style" />\n    <link rel="stylesheet" href="$1" media="print" onload="this.media=\'all\'" />'
+          );
+          
+          return newHtml;
+        }
+      }
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
