@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { 
   Building2, Scissors, CreditCard, Landmark, CheckCircle, 
-  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, Lock, MapPin, Phone, Mail, FileText,
+  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin,
   Camera, Upload
 } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
@@ -100,6 +100,7 @@ export default function SetupWizard() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
+  // CORREÇÃO ELITE: Chamada infalível ao Google Maps via REST API para garantir a morada do parceiro
   const triggerGeocoding = async () => {
     if (!address || !city) return;
     try {
@@ -107,16 +108,13 @@ export default function SetupWizard() {
       let lat = null;
       let lng = null;
       
-      if (window.google?.maps) {
-        const geocoder = new window.google.maps.Geocoder();
-        const result = await new Promise<any>((resolve, reject) => {
-          geocoder.geocode({ address: fullAddress }, (results, status) => {
-            if (status === 'OK' && results?.[0]) resolve(results[0]);
-            else reject(new Error('Geocoding failed'));
-          });
-        });
-        lat = result.geometry.location.lat();
-        lng = result.geometry.location.lng();
+      if (API_KEY) {
+        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          lat = data.results[0].geometry.location.lat;
+          lng = data.results[0].geometry.location.lng;
+        }
       } else {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
         const data = await res.json();
@@ -186,7 +184,6 @@ export default function SetupWizard() {
       let currentBiz = biz;
       
       if (!currentBiz) {
-        // Create initial placeholder business idempotently
         const slug = await generateUniqueSlug(`loja-${user.id.substring(0, 8)}`);
         const payload = {
           owner_id: user.id,
@@ -240,9 +237,11 @@ export default function SetupWizard() {
         setCategory(currentBiz.category || MAIN_CATEGORIES[0].name);
         setLogoUrl(currentBiz.logo_url || '');
         setCoverUrl(currentBiz.cover_url || '');
-        setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
         
-        // Restore step
+        if (currentBiz.latitude && currentBiz.longitude) {
+          setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
+        }
+        
         const stepParam = searchParams.get('step');
         if (stepParam) {
            const parsedStep = parseInt(stepParam);
@@ -287,12 +286,11 @@ export default function SetupWizard() {
     if (!business) return;
     
     let targetStep = newStep;
-    // Auto-forward/skip plan selection if already has an active plan
     if (targetStep === 3 && (business.subscription_active || business.stripe_subscription_id)) {
-      if (step === 4) { // Going back from 4
-        targetStep = 2; // Skip 3 and go to 2
+      if (step === 4) { 
+        targetStep = 2; 
       } else {
-        targetStep = 4; // Going forward from 2, skip to 4
+        targetStep = 4; 
       }
     }
 
@@ -315,7 +313,6 @@ export default function SetupWizard() {
       
       const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file);
       if (uploadError) {
-        // Fallback: use FileReader to read as Base64 so it works perfectly even if buckets aren't provisioned or set up yet!
         const reader = new FileReader();
         reader.onloadend = () => {
           setter(reader.result as string);
@@ -352,29 +349,17 @@ export default function SetupWizard() {
         let lat = coordinates?.lat || null;
         let lng = coordinates?.lng || null;
         
-        if (window.google?.maps && !lat) {
-           try {
-             const geocoder = new window.google.maps.Geocoder();
-             const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
-             const result = await new Promise<any>((resolve, reject) => {
-               geocoder.geocode({ address: fullAddress }, (results, status) => {
-                 if (status === 'OK' && results?.[0]) resolve(results[0]);
-                 else reject(new Error('Geocoding failed'));
-               });
-             });
-             lat = result.geometry.location.lat();
-             lng = result.geometry.location.lng();
-           } catch(err) { console.warn('Geocoding failed', err); }
-        } else if (!lat) {
+        // Garante que tentamos procurar a latitude novamente no momento exato de guardar caso esteja a null
+        if (!lat && API_KEY) {
            try {
              const fullAddress = `${address}, ${postalCode} ${city}, Portugal`;
-             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+             const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`);
              const data = await res.json();
-             if (data && data.length > 0) {
-               lat = parseFloat(data[0].lat);
-               lng = parseFloat(data[0].lon);
+             if (data.results && data.results.length > 0) {
+               lat = data.results[0].geometry.location.lat;
+               lng = data.results[0].geometry.location.lng;
              }
-           } catch(err) { console.warn('Nominatim failed', err); }
+           } catch(err) { console.warn('Geocoding final falhou', err); }
         }
 
         let slug = business.slug;
@@ -419,7 +404,6 @@ export default function SetupWizard() {
       
       setLoading(true);
       try {
-        // Save plan choice
         try {
           await supabase.from('businesses').update({ 
             selected_plan: selectedPlan === 'TERMINAL' ? 'app_tablet' : 'app',
@@ -567,7 +551,6 @@ export default function SetupWizard() {
           <p className="text-sm text-slate-500 mt-2">Complete os passos para ativar o seu estabelecimento na Glamzo.</p>
         </div>
 
-        {/* Error / Success Messages */}
         {errorMsg && (
           <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-semibold text-center animate-fade-in">
             {errorMsg}
@@ -579,7 +562,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Progress Bar */}
         <div className="flex justify-between items-center mb-8 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
           <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 4) * 100}%` }}></div>
@@ -594,17 +576,14 @@ export default function SetupWizard() {
           ))}
         </div>
 
-        {/* Step 1: Data */}
         {step === 1 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Informações da Loja</h2>
             <div className="space-y-4">
               
-              {/* Cover & Profile Image Uploaders */}
               <div className="mb-6">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Imagens do Estabelecimento (Capa e Perfil)</label>
                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 h-44 sm:h-52 flex flex-col justify-end">
-                  {/* Cover image backdrop */}
                   {coverUrl ? (
                     <img src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
@@ -613,7 +592,6 @@ export default function SetupWizard() {
                       <span className="text-xs font-medium">Carregar Foto de Capa</span>
                     </div>
                   )}
-                  {/* Cover photo input label */}
                   <label className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow flex items-center gap-2 backdrop-blur-sm z-10">
                     <Camera className="w-4 h-4" />
                     <span>Alterar Capa</span>
@@ -628,7 +606,6 @@ export default function SetupWizard() {
                     />
                   </label>
 
-                  {/* Profile photo overlapping avatar */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
                     <div className="relative w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden flex items-center justify-center group">
                       {logoUrl ? (
@@ -663,7 +640,6 @@ export default function SetupWizard() {
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder="Ex: Barbearia Central" />
               </div>
 
-              {/* Category selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria do Estabelecimento *</label>
                 <select 
@@ -714,7 +690,6 @@ export default function SetupWizard() {
                 </button>
               </div>
 
-              {/* Draggable location on map */}
               <div className="pt-2">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Localização Exata no Mapa *</label>
                 <p className="text-xs text-slate-500 mb-2.5">Arraste o marcador ou clique no mapa para posicionar o seu estabelecimento com precisão de modo a não haver erro de distância.</p>
@@ -773,7 +748,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 2: Services */}
         {step === 2 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
@@ -789,7 +763,6 @@ export default function SetupWizard() {
               ))}
             </div>
 
-            {/* Recommended Quick Add Services */}
             <div className="mb-6 p-5 border border-purple-100 rounded-xl bg-purple-50/20">
               <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Serviços Recomendados ({category})</h4>
               <p className="text-xs text-slate-500 mb-3">Clique para adicionar instantaneamente os serviços mais solicitados:</p>
@@ -880,7 +853,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 3: Plan */}
         {step === 3 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
@@ -938,7 +910,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 4: Payments (Connect) */}
         {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -972,7 +943,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 5: Review */}
         {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
@@ -1009,7 +979,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Navigation Buttons */}
         {step < 5 && (
           <div className="mt-8 flex items-center gap-4">
              {step > 1 && step !== 4 && (
