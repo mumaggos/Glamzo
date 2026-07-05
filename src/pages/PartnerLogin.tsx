@@ -9,6 +9,11 @@ export default function PartnerLogin() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    if (window.location.hash.includes('type=recovery')) {
+      navigate({ pathname: '/update-password', hash: window.location.hash }, { replace: true });
+      return;
+    }
+
     if (!authLoading && user && profile) {
       if (profile.role === 'admin') {
         navigate('/admin', { replace: true });

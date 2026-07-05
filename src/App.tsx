@@ -69,6 +69,7 @@ const BusinessDetail = React.lazy(() => import('./pages/BusinessDetail'));
 const Partner = React.lazy(() => import('./pages/Partner'));
 const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
 const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
+const UpdatePassword = React.lazy(() => import('./pages/UpdatePassword'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
 const PaymentSuccess = React.lazy(() => import('./pages/partner/PaymentSuccess'));
@@ -149,6 +150,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/business/:slug" element={<BusinessDetail />} />
                 <Route path="/store/:slug" element={<BusinessDetail />} />
