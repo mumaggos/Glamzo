@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { KeyRound, Check, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
+import { useAuth } from '../hooks/useAuth';
 
 export default function UpdatePassword() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -45,9 +47,13 @@ export default function UpdatePassword() {
 
       if (error) throw error;
 
-      setSuccessMsg('Palavra-passe atualizada com sucesso! A redirecionar para o login...');
+      setSuccessMsg('Palavra-passe atualizada com sucesso! A redirecionar...');
+      
+      // Determine redirection path based on role
+      const redirectPath = profile?.role === 'business' ? '/partner/dashboard' : '/login';
+      
       setTimeout(() => {
-        navigate('/login');
+        navigate(redirectPath);
       }, 2000);
     } catch (err: any) {
       console.error('Update Password Error:', err);
