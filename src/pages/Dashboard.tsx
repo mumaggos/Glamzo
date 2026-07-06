@@ -709,7 +709,6 @@ export default function Dashboard() {
           );
         }
       }
-      setCoupons(cpData);
       return bData;
     } catch (err: any) {
       console.error("Failed to load terminal datasets:", err);

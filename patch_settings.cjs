@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+const fs = require('fs');
+
+const code = `import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save } from "lucide-react";
 import { Business } from "../../../types";
@@ -54,25 +56,25 @@ export default function SettingsTab() {
         <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
           <button
             onClick={() => setActiveTab("dados")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "dados" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <Building2 className="w-4 h-4" /> Dados da Loja
           </button>
           <button
             onClick={() => setActiveTab("imagens")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "imagens" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <ImageIcon className="w-4 h-4" /> Imagens
           </button>
           <button
             onClick={() => setActiveTab("regras")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "regras" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <Clock className="w-4 h-4" /> Regras de Agendamento
           </button>
@@ -200,3 +202,6 @@ export default function SettingsTab() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/pages/partner/tabs/SettingsTab.tsx', code);

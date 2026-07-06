@@ -238,7 +238,7 @@ export default function App() {
                   }
                 >
                   {/* Default to overview */}
-                  <Route index element={<Navigate to="overview" replace />} />
+                  <Route index element={<Navigate to="agenda" replace />} />
                   <Route path="overview" element={<OverviewTab />} />
                   <Route path="agenda" element={<AgendaTab />} />
                   <Route path="reservas" element={<ReservationsTab />} />

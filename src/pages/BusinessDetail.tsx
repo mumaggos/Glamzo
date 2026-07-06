@@ -574,7 +574,7 @@ export default function BusinessDetail() {
       
       {/* Upper Cover Banner Area */}
       <div className="h-64 sm:h-80 w-full relative bg-slate-50 overflow-hidden border-b border-slate-100">
-        <img loading="lazy"
+        <img 
           src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=75'}
           alt={business.name}
           decoding="async"
@@ -633,10 +633,10 @@ export default function BusinessDetail() {
               
               {/* Overlapping logo image */}
               <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-100 shadow-2xl bg-white shrink-0">
-                <img loading="lazy"
+                <img 
                   src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                   alt={`Logótipo de ${business.name}`}
-                  loading="lazy"
+                  
                   decoding="async"
                   width="96"
                   height="96"
@@ -749,10 +749,10 @@ export default function BusinessDetail() {
                     >
                       <div className="flex gap-3.5 items-start">
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-200">
-                          <img loading="lazy"
+                          <img 
                             src={srv.image_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                             alt={srv.name}
-                            loading="lazy"
+                            
                             decoding="async"
                             width="64"
                             height="64"
@@ -886,7 +886,7 @@ export default function BusinessDetail() {
                       />
                       {newReviewFileBlob ? (
                         <div className="flex items-center gap-3 justify-center text-xs text-emerald-600 font-bold">
-                          <img loading="lazy" src={newReviewFileBlob} alt="Pré-visualização da imagem" className="w-12 h-12 object-cover rounded-md border border-slate-200" />
+                          <img  src={newReviewFileBlob} alt="Pré-visualização da imagem" className="w-12 h-12 object-cover rounded-md border border-slate-200" />
                           <span>Foto Carregada com Sucesso! ✓</span>
                         </div>
                       ) : (
@@ -946,10 +946,10 @@ export default function BusinessDetail() {
                       {/* Display 1 Photo Upload Attachment */}
                       {r.photo_url && (
                         <div className="mt-3">
-                          <img loading="lazy"
+                          <img 
                             src={r.photo_url} 
                             alt="Visual de cliente" 
-                            loading="lazy"
+                            
                             decoding="async"
                             referrerPolicy="no-referrer"
                             className="w-full max-w-[280px] h-32 object-cover rounded-2xl border border-slate-100 shadow-sm hover:scale-[1.02] transition-transform duration-300" 

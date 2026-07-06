@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Calendar, Sparkles, X, Bell } from "lucide-react";
+import { Calendar, Sparkles, X, Bell, Maximize, Minimize } from "lucide-react";
+import { motion } from "motion/react";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 import { Business, Service, Staff, Booking } from "../../../types";
@@ -26,6 +27,8 @@ export default function AgendaTab() {
     new Date().toISOString().split("T")[0],
   );
   const [agendaFullScreen, setAgendaFullScreen] = useState(false);
+  const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>("all");
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [bookingFilter, setBookingFilter] = useState<"all" | "pending" | "confirmed" | "completed" | "cancelled" | "no_show">("all");
   const [bookingSearch, setBookingSearch] = useState("");
 
@@ -49,6 +52,30 @@ export default function AgendaTab() {
     title: string;
     desc: string;
   } | null>(null);
+
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+      setAgendaFullScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setAgendaFullScreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setAgendaFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
 
   const playTerminalChime = () => {
     try {
@@ -280,17 +307,59 @@ export default function AgendaTab() {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 pb-5">
+      
+      {/* Agenda Header & Filters */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-100 pb-5 mb-5">
         <div>
           <h3 className="text-xl font-display font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-400" />
-            <span>Agenda do Salão</span>
+            <span>Agenda Profissional</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Visualize, filtre e controle todas as marcações em tempo real de forma profissional.
+            Gira as marcações com arrastar & largar.
           </p>
         </div>
+        
+        {/* Staff Filter (Avatars) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar max-w-[50%]">
+          <button
+            onClick={() => setSelectedStaffFilter("all")}
+            className={`flex items-center justify-center px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              selectedStaffFilter === "all" ? "bg-slate-800 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            Todos
+          </button>
+          {staff.map((st) => (
+            <button
+              key={st.id}
+              onClick={() => setSelectedStaffFilter(st.id)}
+              className={`flex items-center gap-2 px-1 pr-4 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                selectedStaffFilter === st.id ? "bg-purple-100 text-purple-900 ring-2 ring-purple-500 shadow-sm" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="w-6 h-6 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                 {st.avatar_url ? (
+                   <img src={st.avatar_url} alt={st.full_name} className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full bg-gradient-to-br from-purple-500 to-rose-500 text-white flex items-center justify-center text-[10px]">
+                     {st.full_name.charAt(0)}
+                   </div>
+                 )}
+              </div>
+              {st.full_name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={toggleFullScreen}
+            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold p-2.5 rounded-xl text-xs flex items-center gap-2 transition"
+            title="Ecrã Completo"
+          >
+            {agendaFullScreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </button>
           <button
             onClick={() => {
               setManualBookingType("booking");
@@ -301,10 +370,11 @@ export default function AgendaTab() {
             className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-900/30"
           >
             <Calendar className="w-4 h-4 text-white" />
-            <span>Nova Reserva</span>
+            <span className="hidden sm:inline">Nova Reserva</span>
           </button>
         </div>
       </div>
+
       
       {isLoadingData || (loading && bookings.length === 0) ? (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col gap-4 shadow-sm h-[600px] overflow-hidden">
@@ -327,7 +397,7 @@ export default function AgendaTab() {
         </div>
       ) : (
         <DashboardCalendar 
-          bookings={bookings}
+          bookings={selectedStaffFilter === "all" ? bookings : bookings.filter(b => b.staff_id === selectedStaffFilter)}
           services={services}
           staff={staff}
           onEventClick={(info) => {

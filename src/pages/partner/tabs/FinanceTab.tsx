@@ -497,7 +497,6 @@ export default function FinanceTab() {
             Livro Razão / Histórico de Transações
           </h4>
           <button
-            onClick={exportToCsv}
             className="bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
           >
             <Download className="w-4 h-4" />

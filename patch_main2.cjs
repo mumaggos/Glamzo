@@ -1,0 +1,5 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/main.tsx', 'utf8');
+
+code = code.replace(/<HelmetProvider as any>/g, '{/* @ts-ignore */}\n      <HelmetProvider>');
+fs.writeFileSync('src/main.tsx', code);

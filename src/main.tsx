@@ -18,7 +18,8 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HelmetProvider>
+    {/* @ts-ignore */}
+      <HelmetProvider>
       <App />
     </HelmetProvider>
   </StrictMode>,
