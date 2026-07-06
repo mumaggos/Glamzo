@@ -9,20 +9,46 @@ import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import Home from './pages/Home';
 
+// --- RADAR DE ERROS ---
+class ErrorBoundary extends React.Component<any, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    this.setState({ errorInfo });
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', fontFamily: 'monospace', backgroundColor: '#fef2f2', color: '#991b1b', minHeight: '100vh' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>🚨 Encontrámos o Erro! 🚨</h2>
+          <p>Copia o texto abaixo e envia-me para eu resolver agora mesmo:</p>
+          <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '8px', border: '1px solid #fecaca', marginTop: '10px', overflowX: 'auto', fontSize: '12px' }}>
+            <p><strong>Erro:</strong> {this.state.error?.toString()}</p>
+            <p style={{ marginTop: '10px' }}><strong>Detalhes:</strong> {this.state.errorInfo?.componentStack}</p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+// ----------------------
+
 function SessionGuard() {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Avoid running logic before auth resolves
     if (loading || !user || !profile) return;
 
-    // We only enforce strict redirects for internal roles. Customer logic remains default.
     if (profile.role === 'admin' || profile.role === 'business') {
       const path = location.pathname;
-      
-      // Allow them to stay on the update password page during recovery flow
       if (path === '/update-password') return;
 
       const isAuthPage = path === '/login' || path === '/partner/login' || path === '/admin/login' || path === '/partner/signup';
@@ -35,7 +61,6 @@ function SessionGuard() {
         path.startsWith('/partner')
       );
 
-      // Prevent authenticated business users from sitting on auth pages
       if (isAuthPage && profile.role === 'business') {
         navigate('/setup', { replace: true });
         return;
@@ -45,9 +70,7 @@ function SessionGuard() {
         return;
       }
 
-      // Force logout or redirect if visiting forbidden routes
       if (!isAuthPage && !permittedAdmin && !permittedBusiness) {
-        console.log(`[SessionGuard] Redirecting ${profile.role} to their default dashboard from: ${path}`);
         if (profile.role === 'admin') {
           navigate('/admin', { replace: true });
         } else if (profile.role === 'business') {
@@ -60,7 +83,6 @@ function SessionGuard() {
   return null;
 }
 
-// Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
 const SupabaseSetupHelper = React.lazy(() => import('./components/SupabaseSetupHelper'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Signup = React.lazy(() => import('./pages/Signup'));
@@ -143,7 +165,6 @@ export default function App() {
     return cleanup;
   }, []);
 
-  // 1. If Supabase keys are not set yet, present the SQL and variable Setup Assistant
   if (!isSupabaseConfigured) {
     return (
       <Suspense fallback={<RouteLoader />}>
@@ -153,151 +174,93 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <AuthProvider>
-        <SessionGuard />
-        <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
-          {/* Elite subtle static top bar cue */}
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
-          
-          {/* Main Global Navbar */}
-          <Navbar />
-          
-          <main className="flex-1 w-full">
-            <Suspense fallback={<RouteLoader />}>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/explore" element={<Explore />} />
-                <Route path="/business/:slug" element={<BusinessDetail />} />
-                <Route path="/store/:slug" element={<BusinessDetail />} />
-                <Route path="/partner" element={<Partner />} />
-                <Route path="/partner/login" element={<PartnerLogin />} />
-                <Route path="/partner/signup" element={<PartnerSignup />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                
-                {/* Staff Portal - Public entry, internal protection */}
-                <Route path="/staff/login" element={<StaffLogin />} />
-                <Route path="/staff/dashboard" element={<StaffDashboard />} />
-                
-                {/* /partner/setup: Setup Wizard - Restricted to businesses */}
-                <Route 
-                  path="/partner/setup" 
-                  element={
-                    <ProtectedRoute allowedRoles={['business']}>
-                      <SetupWizard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/setup/payment-success" 
-                  element={
-                    <ProtectedRoute allowedRoles={['business']}>
-                      <PaymentSuccess />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Fallbacks */}
-                <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
+        <AuthProvider>
+          <SessionGuard />
+          <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
+            
+            <Navbar />
+            
+            <main className="flex-1 w-full">
+              <Suspense fallback={<RouteLoader />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/update-password" element={<UpdatePassword />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/explore" element={<Explore />} />
+                  <Route path="/business/:slug" element={<BusinessDetail />} />
+                  <Route path="/store/:slug" element={<BusinessDetail />} />
+                  <Route path="/partner" element={<Partner />} />
+                  <Route path="/partner/login" element={<PartnerLogin />} />
+                  <Route path="/partner/signup" element={<PartnerSignup />} />
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  
+                  <Route path="/staff/login" element={<StaffLogin />} />
+                  <Route path="/staff/dashboard" element={<StaffDashboard />} />
+                  
+                  <Route path="/partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
+                  <Route path="/setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
+                  
+                  <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+                  <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
+                  <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  
+                  <Route path="/termos-e-condicoes" element={<Termos />} />
+                  <Route path="/politica-de-privacidade" element={<Privacidade />} />
+                  <Route path="/politica-de-cookies" element={<Cookies />} />
+                  <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
+                  <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
+                  <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
+                  <Route path="/faq-cliente" element={<FaqCliente />} />
+                  <Route path="/faq-parceiro" element={<FaqParceiro />} />
+                  <Route path="/sobre-nos" element={<Sobre />} />
+                  <Route path="/contactos" element={<Contactos />} />
 
-                <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
-                <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
-                <Route path="/favorites" element={<Favorites />} />
-                
-                {/* Information & Legal Routes */}
-                <Route path="/termos-e-condicoes" element={<Termos />} />
-                <Route path="/politica-de-privacidade" element={<Privacidade />} />
-                <Route path="/politica-de-cookies" element={<Cookies />} />
-                <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
-                <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
-                <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
-                <Route path="/faq-cliente" element={<FaqCliente />} />
-                <Route path="/faq-parceiro" element={<FaqParceiro />} />
-                <Route path="/sobre-nos" element={<Sobre />} />
-                <Route path="/contactos" element={<Contactos />} />
+                  <Route path="/account" element={<ProtectedRoute allowedRoles={['customer', 'business', 'admin']}><Account /></ProtectedRoute>} />
 
-                {/* /account: Customer profile page - Restricted to customers & admins */}
-                <Route
-                  path="/account"
-                  element={
-                    <ProtectedRoute allowedRoles={['customer', 'business', 'admin']}>
-                      <Account />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route path="/partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="agenda" replace />} />
+                    <Route path="overview" element={<OverviewTab />} />
+                    <Route path="agenda" element={<AgendaTab />} />
+                    <Route path="reservas" element={<ReservationsTab />} />
+                    <Route path="clientes" element={<ClientsTab />} />
+                    <Route path="equipa" element={<StaffTab />} />
+                    <Route path="servicos" element={<ServicesTab />} />
+                    <Route path="horarios" element={<HoursTab />} />
+                    <Route path="campanhas" element={<MarketingTab />} />
+                    <Route path="financeiro" element={<FinanceTab />} />
+                    <Route path="website" element={<StoreAssetsTab />} />
+                    <Route path="mensagens" element={<MessagesTab />} />
+                    <Route path="tablet" element={<TabletTab />} />
+                    <Route path="configuracoes" element={<SettingsTab />} />
+                  </Route>
 
-                {/* /partner/dashboard: Salon dashboard layout - Restricted to businesses & admins */}
-                <Route
-                  path="/partner/dashboard"
-                  element={
-                    <ProtectedRoute allowedRoles={['business', 'admin']}>
-                      <PartnerLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="agenda" replace />} />
-                  <Route path="overview" element={<OverviewTab />} />
-                  <Route path="agenda" element={<AgendaTab />} />
-                  <Route path="reservas" element={<ReservationsTab />} />
-                  <Route path="clientes" element={<ClientsTab />} />
-                  <Route path="equipa" element={<StaffTab />} />
-                  <Route path="servicos" element={<ServicesTab />} />
-                  <Route path="horarios" element={<HoursTab />} />
-                  <Route path="campanhas" element={<MarketingTab />} />
-                  <Route path="financeiro" element={<FinanceTab />} />
-                  <Route path="website" element={<StoreAssetsTab />} />
-                  <Route path="mensagens" element={<MessagesTab />} />
-                  <Route path="tablet" element={<TabletTab />} />
-                  <Route path="configuracoes" element={<SettingsTab />} />
-                </Route>
+                  <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
+                  <Route path="/admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
 
-                {/* /admin: Administrative control panel - Restricted to admins */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <Admin />
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* O teu painel oculto de QR Codes, agora protegido! */}
-                <Route
-                  path="/admin/logistica"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <SuperAdminLogistics />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route path="/:slug" element={<BusinessDetail />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </main>
+            
+            <Footer />
+            <CookieBanner />
 
-                {/* Direct Premium Link Wildcard Route (glamzo.pt/nome-loja) */}
-                <Route path="/:slug" element={<BusinessDetail />} />
-
-                {/* Standard fallback redirecting search engines and direct typo accesses to Home */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </main>
-          
-          <Footer />
-          <CookieBanner />
-
-          {/* Floating Live Realtime Messenger Overlay */}
-          {loadMessenger && (
-            <Suspense fallback={null}>
-              <GlamzoMessenger />
-            </Suspense>
-          )}
-        </div>
-      </AuthProvider>
-    </BrowserRouter>
+            {loadMessenger && (
+              <Suspense fallback={null}>
+                <GlamzoMessenger />
+              </Suspense>
+            )}
+          </div>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
