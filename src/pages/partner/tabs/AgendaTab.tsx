@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Calendar, Sparkles, X, Bell, Maximize, Minimize } from "lucide-react";
-import { motion } from "motion/react";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 import { Business, Service, Staff, Booking } from "../../../types";
