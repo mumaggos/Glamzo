@@ -23,13 +23,19 @@ export interface Business {
   district: string;
   city: string;
   address: string;
-  postal_code: string | null;
+  door_number?: string | null;
+    postal_code: string | null;
   logo_url: string | null;
   cover_url: string | null;
   whatsapp: string | null;
   instagram: string | null;
   website: string | null;
   is_verified: boolean;
+  min_booking_notice?: number | null;
+  cancellation_policy?: string | null;
+  welcome_kit_sent?: boolean;
+  subscription_status?: string;
+  trial_ends_at?: string | null;
   credits?: number; // System credits (default 40 for PRO partner)
   is_promoted?: boolean; // Currently active marketing campaign
   promotion_ends_at?: string; // Expiration
@@ -46,8 +52,7 @@ export interface Business {
   qr_scans_count?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
-  door_number?: string | null;
-  latitude?: number | null;
+    latitude?: number | null;
   longitude?: number | null;
   created_at: string;
 }
@@ -81,6 +86,9 @@ export interface Staff {
   role_title: string | null;
   is_active: boolean;
   off_days?: string | null; // Comma separated weekday indices, e.g., "1,2" (Monday, Tuesday)
+  email?: string | null;
+  phone?: string | null;
+  temp_password?: string | null;
   created_at: string;
 }
 

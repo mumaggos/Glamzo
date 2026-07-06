@@ -88,6 +88,9 @@ const Partner = React.lazy(() => import('./pages/Partner'));
 const PartnerLogin = React.lazy(() => import('./pages/PartnerLogin'));
 const PartnerSignup = React.lazy(() => import('./pages/PartnerSignup'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const SuperAdminLogistics = React.lazy(() => import('./pages/admin/SuperAdminLogistics'));
+const StaffLogin = React.lazy(() => import('./pages/staff/StaffLogin'));
+const StaffDashboard = React.lazy(() => import('./pages/staff/StaffDashboard'));
 const UpdatePassword = React.lazy(() => import('./pages/UpdatePassword'));
 const SetupWizard = React.lazy(() => import('./pages/partner/SetupWizard'));
 const PaymentSuccess = React.lazy(() => import('./pages/partner/PaymentSuccess'));
@@ -176,6 +179,9 @@ export default function App() {
                 <Route path="/partner/login" element={<PartnerLogin />} />
                 <Route path="/partner/signup" element={<PartnerSignup />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/logistica" element={<SuperAdminLogistics />} />
+                <Route path="/staff/login" element={<StaffLogin />} />
+                <Route path="/staff/dashboard" element={<StaffDashboard />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
                 {/* /partner/setup: Setup Wizard - Restricted to businesses */}
                 <Route 

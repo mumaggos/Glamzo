@@ -14,6 +14,10 @@ export default function HoursTab() {
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [globalSuccess, setGlobalSuccess] = useState<string | null>(null);
 
+  
+  const [localHours, setLocalHours] = useState<Record<number, { open_time: string, close_time: string, is_closed: boolean, id?: string }>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
   const loadHours = async () => {
     if (!business) return;
     try {
@@ -21,8 +25,19 @@ export default function HoursTab() {
         .from("business_hours")
         .select("*")
         .eq("business_id", business.id);
+
       if (error) throw error;
-      setHours(data || []);
+      
+      const loaded: Record<number, any> = {};
+      (data || []).forEach(h => {
+        loaded[h.weekday] = {
+          id: h.id,
+          open_time: h.open_time,
+          close_time: h.close_time,
+          is_closed: h.is_closed
+        };
+      });
+      setLocalHours(loaded);
     } catch (err) {
       console.error("Error loading hours", err);
     }
@@ -32,84 +47,66 @@ export default function HoursTab() {
     loadHours();
   }, [business]);
 
-  const handleUpdateHours = async (
-    dayIndex: number,
-    field: "open_time" | "close_time" | "is_closed",
-    value: any
-  ) => {
-    if (!business) return;
-    try {
-      const targetDay = hours.find((h) => h.weekday === dayIndex);
-      if (!targetDay) {
-        const defaultOpen = field === "open_time" ? value : "09:00";
-        const defaultClose = field === "close_time" ? value : "19:00";
-        const defaultClosed = field === "is_closed" ? value : false;
-
-        const { error } = await supabase.from("business_hours").insert({
-          business_id: business.id,
-          weekday: dayIndex,
-          open_time: defaultOpen,
-          close_time: defaultClose,
-          is_closed: defaultClosed,
-        });
-        if (error) throw error;
-        setGlobalSuccess("Horário configurado e activo com sucesso!");
-        await loadHours();
-        return;
-      }
-
-      const { error } = await supabase
-        .from("business_hours")
-        .update({ [field]: value })
-        .eq("id", targetDay.id);
-
-      if (error) throw error;
-      setGlobalSuccess("Horários de funcionamento actualizados.");
-      await loadHours();
-    } catch (err: any) {
-      console.error("Error updating hours:", err);
-      setGlobalError("Erro ao alterar escala de horários na base de dados.");
-    }
+  const handleLocalChange = (dayIndex: number, field: string, value: any) => {
+    setLocalHours(prev => {
+      const current = prev[dayIndex] || { open_time: "09:00", close_time: "19:00", is_closed: false };
+      return { ...prev, [dayIndex]: { ...current, [field]: value } };
+    });
   };
 
-  const handleCopyHoursToAll = async (sourceWeekday: number) => {
+  const handleCopyHoursToAll = (sourceWeekday: number) => {
+    const sourceDay = localHours[sourceWeekday] || { open_time: "09:00", close_time: "19:00", is_closed: false };
+    setLocalHours(prev => {
+      const next = { ...prev };
+      for (let i = 0; i < 7; i++) {
+        if (i !== sourceWeekday) {
+          next[i] = {
+            ...next[i],
+            open_time: sourceDay.open_time,
+            close_time: sourceDay.close_time,
+            is_closed: sourceDay.is_closed
+          };
+        }
+      }
+      return next;
+    });
+    setGlobalSuccess("Horário copiado para todos os dias. Não se esqueça de guardar!");
+    setTimeout(() => setGlobalSuccess(null), 3000);
+  };
+
+  const saveAllHours = async () => {
     if (!business) return;
-    const sourceDay = hours.find((h) => h.weekday === sourceWeekday);
-    const openTime = sourceDay ? sourceDay.open_time : "09:00";
-    const closeTime = sourceDay ? sourceDay.close_time : "19:00";
-    const isClosed = sourceDay ? sourceDay.is_closed : false;
+    setIsSaving(true);
+    setGlobalError(null);
+    setGlobalSuccess(null);
 
     try {
-      const promises = Array.from({ length: 7 }, async (_, idx) => {
-        if (idx === sourceWeekday) return;
-        const targetDay = hours.find((h) => h.weekday === idx);
-
-        if (!targetDay) {
+      const promises = [0, 1, 2, 3, 4, 5, 6].map(dayIndex => {
+        const h = localHours[dayIndex] || { open_time: "09:00", close_time: "19:00", is_closed: false };
+        if (h.id) {
+          return supabase.from("business_hours").update({
+            open_time: h.open_time,
+            close_time: h.close_time,
+            is_closed: h.is_closed
+          }).eq("id", h.id);
+        } else {
           return supabase.from("business_hours").insert({
             business_id: business.id,
-            weekday: idx,
-            open_time: openTime,
-            close_time: closeTime,
-            is_closed: isClosed,
+            weekday: dayIndex,
+            open_time: h.open_time,
+            close_time: h.close_time,
+            is_closed: h.is_closed
           });
-        } else {
-          return supabase
-            .from("business_hours")
-            .update({
-              open_time: openTime,
-              close_time: closeTime,
-              is_closed: isClosed,
-            })
-            .eq("id", targetDay.id);
         }
       });
-
       await Promise.all(promises);
-      setGlobalSuccess("Horário copiado para todos os dias com sucesso!");
+      setGlobalSuccess("Horários de funcionamento guardados com sucesso!");
       await loadHours();
-    } catch (err: any) {
-      console.error("Error copying hours:", err);
-      setGlobalError("Erro ao duplicar horários para os restantes dias.");
+    } catch (err) {
+      console.error("Error saving hours:", err);
+      setGlobalError("Erro ao guardar horários.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -118,6 +115,7 @@ export default function HoursTab() {
     const m = i % 2 === 0 ? "00" : "30";
     return `${String(h).padStart(2, "0")}:${m}`;
   });
+
 
   return (
     <div className="space-y-6 max-w-[1600px] w-full mx-auto animate-fade-in text-slate-700">
@@ -154,10 +152,10 @@ export default function HoursTab() {
             { id: 6, label: "Sábado" },
             { id: 0, label: "Domingo" },
           ].map((day) => {
-            const currentDay = hours.find((h) => h.weekday === day.id);
+            const currentDay = localHours[day.id];
             const isClosed = currentDay ? currentDay.is_closed : false;
-            const openTime = currentDay ? currentDay.open_time.substring(0, 5) : "09:00";
-            const closeTime = currentDay ? currentDay.close_time.substring(0, 5) : "19:00";
+            const openTime = currentDay?.open_time ? currentDay.open_time.substring(0, 5) : "09:00";
+            const closeTime = currentDay?.close_time ? currentDay.close_time.substring(0, 5) : "19:00";
 
             return (
               <div
@@ -184,7 +182,7 @@ export default function HoursTab() {
                     value={openTime}
                     disabled={isClosed}
                     onChange={(e) =>
-                      handleUpdateHours(day.id, "open_time", e.target.value)
+                      handleLocalChange(day.id, "open_time", e.target.value)
                     }
                     className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5 focus:border-purple-500 focus:outline-none disabled:opacity-50 appearance-none cursor-pointer"
                   >
@@ -199,7 +197,7 @@ export default function HoursTab() {
                     value={closeTime}
                     disabled={isClosed}
                     onChange={(e) =>
-                      handleUpdateHours(day.id, "close_time", e.target.value)
+                      handleLocalChange(day.id, "close_time", e.target.value)
                     }
                     className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5 focus:border-purple-500 focus:outline-none disabled:opacity-50 appearance-none cursor-pointer"
                   >
@@ -215,7 +213,7 @@ export default function HoursTab() {
                       type="checkbox"
                       checked={isClosed}
                       onChange={(e) =>
-                        handleUpdateHours(day.id, "is_closed", e.target.checked)
+                        handleLocalChange(day.id, "is_closed", e.target.checked)
                       }
                       className="w-4 h-4 text-rose-600 rounded cursor-pointer"
                     />
@@ -237,6 +235,17 @@ export default function HoursTab() {
             );
           })}
         </div>
+      </div>
+      
+      <div className="flex justify-end pt-4 pb-10">
+        <button
+          onClick={saveAllHours}
+          disabled={isSaving}
+          className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2"
+        >
+          {isSaving ? <span className="animate-pulse">A Guardar...</span> : <CheckCircle2 className="w-5 h-5" />}
+          {!isSaving && "Guardar Alterações"}
+        </button>
       </div>
     </div>
   );

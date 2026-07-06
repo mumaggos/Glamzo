@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
-import { 
-  Building2, Scissors, CreditCard, Landmark, CheckCircle, 
-  ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin,
-  Camera, Upload
-} from 'lucide-react';
+import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
@@ -98,6 +94,22 @@ export default function SetupWizard() {
   const [postalCode, setPostalCode] = useState('');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
+  const DEFAULT_HOURS = [
+    { weekday: 1, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 2, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 3, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 4, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 5, open_time: '09:00', close_time: '19:00', is_closed: false },
+    { weekday: 6, open_time: '09:00', close_time: '13:00', is_closed: false },
+    { weekday: 0, open_time: '09:00', close_time: '19:00', is_closed: true }
+  ];
+  const [businessHours, setBusinessHours] = useState(DEFAULT_HOURS);
+  
+  const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  
+  const handleHourChange = (weekday: number, field: string, value: any) => {
+    setBusinessHours(prev => prev.map(h => h.weekday === weekday ? { ...h, [field]: value } : h));
+  };
   const [coverUrl, setCoverUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
@@ -404,7 +416,34 @@ export default function SetupWizard() {
       } finally {
         setLoading(false);
       }
+    
     } else if (step === 2) {
+      setLoading(true);
+      setErrorMsg('');
+      try {
+        if (!business) throw new Error('Business not found');
+        
+        const hoursToSave = businessHours.map(h => ({
+          ...h,
+          business_id: business.id
+        }));
+        
+        await supabase.from('business_hours').delete().eq('business_id', business.id);
+        const { error: hoursErr } = await supabase.from('business_hours').insert(hoursToSave);
+        if (hoursErr) throw hoursErr;
+        
+        const updateData = { setup_step: 4, onboarding_step: 3 };
+        await supabase.from('businesses').update(updateData).eq('id', business.id);
+        
+        setBusiness({ ...business, ...updateData });
+        setStep(3);
+      } catch (err: any) {
+        setErrorMsg(err.message);
+      } finally {
+        setLoading(false);
+      }
+
+    } else if (step === 3) {
       if (services.length === 0) {
         setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
         return;
@@ -417,13 +456,13 @@ export default function SetupWizard() {
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
           onboarding_step: 3,
-          setup_step: 3
+          setup_step: 4
         });
       } catch (err) {
         console.warn('Autosave step 2 failed:', err);
       }
       await updateSetupStep(3);
-    } else if (step === 3) {
+    } else if (step === 4) {
       if (selectedPlan === 'TERMINAL') {
         if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
           setErrorMsg('Erro de Validação: Preencha todos os dados de envio do terminal (Nome, Telefone, Morada, Código Postal e Cidade) para continuar.');
@@ -460,8 +499,7 @@ export default function SetupWizard() {
             name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
             category, logo_url: logoUrl, cover_url: coverUrl,
             latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
-            onboarding_step: 4,
-            setup_step: 4
+            onboarding_step: 6, setup_step: 6
           });
         } catch (err) {
           console.warn('Autosave step 3 failed:', err);
@@ -515,7 +553,7 @@ export default function SetupWizard() {
       } finally {
         setLoading(false);
       }
-    } else if (step === 4) {
+    } else if (step === 5) {
       try {
         await supabase.from('businesses').upsert({
           id: business.id,
@@ -523,8 +561,7 @@ export default function SetupWizard() {
           name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
-          onboarding_step: 5,
-          setup_step: 5
+          onboarding_step: 6, setup_step: 6
         });
       } catch (err) {
         console.warn('Autosave step 4 failed:', err);
@@ -616,10 +653,11 @@ export default function SetupWizard() {
 
   const steps = [
     { num: 1, title: 'Loja', icon: <Building2 className="w-4 h-4" /> },
-    { num: 2, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
-    { num: 3, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
-    { num: 4, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
-    { num: 5, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
+    { num: 2, title: 'Horários', icon: <Clock className="w-4 h-4" /> },
+    { num: 3, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
+    { num: 4, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
+    { num: 5, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
+    { num: 6, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
   ];
 
   return (
@@ -643,7 +681,7 @@ export default function SetupWizard() {
 
         <div className="flex justify-between items-center mb-8 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 4) * 100}%` }}></div>
+          <div className="absolute top-1/2 left-0 h-1 bg-purple-600 -z-10 -translate-y-1/2 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 5) * 100}%` }}></div>
           
           {steps.map(s => (
             <div key={s.num} className={`flex flex-col items-center gap-2 ${step >= s.num ? 'text-purple-600' : 'text-slate-400'}`}>
@@ -838,7 +876,56 @@ export default function SetupWizard() {
           </div>
         )}
 
+        
         {step === 2 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Horários de Funcionamento</h2>
+            <p className="text-sm text-slate-500 mb-6">Defina os dias e horas em que a sua loja está aberta. Isto garante que os clientes apenas podem marcar dentro deste horário.</p>
+            <div className="space-y-4">
+              {WEEKDAYS.map((dayName, idx) => {
+                const h = businessHours.find(bh => bh.weekday === idx);
+                if (!h) return null;
+                return (
+                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50">
+                    <div className="flex items-center gap-3 w-32">
+                      <input 
+                        type="checkbox" 
+                        checked={!h.is_closed}
+                        onChange={(e) => handleHourChange(idx, 'is_closed', !e.target.checked)}
+                        className="w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500"
+                      />
+                      <span className="font-bold text-sm text-slate-700">{dayName}</span>
+                    </div>
+                    
+                    {!h.is_closed ? (
+                      <div className="flex items-center gap-3 flex-1">
+                        <input 
+                          type="time" 
+                          value={h.open_time}
+                          onChange={(e) => handleHourChange(idx, 'open_time', e.target.value)}
+                          className="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        />
+                        <span className="text-slate-400 font-bold">até</span>
+                        <input 
+                          type="time" 
+                          value={h.close_time}
+                          onChange={(e) => handleHourChange(idx, 'close_time', e.target.value)}
+                          className="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex-1 text-sm font-bold text-slate-400 px-3 py-2">
+                        Fechado
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
             <div className="mb-6 space-y-3">
@@ -943,7 +1030,7 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
             
@@ -1000,7 +1087,7 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Landmark className="w-8 h-8" />
@@ -1033,7 +1120,7 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
             <div className="max-w-md mx-auto space-y-4 mb-8">
@@ -1069,7 +1156,7 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {step < 5 && (
+        {step < 6 && (
           <div className="mt-8 flex items-center gap-4">
              {step > 1 && step !== 4 && (
                 <button

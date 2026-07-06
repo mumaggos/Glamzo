@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+const fs = require('fs');
+
+const code = `import React, { useState, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, KeyRound } from "lucide-react";
 import { Business } from "../../../types";
@@ -104,7 +106,7 @@ export default function SettingsTab() {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setImages(prev => ({ ...prev, [`${type}_url`]: url }));
+      setImages(prev => ({ ...prev, [\`\${type}_url\`]: url }));
     }
   };
 
@@ -147,9 +149,9 @@ export default function SettingsTab() {
     <div className="animate-fade-in w-full max-w-5xl mx-auto space-y-8 text-slate-700 py-6">
       
       {globalMessage && (
-        <div className={`p-4 rounded-xl text-sm font-bold animate-fade-in flex items-center gap-2 ${
+        <div className={\`p-4 rounded-xl text-sm font-bold animate-fade-in flex items-center gap-2 \${
           globalMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'
-        }`}>
+        }\`}>
           {globalMessage.type === 'success' ? <Check className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
           {globalMessage.text}
         </div>
@@ -171,33 +173,33 @@ export default function SettingsTab() {
         <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
           <button
             onClick={() => setActiveTab("dados")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "dados" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <Building2 className="w-4 h-4" /> Dados da Loja
           </button>
           <button
             onClick={() => setActiveTab("seguranca")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "seguranca" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <KeyRound className="w-4 h-4" /> Segurança
           </button>
           <button
             onClick={() => setActiveTab("imagens")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "imagens" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <ImageIcon className="w-4 h-4" /> Imagens
           </button>
           <button
             onClick={() => setActiveTab("regras")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={\`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all \${
               activeTab === "regras" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
-            }`}
+            }\`}
           >
             <Clock className="w-4 h-4" /> Regras de Agendamento
           </button>
@@ -429,3 +431,6 @@ export default function SettingsTab() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/pages/partner/tabs/SettingsTab.tsx', code);

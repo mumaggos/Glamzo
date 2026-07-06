@@ -37,3 +37,8 @@ FOR INSERT
 WITH CHECK (auth.uid() = owner_id);
 
 -- Opcional (apenas se não houver já uma constraint ou policy para RLS nas businesses)
+
+-- Logistics support
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS welcome_kit_sent BOOLEAN DEFAULT false;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'trialing';
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP WITH TIME ZONE;

@@ -59,12 +59,10 @@ export default function AgendaTab() {
       if (containerRef.current?.requestFullscreen) {
         containerRef.current.requestFullscreen();
       }
-      setAgendaFullScreen(true);
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
-      setAgendaFullScreen(false);
     }
   };
 
@@ -396,10 +394,22 @@ export default function AgendaTab() {
           </div>
         </div>
       ) : (
+        <div ref={containerRef} className={`${agendaFullScreen ? 'bg-white p-4 overflow-y-auto w-full h-full fixed inset-0 z-50' : 'w-full'}`}>
+        {agendaFullScreen && (
+          <button 
+            onClick={toggleFullScreen}
+            className="fixed top-4 right-4 z-[60] bg-slate-900 text-white p-3 rounded-xl shadow-lg hover:bg-black transition flex items-center gap-2"
+          >
+            <Minimize className="w-5 h-5" />
+            <span className="font-bold text-sm hidden sm:inline">Sair de Ecrã Completo</span>
+          </button>
+        )}
         <DashboardCalendar 
           bookings={selectedStaffFilter === "all" ? bookings : bookings.filter(b => b.staff_id === selectedStaffFilter)}
           services={services}
           staff={staff}
+          selectedStaffFilter={selectedStaffFilter}
+          onStaffClick={(staffId) => setSelectedStaffFilter(staffId)}
           onEventClick={(info) => {
             const booking = info.event.extendedProps.booking;
             alert(`Reserva de: ${booking.customer_profile?.full_name || "Cliente"} às ${booking.start_time}`);
@@ -434,6 +444,7 @@ export default function AgendaTab() {
             if (staff.length > 0) setManualStaffId(staff[0].id);
           }}
         />
+        </div>
       )}
 
       {/* Manual Booking / Block Modal */}
