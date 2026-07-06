@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, KeyRound } from "lucide-react";
+import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, KeyRound, Zap, CreditCard } from "lucide-react";
 import { Business } from "../../../types";
 import { supabase } from "../../../lib/supabase";
 
@@ -144,7 +144,7 @@ export default function SettingsTab() {
   };
 
   return (
-    <div className="animate-fade-in w-full max-w-5xl mx-auto space-y-8 text-slate-700 py-6">
+    <div className="animate-fade-in w-full max-w-5xl mx-auto space-y-8 text-slate-700 py-6 pb-20">
       
       {globalMessage && (
         <div className={`p-4 rounded-xl text-sm font-bold animate-fade-in flex items-center gap-2 ${
@@ -161,7 +161,7 @@ export default function SettingsTab() {
           <span>Configurações</span>
         </h3>
         <p className="text-sm text-slate-500 mt-1">
-          Ajuste as preferências da sua conta, imagens e regras.
+          Ajuste as preferências da sua conta, pagamentos e regras.
         </p>
       </div>
 
@@ -177,6 +177,16 @@ export default function SettingsTab() {
           >
             <Building2 className="w-4 h-4" /> Dados da Loja
           </button>
+          
+          <button
+            onClick={() => setActiveTab("pagamentos")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+              activeTab === "pagamentos" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"
+            }`}
+          >
+            <CreditCard className="w-4 h-4" /> Pagamentos & Plano
+          </button>
+
           <button
             onClick={() => setActiveTab("seguranca")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
@@ -185,6 +195,7 @@ export default function SettingsTab() {
           >
             <KeyRound className="w-4 h-4" /> Segurança
           </button>
+
           <button
             onClick={() => setActiveTab("imagens")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
@@ -206,6 +217,50 @@ export default function SettingsTab() {
         {/* Content Area */}
         <div className="flex-1">
           
+          {/* NOVA ABA: Pagamentos e Plano */}
+          {activeTab === "pagamentos" && (
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in space-y-8">
+              <div>
+                <h4 className="text-lg font-black text-slate-900 mb-1">Pagamentos e Subscrição</h4>
+                <p className="text-xs text-slate-500 font-medium">Gere o teu plano e a ligação ao Stripe.</p>
+              </div>
+
+              {/* Plano de Elite */}
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl flex items-center justify-between relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full"></div>
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm"><Zap className="w-6 h-6 text-yellow-400" /></div>
+                  <div>
+                    <h3 className="font-black text-lg tracking-tight">Plano Glamzo PRO</h3>
+                    <p className="text-slate-300 text-[10px] mt-1 uppercase font-bold tracking-wider">Acesso Total Ativo</p>
+                  </div>
+                </div>
+                <span className="bg-emerald-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm relative z-10">Ativo</span>
+              </div>
+
+              {/* Stripe Connect */}
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-purple-100 text-purple-600 rounded-xl"><CreditCard className="w-5 h-5" /></div>
+                  <div>
+                    <h3 className="font-black text-slate-900 text-sm">Conta Stripe Connect</h3>
+                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">Recebe pagamentos online dos teus clientes.</p>
+                  </div>
+                </div>
+                
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between mb-4 shadow-sm">
+                  <span className="text-xs font-bold text-slate-600">Estado da Conta:</span>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-200">Conectado</span>
+                </div>
+                
+                <button className="w-full py-3 bg-white hover:bg-slate-50 border border-slate-200 font-bold text-slate-700 text-sm rounded-xl transition shadow-sm flex justify-center items-center gap-2">
+                  Gerir Conta no Stripe
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Dados Originais (Mantidos Inalterados) */}
           {activeTab === "dados" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
               <h4 className="text-lg font-black text-slate-900 mb-6">Dados da Loja</h4>
