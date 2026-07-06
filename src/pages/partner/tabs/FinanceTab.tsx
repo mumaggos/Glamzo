@@ -490,10 +490,21 @@ export default function FinanceTab() {
 
       {/* 3. Histórico de Transações */}
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6">
-        <h4 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-slate-600" />
-          Livro Razão / Histórico de Transações
-        </h4>
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+          <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-slate-600" />
+            Livro Razão / Histórico de Transações
+          </h4>
+          <button
+            onClick={exportToCsv}
+            className="bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Exportar para CSV
+          </button>
+        </div>
+
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
            <div className="bg-white p-4 rounded-xl border border-slate-200">

@@ -65,7 +65,7 @@ const SupabaseSetupHelper = React.lazy(() => import('./components/SupabaseSetupH
 const Login = React.lazy(() => import('./pages/Login'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Account = React.lazy(() => import('./pages/Account'));
-const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+
 const PartnerLayout = React.lazy(() => import('./components/partner/PartnerLayout'));
 const OverviewTab = React.lazy(() => import('./pages/partner/tabs/OverviewTab'));
 const AgendaTab = React.lazy(() => import('./pages/partner/tabs/AgendaTab'));
@@ -76,6 +76,10 @@ const HoursTab = React.lazy(() => import('./pages/partner/tabs/HoursTab'));
 const FinanceTab = React.lazy(() => import('./pages/partner/tabs/FinanceTab'));
 const ReservationsTab = React.lazy(() => import('./pages/partner/tabs/ReservationsTab').then(m => ({ default: m.ReservationsTab })));
 const MarketingTab = React.lazy(() => import('./pages/partner/tabs/MarketingTab').then(m => ({ default: m.MarketingTab })));
+const StoreAssetsTab = React.lazy(() => import('./pages/partner/tabs/StoreAssetsTab'));
+const MessagesTab = React.lazy(() => import('./pages/partner/tabs/MessagesTab'));
+const SettingsTab = React.lazy(() => import('./pages/partner/tabs/SettingsTab'));
+const TabletTab = React.lazy(() => import('./pages/partner/tabs/TabletTab'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const Explore = React.lazy(() => import('./pages/Explore'));
@@ -244,10 +248,10 @@ export default function App() {
                   <Route path="horarios" element={<HoursTab />} />
                   <Route path="campanhas" element={<MarketingTab />} />
                   <Route path="financeiro" element={<FinanceTab />} />
-                  <Route path="loja" element={<Dashboard />} />
-                  <Route path="mensagens" element={<Dashboard />} />
-                  <Route path="tablet" element={<Dashboard />} />
-                  <Route path="configuracoes" element={<Dashboard />} />
+                  <Route path="website" element={<StoreAssetsTab />} />
+                  <Route path="mensagens" element={<MessagesTab />} />
+                  <Route path="tablet" element={<TabletTab />} />
+                  <Route path="configuracoes" element={<SettingsTab />} />
                 </Route>
 
                 {/* /admin: Administrative control panel - Restricted to admins */}

@@ -130,7 +130,7 @@ export default function PartnerLayout() {
     { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
     { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: "Pagamentos", icon: Landmark, path: "/partner/dashboard/financeiro" },
-    { id: "loja", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/loja" },
+    { id: "website", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: "Mensagens", icon: MessageSquare, path: "/partner/dashboard/mensagens" },
     ...(tabletOrder ? [{ id: "tablet", label: "Terminal Glamzo", icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),
     { id: "configuracoes", label: "Configurações", icon: Settings, path: "/partner/dashboard/configuracoes" },
