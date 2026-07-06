@@ -18,15 +18,16 @@ export default function OverviewTab() {
   const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const navigate = useNavigate();
 
+  // Rotas corrigidas para a navegação interna da app
   const handleSetActiveTab = (tab: string) => {
     const routeMap: Record<string, string> = {
-      'agenda': '../agenda',
-      'clientes': '../clients',
-      'servicos': '../services',
-      'equipa': '../staff',
-      'horario': '../hours',
-      'financas': '../finance',
-      'reservas': '../reservas',
+      'agenda': '/partner/dashboard/agenda',
+      'clientes': '/partner/dashboard/clientes',
+      'servicos': '/partner/dashboard/servicos',
+      'equipa': '/partner/dashboard/equipa',
+      'horario': '/partner/dashboard/horarios',
+      'financas': '/partner/dashboard/financeiro',
+      'reservas': '/partner/dashboard/reservas',
     };
     if (routeMap[tab]) {
       navigate(routeMap[tab]);
@@ -59,7 +60,7 @@ export default function OverviewTab() {
 
   return (
     <div className="animate-fade-in w-full max-w-[1600px] mx-auto space-y-6 text-slate-700"> 
-       
+        
        <DashboardOverview 
          business={business}
          bookings={bookings || []}
