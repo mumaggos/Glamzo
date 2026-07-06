@@ -37,6 +37,9 @@ export default function PartnerLayout() {
       if (!bData) { navigate("/partner/setup", { replace: true }); return; }
       setBusiness(bData);
 
+      const { data: tData } = await supabase.from("hardware_orders").select("*").eq("business_id", bData.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (tData) setTabletOrder(tData);
+
       const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }] = await Promise.all([
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
@@ -51,6 +54,7 @@ export default function PartnerLayout() {
 
   useEffect(() => { setIsMobileSidebarOpen(false); setIsNotificationsOpen(false); }, [location.pathname]);
 
+  // MENU COMPLETO RESTAURADO!
   const navItems = [
     { id: "overview", label: "Resumo", icon: LayoutDashboard, path: "/partner/dashboard/overview" },
     { id: "agenda", label: "Agenda", icon: Calendar, path: "/partner/dashboard/agenda" },
@@ -58,7 +62,13 @@ export default function PartnerLayout() {
     { id: "clientes", label: "Clientes", icon: UsersRound, path: "/partner/dashboard/clientes" },
     { id: "equipa", label: "Equipa", icon: Users, path: "/partner/dashboard/equipa" },
     { id: "servicos", label: "Serviços", icon: Scissors, path: "/partner/dashboard/servicos" },
-    { id: "configuracoes", label: "Definições", icon: Settings, path: "/partner/dashboard/configuracoes" },
+    { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
+    { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
+    { id: "financeiro", label: "Pagamentos", icon: Landmark, path: "/partner/dashboard/financeiro" },
+    { id: "website", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/website" },
+    { id: "mensagens", label: "Mensagens", icon: MessageSquare, path: "/partner/dashboard/mensagens" },
+    ...(tabletOrder ? [{ id: "tablet", label: "Terminal Glamzo", icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),
+    { id: "configuracoes", label: "Configurações", icon: Settings, path: "/partner/dashboard/configuracoes" },
   ];
 
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
@@ -66,12 +76,12 @@ export default function PartnerLayout() {
   return (
     <div id="partner-terminal-layout" className="min-h-screen bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden h-screen relative">
       
-      {/* MAGIA: Esconde o Navbar e o Footer globais públicos */}
       <style>{`
         header, nav.sticky, footer { display: none !important; }
         body { background-color: #F8F9FC !important; }
       `}</style>
 
+      {/* Drawer Mobile / Tablet */}
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-[80] flex lg:hidden">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)} />
@@ -80,7 +90,8 @@ export default function PartnerLayout() {
               <div className="flex items-center gap-3"><GlamzoLogo size={28} glow={false} /><span className="font-extrabold text-sm">Menu</span></div>
               <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-xl text-slate-500 bg-white shadow-sm border"><X className="w-4 h-4" /></button>
             </div>
-            <nav className="flex-1 overflow-y-auto space-y-1 p-3">
+            {/* O pb-24 garante que fazes scroll até ao último item do menu */}
+            <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
               {navItems.map((tab) => {
                 const isActive = location.pathname.startsWith(tab.path);
                 return (
@@ -90,30 +101,30 @@ export default function PartnerLayout() {
                 );
               })}
             </nav>
-            <div className="p-4 bg-slate-50">
-              <button onClick={async () => { await signOut(); navigate("/"); }} className="w-full py-3 bg-white hover:bg-slate-100 border text-slate-600 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
-                <LogOut className="w-4 h-4" /> Sair
+            <div className="p-4 bg-slate-50 border-t border-slate-100">
+              <button onClick={async () => { await signOut(); navigate("/"); }} className="w-full py-3 bg-white hover:bg-slate-100 border border-slate-200 text-rose-500 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                <LogOut className="w-4 h-4" /> Terminar Sessão
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Desktop Sidebar (Mantida igual) */}
-      <aside className="hidden lg:flex w-[260px] border-r bg-white flex-col shrink-0 h-full z-20 shadow-sm">
-         <button onClick={async () => { await signOut(); navigate("/"); }} className="h-20 border-b flex items-center px-6 gap-3 w-full text-left hover:bg-slate-50">
+      {/* Sidebar Desktop */}
+      <aside className="hidden lg:flex w-[260px] border-r border-slate-200 bg-white flex-col shrink-0 h-full z-20 shadow-sm">
+         <button onClick={async () => { await signOut(); navigate("/"); }} className="h-20 border-b border-slate-100 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-50">
             <div className="bg-purple-100 p-2 rounded-xl"><GlamzoLogo size={24} glow={true} /></div>
             <div><span className="font-black text-sm block">Glamzo</span><span className="text-[10px] font-bold text-slate-500">Workspace de Elite</span></div>
           </button>
-          <div className="p-4 mx-4 my-4 bg-slate-50 border rounded-2xl">
+          <div className="p-4 mx-4 my-4 bg-slate-50 border border-slate-100 rounded-2xl">
             <span className="text-xs font-black block truncate">{business?.name}</span>
             <div className="flex items-center gap-1.5 mt-1"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] text-slate-500 font-bold">Sistema Ativo</span></div>
           </div>
-          <nav className="px-4 py-2 space-y-1.5 overflow-y-auto flex-1">
+          <nav className="px-4 py-2 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar">
             {navItems.map((tab) => {
               const isActive = location.pathname.startsWith(tab.path);
               return (
-                <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
+                <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
                   <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span></div>
                 </Link>
               );
@@ -122,14 +133,13 @@ export default function PartnerLayout() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <header className="h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
+        <div className="h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 hidden lg:block">Bom dia, <span className="text-purple-600">{profile?.full_name?.split(" ")[0] || "Profissional"}</span> 👋</h2>
             <h2 className="text-lg font-black text-slate-900 lg:hidden">{business?.name}</h2>
           </div>
           
           <div className="flex items-center gap-3">
-            {/* SINO DE NOTIFICAÇÕES FUNCIONAL */}
             <div className="relative">
               <button 
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
@@ -146,12 +156,8 @@ export default function PartnerLayout() {
                     <div className="p-4 border-b border-slate-100 bg-slate-50"><h4 className="font-extrabold text-slate-900">Notificações</h4></div>
                     <div className="p-4 space-y-3">
                       <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 mt-1.5 rounded-full bg-purple-500 shrink-0" />
-                        <div><p className="text-xs font-bold text-slate-800">Nova Marcação de João</p><p className="text-[10px] text-slate-500 mt-0.5">Corte Fade - Hoje às 15:00</p></div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                         <div className="w-2 h-2 mt-1.5 rounded-full bg-slate-300 shrink-0" />
-                         <div><p className="text-xs font-bold text-slate-600">Sistema Atualizado</p><p className="text-[10px] text-slate-400 mt-0.5">O teu terminal Glamzo Elite está online.</p></div>
+                         <div className="w-2 h-2 mt-1.5 rounded-full bg-emerald-500 shrink-0" />
+                         <div><p className="text-xs font-bold text-slate-800">Sistema Atualizado</p><p className="text-[10px] text-slate-500 mt-0.5">O teu terminal Glamzo Elite está online e otimizado.</p></div>
                       </div>
                     </div>
                   </div>
@@ -163,21 +169,22 @@ export default function PartnerLayout() {
                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest hidden sm:inline">Online</span>
             </div>
           </div>
-        </header>
+        </div>
 
-        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 pb-24 md:pb-6 relative z-0">
+        {/* pb-36 garante o scroll dos Insights */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
            <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
             <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, loadLayoutData, isLoadingData }} />
           </motion.div>
         </div>
       </main>
 
-      {/* Bottom Navigation Mobile */}
+      {/* Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-6 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-slate-900' : 'text-slate-400'}`} /><span className="text-[10px] font-bold mt-1 text-slate-500">Resumo</span></Link>
-        <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-slate-900' : 'text-slate-400'}`} /><span className="text-[10px] font-bold mt-1 text-slate-500">Clientes</span></Link>
+        <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>Resumo</span></Link>
+        <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>Clientes</span></Link>
         <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
-        <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-slate-900' : 'text-slate-400'}`} /><span className="text-[10px] font-bold mt-1 text-slate-500">Reservas</span></Link>
+        <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>Reservas</span></Link>
         <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /><span className="text-[10px] font-bold mt-1 text-slate-400">Menu</span></button>
       </div>
     </div>
