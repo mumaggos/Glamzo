@@ -5,6 +5,9 @@ import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
+import Footer from './components/Footer';
+import CookieBanner from './components/CookieBanner';
+import Home from './pages/Home';
 
 function SessionGuard() {
   const { user, profile, loading } = useAuth();
@@ -56,9 +59,6 @@ function SessionGuard() {
 
   return null;
 }
-import Footer from './components/Footer';
-import CookieBanner from './components/CookieBanner';
-import Home from './pages/Home';
 
 // Lazy loading all pages and heavy widgets for optimal dynamic chunking and instant public page load speeds
 const SupabaseSetupHelper = React.lazy(() => import('./components/SupabaseSetupHelper'));
@@ -179,10 +179,11 @@ export default function App() {
                 <Route path="/partner/login" element={<PartnerLogin />} />
                 <Route path="/partner/signup" element={<PartnerSignup />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/logistica" element={<SuperAdminLogistics />} />
+                
+                {/* Staff Portal - Public entry, internal protection */}
                 <Route path="/staff/login" element={<StaffLogin />} />
                 <Route path="/staff/dashboard" element={<StaffDashboard />} />
-                <Route path="/admin-login" element={<AdminLogin />} />
+                
                 {/* /partner/setup: Setup Wizard - Restricted to businesses */}
                 <Route 
                   path="/partner/setup" 
@@ -222,8 +223,6 @@ export default function App() {
                 <Route path="/sobre-nos" element={<Sobre />} />
                 <Route path="/contactos" element={<Contactos />} />
 
-                {/* /onboarding: Deprecated, use /setup */}
-                
                 {/* /account: Customer profile page - Restricted to customers & admins */}
                 <Route
                   path="/account"
@@ -243,7 +242,6 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 >
-                  {/* Default to overview */}
                   <Route index element={<Navigate to="agenda" replace />} />
                   <Route path="overview" element={<OverviewTab />} />
                   <Route path="agenda" element={<AgendaTab />} />
@@ -269,6 +267,16 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                
+                {/* O teu painel oculto de QR Codes, agora protegido! */}
+                <Route
+                  path="/admin/logistica"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <SuperAdminLogistics />
+                    </ProtectedRoute>
+                  }
+                />
 
                 {/* Direct Premium Link Wildcard Route (glamzo.pt/nome-loja) */}
                 <Route path="/:slug" element={<BusinessDetail />} />
@@ -282,7 +290,7 @@ export default function App() {
           <Footer />
           <CookieBanner />
 
-          {/* Floating Live Realtime Messenger Overlay is loaded under user idle states */}
+          {/* Floating Live Realtime Messenger Overlay */}
           {loadMessenger && (
             <Suspense fallback={null}>
               <GlamzoMessenger />
