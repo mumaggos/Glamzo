@@ -1,27 +1,24 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 
-export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect }: any) {
-  const hours = Array.from({ length: 14 }, (_, i) => i + 8); // Das 08:00 às 21:00
+export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
+  const hours = Array.from({ length: 14 }, (_, i) => i + 8); 
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Relógio em tempo real para a Linha Vermelha
   const [now, setNow] = useState(new Date());
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60000); // Atualiza a cada minuto
+    const timer = setInterval(() => setNow(new Date()), 60000); 
     return () => clearInterval(timer);
   }, []);
 
-  // Faz Scroll automático para a hora atual quando o calendário carrega
   useEffect(() => {
     if (scrollRef.current) {
       const currentHour = now.getHours();
       if (currentHour >= 8 && currentHour <= 21) {
-        // A altura de cada bloco é 96px (h-24). Multiplica a hora atual para descer
-        const scrollAmount = (currentHour - 8) * 96;
+        const scrollAmount = (currentHour - 8) * 112; // 112px é a nova altura (h-28)
         scrollRef.current.scrollTo({ top: scrollAmount - 40, behavior: 'smooth' });
       }
     }
-  }, []); // Executa apenas ao montar
+  }, []); 
 
   const columns = useMemo(() => {
     const baseDate = new Date(selectedAgendaDate || new Date());
@@ -50,7 +47,8 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
   const currentMinute = now.getMinutes();
 
   return (
-    <div className="flex flex-col h-full min-h-[70vh] bg-white p-2 md:p-4 overflow-hidden rounded-3xl">
+    // Altura máxima para forçar o scroll no calendário
+    <div className="flex flex-col h-[75vh] min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl">
       <div className="flex mb-2 bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 shrink-0">
         <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase">Hora</div>
         {columns.map((col: any) => (
@@ -70,18 +68,13 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
       <div ref={scrollRef} className="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
         <div className="relative">
           {hours.map((hour) => (
-            <div key={hour} className="relative flex h-24 items-start border-b border-slate-100 group">
+            // Aumentei a altura de h-24 para h-28 (dá mais espaço para respirar)
+            <div key={hour} className="relative flex h-28 items-start border-b border-slate-100 group">
               
-              {/* LINHA VERMELHA (TIME INDICATOR) */}
               {hour === currentHourNum && (
-                <div 
-                  className="absolute left-0 right-0 z-20 flex items-center pointer-events-none" 
-                  style={{ top: `${(currentMinute / 60) * 100}%` }}
-                >
+                <div className="absolute left-0 right-0 z-20 flex items-center pointer-events-none" style={{ top: `${(currentMinute / 60) * 100}%` }}>
                   <div className="w-16 md:w-20 text-right pr-2 shrink-0">
-                    <span className="text-[10px] font-bold text-rose-500 bg-white px-1 shadow-sm rounded-md border border-rose-100">
-                      {currentHourNum}:{currentMinute.toString().padStart(2, '0')}
-                    </span>
+                    <span className="text-[10px] font-bold text-rose-500 bg-white px-1 shadow-sm rounded-md border border-rose-100">{currentHourNum}:{currentMinute.toString().padStart(2, '0')}</span>
                   </div>
                   <div className="flex-1 h-[2px] bg-rose-500 relative shadow-sm shadow-rose-500/50">
                     <div className="absolute -left-1.5 -top-1.5 w-3.5 h-3.5 rounded-full bg-rose-500 border-2 border-white shadow-sm"></div>
@@ -101,11 +94,24 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
                     className="flex-1 h-full border-l border-slate-50 hover:bg-purple-50/40 transition-colors cursor-pointer relative p-0.5"
                     onClick={() => onDateSelect({ date: col.dateStr, time: `${String(hour).padStart(2, '0')}:00`, staffId: colStaffId })}
                   >
-                    {slotBookings.map((b: any) => (
-                      <div key={b.id} className="absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-2 text-[10px] font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10">
-                        <div className="opacity-90 line-clamp-2 leading-tight">{b.notes || 'Marcação Confirmada'}</div>
-                      </div>
-                    ))}
+                    {slotBookings.map((b: any) => {
+                      // Cor Verde se estiver Concluído, Roxo se for Confirmed
+                      const isCompleted = b.booking_status === 'completed';
+                      const bgClasses = isCompleted ? 'from-emerald-400 to-emerald-600' : 'from-purple-600 to-indigo-600';
+                      
+                      return (
+                        <div 
+                          key={b.id} 
+                          onClick={(e) => { e.stopPropagation(); onBookingClick(b); }}
+                          className={`absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-[10px] md:text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10`}
+                        >
+                          <div className="opacity-90 line-clamp-2 leading-tight">
+                            {isCompleted && "✅ "} 
+                            {b.notes || 'Marcação Confirmada'}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 );
               })}
