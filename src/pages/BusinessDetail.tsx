@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from "react-helmet-async";
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Business, Review } from '../types';
@@ -500,9 +501,19 @@ export default function BusinessDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 text-rose-600 animate-spin" />
-        <span className="text-xs text-slate-500 font-mono">Buscando detalhes do estabelecimento...</span>
+      <div className="min-h-[70vh] flex flex-col max-w-4xl mx-auto w-full p-4 sm:p-8 animate-pulse">
+        <div className="h-64 sm:h-80 w-full bg-slate-200/60 rounded-3xl mb-12"></div>
+        <div className="flex gap-6 -mt-24 pl-8 mb-8">
+          <div className="w-32 h-32 bg-slate-300/60 rounded-3xl shadow-xl z-10 border-4 border-white"></div>
+          <div className="pt-16 space-y-4 flex-1">
+            <div className="h-8 w-64 bg-slate-200/80 rounded-xl"></div>
+            <div className="h-4 w-40 bg-slate-100/80 rounded-md"></div>
+          </div>
+        </div>
+        <div className="space-y-4 px-2">
+           <div className="h-6 w-full max-w-md bg-slate-100/60 rounded-md"></div>
+           <div className="h-20 w-full bg-slate-50 rounded-xl"></div>
+        </div>
       </div>
     );
   }
@@ -551,11 +562,19 @@ export default function BusinessDetail() {
   }
 
   return (
-    <div id="business-detail-view" className="bg-white min-h-screen pb-16 font-sans text-slate-700 selection:bg-purple-100/50 selection:text-purple-200">
+    <>
+      <Helmet>
+        <title>{business.name} {business.city ? `em ${business.city}` : ''} - Reservas Online | Glamzo</title>
+        <meta name="description" content={`Marque já o seu próximo serviço em ${business.name}, ${business.category || 'o seu salão de eleição'}${business.city ? ` em ${business.city}` : ''}. Reservas instantâneas online.`} />
+        <meta property="og:title" content={`${business.name} - Reservas Online`} />
+        <meta property="og:description" content={`Agende serviços online rapidamente com ${business.name}.`} />
+        <meta property="og:image" content={business.cover_url || ''} />
+      </Helmet>
+      <div id="business-detail-view" className="bg-white min-h-screen pb-16 font-sans text-slate-700 selection:bg-purple-100/50 selection:text-purple-200">
       
       {/* Upper Cover Banner Area */}
       <div className="h-64 sm:h-80 w-full relative bg-slate-50 overflow-hidden border-b border-slate-100">
-        <img
+        <img loading="lazy"
           src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=75'}
           alt={business.name}
           decoding="async"
@@ -614,9 +633,9 @@ export default function BusinessDetail() {
               
               {/* Overlapping logo image */}
               <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-100 shadow-2xl bg-white shrink-0">
-                <img
+                <img loading="lazy"
                   src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
-                  alt="logo"
+                  alt={`Logótipo de ${business.name}`}
                   loading="lazy"
                   decoding="async"
                   width="96"
@@ -730,7 +749,7 @@ export default function BusinessDetail() {
                     >
                       <div className="flex gap-3.5 items-start">
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-200">
-                          <img
+                          <img loading="lazy"
                             src={srv.image_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'}
                             alt={srv.name}
                             loading="lazy"
@@ -867,7 +886,7 @@ export default function BusinessDetail() {
                       />
                       {newReviewFileBlob ? (
                         <div className="flex items-center gap-3 justify-center text-xs text-emerald-600 font-bold">
-                          <img src={newReviewFileBlob} className="w-12 h-12 object-cover rounded-md border border-slate-200" />
+                          <img loading="lazy" src={newReviewFileBlob} alt="Pré-visualização da imagem" className="w-12 h-12 object-cover rounded-md border border-slate-200" />
                           <span>Foto Carregada com Sucesso! ✓</span>
                         </div>
                       ) : (
@@ -927,7 +946,7 @@ export default function BusinessDetail() {
                       {/* Display 1 Photo Upload Attachment */}
                       {r.photo_url && (
                         <div className="mt-3">
-                          <img 
+                          <img loading="lazy"
                             src={r.photo_url} 
                             alt="Visual de cliente" 
                             loading="lazy"
@@ -1578,5 +1597,6 @@ export default function BusinessDetail() {
       )}
 
     </div>
+    </>
   );
 }
