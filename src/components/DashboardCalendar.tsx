@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { CreditCard, Banknote, User } from 'lucide-react';
 
 export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
   const hours = Array.from({ length: 14 }, (_, i) => i + 8); 
@@ -14,7 +15,7 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
     if (scrollRef.current) {
       const currentHour = now.getHours();
       if (currentHour >= 8 && currentHour <= 21) {
-        const scrollAmount = (currentHour - 8) * 112; // 112px é a nova altura (h-28)
+        const scrollAmount = (currentHour - 8) * 112;
         scrollRef.current.scrollTo({ top: scrollAmount - 40, behavior: 'smooth' });
       }
     }
@@ -47,10 +48,9 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
   const currentMinute = now.getMinutes();
 
   return (
-    // Altura máxima para forçar o scroll no calendário
-    <div className="flex flex-col h-[75vh] min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl">
+    <div className="flex flex-col h-[75vh] min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl border border-slate-200/50 shadow-sm">
       <div className="flex mb-2 bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 shrink-0">
-        <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase">Hora</div>
+        <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hora</div>
         {columns.map((col: any) => (
           <div key={col.id} className="flex-1 flex flex-col items-center justify-center gap-1.5 border-l border-slate-200/50">
             {col.isStaff ? (
@@ -68,9 +68,9 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
       <div ref={scrollRef} className="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
         <div className="relative">
           {hours.map((hour) => (
-            // Aumentei a altura de h-24 para h-28 (dá mais espaço para respirar)
             <div key={hour} className="relative flex h-28 items-start border-b border-slate-100 group">
               
+              {/* Linha do Tempo Atual */}
               {hour === currentHourNum && (
                 <div className="absolute left-0 right-0 z-20 flex items-center pointer-events-none" style={{ top: `${(currentMinute / 60) * 100}%` }}>
                   <div className="w-16 md:w-20 text-right pr-2 shrink-0">
@@ -95,20 +95,53 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
                     onClick={() => onDateSelect({ date: col.dateStr, time: `${String(hour).padStart(2, '0')}:00`, staffId: colStaffId })}
                   >
                     {slotBookings.map((b: any) => {
-                      // Cor Verde se estiver Concluído, Roxo se for Confirmed
                       const isCompleted = b.booking_status === 'completed';
-                      const bgClasses = isCompleted ? 'from-emerald-400 to-emerald-600' : 'from-purple-600 to-indigo-600';
+                      const isBlock = b.notes?.includes('🛑 BLOQUEIO');
+                      const bgClasses = isBlock ? 'from-rose-500 to-red-600' : isCompleted ? 'from-emerald-500 to-emerald-600' : 'from-purple-600 to-indigo-600';
                       
+                      // Extrair nome do cliente (da base de dados profile ou fallback)
+                      let clientName = "Cliente";
+                      if (b.customer_profile?.full_name) {
+                        clientName = b.customer_profile.full_name;
+                      } else if (b.notes && !isBlock) {
+                        const noteParts = b.notes.split('\n');
+                        if (noteParts[0].includes('Manual:')) {
+                           clientName = noteParts[0].replace('Manual:', '').trim().split(' ')[0];
+                        }
+                      }
+                      
+                      const paymentIsOnline = b.payment_method === 'stripe';
+                      const paymentIsPaid = b.payment_status === 'paid' || isCompleted;
+
                       return (
                         <div 
                           key={b.id} 
                           onClick={(e) => { e.stopPropagation(); onBookingClick(b); }}
-                          className={`absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-[10px] md:text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10`}
+                          className={`absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10 flex flex-col justify-between group`}
                         >
-                          <div className="opacity-90 line-clamp-2 leading-tight">
-                            {isCompleted && "✅ "} 
-                            {b.notes || 'Marcação Confirmada'}
+                          <div className="flex-1 overflow-hidden">
+                            {!isBlock && (
+                              <div className="flex items-center gap-1.5 mb-1 opacity-90 truncate">
+                                <User className="w-3 h-3 shrink-0" />
+                                <span className="text-[11px] font-black truncate">{clientName}</span>
+                              </div>
+                            )}
+                            <div className="opacity-80 text-[10px] leading-tight line-clamp-2">
+                              {isCompleted && "✅ "} 
+                              {b.notes || (b.service?.name ? `Serviço: ${b.service.name}` : 'Marcação')}
+                            </div>
                           </div>
+
+                          {!isBlock && (
+                            <div className="pt-2 mt-auto">
+                              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                                paymentIsOnline ? 'bg-white/20' : 'bg-black/20'
+                              }`}>
+                                {paymentIsOnline ? <CreditCard className="w-2.5 h-2.5" /> : <Banknote className="w-2.5 h-2.5" />}
+                                {paymentIsOnline ? (paymentIsPaid ? 'PAGO ONLINE' : 'POR PAGAR (ONLINE)') : (paymentIsPaid ? 'PAGO LOCAL' : 'PAGAR NO LOCAL')}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )
                     })}
