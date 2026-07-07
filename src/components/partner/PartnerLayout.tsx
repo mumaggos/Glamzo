@@ -24,6 +24,15 @@ export default function PartnerLayout() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
+  // ESTADO DAS NOTIFICAÇÕES (Fixo por agora, mas depois ligamos à DB)
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Sistema Atualizado', desc: 'O teu terminal Glamzo Elite está online e otimizado.', time: 'Agora' }
+  ]);
+
+  const dismissNotification = (id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/partner/login");
     if (user) loadLayoutData();
@@ -54,7 +63,6 @@ export default function PartnerLayout() {
 
   useEffect(() => { setIsMobileSidebarOpen(false); setIsNotificationsOpen(false); }, [location.pathname]);
 
-  // MENU COMPLETO RESTAURADO!
   const navItems = [
     { id: "overview", label: "Resumo", icon: LayoutDashboard, path: "/partner/dashboard/overview" },
     { id: "agenda", label: "Agenda", icon: Calendar, path: "/partner/dashboard/agenda" },
@@ -90,7 +98,6 @@ export default function PartnerLayout() {
               <div className="flex items-center gap-3"><GlamzoLogo size={28} glow={false} /><span className="font-extrabold text-sm">Menu</span></div>
               <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-xl text-slate-500 bg-white shadow-sm border"><X className="w-4 h-4" /></button>
             </div>
-            {/* O pb-24 garante que fazes scroll até ao último item do menu */}
             <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
               {navItems.map((tab) => {
                 const isActive = location.pathname.startsWith(tab.path);
@@ -132,38 +139,58 @@ export default function PartnerLayout() {
           </nav>
       </aside>
 
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
         <div className="h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 hidden lg:block">Bom dia, <span className="text-purple-600">{profile?.full_name?.split(" ")[0] || "Profissional"}</span> 👋</h2>
             <h2 className="text-lg font-black text-slate-900 lg:hidden">{business?.name}</h2>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <button 
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
-                className="relative p-2.5 bg-white text-slate-500 hover:text-purple-600 transition-colors shadow-sm border border-slate-200 rounded-full cursor-pointer z-50"
-              >
-                <Bell className="w-5 h-5" />
+          <div className="flex items-center gap-3 relative">
+            
+            <button 
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
+              className="relative p-2.5 bg-white text-slate-500 hover:text-purple-600 transition-colors shadow-sm border border-slate-200 rounded-full cursor-pointer z-50"
+            >
+              <Bell className="w-5 h-5" />
+              {notifications.length > 0 && (
                 <span className="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
-              </button>
-              
-              {isNotificationsOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)} />
-                  <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 shadow-2xl rounded-3xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50"><h4 className="font-extrabold text-slate-900">Notificações</h4></div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                         <div className="w-2 h-2 mt-1.5 rounded-full bg-emerald-500 shrink-0" />
-                         <div><p className="text-xs font-bold text-slate-800">Sistema Atualizado</p><p className="text-[10px] text-slate-500 mt-0.5">O teu terminal Glamzo Elite está online e otimizado.</p></div>
-                      </div>
-                    </div>
-                  </div>
-                </>
               )}
-            </div>
+            </button>
+              
+            {/* NOTIFICAÇÕES (AGORA COM Z-INDEX SUPERIOR E SEM OVERFLOW CORTADO) */}
+            {isNotificationsOpen && (
+              <>
+                <div className="fixed inset-0 z-[99998]" onClick={() => setIsNotificationsOpen(false)} />
+                <div className="absolute right-0 top-14 w-80 bg-white border border-slate-200 shadow-2xl rounded-3xl z-[99999] overflow-hidden animate-in fade-in slide-in-from-top-4">
+                  <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h4 className="font-extrabold text-slate-900">Notificações</h4>
+                    <span className="text-[10px] font-bold bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full">{notifications.length} novas</span>
+                  </div>
+                  <div className="p-2 space-y-1">
+                    {notifications.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-slate-500 font-medium">Sem novas notificações.</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} className="flex items-start justify-between gap-3 p-3 hover:bg-slate-50 rounded-2xl transition-colors group">
+                          <div className="flex gap-3">
+                            <div className="w-2 h-2 mt-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                            <div>
+                              <p className="text-xs font-bold text-slate-800">{n.title}</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">{n.desc}</p>
+                            </div>
+                          </div>
+                          <button onClick={() => dismissNotification(n.id)} className="text-slate-300 hover:text-rose-500 transition-colors p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="flex bg-white shadow-sm border border-slate-200 px-3 py-2.5 rounded-full items-center gap-2">
                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest hidden sm:inline">Online</span>
