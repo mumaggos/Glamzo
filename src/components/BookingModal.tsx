@@ -95,7 +95,7 @@ export default function BookingModal({
   const timeToMinutes = (timeStr: string) => { const [h, m] = timeStr.split(':').map(Number); return h * 60 + m; };
   const minutesToTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 
-  // MOTOR DE CÁLCULO DE VAGAS COM INTELIGÊNCIA ARTIFICIAL
+  // MOTOR DE CÁLCULO DE VAGAS COM INTELIGÊNCIA ARTIFICIAL E HORAS CORRIGIDAS!
   const getAvailableSlots = () => {
     if (!selectedDate || selectedServices.length === 0) return [];
 
@@ -104,7 +104,8 @@ export default function BookingModal({
     if (!dayHours || dayHours.is_closed) return [];
 
     const startMin = timeToMinutes(dayHours.open_time || '09:00');
-    const endMin = timeToMinutes(dayHours.close_time || '18:00');
+    // CORREÇÃO: O fallback passou de 18:00 para 21:00 para evitar que o calendário feche cedo demais
+    const endMin = timeToMinutes(dayHours.close_time || '21:00'); 
     const duration = totalServicesDuration;
     const dateStr = selectedDate.toISOString().split('T')[0];
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
@@ -117,22 +118,19 @@ export default function BookingModal({
     for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 30) {
       const slotEnd = slotStart + duration;
 
-      // Converter o slot para uma data real e comparar com a hora limite (Impede marcações em cima da hora)
       const slotDateTime = new Date(selectedDate);
       slotDateTime.setHours(Math.floor(slotStart / 60), slotStart % 60, 0, 0);
       
       if (slotDateTime.getTime() <= cutoffTimeMs) {
-        continue; // Descarta se não respeitar a antecedência mínima
+        continue; 
       }
 
       let isAvailable = false;
       let assignedStaffId = null;
 
-      // LÓGICA DE BLOQUEIO E MULTI-FUNCIONÁRIO
       const checkOverlap = (b: any, sId?: string) => {
         // Se a reserva/bloqueio não tem staff_id (é um bloqueio geral do salão), bloqueia tudo!
         if (b.staff_id === null) return true; 
-        // Se a reserva é para outro staff, ignoramos.
         if (sId && b.staff_id !== sId) return false;
         
         const bStart = timeToMinutes(b.start_time);
