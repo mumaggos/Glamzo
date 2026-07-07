@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Sparkles, Check, CheckCircle2, AlertCircle, XCircle, FileText, Download, Building2, Banknote, ShieldCheck } from "lucide-react";
+import { Sparkles, Check, CheckCircle2, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
 import { Business } from "../../../types";
 
 interface PartnerContextType {
@@ -107,7 +107,6 @@ export default function FinanceTab() {
   );
 
   const notifyTerminal = (title: string, msg: string) => {
-     // A simple alert for now since setGlobalError might not be enough
      alert(`${title}\n${msg}`);
   };
 
@@ -268,7 +267,7 @@ export default function FinanceTab() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-fade-in text-slate-700">
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
           Subscrição e Faturação
@@ -285,90 +284,107 @@ export default function FinanceTab() {
       )}
 
       {/* 1. Subscrição Atual */}
-      <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 mb-6">
-        <h4 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-500" />
-          O Seu Plano Glamzo
-        </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className={`p-5 rounded-2xl border transition-all ${
+        {/* PLANO GLAMZO PRO */}
+        <div className={`p-8 rounded-3xl border transition-all flex flex-col ${
             business?.selected_plan !== "app_tablet"
               ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
-              : "bg-white border-slate-200"
+              : "bg-white border-slate-200 hover:border-purple-300"
           }`}>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">Plano Base</span>
-              {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-0.5 rounded-full">Plano Atual</span>}
-            </div>
-            <div className="flex items-baseline mb-3">
-              <span className="text-2xl font-display font-medium text-slate-900">19.90€</span>
-              <span className="text-xs text-slate-500 ml-1 font-medium">/mês</span>
-            </div>
-            <ul className="space-y-1.5 text-left text-xs text-slate-600 font-medium mb-4">
-              <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Agenda e Marcações Ilimitadas</li>
-              <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Página pública com SEO</li>
-              <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-slate-400" /> Equipa e Serviços Ilimitados</li>
-            </ul>
-            {business?.selected_plan === "app_tablet" && (
-              <button 
-                onClick={() => handleSubscribePro("PRO")}
-                className="w-full bg-slate-900 text-white font-bold py-2 rounded-xl text-xs hover:bg-slate-800 transition"
-                disabled={isVerifyingSub}
-              >
-                Ativar Plano Base
-              </button>
-            )}
+          <div className="flex justify-between items-start mb-2">
+            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
+            {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
-
-          <div className={`p-5 rounded-2xl border transition-all ${
+          <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
+          <div className="mt-4 mb-6">
+            <span className="text-4xl font-black text-slate-900">19.90€</span>
+            <span className="text-sm font-bold text-slate-500"> / mês</span>
+          </div>
+          <ul className="space-y-4 mb-8 flex-1">
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
+          </ul>
+          
+          {business?.selected_plan === "app_tablet" ? (
+            <button 
+              onClick={() => handleSubscribePro("PRO")}
+              className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
+              disabled={isVerifyingSub}
+            >
+              Fazer Downgrade para Base
+            </button>
+          ) : (
+            <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
+              O Seu Plano Atual
+            </button>
+          )}
+        </div>
+        
+        {/* PLANO GLAMZO PRO TERMINAL */}
+        <div className={`p-8 rounded-3xl border transition-all flex flex-col relative overflow-hidden group ${
             business?.selected_plan === "app_tablet"
-              ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-xl ring-2 ring-purple-500/30 text-white" 
-              : "bg-white border-slate-200"
+              ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-2xl ring-2 ring-purple-500/30 text-white" 
+              : "bg-slate-900 text-white border-purple-500 shadow-2xl"
           }`}>
-            <div className="flex justify-between items-start mb-2">
-              <span className={`text-[10px] font-black tracking-widest uppercase block font-mono ${business?.selected_plan === "app_tablet" ? "text-purple-300" : "text-slate-500"}`}>Pro Terminal</span>
-              {business?.selected_plan === "app_tablet" && <span className="bg-purple-500/20 text-purple-200 border border-purple-500/30 text-[9px] font-bold px-2 py-0.5 rounded-full">Plano Atual</span>}
-            </div>
-            <div className="flex items-baseline mb-3">
-              <span className="text-2xl font-display font-medium">39.90€</span>
-              <span className={`text-xs ml-1 font-medium ${business?.selected_plan === "app_tablet" ? "text-slate-300" : "text-slate-500"}`}>/mês</span>
-            </div>
-            <ul className={`space-y-1.5 text-left text-xs font-medium mb-4 ${business?.selected_plan === "app_tablet" ? "text-slate-300" : "text-slate-600"}`}>
-              <li className="flex items-center gap-2"><Check className={`w-3.5 h-3.5 ${business?.selected_plan === "app_tablet" ? "text-purple-400" : "text-slate-400"}`} /> Tudo do Plano Base</li>
-              <li className="flex items-center gap-2"><Check className={`w-3.5 h-3.5 ${business?.selected_plan === "app_tablet" ? "text-purple-400" : "text-slate-400"}`} /> App Tablet Recepção/Desk</li>
-              <li className="flex items-center gap-2"><Check className={`w-3.5 h-3.5 ${business?.selected_plan === "app_tablet" ? "text-purple-400" : "text-slate-400"}`} /> Relatórios Avançados CSV</li>
-            </ul>
-            {business?.selected_plan !== "app_tablet" && (
-              <button 
-                onClick={() => handleSubscribePro("TERMINAL")}
-                className="w-full bg-purple-600 text-white font-bold py-2 rounded-xl text-xs hover:bg-purple-700 transition shadow-lg shadow-purple-600/20"
-                disabled={isVerifyingSub}
-              >
-                {isVerifyingSub ? "A carregar..." : "Fazer Upgrade para Terminal"}
-              </button>
-            )}
+          <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-2xl shadow-lg">Recomendado</div>
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full group-hover:bg-purple-500/30 transition-all"></div>
+          
+          <div className="flex justify-between items-start mb-2 relative z-10">
+            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
+            {business?.selected_plan === "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
+          <h4 className="text-xl font-black relative z-10 mt-2">Glamzo PRO Terminal</h4>
+          <div className="mt-4 mb-6 relative z-10">
+            <span className="text-4xl font-black text-white">24.90€</span>
+            <span className="text-sm font-bold text-slate-400"> / mês</span>
+            <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
+              <span className="text-xs font-bold text-purple-300">+ 9.90€ Caução Única (Equipamento)</span>
+            </div>
+          </div>
+          <ul className="space-y-4 mb-8 flex-1 relative z-10">
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Tudo do Plano Glamzo PRO</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Tablet Samsung/Lenovo Físico</strong> configurado para a receção</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Alertas sonoros (Sininho) nas novas reservas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
+          </ul>
+
+          {business?.selected_plan !== "app_tablet" ? (
+            <button 
+              onClick={() => handleSubscribePro("TERMINAL")}
+              disabled={isVerifyingSub}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
+            >
+              {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
+            </button>
+          ) : (
+            <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
+              O Seu Plano Atual
+            </button>
+          )}
         </div>
 
-        {business?.stripe_subscription_id && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              onClick={handleOpenBillingPortal}
-              className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
-            >
-              <FileText className="w-3.5 h-3.5" /> Portal de Faturação
-            </button>
-            <button
-              onClick={handleCancelSubscription}
-              disabled={cancelingSubscription}
-              className="bg-white border border-rose-200 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
-            >
-              {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
-            </button>
-          </div>
-        )}
       </div>
+
+      {business?.stripe_subscription_id && (
+        <div className="mb-6 flex flex-wrap gap-3">
+          <button
+            onClick={handleOpenBillingPortal}
+            className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" /> Gerir Faturação e Cartão
+          </button>
+          <button
+            onClick={handleCancelSubscription}
+            disabled={cancelingSubscription}
+            className="bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
+          >
+            {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
+          </button>
+        </div>
+      )}
 
       {/* 2. Conta Bancária / Stripe */}
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 mb-6">
@@ -400,12 +416,12 @@ export default function FinanceTab() {
                   value={manualStripeId}
                   onChange={e => setManualStripeId(e.target.value)}
                   placeholder="acct_1..." 
-                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono"
+                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono outline-none focus:border-emerald-500"
                 />
                 <button 
                   onClick={handleSaveManualStripe}
                   disabled={savingManualStripe || !manualStripeId}
-                  className="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold disabled:opacity-50"
+                  className="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold disabled:opacity-50 hover:bg-slate-900"
                 >
                   Salvar
                 </button>
@@ -469,13 +485,13 @@ export default function FinanceTab() {
                      required
                      value={payoutAmount}
                      onChange={e => setPayoutAmount(Number(e.target.value))}
-                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none font-mono"
                    />
                  </div>
                  <button
                    type="submit"
                    disabled={availableBalanceToWithdraw < 10}
-                   className="w-full bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs hover:bg-emerald-700 transition disabled:opacity-50 disabled:bg-slate-300"
+                   className="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-emerald-700 transition disabled:opacity-50 disabled:bg-slate-300"
                  >
                    Confirmar Levantamento
                  </button>
@@ -506,25 +522,25 @@ export default function FinanceTab() {
 
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-           <div className="bg-white p-4 rounded-xl border border-slate-200">
+           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Volume Bruto</span>
-             <span className="text-lg font-black text-slate-900 mt-1 block">{totalVolumeBruto.toFixed(2)}€</span>
+             <span className="text-lg font-black text-slate-900 mt-1 block font-mono">{totalVolumeBruto.toFixed(2)}€</span>
            </div>
-           <div className="bg-white p-4 rounded-xl border border-slate-200">
+           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Lucro Líquido</span>
-             <span className="text-lg font-black text-emerald-600 mt-1 block">{totalReceivedVolume.toFixed(2)}€</span>
+             <span className="text-lg font-black text-emerald-600 mt-1 block font-mono">{totalReceivedVolume.toFixed(2)}€</span>
            </div>
-           <div className="bg-white p-4 rounded-xl border border-slate-200">
+           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Comissões</span>
-             <span className="text-lg font-black text-rose-500 mt-1 block">{totalComissoesRetidas.toFixed(2)}€</span>
+             <span className="text-lg font-black text-rose-500 mt-1 block font-mono">{totalComissoesRetidas.toFixed(2)}€</span>
            </div>
-           <div className="bg-white p-4 rounded-xl border border-slate-200">
+           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Online</span>
-             <span className="text-lg font-black text-purple-600 mt-1 block">{totalReceivedVolumeOnline.toFixed(2)}€</span>
+             <span className="text-lg font-black text-purple-600 mt-1 block font-mono">{totalReceivedVolumeOnline.toFixed(2)}€</span>
            </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
@@ -546,11 +562,11 @@ export default function FinanceTab() {
                     <td className="py-3 px-4 text-slate-500 font-mono">
                       {new Date(item.created_at).toLocaleDateString("pt-PT")}
                     </td>
-                    <td className="py-3 px-4 font-medium text-slate-900">
+                    <td className="py-3 px-4 font-bold text-slate-900">
                       {item.description || "Serviço Prestado"}
                     </td>
                     <td className="py-3 px-4">
-                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                       <span className={`text-[9px] font-bold px-2 py-1 rounded-md tracking-wider uppercase ${
                          item.payment_method === 'stripe' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'
                        }`}>
                          {item.payment_method === 'stripe' ? 'ONLINE' : 'LOCAL'}
@@ -562,7 +578,7 @@ export default function FinanceTab() {
                     <td className="py-3 px-4 text-center">
                       <button 
                         onClick={() => setSelectedInvoice(item)}
-                        className="text-[10px] font-bold text-purple-600 hover:text-purple-800"
+                        className="text-[10px] font-bold text-purple-600 hover:text-purple-800 transition-colors"
                       >
                         Ver Detalhes
                       </button>
