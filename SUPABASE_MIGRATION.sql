@@ -42,3 +42,4 @@ WITH CHECK (auth.uid() = owner_id);
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS welcome_kit_sent BOOLEAN DEFAULT false;
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'trialing';
 ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS booking_end_margin INTEGER DEFAULT 0;

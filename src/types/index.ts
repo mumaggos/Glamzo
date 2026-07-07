@@ -33,6 +33,7 @@ export interface Business {
   is_verified: boolean;
   min_booking_notice?: number | null;
   cancellation_policy?: string | null;
+  booking_end_margin?: number | null;
   welcome_kit_sent?: boolean;
   subscription_status?: string;
   trial_ends_at?: string | null;

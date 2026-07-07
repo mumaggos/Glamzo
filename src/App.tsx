@@ -77,11 +77,10 @@ function SessionGuard() {
     const path = location.pathname;
     const isAuthPage = ['/login', '/partner/login', '/admin/login', '/partner/signup', '/signup'].includes(path);
     
-    // Loja (Business): Desconectar se aceder a rotas fora do painel da loja (exceto API ou rotas de parceiro)
+    // Loja (Business): Impedir acesso ao /login se já estiver logado
     if (profile.role === 'business') {
-      if (!path.startsWith('/partner') && !isAuthPage) {
-        signOut();
-        navigate('/partner/login', { replace: true });
+      if (path === '/login') {
+        navigate('/partner/dashboard', { replace: true });
         return;
       }
     }

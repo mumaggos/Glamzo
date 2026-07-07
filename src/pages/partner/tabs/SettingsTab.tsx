@@ -45,7 +45,8 @@ export default function SettingsTab() {
 
   const [rules, setRules] = useState({
     min_notice: business?.min_booking_notice?.toString() || "60",
-    cancellation_policy: business?.cancellation_policy || "flexible"
+    cancellation_policy: business?.cancellation_policy || "flexible",
+    booking_end_margin: business?.booking_end_margin?.toString() || "0"
   });
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -165,10 +166,19 @@ export default function SettingsTab() {
     try {
       const { error } = await supabase.from('businesses').update({ 
         min_booking_notice: parseInt(rules.min_notice),
-        cancellation_policy: rules.cancellation_policy
+        cancellation_policy: rules.cancellation_policy,
+        booking_end_margin: parseInt(rules.booking_end_margin)
       }).eq('id', business.id);
       
-      if (error) throw error;
+      if (error) {
+        // Fallback for when migration hasn't been run
+        const { error: fallbackError } = await supabase.from('businesses').update({ 
+          min_booking_notice: parseInt(rules.min_notice),
+          cancellation_policy: rules.cancellation_policy
+        }).eq('id', business.id);
+        if (fallbackError) throw fallbackError;
+      }
+      
       showMessage('success', 'Regras de agendamento atualizadas com sucesso.');
     } catch (err) {
       showMessage('error', 'Erro ao atualizar regras.');
@@ -324,6 +334,16 @@ export default function SettingsTab() {
                       <option value="moderate">Moderada (Permitido até 12h antes)</option>
                       <option value="strict">Rigorosa (Permitido até 24h antes)</option>
                     </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Limite de Aceitação de Reservas</label>
+                    <select value={rules.booking_end_margin} onChange={e => setRules({...rules, booking_end_margin: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none">
+                      <option value="0">Normal (Não exceder a hora de fecho)</option>
+                      <option value="-1">Até à hora de fecho em ponto</option>
+                      <option value="30">Parar de receber 30 min antes do fecho</option>
+                      <option value="60">Parar de receber 1 hora antes do fecho</option>
+                    </select>
+                    <p className="text-[10px] text-slate-400 mt-1">Controla se o serviço pode ultrapassar a hora de fecho ou se deve terminar antes.</p>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">

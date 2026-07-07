@@ -113,8 +113,14 @@ export default function BookingModal({
     const minNoticeMs = (business?.min_booking_notice || 0) * 60000;
     const cutoffTimeMs = Date.now() + minNoticeMs;
 
+    // Matemática da Margem de Fim de Dia
+    const margin = business?.booking_end_margin || 0;
+    let slotLimit = endMin - duration; // Default: serviço não pode ultrapassar o fecho
+    if (margin === -1) slotLimit = endMin; // Até à hora exata de fecho (prolonga-se para lá do fecho)
+    else if (margin > 0) slotLimit = endMin - margin; // Parar de receber X minutos antes do fecho, independentemente da duração
+
     const slots = [];
-    for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 15) {
+    for (let slotStart = startMin; slotStart <= slotLimit; slotStart += 15) {
       const slotEnd = slotStart + duration;
 
       const slotDateTime = new Date(selectedDate);

@@ -66,7 +66,18 @@ export default function Login() {
     setSuccessMsg(null);
 
     try {
-      await signIn(email, password);
+      const data = await signIn(email, password);
+      
+      if (data?.user?.id) {
+        // Obter perfil para verificar se é loja
+        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+        if (prof?.role === 'business') {
+          await supabase.auth.signOut();
+          setErrorMsg('Acesso negado. Por favor, inicie sessão através do Portal do Parceiro.');
+          setLoading(false);
+          return;
+        }
+      }
       // Não navegamos aqui manualmente. O useEffect ali de cima (Passo 2) apanha a mudança do `user` 
       // e envia o utilizador para a loja automaticamente (lendo do sessionStorage)!
     } catch (err: any) {
