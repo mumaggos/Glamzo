@@ -90,40 +90,11 @@ export default function Home() {
   const [searchParams] = useSearchParams(); 
   const scrollContainerRef = useRef<HTMLDivElement>(null); 
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [promocoesAtivas, setPromocoesAtivas] = useState<any[]>([]); 
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || ""); 
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || ""); 
   const [showLocSuggestions, setShowLocSuggestions] = useState(false); 
 
-  const [businesses, setBusinesses] = useState<any[]>([]);
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
-
-  useEffect(() => {
-    async function fetchPromotions() {
-      const { data, error } = await supabase
-        .from('business_coupons')
-        .select('*, business:business_id(name)')
-        .eq('is_active', true);
-      
-      if (!error && data) {
-        // filter valid promotions
-        const valid = data.filter(c => !c.valid_until || new Date(c.valid_until) >= new Date());
-        setPromotions(valid);
-      }
-    }
-    fetchPromotions();
-  }, []);
-
-  useEffect(() => {
-    if (promotions.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentPromoIndex(prev => (prev + 1) % promotions.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [promotions]);
- 
+  const [businesses, setBusinesses] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true); 
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null); 
   const [mapVisible, setMapVisible] = useState(false); 
@@ -223,13 +194,6 @@ export default function Home() {
     }; 
     
     const fetchTimer = setTimeout(() => {
-      const fetchPromocoes = async () => {
-        try {
-          const { data } = await supabase.from('business_coupons').select('*, businesses(name, slug, cover_url)').eq('is_active', true).limit(10);
-          if (data) setPromocoesAtivas(data.filter(c => new Date(c.valid_until) >= new Date() || !c.valid_until));
-        } catch(e) {}
-      };
-      fetchPromocoes();
       fetchData(); 
     }, 150);
 
@@ -273,7 +237,7 @@ export default function Home() {
 
   // Cartão Minimalista de Elite (Estilo Airbnb) 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
-    <Link to={`/business/${b.slug || b.id}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
+    <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100"> 
         <img  
           src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
@@ -337,20 +301,7 @@ export default function Home() {
           </p> 
 
           {/* MOTOR DE RESERVAS ARQUITETÓNICO COM CANTOS SUAVES */} 
-          
-          {promotions.length > 0 && (
-            <div className="w-full max-w-4xl mx-auto mb-4 overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg relative z-20" style={{ height: '48px' }}>
-              <div className="absolute inset-0 flex items-center justify-center transition-all duration-500">
-                <div key={currentPromoIndex} className="animate-fade-in flex items-center gap-3 text-sm font-medium">
-                  <span className="font-bold bg-white/20 px-2 py-1 rounded-md">{promotions[currentPromoIndex].business?.name}</span>
-                  <span>{promotions[currentPromoIndex].discount_percent ? `-${promotions[currentPromoIndex].discount_percent}%` : `-${promotions[currentPromoIndex].discount_value}€`} com o código:</span>
-                  <span className="font-mono font-black text-yellow-300 tracking-wider text-base">{promotions[currentPromoIndex].code}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(); }} className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.04)] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200/60 font-['Inter']"> 
+          <div className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.04)] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200/60 font-['Inter']"> 
              
             {/* Campo 1: O que procura */} 
             <div className="flex-1 relative group"> 
@@ -415,8 +366,8 @@ export default function Home() {
               className="w-full md:w-auto bg-[#0f172a] hover:bg-[#9333ea] text-white font-bold text-sm py-4 md:py-0 px-10 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shrink-0 mt-2 md:mt-0" 
             > 
               Pesquisar 
-            </button>
-          </form>
+            </button> 
+          </div> 
 
           {/* Garantias Reais de Confiança (Sem Dados Falsos) */} 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-semibold text-slate-500 font-['Inter']"> 
@@ -568,13 +519,13 @@ export default function Home() {
                   style={{ width: '100%', height: '100%' }} 
                 > 
                   {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />} 
-                  {mapBusinesses.filter((b: any) => b.lat != null && b.lng != null).map((b: any) => (
-                      <Marker  
+                  {mapBusinesses.map((b: any) => ( 
+                    <Marker  
                       key={b.id}  
                       position={{ lat: b.lat, lng: b.lng }} 
                       title={b.name} 
                       icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 29, y: 32 } }} 
-                      onClick={() => navigate("/business/" + (b.slug || b.id))} 
+                      onClick={() => navigate("/business/" + b.slug)} 
                     /> 
                   ))} 
                 </Map> 

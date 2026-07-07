@@ -1,45 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { MessageSquare, Send, ArrowLeft, Search, Clock, User } from 'lucide-react';
+import { fetchChatSessionsForPartner, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
+import { ChatSession, ChatMessage } from '../types';
+import { MessageSquare, Send, ArrowLeft, Search, Clock } from 'lucide-react';
 
 export default function DashboardMessages({ businessId }: { businessId: string }) {
   const { user, profile } = useAuth();
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  const selectedCustomerRef = useRef<string | null>(null);
-  useEffect(() => { selectedCustomerRef.current = selectedCustomerId; }, [selectedCustomerId]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const loadConversations = async () => {
+  const playPingChime = () => {
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*, customer_profile:profiles!customer_id(full_name, avatar_url)')
-        .eq('business_id', businessId)
-        .order('created_at', { ascending: false });
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    } catch (_) {}
+  };
 
-      if (data) {
-        // Group by customer_id
-        const map = new Map<string, any>();
-        data.forEach(msg => {
-          if (!map.has(msg.customer_id)) {
-            map.set(msg.customer_id, {
-              customer_id: msg.customer_id,
-              customer_profile: msg.customer_profile,
-              last_message: msg.message,
-              updated_at: msg.created_at,
-              sender_name: msg.sender_name
-            });
-          }
-        });
-        setConversations(Array.from(map.values()));
-      }
+  const loadSessions = async () => {
+    try {
+      const data = await fetchChatSessionsForPartner(businessId);
+      setSessions(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -49,222 +47,217 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
   useEffect(() => {
     if (!businessId) return;
-    loadConversations();
-    
-    const channel = supabase.channel('business_dashboard_messages')
+    loadSessions();
+
+    const channel = supabase.channel('business_messages')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
-        filter: `business_id=eq.${businessId}`
+        table: 'chat_messages',
+        filter: `session_id=in.(${sessions.map(s => s.id).join(',')})`
       }, (payload) => {
-        const msg = payload.new;
+        const msg = payload.new as ChatMessage;
         if (msg.sender_type === 'customer') {
-          loadConversations();
-          setMessages(prev => {
-            // Only add if it's the currently selected customer and we don't already have it
-            if (selectedCustomerId === msg.customer_id) {
-              if (!prev.find(m => m.id === msg.id)) {
-                 return [...prev, msg];
-              }
-            }
-            return prev;
-          });
+          playPingChime();
+          loadSessions();
+          if (selectedSession && msg.session_id === selectedSession.id) {
+            setMessages(prev => [...prev, msg]);
+          }
         }
       })
       .subscribe();
-      
-    return () => { supabase.removeChannel(channel); };
-  }, [businessId, selectedCustomerId]);
 
-  const loadMessagesForCustomer = async (customerId: string) => {
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('business_id', businessId)
-      .eq('customer_id', customerId)
-      .order('created_at', { ascending: true });
-    if (data) setMessages(data);
-  };
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [businessId, sessions.length, selectedSession?.id]);
 
   useEffect(() => {
-    if (selectedCustomerId) {
-      loadMessagesForCustomer(selectedCustomerId);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [selectedCustomerId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !selectedCustomerId) return;
-
-    const newMsg = {
-      business_id: businessId,
-      customer_id: selectedCustomerId,
-      sender_type: 'business',
-      sender_name: 'Loja',
-      message: chatInput.trim()
-    };
-    
-    setChatInput('');
-    const { data, error } = await supabase.from('messages').insert(newMsg).select().single();
-    if (data && !error) {
-       setMessages(prev => [...prev, data]);
-       loadConversations();
-    } else {
-       setMessages(prev => [...prev, { ...newMsg, id: crypto.randomUUID(), created_at: new Date().toISOString() }]);
-    }
+  const handleSelectSession = async (sess: ChatSession) => {
+    setSelectedSession(sess);
+    setMessages([]);
+    const msgs = await fetchMessagesForSession(sess.id);
+    setMessages(msgs);
   };
 
-  const filteredConversations = conversations.filter(c => {
-    const name = c.customer_profile?.full_name || c.sender_name || 'Cliente';
-    return name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !selectedSession || !user) return;
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin text-purple-600"><Clock className="w-8 h-8" /></div>
-      </div>
-    );
-  }
+    const messageText = chatInput.trim();
+    setChatInput('');
+
+    const shopName = profile?.full_name || 'Loja';
+    const msg = await submitMessage(selectedSession.id, 'business', shopName, messageText);
+    
+    setMessages(prev => [...prev, msg]);
+    loadSessions(); // update last message
+  };
+
+  const activeSessions = sessions.filter(s => 
+    s.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    s.last_message?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex h-full">
-      {/* Sidebar */}
-      <div className={`w-full md:w-[350px] flex-col border-r border-slate-200 ${selectedCustomerId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-slate-100 shrink-0">
-          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2 mb-4">
-            <MessageSquare className="w-6 h-6 text-purple-600" />
-            Mensagens
-          </h2>
+    <div className="flex bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden h-[600px] shadow-2xl relative">
+      <div className={`w-full md:w-1/3 border-r border-slate-200 flex flex-col ${selectedSession ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 border-b border-slate-200 bg-white/40">
+          <h3 className="font-extrabold text-slate-900 mb-3">Mensagens</h3>
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
             <input 
-              type="text" 
-              placeholder="Procurar cliente..." 
+              type="text"
+              placeholder="Procurar cliente..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-700 pl-9 pr-3 py-2 rounded-xl text-xs focus:border-purple-500 outline-none"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {filteredConversations.length > 0 ? (
-            <div className="divide-y divide-slate-50">
-              {filteredConversations.map(conv => {
-                const isSelected = selectedCustomerId === conv.customer_id;
-                const name = conv.customer_profile?.full_name || conv.sender_name || 'Cliente';
-                const dateObj = new Date(conv.updated_at);
-                const timeStr = dateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-                
-                return (
-                  <button 
-                    key={conv.customer_id}
-                    onClick={() => setSelectedCustomerId(conv.customer_id)}
-                    className={`w-full p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-purple-50/50' : ''}`}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                      {conv.customer_profile?.avatar_url ? (
-                        <img src={conv.customer_profile.avatar_url} alt={name} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="w-5 h-5 text-slate-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm text-slate-900 truncate">{name}</span>
-                        <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap ml-2">{timeStr}</span>
-                      </div>
-                      <p className={`text-xs truncate ${isSelected ? 'text-purple-700 font-medium' : 'text-slate-500'}`}>
-                        {conv.last_message}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          {loading ? (
+            <div className="p-4 text-center text-slate-500 text-xs">A carregar...</div>
+          ) : activeSessions.length === 0 ? (
+            <div className="p-6 text-center">
+              <MessageSquare className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+              <p className="text-xs text-slate-500">Ainda não tem conversas ativas com clientes.</p>
             </div>
           ) : (
-            <div className="p-8 text-center text-slate-500">
-              <MessageSquare className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-              <p className="font-bold text-sm">Sem mensagens</p>
-              <p className="text-xs mt-1">A caixa de entrada está vazia.</p>
-            </div>
+            activeSessions.map(sess => (
+              <button
+                key={sess.id}
+                onClick={() => handleSelectSession(sess)}
+                className={`w-full p-3 rounded-xl text-left transition-all ${
+                  selectedSession?.id === sess.id 
+                    ? 'bg-purple-100 border border-purple-200' 
+                    : 'hover:bg-slate-100 border border-transparent'
+                }`}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-slate-800 text-[11px] truncate">{sess.customer_name}</span>
+                  <span className="text-[9px] text-slate-500 shrink-0 ml-2">
+                    {sess.updated_at ? new Date(sess.updated_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}
+                  </span>
+                </div>
+                <span className="block text-[10px] text-slate-500 truncate w-full">{sess.last_message || 'Início da conversa'}</span>
+              </button>
+            ))
           )}
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className={`flex-1 flex-col bg-slate-50 ${selectedCustomerId ? 'flex' : 'hidden md:flex'}`}>
-        {selectedCustomerId ? (
-          <>
-            <div className="bg-white border-b border-slate-200 p-4 flex items-center gap-3 shrink-0">
-              <button 
-                onClick={() => setSelectedCustomerId(null)}
-                className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-900"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0 text-purple-600">
-                <User className="w-5 h-5" />
+      <div className={`w-full md:w-2/3 flex flex-col bg-white ${!selectedSession ? 'hidden md:flex' : 'flex'}`}>
+        {!selectedSession ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-6">
+            <MessageSquare className="w-12 h-12 mb-4 text-slate-700" />
+            <p className="text-sm font-bold text-slate-600">Selecione uma conversa</p>
+            <p className="text-xs mt-1">Dê suporte rápido aos seus clientes diretamente pelo terminal.</p>
+            
+            <div className="mt-8 p-4 bg-slate-50/80 border border-slate-200 rounded-2xl max-w-sm text-left">
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-purple-400 mt-0.5" />
+                <div>
+                  <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-1">Estatísticas de Resposta</h4>
+                  <p className="text-[10px] text-slate-500">Tempo médio de resposta: <span className="font-bold text-emerald-400">~ 5 minutos</span></p>
+                  <p className="text-[10px] text-slate-500 mt-1">Lembre-se: Respostas rápidas aumentam a fidelização dos clientes e garantem mais agendamentos.</p>
+                </div>
               </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="p-4 border-b border-slate-200 flex items-center gap-3 bg-white/40">
+              <button 
+                onClick={() => setSelectedSession(null)}
+                className="md:hidden p-1.5 bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
               <div>
-                <h3 className="font-black text-slate-900">
-                  {conversations.find(c => c.customer_id === selectedCustomerId)?.customer_profile?.full_name || 'Cliente'}
-                </h3>
-                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Chat Ativo
+                <span className="block font-black text-slate-900 text-xs uppercase tracking-tight">{selectedSession.customer_name}</span>
+                <span className="block text-[9px] text-emerald-400 font-bold tracking-widest font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                  CLIENTE ONLINE
                 </span>
               </div>
             </div>
 
+            {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg: any) => {
-                const isBusiness = msg.sender_type === 'business' || msg.sender_type === 'ai' || msg.sender_type === 'system';
-                return (
-                  <div key={msg.id} className={`flex ${isBusiness ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3.5 rounded-2xl text-sm shadow-sm ${isBusiness ? 'bg-slate-900 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'}`}>
-                      {msg.message}
+              {messages.length === 0 ? (
+                <div className="text-center text-xs text-slate-500 py-6">A carregar mensagens...</div>
+              ) : (
+                messages.map(msg => {
+                  const isSystem = msg.sender_type === 'system';
+                  if (isSystem) {
+                    return (
+                      <div key={msg.id} className="text-center my-3">
+                        <span className="inline-block bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-mono px-3 py-1 rounded-full">
+                          {msg.message}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  const isStore = msg.sender_type === 'business' || msg.sender_type === 'ai';
+                  return (
+                    <div 
+                      key={msg.id}
+                      className={`flex flex-col ${isStore ? 'items-end' : 'items-start'} max-w-[85%] ${isStore ? 'ml-auto' : 'mr-auto'}`}
+                    >
+                      <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-500 mb-1">
+                        <span>{msg.sender_name}</span>
+                        <span>•</span>
+                        <span>{new Date(msg.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div 
+                        className={`p-3 rounded-2xl text-[11px] leading-relaxed font-semibold shadow-sm ${
+                          isStore 
+                            ? 'bg-purple-600 text-white rounded-tr-none' 
+                            : 'bg-slate-100 text-slate-700 border border-slate-300 rounded-tl-none'
+                        }`}
+                      >
+                        {msg.message}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-white border-t border-slate-200 shrink-0">
-              <form onSubmit={handleSend} className="flex items-center gap-2 max-w-4xl mx-auto">
-                <input 
-                  type="text" 
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  placeholder="Escreva uma mensagem..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 transition-colors"
-                />
-                <button 
-                  type="submit"
-                  disabled={!chatInput.trim()}
-                  className="w-12 h-12 rounded-xl bg-purple-600 disabled:bg-slate-300 text-white flex items-center justify-center shrink-0 transition-all hover:bg-purple-700 active:scale-95"
-                >
-                  <Send className="w-5 h-5 ml-1" />
-                </button>
-              </form>
+            {/* Auto reply context hint */}
+            <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-[9px] text-slate-500 text-center font-mono">
+              Se estiver offline, responderemos ao cliente com aguarde pela loja.
             </div>
+
+            {/* Input area */}
+            <form onSubmit={handleSendMessage} className="p-4 bg-white/40 border-t border-slate-200 flex gap-2">
+              <input 
+                type="text"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Escrever para o cliente..."
+                className="flex-1 bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 placeholder:text-slate-500"
+              />
+              <button
+                type="submit"
+                disabled={!chatInput.trim()}
+                className="bg-purple-600 hover:bg-purple-500 text-white px-4 rounded-xl disabled:bg-slate-100 disabled:text-slate-500 cursor-pointer transition-colors"
+                title="Enviar Mensagem (Enter)"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
           </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
-            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <MessageSquare className="w-10 h-10 text-slate-300" />
-            </div>
-            <p className="font-bold text-slate-500">Selecione uma conversa</p>
-            <p className="text-sm mt-1 text-center max-w-sm">
-              Escolha um cliente na lista à esquerda para ver o histórico de mensagens e responder.
-            </p>
-          </div>
         )}
       </div>
     </div>

@@ -648,7 +648,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
         <div className="bg-white p-5 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
           <div className="space-y-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase font-bold block">Leituras QR</span>
-            <span className="text-2xl font-black text-slate-900">{business?.qr_scans || 0}</span>
+            <span className="text-2xl font-black text-slate-900">{business?.qr_scans_count || 0}</span>
           </div>
           <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
             <QrCode className="w-6 h-6" />
@@ -658,7 +658,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
         <div className="bg-white p-5 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
           <div className="space-y-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase font-bold block">Reservas via QR</span>
-            <span className="text-2xl font-black text-slate-900">{Math.round((business?.qr_scans || 0) * 0.18)}</span>
+            <span className="text-2xl font-black text-slate-900">{Math.round((business?.qr_scans_count || 0) * 0.18)}</span>
           </div>
           <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
             <Calendar className="w-6 h-6" />

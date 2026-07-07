@@ -249,9 +249,9 @@ export default function Explore() {
   const filteredBusinesses = processedBusinesses.filter((b) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchName = (b.name || "").toLowerCase().includes(q);
-      const matchCat = (b.category || "").toLowerCase().includes(q);
-      const matchServices = services.some(s => s.business_id === b.id && (s.name || "").toLowerCase().includes(q));
+      const matchName = b.name.toLowerCase().includes(q);
+      const matchCat = b.category.toLowerCase().includes(q);
+      const matchServices = services.some(s => s.business_id === b.id && s.name.toLowerCase().includes(q));
       if (!matchName && !matchCat && !matchServices) return false;
     }
 
@@ -273,7 +273,7 @@ export default function Explore() {
 
     if (selectedSubcategory !== "All") {
       const subLower = selectedSubcategory.toLowerCase();
-      if (!(b.description || "").toLowerCase().includes(subLower) && !(b.category || "").toLowerCase().includes(subLower)) return false;
+      if (!(b.description || "").toLowerCase().includes(subLower) && !b.category.toLowerCase().includes(subLower)) return false;
     }
 
     if (minRating > 0 && b.rating < minRating) return false;
@@ -308,7 +308,7 @@ export default function Explore() {
   const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
-    <Link to={`/business/${b.slug || b.id}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
+    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
         <img 
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
@@ -400,7 +400,7 @@ export default function Explore() {
           <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm font-['Inter']">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-purple-600" /> Filtros
+                <Sliders className="w-4 h-4 text-purple-600" /> Filtros
               </span>
               <button onClick={handleClearFilters} className="text-[10px] font-extrabold text-purple-600 hover:text-purple-700 uppercase tracking-wider">Limpar</button>
             </div>
@@ -473,8 +473,8 @@ export default function Explore() {
                   <APIProvider apiKey={mapApiKey}>
                     <Map defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 6} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
                       {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
-                      {paginatedBusinesses.filter((b) => b.lat != null && b.lng != null).map((b) => (
-                      <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug || b.id}`)} />
+                      {paginatedBusinesses.map((b) => (
+                        <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug}`)} />
                       ))}
                     </Map>
                   </APIProvider>

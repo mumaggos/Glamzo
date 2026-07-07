@@ -1,104 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase';
 import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 
 export default function GlamzoMessenger() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState('');
-  
+
+  // SÓ MOSTRAR DENTRO DO PERFIL DA LOJA! (Esconde na Home, Login, Explore, etc.)
   const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
-  if (!isBusinessPage) return null;
+  if (!isBusinessPage) return null; 
 
-  const { user, profile } = useAuth();
-  const match = location.pathname.match(/\/(?:business|store)\/([^/]+)/);
-  const slugOrId = match ? match[1] : null;
-
-  const [businessId, setBusinessId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    async function resolveBusiness() {
-      if (!slugOrId) return;
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
-      const { data } = isUuid 
-        ? await supabase.from('businesses').select('id').eq('id', slugOrId).maybeSingle()
-        : await supabase.from('businesses').select('id').eq('slug', slugOrId).maybeSingle();
-      if (data) {
-        setBusinessId(data.id);
-      }
-    }
-    resolveBusiness();
-  }, [slugOrId]);
-
-  useEffect(() => {
-    if (isOpen && user && businessId) {
-      loadMessages();
-      
-      const channel = supabase.channel(`customer_messages_${user.id}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `business_id=eq.${businessId}` // Could also add customer_id=eq.${user.id}
-        }, (payload) => {
-          if (payload.new.customer_id === user.id) {
-            setMessages(prev => [...prev, payload.new]);
-          }
-        })
-        .subscribe();
-      return () => { supabase.removeChannel(channel); }
-    }
-  }, [isOpen, user, businessId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
-
-  const loadMessages = async () => {
-    if (!user || !businessId) return;
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('business_id', businessId)
-      .eq('customer_id', user.id)
-      .order('created_at', { ascending: true });
-    if (data) {
-      setMessages(data);
-    }
-  };
-
-  const handleSend = async (e: React.FormEvent) => {
+  const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim() || !user || !businessId) return;
-    
-    const customerName = profile?.full_name || user.email?.split('@')[0] || 'Cliente';
-    
-    const newMsg = {
-      business_id: businessId,
-      customer_id: user.id,
-      sender_type: 'customer',
-      sender_name: customerName,
-      message: text.trim()
-    };
-    
+    if (!text.trim()) return;
+    // Aqui no futuro ligamos direto ao MessagesTab da loja!
     setText('');
-    
-    const { data, error } = await supabase.from('messages').insert(newMsg).select().single();
-    if (!error && data) {
-      // optimistic update is done via realtime if configured, but we can do it directly if we want
-      // For safety, let's just add it:
-      setMessages(prev => {
-        if (!prev.find(m => m.id === data.id)) return [...prev, data];
-        return prev;
-      });
-    } else {
-      // Fallback optimistic
-      setMessages(prev => [...prev, { ...newMsg, id: crypto.randomUUID(), created_at: new Date().toISOString() }]);
-    }
   };
 
   return (
@@ -134,25 +51,14 @@ export default function GlamzoMessenger() {
             </button>
           </div>
           
-          <div className="flex-1 p-4 bg-[#F8F9FC] overflow-y-auto flex flex-col space-y-4">
-            <div className="flex flex-col items-center justify-center mt-4 text-center space-y-2 opacity-50">
-              <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
+          <div className="flex-1 p-4 bg-[#F8F9FC] overflow-y-auto flex flex-col justify-end space-y-4">
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-2 pb-4 opacity-50">
+              <MessageSquare className="w-8 h-8 text-slate-300" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Inicie a Conversa</p>
             </div>
-            
-            <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-700 shadow-sm max-w-[85%] font-medium leading-relaxed self-start">
+            <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-700 shadow-sm max-w-[85%] font-medium leading-relaxed">
               Olá! 👋 Tem alguma dúvida sobre os nossos serviços, horários ou preços?
             </div>
-
-            {messages.map((m: any) => {
-              const isCustomer = m.sender_type === 'customer';
-              return (
-                <div key={m.id} className={`p-3.5 rounded-2xl text-xs shadow-sm max-w-[85%] font-medium leading-relaxed ${isCustomer ? 'bg-purple-600 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start'}`}>
-                  {m.message}
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
           </div>
           
           <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 shrink-0">
@@ -169,6 +75,7 @@ export default function GlamzoMessenger() {
               </button>
             </div>
           </form>
+
         </div>
       )}
     </div>

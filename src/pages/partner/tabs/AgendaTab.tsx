@@ -42,7 +42,7 @@ export default function AgendaTab() {
       if (business?.opening_time && business?.closing_time) {
         const startLimit = parseInt(business.opening_time.split(":")[0]);
         const endLimit = parseInt(business.end_time || business.closing_time || "20");
-        if (inputHour < startLimit || inputHour >= endLimit) {
+        if (inputHour < startH || inputHour >= endH) {
           alert(`Operação cancelada! O teu espaço está configurado para trabalhar apenas das ${business.opening_time} às ${business.end_time}.`);
           setIsSavingManual(false); return;
         }
@@ -116,7 +116,7 @@ export default function AgendaTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
         <div className="lg:col-span-3 flex flex-col h-full">
-            <DashboardCalendar businessHours={business?.business_hours} bookings={bookings} services={services} staff={staff} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
+            <DashboardCalendar bookings={bookings} services={services} staff={staff} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
         </div>
         <div className="lg:col-span-1 space-y-6 shrink-0">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60">

@@ -6,7 +6,6 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
-import MobileBottomNav from './components/MobileBottomNav';
 import CookieBanner from './components/CookieBanner';
 
 // IMPORTAÇÕES DIRETAS
@@ -62,18 +61,12 @@ import FaqParceiro from './pages/info/FaqParceiro';
 import Sobre from './pages/info/Sobre';
 import Contactos from './pages/info/Contactos';
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, any> {
-  state = { hasError: false, error: null };
-  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+class ErrorBoundary extends React.Component<any, any> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
   render() {
-    if (this.state.hasError) return (
-      <div className="p-10 text-red-600 font-bold">
-        <h1>Ocorreu um erro no carregamento da página. Por favor, recarregue.</h1>
-        <pre className="mt-4 text-xs bg-red-50 p-4 rounded overflow-auto">{this.state.error?.toString()}</pre>
-        <pre className="mt-4 text-xs bg-red-50 p-4 rounded overflow-auto">{this.state.error?.stack}</pre>
-      </div>
-    );
-    return (this as any).props.children;
+    if (this.state.hasError) return <div className="p-10 text-red-600 font-bold">Ocorreu um erro no carregamento da página. Por favor, recarregue.</div>;
+    return this.props.children;
   }
 }
 
@@ -208,7 +201,6 @@ export default function App() {
             <Footer />
             <CookieBanner />
             {loadMessenger && <GlamzoMessenger />}
-            <MobileBottomNav />
           </div>
         </AuthProvider>
       </BrowserRouter>
