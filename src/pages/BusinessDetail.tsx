@@ -31,7 +31,7 @@ export default function BusinessDetail() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [favoriteActive, setFavoriteActive] = useState(false);
 
-  // States omitted for brevity... (mantivemos toda a tua lógica intacta!)
+  // States de Reviews e Reportes
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [newReviewRating, setNewReviewRating] = useState(5);
@@ -41,12 +41,6 @@ export default function BusinessDetail() {
   const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
   const [reportReasonText, setReportReasonText] = useState('');
 
-  const [disputeOpen, setDisputeOpen] = useState(false);
-  const [disputeReason, setDisputeReason] = useState('Serviço Incómodo ou Mau Trato');
-  const [disputeDesc, setDisputeDesc] = useState('');
-  const [disputeLoading, setDisputeLoading] = useState(false);
-  const [disputeBookingId, setDisputeBookingId] = useState('');
-
   const [bookingOpen, setBookingOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<any | null>(null);
 
@@ -55,7 +49,7 @@ export default function BusinessDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
 
-  // Load Business Data
+  // Carregar Estabelecimento
   useEffect(() => {
     const fetchBusinessBySlug = async () => {
       if (!slug) return;
@@ -80,18 +74,13 @@ export default function BusinessDetail() {
     fetchBusinessBySlug();
   }, [slug]);
 
-  // Load Services
+  // Carregar Serviços
   useEffect(() => {
     const fetchServices = async () => {
       if (!business?.id) return;
       setLoadingServices(true);
       try {
-        const { data } = await supabase
-          .from('services')
-          .select(`*, category:service_categories(name, icon)`)
-          .eq('business_id', business.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
+        const { data } = await supabase.from('services').select(`*, category:service_categories(name, icon)`).eq('business_id', business.id).eq('is_active', true).order('created_at', { ascending: false });
         setServices(data || []);
       } catch (err) {
         console.error(err);
@@ -102,6 +91,7 @@ export default function BusinessDetail() {
     fetchServices();
   }, [business?.id]);
 
+  // Carregar Avaliações
   useEffect(() => {
     const loadReviews = async () => {
       if (!business?.id) return;
@@ -122,11 +112,10 @@ export default function BusinessDetail() {
     }
   }, [user, business?.id]);
 
-  // LÓGICA DE REDIRECIONAMENTO CORRIGIDA AQUI
   const handleOpenBooking = (service: any | null) => {
     if (!user) {
       if (service) sessionStorage.setItem('pre_selected_service_id', service.id);
-      // Garantimos que o URL é codificado corretamente para o Login.tsx apanhar!
+      // Aqui dizemos ao Login para devolver à Loja!
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
@@ -149,9 +138,58 @@ export default function BusinessDetail() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Funções de form omitidas para brevidade de renderização mas estão ativas (handleCreateReviewSubmit, etc.)
-  const handleCreateReviewSubmit = async (e: React.FormEvent) => { e.preventDefault(); /* ... */ };
-  const handlePhotoUploadLocal = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
+  const handleCreateReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      alert('Por favor, inicie sessão para enviar uma avaliação.');
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+    if (!business?.id) return;
+    setSubmittingReview(true);
+    try {
+      const author = profile?.full_name || user.email?.split('@')[0] || 'Cliente Glamzo';
+      const input = {
+        booking_id: crypto.randomUUID(),
+        business_id: business.id,
+        customer_id: user.id,
+        customer_name: author,
+        rating: newReviewRating,
+        comment: newReviewComment,
+        service_id: crypto.randomUUID(),
+        service_name: newReviewService || 'Serviço Geral',
+        photo_url: newReviewFileBlob || null
+      };
+      const created = await submitReview(input);
+      setReviews(prev => [created, ...prev]);
+      setNewReviewComment(''); setNewReviewService(''); setNewReviewFileBlob(null); setReviewFormOpen(false);
+      alert('Avaliação submetida com sucesso! Obrigado.');
+    } catch (e) {
+      alert('Falha ao registar a avaliação.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleReportReviewSubmit = async (reviewId: string) => {
+    if (!user) return alert('Inicie sessão para reportar conteúdo.');
+    if (!reportReasonText.trim()) return alert('Por favor, descreva a razão.');
+    try {
+      await reportReview(reviewId, reportReasonText.trim());
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_reported: true, report_reason: reportReasonText.trim() } : r));
+      setReportingReviewId(null); setReportReasonText('');
+      alert('Denúncia enviada para a equipa Glamzo.');
+    } catch (e) { console.error(e); }
+  };
+
+  const handlePhotoUploadLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setNewReviewFileBlob(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>;
   if (errorMsg || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC] font-bold text-slate-500">{errorMsg || "Loja não encontrada"}</div>;
@@ -256,6 +294,81 @@ export default function BusinessDetail() {
                 )}
               </div>
 
+              {/* AVALIAÇÕES RECUPERADAS */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm space-y-6 text-left">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-4 flex-wrap gap-2">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Avaliações de Clientes</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Opiniões reais pós-visita.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`); return; } setReviewFormOpen(!reviewFormOpen); }} className="px-4 py-2 bg-purple-50 text-purple-600 text-xs font-bold rounded-xl transition-all flex items-center gap-1 cursor-pointer">
+                      <Sparkles className="w-4 h-4" />
+                      <span>{reviewFormOpen ? 'Fechar Formulário' : 'Avaliar Salão'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {reviewFormOpen && (
+                  <form onSubmit={handleCreateReviewSubmit} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Pontuação (1 a 5 Estrelas)</label>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button type="button" key={star} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">
+                              <Star className={`w-6 h-6 ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Serviço Realizado</label>
+                        <select required value={newReviewService} onChange={(e) => setNewReviewService(e.target.value)} className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500">
+                          <option value="">-- Escolha um serviço --</option>
+                          {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                          <option value="Outro Serviço">Outro Serviço Geral</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">O seu Comentário</label>
+                      <textarea required placeholder="Como foi o atendimento?" rows={3} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} className="w-full text-xs p-3 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500" />
+                    </div>
+                    <div className="flex justify-end pt-2">
+                      <button type="submit" disabled={submittingReview} className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all">
+                        {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        Submeter Avaliação
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {loadingReviews ? (
+                  <div className="py-8 flex justify-center"><Loader2 className="w-6 h-6 text-purple-400 animate-spin" /></div>
+                ) : reviews.length > 0 ? (
+                  <div className="divide-y divide-slate-100">
+                    {reviews.map((r) => (
+                      <div key={r.id} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex justify-between items-start gap-3">
+                          <div>
+                            <span className="font-bold text-slate-800 text-sm block">{r.customer_name}</span>
+                            <span className="text-[10px] text-slate-500 font-medium">Serviço: <span className="font-semibold text-purple-600">{r.service_name}</span></span>
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className={`w-3.5 h-3.5 ${star <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />))}
+                          </div>
+                        </div>
+                        <p className="text-slate-600 mt-2 text-xs">{r.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-100"><MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" /><p className="text-xs text-slate-500">Sem avaliações. Seja o primeiro a opinar!</p></div>
+                )}
+              </div>
+
             </div>
 
             {/* Coluna Lateral (Direita) */}
@@ -265,7 +378,7 @@ export default function BusinessDetail() {
               <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                 <h3 className="text-xl font-black mb-2 relative z-10">Marcar Atendimento</h3>
-                <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento 100% online, rápido e confirmado no momento.</p>
+                <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento online, rápido e com vagas reais atualizadas ao minuto.</p>
                 <button onClick={() => handleOpenBooking(null)} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
                   <Calendar className="w-5 h-5" /> Reservar Agora
                 </button>
@@ -276,24 +389,35 @@ export default function BusinessDetail() {
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-2">Informações</h3>
                 
                 <div className="flex items-start gap-3 text-sm">
-                  <MapPin className="w-5 h-5 text-purple-500 shrink-0" />
+                  <MapPin className="w-5 h-5 text-slate-400 shrink-0" />
                   <div>
                     <span className="font-bold text-slate-900 block">{business.city}</span>
                     <span className="text-slate-500 text-xs">{business.address}</span>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3 text-sm">
-                  <Phone className="w-5 h-5 text-purple-500 shrink-0" />
+                  <Phone className="w-5 h-5 text-slate-400 shrink-0" />
                   <a href={`tel:${business.phone}`} className="font-bold text-slate-700 hover:text-purple-600">{business.phone}</a>
                 </div>
 
-                {business.website && (
-                  <div className="flex items-center gap-3 text-sm pt-2">
-                    <Globe className="w-5 h-5 text-purple-500 shrink-0" />
-                    <a href={business.website} target="_blank" className="font-bold text-purple-600 hover:underline">Visitar Website</a>
-                  </div>
-                )}
+                {/* BOTÕES DE CONTACTO RÁPIDOS RECUPERADOS */}
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <a 
+                    href={business.whatsapp || `https://wa.me/${business.phone.replace(/[^0-9]/g, '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all"
+                  >
+                    <MessageSquare className="w-4 h-4 fill-emerald-600" />
+                    Falar no WhatsApp
+                  </a>
+                  {business.website && (
+                    <a href={business.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition-all">
+                      <Globe className="w-4 h-4 text-purple-600" />
+                      Visitar Website
+                    </a>
+                  )}
+                </div>
               </div>
 
             </div>
@@ -301,7 +425,6 @@ export default function BusinessDetail() {
         </div>
       </div>
 
-      {/* COMPONENTE ONDE VIVE A MATEMÁTICA DAS VAGAS */}
       <BookingModal
         isOpen={bookingOpen}
         onClose={() => setBookingOpen(false)}
