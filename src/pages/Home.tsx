@@ -90,7 +90,8 @@ export default function Home() {
   const [searchParams] = useSearchParams(); 
   const scrollContainerRef = useRef<HTMLDivElement>(null); 
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || ""); 
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [promocoesAtivas, setPromocoesAtivas] = useState<any[]>([]); 
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || ""); 
   const [showLocSuggestions, setShowLocSuggestions] = useState(false); 
 
@@ -222,6 +223,13 @@ export default function Home() {
     }; 
     
     const fetchTimer = setTimeout(() => {
+      const fetchPromocoes = async () => {
+        try {
+          const { data } = await supabase.from('business_coupons').select('*, businesses(name, slug, cover_url)').eq('is_active', true).limit(10);
+          if (data) setPromocoesAtivas(data.filter(c => new Date(c.valid_until) >= new Date() || !c.valid_until));
+        } catch(e) {}
+      };
+      fetchPromocoes();
       fetchData(); 
     }, 150);
 

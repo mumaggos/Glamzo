@@ -68,7 +68,7 @@ export default function StoreAssetsTab() {
             <p className="text-xs text-slate-500 mt-1">Total de leituras (scans) pelos clientes</p>
           </div>
           <div className="bg-purple-50 text-purple-700 font-black text-2xl px-6 py-3 rounded-2xl">
-            {business.qr_scans_count || 0}
+            {business.qr_scans || 0}
           </div>
         </div>
 

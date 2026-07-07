@@ -46,6 +46,13 @@ export default function BookingModal({
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successBooking, setSuccessBooking] = useState<any | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState<string | null>(null);
+  
+  const [couponApplied, setCouponApplied] = useState<any>(null);
+  const [verifyingPromo, setVerifyingPromo] = useState(false);
+
 
   useEffect(() => {
     if (initialSelectedService) {
@@ -90,12 +97,6 @@ export default function BookingModal({
   });
 
   const getWeekdayName = (date: Date) => ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][date.getDay()];
-  
-  const [couponDiscount, setCouponDiscount] = useState(0);
-  const [promoCode, setPromoCode] = useState('');
-  const [promoError, setPromoError] = useState<string | null>(null);
-    const [couponApplied, setCouponApplied] = useState<any>(null);
-  const [verifyingPromo, setVerifyingPromo] = useState(false);
 
   const applyPromoCode = async () => {
     if (!promoCode.trim()) return;
@@ -165,7 +166,7 @@ export default function BookingModal({
     const cutoffTimeMs = Date.now() + minNoticeMs;
 
     const slots = [];
-    for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 30) {
+    for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 15) {
       const slotEnd = slotStart + duration;
 
       const slotDateTime = new Date(selectedDate);

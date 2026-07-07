@@ -70,13 +70,13 @@ export default function BusinessDetail() {
             // Check for QR referral
             const ref = searchParams.get('ref');
             if (ref === 'qr') {
-               // increment qr_scans_count in DB
+               // increment qr_scans in DB
                supabase.rpc('increment_qr_scans', { p_business_id: data.id })
                  .then(({error}) => {
                    if (error) {
                      // fallback to direct update if rpc doesn't exist
-                     const newCount = (data.qr_scans_count || 0) + 1;
-                     supabase.from('businesses').update({ qr_scans_count: newCount }).eq('id', data.id).then();
+                     const newCount = (data.qr_scans || 0) + 1;
+                     supabase.from('businesses').update({ qr_scans: newCount }).eq('id', data.id).then();
                    }
                  });
             }

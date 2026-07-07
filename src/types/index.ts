@@ -49,7 +49,7 @@ export interface Business {
   setup_completed?: boolean;
   onboarding_step?: number | null;
   public_page_enabled?: boolean;
-  qr_scans_count?: number;
+  qr_scans?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
     latitude?: number | null;

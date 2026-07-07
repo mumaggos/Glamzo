@@ -1,66 +1,62 @@
 const fs = require('fs');
+
 let code = fs.readFileSync('src/pages/Home.tsx', 'utf8');
 
-// Add states for promotions
-const stateInjections = `
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+// Insert State
+code = code.replace(
+  /const \[searchQuery, setSearchQuery\] = useState\(""\);/,
+  'const [searchQuery, setSearchQuery] = useState("");\n  const [promocoesAtivas, setPromocoesAtivas] = useState<any[]>([]);'
+);
 
-  useEffect(() => {
-    async function fetchPromotions() {
-      const { data, error } = await supabase
-        .from('business_coupons')
-        .select('*, business:business_id(name)')
-        .eq('is_active', true);
-      
-      if (!error && data) {
-        // filter valid promotions
-        const valid = data.filter(c => !c.valid_until || new Date(c.valid_until) >= new Date());
-        setPromotions(valid);
-      }
-    }
-    fetchPromotions();
-  }, []);
+// Insert Fetch
+code = code.replace(
+  /const fetchTimer = setTimeout\(\(\) => \{/,
+  `const fetchTimer = setTimeout(() => {\n      const fetchPromocoes = async () => {\n        try {\n          const { data } = await supabase.from('business_coupons').select('*, businesses(name, slug, cover_url)').eq('is_active', true).limit(10);\n          if (data) setPromocoesAtivas(data.filter(c => new Date(c.valid_until) >= new Date() || !c.valid_until));\n        } catch(e) {}\n      };\n      fetchPromocoes();`
+);
 
-  useEffect(() => {
-    if (promotions.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentPromoIndex(prev => (prev + 1) % promotions.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [promotions]);
+// Insert Section after 'Acabaram de chegar'
+const acabaramDeChegar = /\{novasLojas\.map\(b => <div key=\{b\.id\} className="snap-start"><BusinessCard b=\{b\} \/><\/div>\)\}\n                 <\/div>\n               <\/section>\n             \)\}/;
+
+const promocoesSection = `
+             {novasLojas.length > 0 && (
+               <section>
+                 <div className="mb-6">
+                   <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🆕 Acabaram de chegar</h2>
+                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">As mais recentes novidades adicionadas à nossa rede.</p>
+                 </div>
+                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
+                   {novasLojas.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                 </div>
+               </section>
+             )}
+             
+             {promocoesAtivas.length > 0 && (
+               <section>
+                 <div className="mb-6">
+                   <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🔥 Ofertas Imperdíveis</h2>
+                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">Aproveite descontos especiais.</p>
+                 </div>
+                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
+                   {promocoesAtivas.map(promo => (
+                     <div key={promo.id} className="snap-start min-w-[280px] sm:min-w-[320px] bg-gradient-to-br from-[#9333ea] to-[#4f46e5] rounded-3xl p-6 text-white shadow-xl shadow-purple-900/20 flex flex-col justify-between shrink-0">
+                        <div>
+                          <div className="text-[10px] font-black uppercase tracking-widest bg-white/20 inline-block px-3 py-1 rounded-full mb-3 backdrop-blur-md">
+                            {promo.businesses?.name}
+                          </div>
+                          <h3 className="text-2xl font-bold font-display">{promo.discount_percentage}% OFF</h3>
+                          <p className="text-sm text-purple-100 mt-1 font-medium line-clamp-2">{promo.description || 'Desconto exclusivo na sua próxima reserva!'}</p>
+                        </div>
+                        <div className="mt-6 flex items-center justify-between bg-white/10 p-3 rounded-2xl border border-white/20 backdrop-blur-sm">
+                          <code className="text-lg font-mono font-bold tracking-widest text-white">{promo.code}</code>
+                          <button onClick={() => { navigator.clipboard.writeText(promo.code); alert('Código copiado!'); }} className="text-xs font-bold bg-white text-purple-600 px-3 py-1.5 rounded-xl hover:bg-purple-50 transition-colors">Copiar</button>
+                        </div>
+                     </div>
+                   ))}
+                 </div>
+               </section>
+             )}
 `;
 
-code = code.replace(
-  /const \[businesses, setBusinesses\] = useState<any\[\]>\(\[\]\);/,
-  `const [businesses, setBusinesses] = useState<any[]>([]);${stateInjections}`
-);
-
-// Add the banner HTML before the search bar container
-const bannerHTML = `
-          {promotions.length > 0 && (
-            <div className="w-full max-w-4xl mx-auto mb-4 overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg relative z-20" style={{ height: '48px' }}>
-              <div className="absolute inset-0 flex items-center justify-center transition-all duration-500">
-                <div key={currentPromoIndex} className="animate-fade-in flex items-center gap-3 text-sm font-medium">
-                  <span className="font-bold bg-white/20 px-2 py-1 rounded-md">{promotions[currentPromoIndex].business?.name}</span>
-                  <span>{promotions[currentPromoIndex].discount_percent ? \`-\${promotions[currentPromoIndex].discount_percent}%\` : \`-\${promotions[currentPromoIndex].discount_value}€\`} com o código:</span>
-                  <span className="font-mono font-black text-yellow-300 tracking-wider text-base">{promotions[currentPromoIndex].code}</span>
-                </div>
-              </div>
-            </div>
-          )}
-`;
-
-code = code.replace(
-  /<div className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-\[0_12px_40px_rgba\(15,23,42,0\.04\)\] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200\/60 font-\['Inter'\]">/,
-  `${bannerHTML}\n          <form onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(); }} className="w-full max-w-4xl bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.04)] relative z-20 flex flex-col md:flex-row items-stretch gap-1 border border-slate-200/60 font-['Inter']">`
-);
-
-// Close the form tag instead of div
-code = code.replace(
-  /<\/button>\s*<\/div>\s*\{\/\* Garantias Reais de Confiança/g,
-  `</button>\n          </form>\n\n          {/* Garantias Reais de Confiança`
-);
+code = code.replace(acabaramDeChegar, promocoesSection);
 
 fs.writeFileSync('src/pages/Home.tsx', code);

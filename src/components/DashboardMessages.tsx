@@ -7,6 +7,8 @@ export default function DashboardMessages({ businessId }: { businessId: string }
   const { user, profile } = useAuth();
   const [conversations, setConversations] = useState<any[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const selectedCustomerRef = useRef<string | null>(null);
+  useEffect(() => { selectedCustomerRef.current = selectedCustomerId; }, [selectedCustomerId]);
   const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(true);

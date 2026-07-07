@@ -3,10 +3,8 @@ import { CreditCard, Banknote, User } from 'lucide-react';
 
 export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick, businessHours }: any) {
   
-  const computedHours = useMemo(() => {
-    if (!businessHours || businessHours.length === 0) {
-      return Array.from({ length: 14 }, (_, i) => i + 8);
-    }
+  
+  const { minH, maxH, computedHours } = useMemo(() => {
     const openH = businessHours.map((h) => {
       if (!h.open_time || h.is_closed) return 8;
       return parseInt(h.open_time.split(':')[0]);
@@ -15,11 +13,20 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
       if (!h.close_time || h.is_closed) return 20;
       return parseInt(h.close_time.split(':')[0]);
     });
-    const minH = Math.min(...openH.filter(x => !isNaN(x)), 8);
-    const maxH = Math.max(...closeH.filter(x => !isNaN(x)), 20);
+    let minH = Math.min(...openH.filter(x => !isNaN(x)));
+    let maxH = Math.max(...closeH.filter(x => !isNaN(x)));
+    
+    if (minH === Infinity) minH = 8;
+    if (maxH === -Infinity) maxH = 20;
+    
     const len = (maxH - minH) + 1;
-    return Array.from({ length: len > 0 ? len : 14 }, (_, i) => i + minH);
+    return {
+      minH,
+      maxH,
+      computedHours: Array.from({ length: len > 0 ? len : 14 }, (_, i) => i + minH)
+    };
   }, [businessHours]);
+  
 
   const hours = computedHours; 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -33,8 +40,8 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
   useEffect(() => {
     if (scrollRef.current) {
       const currentHour = now.getHours();
-      if (currentHour >= 8 && currentHour <= 21) {
-        const scrollAmount = (currentHour - 8) * 112;
+      if (currentHour >= minH && currentHour <= maxH) {
+        const scrollAmount = (currentHour - minH) * 112;
         scrollRef.current.scrollTo({ top: scrollAmount - 40, behavior: 'smooth' });
       }
     }

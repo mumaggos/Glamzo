@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
+import MobileBottomNav from './components/MobileBottomNav';
 import CookieBanner from './components/CookieBanner';
 
 // IMPORTAÇÕES DIRETAS
@@ -207,6 +208,7 @@ export default function App() {
             <Footer />
             <CookieBanner />
             {loadMessenger && <GlamzoMessenger />}
+            <MobileBottomNav />
           </div>
         </AuthProvider>
       </BrowserRouter>
