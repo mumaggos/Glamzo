@@ -1,138 +1,168 @@
-import React, { useState, useRef } from "react";
-import { useOutletContext } from "react-router-dom";
-import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, KeyRound, Zap, CreditCard } from "lucide-react";
-import { Business } from "../../../types";
-import { supabase } from "../../../lib/supabase";
+import React, { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase";
+import { Business } from "../../types";
+import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell } from "lucide-react";
+import GlamzoLogo from "../../components/GlamzoLogo";
 
-interface PartnerContextType {
-  business: Business | null;
-}
+export default function PartnerLayout() {
+  const { user, profile, signOut, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-export default function SettingsTab() {
-  const { business } = useOutletContext<PartnerContextType>();
-  const [activeTab, setActiveTab] = useState("dados");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [tabletOrder, setTabletOrder] = useState<any>(null);
 
-  const [savingDados, setSavingDados] = useState(false);
-  const [savingSeguranca, setSavingSeguranca] = useState(false);
-  const [savingImagens, setSavingImagens] = useState(false);
-  const [savingRegras, setSavingRegras] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [staff, setStaff] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const [globalMessage, setGlobalMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/partner/login");
+    if (user) loadLayoutData();
+  }, [user, authLoading]);
 
-  // Estados dos Formulários
-  const [formData, setFormData] = useState({
-    name: business?.name || "",
-    address: business?.address || "",
-    door_number: business?.door_number || "",
-    postal_code: business?.postal_code || "",
-    city: business?.city || "",
-    phone: business?.phone || "",
-    email: business?.email || "",
-  });
-
-  const [passwordData, setPasswordData] = useState({
-    current: "",
-    newPassword: "",
-    repeatNewPassword: ""
-  });
-
-  // Estado para guardar os Ficheiros Reais para upload
-  const [selectedFiles, setSelectedFiles] = useState<{logo: File | null, cover: File | null}>({ logo: null, cover: null });
-  const [images, setImages] = useState({
-    logo_url: business?.logo_url || "",
-    cover_url: business?.cover_url || ""
-  });
-
-  const [rules, setRules] = useState({
-    min_notice: business?.min_booking_notice?.toString() || "60",
-    cancellation_policy: business?.cancellation_policy || "flexible"
-  });
-
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
-
-  if (!business) return null;
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setGlobalMessage({ type, text });
-    setTimeout(() => setGlobalMessage(null), 5000);
-  };
-
-  const handleSaveDados = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingDados(true);
+  const loadLayoutData = async () => {
+    setIsLoadingData(true);
+    if (!user) return;
     try {
-      const { error } = await supabase.from('businesses').update(formData).eq('id', business.id);
-      if (error) throw error;
-      showMessage('success', 'Dados da loja atualizados com sucesso.');
-    } catch (err) {
-      showMessage('error', 'Erro ao atualizar dados da loja.');
-    } finally {
-      setSavingDados(false);
-    }
+      const { data: bData } = await supabase.from("businesses").select("*").eq("owner_id", user.id).maybeSingle();
+      if (!bData) { navigate("/partner/setup", { replace: true }); return; }
+      setBusiness(bData);
+
+      const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }] = await Promise.all([
+        supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
+        supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
+        supabase.from("staff").select("*").eq("business_id", bData.id).order("full_name"),
+        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false })
+      ]);
+
+      setCategories(catData || []); setServices(svData || []); setStaff(stData || []); setBookings(bkData || []);
+    } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
   };
 
-  const handleSaveSeguranca = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingSeguranca(true);
-    if (passwordData.newPassword !== passwordData.repeatNewPassword) {
-      showMessage('error', 'As novas passwords não coincidem.');
-      setSavingSeguranca(false); return;
-    }
-    if (passwordData.newPassword.length < 6) {
-      showMessage('error', 'A password deve ter pelo menos 6 caracteres.');
-      setSavingSeguranca(false); return;
-    }
-    try {
-      const { error } = await supabase.auth.updateUser({ password: passwordData.newPassword });
-      if (error) throw error;
-      showMessage('success', 'Password alterada com sucesso.');
-      setPasswordData({ current: "", newPassword: "", repeatNewPassword: "" });
-    } catch (err) {
-      showMessage('error', 'Erro ao alterar a password.');
-    } finally {
-      setSavingSeguranca(false);
-    }
-  };
+  useEffect(() => { setIsMobileSidebarOpen(false); setIsNotificationsOpen(false); }, [location.pathname]);
 
-  const handleImageChange = (type: 'logo' | 'cover', e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Guarda o ficheiro real na memória para o upload futuro
-      setSelectedFiles(prev => ({ ...prev, [type]: file }));
-      // Cria um link provisório para o preview no ecrã
-      const url = URL.createObjectURL(file);
-      setImages(prev => ({ ...prev, [`${type}_url`]: url }));
-    }
-  };
+  const navItems = [
+    { id: "overview", label: "Resumo", icon: LayoutDashboard, path: "/partner/dashboard/overview" },
+    { id: "agenda", label: "Agenda", icon: Calendar, path: "/partner/dashboard/agenda" },
+    { id: "reservas", label: "Reservas", icon: CheckSquare, path: "/partner/dashboard/reservas" },
+    { id: "clientes", label: "Clientes", icon: UsersRound, path: "/partner/dashboard/clientes" },
+    { id: "equipa", label: "Equipa", icon: Users, path: "/partner/dashboard/equipa" },
+    { id: "servicos", label: "Serviços", icon: Scissors, path: "/partner/dashboard/servicos" },
+    { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
+    { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
+    { id: "financeiro", label: "Pagamentos", icon: Landmark, path: "/partner/dashboard/financeiro" },
+    { id: "website", label: "Website", icon: Globe, path: "/partner/dashboard/website" },
+    { id: "configuracoes", label: "Definições", icon: Settings, path: "/partner/dashboard/configuracoes" },
+  ];
 
-  const handleSaveImagens = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingImagens(true);
-    try {
-      let finalLogoUrl = images.logo_url;
-      let finalCoverUrl = images.cover_url;
+  if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 
-      // 1. Upload do Logo (se foi alterado)
-      if (selectedFiles.logo) {
-        const fileExt = selectedFiles.logo.name.split('.').pop();
-        const fileName = `logo_${business.id}_${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('business-images') // BUCKET CORRIGIDO
-          .upload(fileName, selectedFiles.logo, { upsert: true });
+  return (
+    <div id="partner-terminal-layout" className="min-h-screen bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden h-screen relative">
+      <style>{`header, nav.sticky, footer { display: none !important; } body { background-color: #F8F9FC !important; }`}</style>
+
+      {/* Sidebar Mobile */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-[80] flex lg:hidden">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)} />
+          <div className="relative flex flex-col w-72 h-full bg-white border-r shadow-2xl z-10">
+            <div className="flex items-center justify-between p-5 border-b shrink-0 bg-slate-50">
+              <div className="flex items-center gap-3"><GlamzoLogo size={28} glow={false} /><span className="font-extrabold text-sm">Menu</span></div>
+              <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-xl text-slate-500 bg-white border"><X className="w-4 h-4" /></button>
+            </div>
+            <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
+              {navItems.map((tab) => (
+                <Link key={tab.id} to={tab.path} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${location.pathname.startsWith(tab.path) ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
+                  <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="p-4 bg-slate-50 border-t border-slate-100">
+              <button onClick={async () => { await signOut(); navigate("/"); }} className="w-full py-3 bg-white hover:bg-slate-100 border text-rose-500 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                <LogOut className="w-4 h-4" /> Terminar Sessão
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sidebar Desktop */}
+      <aside className="hidden lg:flex w-[260px] border-r border-slate-200 bg-white flex-col shrink-0 h-full z-20 shadow-sm">
+         {/* CORRIGIDO: Retirado o signOut() para não deslogar! */}
+         <button onClick={() => navigate("/")} className="h-20 border-b border-slate-100 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-50">
+            <div className="bg-purple-100 p-2 rounded-xl"><GlamzoLogo size={24} glow={true} /></div>
+            <div><span className="font-black text-sm block">Glamzo</span><span className="text-[10px] font-bold text-slate-500">Voltar ao site inicial</span></div>
+          </button>
+          <div className="p-4 mx-4 my-4 bg-slate-50 border rounded-2xl">
+            <span className="text-xs font-black block truncate">{business?.name}</span>
+            <div className="flex items-center gap-1.5 mt-1"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] text-slate-500 font-bold">Sistema Ativo</span></div>
+          </div>
+          <nav className="px-4 py-2 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar">
+            {navItems.map((tab) => (
+              <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${location.pathname.startsWith(tab.path) ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:bg-slate-50"}`}>
+                <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span></div>
+              </Link>
+            ))}
+          </nav>
+      </aside>
+
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50 relative z-20">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-black text-slate-900 hidden lg:block">Bom dia, <span className="text-purple-600">{profile?.full_name?.split(" ")[0]}</span> 👋</h2>
+            <h2 className="text-lg font-black text-slate-900 lg:hidden">{business?.name}</h2>
+          </div>
           
-        if (uploadError) throw uploadError;
-        
-        // Pega no URL público permanente
-        const { data } = supabase.storage.from('business-images').getPublicUrl(fileName);
-        finalLogoUrl = data.publicUrl;
-      }
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="relative p-2.5 bg-white text-slate-500 hover:text-purple-600 transition-colors shadow-sm border border-slate-200 rounded-full">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
+            </button>
+            <div className="flex bg-white shadow-sm border border-slate-200 px-3 py-2.5 rounded-full items-center gap-2">
+               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest hidden sm:inline">Online</span>
+            </div>
+          </div>
+        </div>
 
-      // 2. Upload da Capa (se foi alterada)
-      if (selectedFiles.cover) {
-        const fileExt = selectedFiles.cover.name.split('.').pop();
-        const fileName = `cover_${business.id}_${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('business-images') // BUCKET COR
+        {/* CORRIGIDO: Dropdown de notificações agora é 'fixed' e não é cortado pelo scroll */}
+        {isNotificationsOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)} />
+            <div className="fixed top-20 right-4 sm:right-8 mt-3 w-[320px] bg-white border border-slate-200 shadow-2xl rounded-3xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4">
+              <div className="p-4 border-b border-slate-100 bg-slate-50"><h4 className="font-extrabold text-slate-900">Notificações</h4></div>
+              <div className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 mt-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div><p className="text-xs font-bold text-slate-800">Sistema Atualizado</p><p className="text-[10px] text-slate-500 mt-0.5">O teu terminal Glamzo Elite está online e otimizado.</p></div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
+           <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
+            <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, loadLayoutData, isLoadingData }} />
+          </motion.div>
+        </div>
+      </main>
+
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-6 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /></Link>
+        <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /></Link>
+        <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
+        <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /></Link>
+        <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /></button>
+      </div>
+    </div>
+  );
+}
