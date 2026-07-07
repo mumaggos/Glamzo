@@ -68,7 +68,7 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 // CORREÇÃO AQUI: O Guarda agora respeita o Redirecionamento da Loja!
 function SessionGuard() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,6 +77,15 @@ function SessionGuard() {
     const path = location.pathname;
     const isAuthPage = ['/login', '/partner/login', '/admin/login', '/partner/signup', '/signup'].includes(path);
     
+    // Loja (Business): Desconectar se aceder a rotas fora do painel da loja (exceto API ou rotas de parceiro)
+    if (profile.role === 'business') {
+      if (!path.startsWith('/partner') && !isAuthPage) {
+        signOut();
+        navigate('/partner/login', { replace: true });
+        return;
+      }
+    }
+
     if (isAuthPage) {
       // 1º Verificar se há memória de redirecionamento para a Loja!
       const savedRedirect = sessionStorage.getItem('post_login_redirect');
@@ -91,7 +100,7 @@ function SessionGuard() {
       else if (profile.role === 'admin') navigate('/admin', { replace: true });
       else navigate('/account', { replace: true });
     }
-  }, [location.pathname, user, profile, loading, navigate]);
+  }, [location.pathname, user, profile, loading, navigate, signOut]);
   return null;
 }
 
@@ -138,7 +147,7 @@ export default function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/update-password" element={<UpdatePassword />} />
-                  <Route path="/account" element={<ProtectedRoute allowedRoles={['customer', 'business', 'admin']}><Account /></ProtectedRoute>} />
+                  <Route path="/account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
 
                   <Route path="/termos-e-condicoes" element={<Termos />} />
                   <Route path="/politica-de-privacidade" element={<Privacidade />} />

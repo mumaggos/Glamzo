@@ -103,8 +103,8 @@ export default function BookingModal({
     const dayHours = businessHours.find(h => h.weekday === weekday);
     if (!dayHours || dayHours.is_closed) return [];
 
-    const startMin = timeToMinutes(dayHours.open_time);
-    const endMin = timeToMinutes(dayHours.close_time); 
+    const startMin = timeToMinutes(dayHours.open_time || '09:00');
+    const endMin = timeToMinutes(dayHours.close_time || '19:00'); 
     const duration = totalServicesDuration;
     const dateStr = selectedDate.toISOString().split('T')[0];
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);

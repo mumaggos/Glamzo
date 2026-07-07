@@ -159,10 +159,17 @@ export default function AgendaTab() {
                <div className="flex justify-between"><div><p className="text-[10px] uppercase font-bold text-slate-400">Hora</p><p className="text-sm font-bold text-slate-800">{selectedBooking.start_time}</p></div><div className="text-right"><p className="text-[10px] uppercase font-bold text-slate-400">Profissional</p><p className="text-sm font-bold text-purple-600">{selectedBooking.staff?.full_name || 'Equipa'}</p></div></div>
             </div>
             <div className="p-4 bg-slate-50 border-t space-y-2">
-               {selectedBooking.booking_status !== 'completed' && (
-                 <button onClick={() => handleUpdateBookingStatus('completed')} disabled={isUpdatingBooking} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Marcar como Concluído</button>
+               {selectedBooking.booking_status === 'completed' ? (
+                 <div className="w-full bg-gradient-to-r from-emerald-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-not-allowed opacity-90">
+                   <CheckCircle className="w-5 h-5" /> Serviço Concluído
+                 </div>
+               ) : (
+                 <button onClick={() => handleUpdateBookingStatus('completed')} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>
                )}
-               <button onClick={() => handleUpdateBookingStatus('cancelled')} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 font-bold py-3 border rounded-xl flex items-center justify-center gap-2">Cancelar Marcação</button>
+               
+               {selectedBooking.booking_status !== 'completed' && selectedBooking.booking_status !== 'cancelled' && (
+                 <button onClick={() => handleUpdateBookingStatus('cancelled')} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors">Cancelar Marcação</button>
+               )}
             </div>
           </div>
         </div>
