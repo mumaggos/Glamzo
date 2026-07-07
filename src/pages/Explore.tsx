@@ -8,9 +8,8 @@ import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData"
 import { useAuth } from "../hooks/useAuth";
 import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
 import {
-  Search, MapPin, Grid, Store, Sparkles, SlidersHorizontal, CheckCircle2,
-  Loader2, ArrowRight, X, Compass, Star, ChevronRight, Sliders, Navigation,
-  Home, Zap, Clock, ThumbsUp, Heart, Map as MapIcon, List
+  Search, MapPin, Grid, Compass, Star, SlidersHorizontal, CheckCircle2,
+  Loader2, X, Navigation, List, Map as MapIcon, Heart
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
@@ -20,7 +19,7 @@ const getCategoryDisplayName = (name: string) => {
   return name;
 };
 
-// O Marcador Oficial Glamzo
+// Marcador Oficial Glamzo no Mapa
 const getCustomMarkerIcon = (rating: number) => {
   const finalRating = rating > 0 ? rating : 5.0;
   const ratingText = `${finalRating.toFixed(1)} ★`;
@@ -30,8 +29,7 @@ const getCustomMarkerIcon = (rating: number) => {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="56" height="42" viewBox="0 0 56 42">
       <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.3))">
-        <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z" 
-              fill="${bgColor}" stroke="#ffffff" stroke-width="1.5" />
+        <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z" fill="${bgColor}" stroke="#ffffff" stroke-width="1.5" />
         <text x="28" y="19" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
           ${ratingText}
         </text>
@@ -130,7 +128,6 @@ export default function Explore() {
         promoMap[b.id] = { is_promoted: isPromoted && (!endsAt || new Date(endsAt).getTime() > now) };
       });
       setPromotions(promoMap);
-
     } catch (err: any) {
       setErrorMsg("Falha ao descarregar base de dados. Tente novamente.");
     } finally {
@@ -197,19 +194,12 @@ export default function Explore() {
   };
 
   const handleClearFilters = () => {
-    setLocalSearchQuery("");
-    setSearchQuery("");
-    setLocalSearchLocation("");
-    setSearchLocation("");
-    setSelectedCategory("All");
-    setSelectedSubcategory("All");
-    setUseNearMe(false);
-    setUserCoords(null);
-    setMinRating(0);
-    setPriceLevel("All");
-    setFilterHomeService(false);
-    setFilterPremiumPartner(false);
-    setFilterAvailableToday(false);
+    setLocalSearchQuery(""); setSearchQuery("");
+    setLocalSearchLocation(""); setSearchLocation("");
+    setSelectedCategory("All"); setSelectedSubcategory("All");
+    setUseNearMe(false); setUserCoords(null);
+    setMinRating(0); setPriceLevel("All");
+    setFilterHomeService(false); setFilterPremiumPartner(false); setFilterAvailableToday(false);
     setItemsLimit(12);
   };
 
@@ -315,7 +305,6 @@ export default function Explore() {
   });
 
   const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
-
   const mapApiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
@@ -356,6 +345,7 @@ export default function Explore() {
     <div id="explore-view" className="min-h-screen bg-[#FDFDFD] py-10 flex flex-col selection:bg-purple-100 selection:text-purple-900 pb-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
+        {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-100 rounded-full text-[10px] font-bold text-purple-600 uppercase mb-3 tracking-wider">
@@ -379,6 +369,7 @@ export default function Explore() {
           </div>
         </div>
 
+        {/* Categorias Horizontais */}
         <div className="mb-8 overflow-x-auto pb-3 flex items-center gap-3 no-scrollbar scroll-smooth font-['Inter']">
           <button onClick={() => { setSelectedCategory("All"); setSelectedSubcategory("All"); }} className={`px-5 py-2.5 rounded-full text-xs font-bold shrink-0 transition-all border flex items-center gap-1.5 ${selectedCategory === "All" ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 shadow-sm"}`}>
             <Grid className="w-3.5 h-3.5" /> Ver Tudo
@@ -402,7 +393,10 @@ export default function Explore() {
           </div>
         )}
 
+        {/* Corpo Principal (Filtros Laterais + Resultados) */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          
+          {/* Sidebar Filtros (Desktop) */}
           <div className="hidden lg:block bg-white p-6 border border-slate-200 rounded-3xl space-y-7 self-start shadow-sm font-['Inter']">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
@@ -460,7 +454,9 @@ export default function Explore() {
             </div>
           </div>
 
+          {/* Área de Resultados */}
           <div className="lg:col-span-3 space-y-6">
+            
             <div className="lg:hidden flex gap-2">
               <button onClick={() => setIsDrawerOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-3.5 px-4 text-xs font-bold shadow-md uppercase tracking-wider">
                 <SlidersHorizontal className="w-4 h-4" /> Filtrar ({sortedBusinesses.length})
@@ -513,7 +509,7 @@ export default function Explore() {
         </div>
       </div>
 
-      {/* Gaveta Mobile */}
+      {/* Gaveta Mobile para Filtros */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
