@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { MessageSquare, Send, ArrowLeft, Search, Clock, User } from 'lucide-react';
+import { MessageSquare, Send, ArrowLeft, Search, Clock, Store } from 'lucide-react';
 
-export default function DashboardMessages({ businessId }: { businessId: string }) {
-  const { user, profile } = useAuth();
+export default function AccountMessages() {
+  const { user } = useAuth();
   const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -15,21 +15,21 @@ export default function DashboardMessages({ businessId }: { businessId: string }
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadConversations = async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*, customer_profile:profiles!customer_id(full_name, avatar_url)')
-        .eq('business_id', businessId)
+        .select('*, business:businesses!business_id(name, logo_url)')
+        .eq('customer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (data) {
-        // Group by customer_id
         const map = new Map<string, any>();
         data.forEach(msg => {
-          if (!map.has(msg.customer_id)) {
-            map.set(msg.customer_id, {
-              customer_id: msg.customer_id,
-              customer_profile: msg.customer_profile,
+          if (!map.has(msg.business_id)) {
+            map.set(msg.business_id, {
+              business_id: msg.business_id,
+              business: msg.business,
               last_message: msg.message,
               updated_at: msg.created_at,
               sender_name: msg.sender_name
@@ -46,22 +46,21 @@ export default function DashboardMessages({ businessId }: { businessId: string }
   };
 
   useEffect(() => {
-    if (!businessId) return;
+    if (!user) return;
     loadConversations();
     
-    const channel = supabase.channel('business_dashboard_messages')
+    const channel = supabase.channel(`client_dashboard_messages_${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `business_id=eq.${businessId}`
+        filter: `customer_id=eq.${user.id}`
       }, (payload) => {
         const msg = payload.new;
-        if (msg.sender_type === 'customer') {
+        if (msg.sender_type === 'business') {
           loadConversations();
           setMessages(prev => {
-            // Only add if it's the currently selected customer and we don't already have it
-            if (selectedCustomerId === msg.customer_id) {
+            if (selectedBusinessId === msg.business_id) {
               if (!prev.find(m => m.id === msg.id)) {
                  return [...prev, msg];
               }
@@ -73,23 +72,24 @@ export default function DashboardMessages({ businessId }: { businessId: string }
       .subscribe();
       
     return () => { supabase.removeChannel(channel); };
-  }, [businessId, selectedCustomerId]);
+  }, [user, selectedBusinessId]);
 
-  const loadMessagesForCustomer = async (customerId: string) => {
+  const loadMessagesForBusiness = async (businessId: string) => {
+    if (!user) return;
     const { data } = await supabase
       .from('messages')
       .select('*')
       .eq('business_id', businessId)
-      .eq('customer_id', customerId)
+      .eq('customer_id', user.id)
       .order('created_at', { ascending: true });
     if (data) setMessages(data);
   };
 
   useEffect(() => {
-    if (selectedCustomerId) {
-      loadMessagesForCustomer(selectedCustomerId);
+    if (selectedBusinessId) {
+      loadMessagesForBusiness(selectedBusinessId);
     }
-  }, [selectedCustomerId]);
+  }, [selectedBusinessId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,13 +97,13 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim() || !selectedCustomerId) return;
+    if (!chatInput.trim() || !selectedBusinessId || !user) return;
 
     const newMsg = {
-      business_id: businessId,
-      customer_id: selectedCustomerId,
-      sender_type: 'business',
-      sender_name: 'Loja',
+      business_id: selectedBusinessId,
+      customer_id: user.id,
+      sender_type: 'customer',
+      sender_name: 'Cliente',
       message: chatInput.trim()
     };
     
@@ -118,32 +118,32 @@ export default function DashboardMessages({ businessId }: { businessId: string }
   };
 
   const filteredConversations = conversations.filter(c => {
-    const name = c.customer_profile?.full_name || c.sender_name || 'Cliente';
+    const name = c.business?.name || 'Loja';
     return name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <div className="animate-spin text-purple-600"><Clock className="w-8 h-8" /></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex h-full">
+    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex h-full min-h-[500px]">
       {/* Sidebar */}
-      <div className={`w-full md:w-[350px] flex-col border-r border-slate-200 ${selectedCustomerId ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`w-full md:w-[350px] flex-col border-r border-slate-200 ${selectedBusinessId ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-slate-100 shrink-0">
           <h2 className="text-xl font-black text-slate-900 flex items-center gap-2 mb-4">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            Mensagens
+            Lojas
           </h2>
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Procurar cliente..." 
+              placeholder="Procurar loja..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 transition-colors"
@@ -155,22 +155,22 @@ export default function DashboardMessages({ businessId }: { businessId: string }
           {filteredConversations.length > 0 ? (
             <div className="divide-y divide-slate-50">
               {filteredConversations.map(conv => {
-                const isSelected = selectedCustomerId === conv.customer_id;
-                const name = conv.customer_profile?.full_name || conv.sender_name || 'Cliente';
+                const isSelected = selectedBusinessId === conv.business_id;
+                const name = conv.business?.name || 'Loja';
                 const dateObj = new Date(conv.updated_at);
                 const timeStr = dateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
                 
                 return (
                   <button 
-                    key={conv.customer_id}
-                    onClick={() => setSelectedCustomerId(conv.customer_id)}
+                    key={conv.business_id}
+                    onClick={() => setSelectedBusinessId(conv.business_id)}
                     className={`w-full p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-purple-50/50' : ''}`}
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                      {conv.customer_profile?.avatar_url ? (
-                        <img src={conv.customer_profile.avatar_url} alt={name} className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200">
+                      {conv.business?.logo_url ? (
+                        <img src={conv.business.logo_url} alt={name} className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-5 h-5 text-slate-400" />
+                        <Store className="w-5 h-5 text-slate-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
@@ -197,22 +197,22 @@ export default function DashboardMessages({ businessId }: { businessId: string }
       </div>
 
       {/* Main Chat Area */}
-      <div className={`flex-1 flex-col bg-slate-50 ${selectedCustomerId ? 'flex' : 'hidden md:flex'}`}>
-        {selectedCustomerId ? (
+      <div className={`flex-1 flex-col bg-slate-50 ${selectedBusinessId ? 'flex' : 'hidden md:flex'}`}>
+        {selectedBusinessId ? (
           <>
             <div className="bg-white border-b border-slate-200 p-4 flex items-center gap-3 shrink-0">
               <button 
-                onClick={() => setSelectedCustomerId(null)}
+                onClick={() => setSelectedBusinessId(null)}
                 className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-900"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0 text-purple-600">
-                <User className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0 text-purple-600 border border-purple-200">
+                <Store className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-black text-slate-900">
-                  {conversations.find(c => c.customer_id === selectedCustomerId)?.customer_profile?.full_name || 'Cliente'}
+                  {conversations.find(c => c.business_id === selectedBusinessId)?.business?.name || 'Loja'}
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Chat Ativo
@@ -222,10 +222,10 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((msg: any) => {
-                const isBusiness = msg.sender_type === 'business' || msg.sender_type === 'ai' || msg.sender_type === 'system';
+                const isCustomer = msg.sender_type === 'customer';
                 return (
-                  <div key={msg.id} className={`flex ${isBusiness ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3.5 rounded-2xl text-sm shadow-sm ${isBusiness ? 'bg-slate-900 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'}`}>
+                  <div key={msg.id} className={`flex ${isCustomer ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] p-3.5 rounded-2xl text-sm shadow-sm ${isCustomer ? 'bg-purple-600 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'}`}>
                       {msg.message}
                     </div>
                   </div>
@@ -258,9 +258,9 @@ export default function DashboardMessages({ businessId }: { businessId: string }
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <MessageSquare className="w-10 h-10 text-slate-300" />
             </div>
-            <p className="font-bold text-slate-500">Selecione uma conversa</p>
+            <p className="font-bold text-slate-500">Selecione uma loja</p>
             <p className="text-sm mt-1 text-center max-w-sm">
-              Escolha um cliente na lista à esquerda para ver o histórico de mensagens e responder.
+              Escolha uma conversa à esquerda para continuar a falar com o seu salão ou barbearia favorita.
             </p>
           </div>
         )}

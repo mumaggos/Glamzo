@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -13,7 +15,7 @@ export default function GlamzoMessenger() {
   if (!isBusinessPage) return null;
 
   const { user, profile } = useAuth();
-  const match = location.pathname.match(/\/(?:business|store)\/([^/]+)/);
+  const match = location.pathname.match(/\\/(?:business|store)\\/([^/]+)/);
   const slugOrId = match ? match[1] : null;
 
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -38,12 +40,12 @@ export default function GlamzoMessenger() {
     if (isOpen && user && businessId) {
       loadMessages();
       
-      const channel = supabase.channel(`customer_messages_${user.id}`)
+      const channel = supabase.channel(\`customer_messages_\${user.id}\`)
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `business_id=eq.${businessId}` // Could also add customer_id=eq.${user.id}
+          filter: \`business_id=eq.\${businessId}\` // Could also add customer_id=eq.\${user.id}
         }, (payload) => {
           if (payload.new.customer_id === user.id) {
             setMessages(prev => [...prev, payload.new]);
@@ -147,7 +149,7 @@ export default function GlamzoMessenger() {
             {messages.map((m: any) => {
               const isCustomer = m.sender_type === 'customer';
               return (
-                <div key={m.id} className={`p-3.5 rounded-2xl text-xs shadow-sm max-w-[85%] font-medium leading-relaxed ${isCustomer ? 'bg-purple-600 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start'}`}>
+                <div key={m.id} className={\`p-3.5 rounded-2xl text-xs shadow-sm max-w-[85%] font-medium leading-relaxed \${isCustomer ? 'bg-purple-600 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start'}\`}>
                   {m.message}
                 </div>
               );
@@ -174,3 +176,5 @@ export default function GlamzoMessenger() {
     </div>
   );
 }
+`;
+fs.writeFileSync('src/components/GlamzoMessenger.tsx', code);

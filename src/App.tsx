@@ -61,12 +61,12 @@ import FaqParceiro from './pages/info/FaqParceiro';
 import Sobre from './pages/info/Sobre';
 import Contactos from './pages/info/Contactos';
 
-class ErrorBoundary extends React.Component<any, any> {
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, any> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
   render() {
     if (this.state.hasError) return <div className="p-10 text-red-600 font-bold">Ocorreu um erro no carregamento da página. Por favor, recarregue.</div>;
-    return this.props.children;
+    return (this as any).props.children;
   }
 }
 

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { MessageSquare, Send, ArrowLeft, Search, Clock, User } from 'lucide-react';
@@ -54,7 +56,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `business_id=eq.${businessId}`
+        filter: \`business_id=eq.\${businessId}\`
       }, (payload) => {
         const msg = payload.new;
         if (msg.sender_type === 'customer') {
@@ -133,7 +135,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex h-full">
       {/* Sidebar */}
-      <div className={`w-full md:w-[350px] flex-col border-r border-slate-200 ${selectedCustomerId ? 'hidden md:flex' : 'flex'}`}>
+      <div className={\`w-full md:w-[350px] flex-col border-r border-slate-200 \${selectedCustomerId ? 'hidden md:flex' : 'flex'}\`}>
         <div className="p-4 border-b border-slate-100 shrink-0">
           <h2 className="text-xl font-black text-slate-900 flex items-center gap-2 mb-4">
             <MessageSquare className="w-6 h-6 text-purple-600" />
@@ -164,7 +166,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
                   <button 
                     key={conv.customer_id}
                     onClick={() => setSelectedCustomerId(conv.customer_id)}
-                    className={`w-full p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-purple-50/50' : ''}`}
+                    className={\`w-full p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 \${isSelected ? 'bg-purple-50/50' : ''}\`}
                   >
                     <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
                       {conv.customer_profile?.avatar_url ? (
@@ -178,7 +180,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
                         <span className="font-bold text-sm text-slate-900 truncate">{name}</span>
                         <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap ml-2">{timeStr}</span>
                       </div>
-                      <p className={`text-xs truncate ${isSelected ? 'text-purple-700 font-medium' : 'text-slate-500'}`}>
+                      <p className={\`text-xs truncate \${isSelected ? 'text-purple-700 font-medium' : 'text-slate-500'}\`}>
                         {conv.last_message}
                       </p>
                     </div>
@@ -197,7 +199,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
       </div>
 
       {/* Main Chat Area */}
-      <div className={`flex-1 flex-col bg-slate-50 ${selectedCustomerId ? 'flex' : 'hidden md:flex'}`}>
+      <div className={\`flex-1 flex-col bg-slate-50 \${selectedCustomerId ? 'flex' : 'hidden md:flex'}\`}>
         {selectedCustomerId ? (
           <>
             <div className="bg-white border-b border-slate-200 p-4 flex items-center gap-3 shrink-0">
@@ -224,8 +226,8 @@ export default function DashboardMessages({ businessId }: { businessId: string }
               {messages.map((msg: any) => {
                 const isBusiness = msg.sender_type === 'business' || msg.sender_type === 'ai' || msg.sender_type === 'system';
                 return (
-                  <div key={msg.id} className={`flex ${isBusiness ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3.5 rounded-2xl text-sm shadow-sm ${isBusiness ? 'bg-slate-900 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'}`}>
+                  <div key={msg.id} className={\`flex \${isBusiness ? 'justify-end' : 'justify-start'}\`}>
+                    <div className={\`max-w-[70%] p-3.5 rounded-2xl text-sm shadow-sm \${isBusiness ? 'bg-slate-900 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'}\`}>
                       {msg.message}
                     </div>
                   </div>
@@ -268,3 +270,6 @@ export default function DashboardMessages({ businessId }: { businessId: string }
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/DashboardMessages.tsx', code);

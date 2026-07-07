@@ -6,7 +6,8 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag } from 'lucide-react';
+import {  User, MapPin, Calendar, Mail, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag } from 'lucide-react';
+import AccountMessages from '../components/AccountMessages';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
@@ -14,6 +15,7 @@ export default function Account() {
   
   // Tabs Navigation State
   const [activeTab, setActiveTab] = useState('reservas');
+  const [visibleBookings, setVisibleBookings] = useState(5);
 
   // Favorites management state
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<any[]>([]);
@@ -268,6 +270,7 @@ export default function Account() {
             { id: 'reservas', icon: Calendar, label: 'Minhas Reservas' },
             { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
             { id: 'recompensas', icon: Gift, label: 'Recompensas' },
+            { id: 'mensagens', icon: MessageSquare, label: 'Mensagens' },
             { id: 'favoritos', icon: Heart, label: 'Favoritos' },
             { id: 'suporte', icon: HelpCircle, label: 'Apoio Técnico' }
           ].map(tab => (
@@ -300,8 +303,9 @@ export default function Account() {
                   <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">Explorar Salões</a>
                 </div>
               ) : (
+                <>
                 <div className="space-y-4">
-                  {bookings.map(bk => {
+                  {bookings.slice(0, visibleBookings).map(bk => {
                     const statusColors: any = { 'confirmed': 'bg-emerald-100 text-emerald-700', 'completed': 'bg-slate-100 text-slate-600', 'cancelled': 'bg-rose-100 text-rose-700', 'no_show': 'bg-amber-100 text-amber-700' };
                     const statusText: any = { 'confirmed': 'Confirmada', 'completed': 'Concluída', 'cancelled': 'Cancelada', 'no_show': 'Falta' };
                     
@@ -335,8 +339,16 @@ export default function Account() {
                       </div>
                     )
                   })}
+                
                 </div>
-              )}
+                {bookings.length > visibleBookings && (
+                  <div className="mt-8 text-center">
+                    <button onClick={() => setVisibleBookings(bookings.length)} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-xs">
+                      Ver Histórico Completo
+                    </button>
+                  </div>
+                )}
+              </>)}
             </div>
           </div>
         )}
@@ -413,7 +425,43 @@ export default function Account() {
           </div>
         )}
 
+        {/* MENSAGENS */}
+        {activeTab === 'mensagens' && (
+          <div className="animate-fade-in h-[600px]">
+             <AccountMessages />
+          </div>
+        )}
+        
         {/* 4. SUPORTE E DISPUTAS */}
+        
+        {activeTab === 'favoritos' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
+              <h3 className="text-xl font-black text-slate-900 mb-6">Salões Favoritos</h3>
+              {favoriteBusinesses.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                  <Heart className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                  <p>Ainda não tens favoritos guardados.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {favoriteBusinesses.map(fav => (
+                    <div key={fav.id} className="p-4 border border-slate-200 rounded-2xl flex items-center gap-4 hover:border-purple-300 transition-colors cursor-pointer" onClick={() => window.location.href = `/business/${fav.id}`}>
+                      <img src={fav.cover_image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75'} alt={fav.name} className="w-20 h-20 rounded-xl object-cover" />
+                      <div>
+                        <h4 className="font-bold text-slate-900">{fav.name}</h4>
+                        <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                          <MapPin className="w-3 h-3" /> {fav.city}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'suporte' && (
           <div className="space-y-6 animate-fade-in">
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
@@ -489,6 +537,32 @@ export default function Account() {
           </div>
         </div>
       )}
+
+    
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-6 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <button onClick={() => setActiveTab('reservas')} className="flex flex-col items-center p-2">
+          <Calendar className={`w-6 h-6 ${activeTab === 'reservas' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'reservas' ? 'text-purple-600' : 'text-slate-500'}`}>Reservas</span>
+        </button>
+        
+        <button onClick={() => setActiveTab('mensagens')} className="flex flex-col items-center p-2">
+          <MessageSquare className={`w-6 h-6 ${activeTab === 'mensagens' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'mensagens' ? 'text-purple-600' : 'text-slate-500'}`}>Chat</span>
+        </button>
+        <button onClick={() => setActiveTab('favoritos')} className="flex flex-col items-center p-2">
+          <Heart className={`w-6 h-6 ${activeTab === 'favoritos' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'favoritos' ? 'text-purple-600' : 'text-slate-500'}`}>Favoritos</span>
+        </button>
+        <button onClick={() => setActiveTab('recompensas')} className="flex flex-col items-center p-2">
+          <Gift className={`w-6 h-6 ${activeTab === 'recompensas' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'recompensas' ? 'text-purple-600' : 'text-slate-500'}`}>Prêmios</span>
+        </button>
+        <button onClick={() => setActiveTab('perfil')} className="flex flex-col items-center p-2">
+          <User className={`w-6 h-6 ${activeTab === 'perfil' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'perfil' ? 'text-purple-600' : 'text-slate-500'}`}>Perfil</span>
+        </button>
+      </div>
 
     </div>
   );

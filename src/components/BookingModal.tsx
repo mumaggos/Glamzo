@@ -34,8 +34,7 @@ export default function BookingModal({
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [appliedReward, setAppliedReward] = useState<any | null>(null);
-  const [couponDiscount, setCouponDiscount] = useState(0);
-  const [couponError, setCouponError] = useState<string | null>(null);
+    const [couponError, setCouponError] = useState<string | null>(null);
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
   // Cache e Loading
@@ -91,6 +90,57 @@ export default function BookingModal({
   });
 
   const getWeekdayName = (date: Date) => ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][date.getDay()];
+  
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState<string | null>(null);
+    const [couponApplied, setCouponApplied] = useState<any>(null);
+  const [verifyingPromo, setVerifyingPromo] = useState(false);
+
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) return;
+    setVerifyingPromo(true);
+    setPromoError(null);
+    try {
+      const { data, error } = await supabase
+        .from('business_coupons')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('code', promoCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .single();
+      
+      if (error || !data) {
+        setPromoError('Cupão inválido ou expirado.');
+        setCouponDiscount(0);
+        setCouponApplied(null);
+        return;
+      }
+      
+      if (data.valid_until && new Date(data.valid_until) < new Date()) {
+        setPromoError('Este cupão já expirou.');
+        setCouponDiscount(0);
+        setCouponApplied(null);
+        return;
+      }
+
+      let discount = 0;
+      if (data.discount_percent) {
+        discount = totalServicesPrice * (data.discount_percent / 100);
+      } else if (data.discount_value) {
+        discount = data.discount_value;
+      }
+
+      setCouponDiscount(discount);
+      setCouponApplied(data);
+      setPromoError(null);
+    } catch (err) {
+      setPromoError('Erro ao validar cupão.');
+    } finally {
+      setVerifyingPromo(false);
+    }
+  };
+
   const getMonthName = (date: Date) => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][date.getMonth()];
   const timeToMinutes = (timeStr: string) => { const [h, m] = timeStr.split(':').map(Number); return h * 60 + m; };
   const minutesToTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
@@ -103,9 +153,9 @@ export default function BookingModal({
     const dayHours = businessHours.find(h => h.weekday === weekday);
     if (!dayHours || dayHours.is_closed) return [];
 
-    const startMin = timeToMinutes(dayHours.open_time || '09:00');
-    // CORREÇÃO: O fallback passou de 18:00 para 21:00 para evitar que o calendário feche cedo demais
-    const endMin = timeToMinutes(dayHours.close_time || '21:00'); 
+    if (!dayHours.open_time || !dayHours.close_time) return [];
+    const startMin = timeToMinutes(dayHours.open_time);
+    const endMin = timeToMinutes(dayHours.close_time); 
     const duration = totalServicesDuration;
     const dateStr = selectedDate.toISOString().split('T')[0];
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
@@ -351,9 +401,33 @@ export default function BookingModal({
                     </div>
                     <div className="text-right">
                       <span className="block text-xs font-bold text-slate-400 uppercase">Total a Pagar</span>
-                      <span className="text-2xl font-black text-purple-600">{totalServicesPrice.toFixed(2)}€</span>
+                      <span className="text-2xl font-black text-purple-600">{(Math.max(0, totalServicesPrice - couponDiscount)).toFixed(2)}€</span>
+                      {couponDiscount > 0 && <span className="block text-[10px] text-emerald-500 font-bold uppercase mt-1">Desconto aplicado: -{couponDiscount.toFixed(2)}€</span>}
                     </div>
                   </div>
+                  
+                  <div className="space-y-2 pt-2 pb-2 border-b border-slate-100">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Código Promocional</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        placeholder="Insira o código" 
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-mono font-bold outline-none focus:border-purple-500" 
+                      />
+                      <button 
+                        onClick={applyPromoCode}
+                        disabled={verifyingPromo || !promoCode.trim()}
+                        className="px-4 bg-slate-900 text-white font-bold rounded-xl text-sm disabled:opacity-50"
+                      >
+                        {verifyingPromo ? 'A verificar...' : 'Aplicar'}
+                      </button>
+                    </div>
+                    {promoError && <p className="text-rose-500 text-xs font-bold">{promoError}</p>}
+                    {couponApplied && <p className="text-emerald-500 text-xs font-bold">Cupão {couponApplied.code} aplicado com sucesso!</p>}
+                  </div>
+
                   <div className="space-y-2 pt-2">
                     <label className="text-xs font-bold text-slate-500 uppercase">Observações para o salão</label>
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Preciso de sair rápido..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:border-purple-500" rows={2} />

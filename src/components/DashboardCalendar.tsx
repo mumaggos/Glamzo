@@ -1,8 +1,27 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { CreditCard, Banknote, User } from 'lucide-react';
 
-export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
-  const hours = Array.from({ length: 14 }, (_, i) => i + 8); 
+export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick, businessHours }: any) {
+  
+  const computedHours = useMemo(() => {
+    if (!businessHours || businessHours.length === 0) {
+      return Array.from({ length: 14 }, (_, i) => i + 8);
+    }
+    const openH = businessHours.map((h) => {
+      if (!h.open_time || h.is_closed) return 8;
+      return parseInt(h.open_time.split(':')[0]);
+    });
+    const closeH = businessHours.map((h) => {
+      if (!h.close_time || h.is_closed) return 20;
+      return parseInt(h.close_time.split(':')[0]);
+    });
+    const minH = Math.min(...openH.filter(x => !isNaN(x)), 8);
+    const maxH = Math.max(...closeH.filter(x => !isNaN(x)), 20);
+    const len = (maxH - minH) + 1;
+    return Array.from({ length: len > 0 ? len : 14 }, (_, i) => i + minH);
+  }, [businessHours]);
+
+  const hours = computedHours; 
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [now, setNow] = useState(new Date());
@@ -114,10 +133,15 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
                       const paymentIsPaid = b.payment_status === 'paid' || isCompleted;
 
                       return (
-                        <div 
-                          key={b.id} 
+                        <div
+                          key={b.id}
                           onClick={(e) => { e.stopPropagation(); onBookingClick(b); }}
-                          className={`absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10 flex flex-col justify-between group`}
+                          style={{
+                            top: `${(parseInt(b.start_time.split(':')[1] || '0') / 60) * 100}%`,
+                            height: `${( (parseInt(b.end_time.split(':')[0])*60 + parseInt(b.end_time.split(':')[1] || '0')) - (parseInt(b.start_time.split(':')[0])*60 + parseInt(b.start_time.split(':')[1] || '0')) ) / 60 * 100}%`,
+                            minHeight: '20px'
+                          }}
+                          className={`absolute inset-x-1 bg-gradient-to-br bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10 flex flex-col justify-between group`}
                         >
                           <div className="flex-1 overflow-hidden">
                             {!isBlock && (

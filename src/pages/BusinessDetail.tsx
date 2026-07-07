@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from "react-helmet-async";
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Business, Review } from '../types';
 import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
@@ -21,6 +21,7 @@ export default function BusinessDetail() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [business, setBusiness] = useState<Business | null>(null);
   const [availability, setAvailability] = useState<{ available: boolean, label: string } | null>(null);
@@ -55,12 +56,30 @@ export default function BusinessDetail() {
       if (!slug) return;
       setLoading(true);
       try {
-        const { data } = await supabase.from('businesses').select('*').eq('slug', slug).maybeSingle();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        const { data } = isUuid 
+          ? await supabase.from('businesses').select('*').eq('id', slug).maybeSingle()
+          : await supabase.from('businesses').select('*').eq('slug', slug).maybeSingle();
+        
         if (data) {
           if (data.subscription_status === 'suspended') {
             setErrorMsg('Estabelecimento suspenso temporariamente.');
           } else {
             setBusiness(data as Business);
+            
+            // Check for QR referral
+            const ref = searchParams.get('ref');
+            if (ref === 'qr') {
+               // increment qr_scans_count in DB
+               supabase.rpc('increment_qr_scans', { p_business_id: data.id })
+                 .then(({error}) => {
+                   if (error) {
+                     // fallback to direct update if rpc doesn't exist
+                     const newCount = (data.qr_scans_count || 0) + 1;
+                     supabase.from('businesses').update({ qr_scans_count: newCount }).eq('id', data.id).then();
+                   }
+                 });
+            }
           }
         } else {
           setErrorMsg('Estabelecimento não encontrado.');
