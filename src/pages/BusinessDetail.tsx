@@ -422,7 +422,7 @@ export default function BusinessDetail() {
                 {/* BOTÕES DE CONTACTO RÁPIDOS RECUPERADOS */}
                 <div className="pt-4 border-t border-slate-100 space-y-3">
                   <a 
-                    href={business.whatsapp || `https://wa.me/${business.phone.replace(/[^0-9]/g, '')}`} 
+                    href={business.whatsapp || `https://wa.me/${business?.phone?.replace(/[^0-9]/g, '') || ''}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all"

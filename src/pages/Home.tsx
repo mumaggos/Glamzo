@@ -560,8 +560,8 @@ export default function Home() {
                   style={{ width: '100%', height: '100%' }} 
                 > 
                   {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />} 
-                  {mapBusinesses.map((b: any) => ( 
-                    <Marker  
+                  {mapBusinesses.filter((b: any) => b.lat != null && b.lng != null).map((b: any) => (
+                      <Marker  
                       key={b.id}  
                       position={{ lat: b.lat, lng: b.lng }} 
                       title={b.name} 

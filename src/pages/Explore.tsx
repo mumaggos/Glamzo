@@ -249,9 +249,9 @@ export default function Explore() {
   const filteredBusinesses = processedBusinesses.filter((b) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchName = b.name.toLowerCase().includes(q);
-      const matchCat = b.category.toLowerCase().includes(q);
-      const matchServices = services.some(s => s.business_id === b.id && s.name.toLowerCase().includes(q));
+      const matchName = (b.name || "").toLowerCase().includes(q);
+      const matchCat = (b.category || "").toLowerCase().includes(q);
+      const matchServices = services.some(s => s.business_id === b.id && (s.name || "").toLowerCase().includes(q));
       if (!matchName && !matchCat && !matchServices) return false;
     }
 
@@ -273,7 +273,7 @@ export default function Explore() {
 
     if (selectedSubcategory !== "All") {
       const subLower = selectedSubcategory.toLowerCase();
-      if (!(b.description || "").toLowerCase().includes(subLower) && !b.category.toLowerCase().includes(subLower)) return false;
+      if (!(b.description || "").toLowerCase().includes(subLower) && !(b.category || "").toLowerCase().includes(subLower)) return false;
     }
 
     if (minRating > 0 && b.rating < minRating) return false;
@@ -473,8 +473,8 @@ export default function Explore() {
                   <APIProvider apiKey={mapApiKey}>
                     <Map defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 6} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
                       {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
-                      {paginatedBusinesses.map((b) => (
-                        <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug || b.id}`)} />
+                      {paginatedBusinesses.filter((b) => b.lat != null && b.lng != null).map((b) => (
+                      <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 29, y: 32 } }} onClick={() => navigate(`/business/${b.slug || b.id}`)} />
                       ))}
                     </Map>
                   </APIProvider>

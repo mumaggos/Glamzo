@@ -62,10 +62,16 @@ import Sobre from './pages/info/Sobre';
 import Contactos from './pages/info/Contactos';
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, any> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
   render() {
-    if (this.state.hasError) return <div className="p-10 text-red-600 font-bold">Ocorreu um erro no carregamento da página. Por favor, recarregue.</div>;
+    if (this.state.hasError) return (
+      <div className="p-10 text-red-600 font-bold">
+        <h1>Ocorreu um erro no carregamento da página. Por favor, recarregue.</h1>
+        <pre className="mt-4 text-xs bg-red-50 p-4 rounded overflow-auto">{this.state.error?.toString()}</pre>
+        <pre className="mt-4 text-xs bg-red-50 p-4 rounded overflow-auto">{this.state.error?.stack}</pre>
+      </div>
+    );
     return (this as any).props.children;
   }
 }

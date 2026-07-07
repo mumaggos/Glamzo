@@ -65,8 +65,8 @@ export default function ClientsTab() {
         if (!searchTerm) return true;
         const term = searchTerm.toLowerCase();
         return (
-          c.name.toLowerCase().includes(term) ||
-          c.email.toLowerCase().includes(term)
+          (c.name || "").toLowerCase().includes(term) ||
+          (c.email || "").toLowerCase().includes(term)
         );
       })
       .sort((a: any, b: any) => b.lastVisit.localeCompare(a.lastVisit));

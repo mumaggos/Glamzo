@@ -1142,7 +1142,7 @@ export default function Admin() {
 
   const filteredSalons = salons.filter(s => {
     const term = searchTerm.toLowerCase();
-    return s.name.toLowerCase().includes(term) || s.city.toLowerCase().includes(term);
+    return (s.name || "").toLowerCase().includes(term) || (s.city || "").toLowerCase().includes(term);
   });
 
   // Analytics aggregate metrics calculations
@@ -3320,7 +3320,7 @@ $$;`}
                     <div className="border-t border-slate-200 pt-2.5 grid grid-cols-2 gap-2">
                       {selectedSalon.whatsapp && (
                         <a 
-                          href={`https://wa.me/${selectedSalon.whatsapp.replace(/[^0-9]/g, '')}`} 
+                          href={`https://wa.me/${(selectedSalon.whatsapp || "").replace(/[^0-9]/g, "")}`} 
                           target="_blank" 
                           rel="noreferrer" 
                           className="p-2 bg-white hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block"
