@@ -5,7 +5,7 @@ import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2 } from "lucide-r
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 
 export default function AgendaTab() {
-  const { business, user, services, staff, bookings, loadLayoutData } = useOutletContext<any>();
+  const { business, user, services, staff, bookings, businessHours, loadLayoutData } = useOutletContext<any>();
 
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split("T")[0]);
@@ -37,15 +37,33 @@ export default function AgendaTab() {
     setIsSavingManual(true);
     try {
       // 1. Validar se a hora da marcação está dentro das regras da loja
-      const [inputHour] = manualStartTime.split(":").map(Number);
-      // Se a loja tiver campos business.opening_hour (ex: "09:00") e closing_hour, validamos aqui:
-      if (business?.opening_time && business?.closing_time) {
-        const startLimit = parseInt(business.opening_time.split(":")[0]);
-        const endLimit = parseInt(business.end_time || business.closing_time || "20");
-        if (inputHour < startH || inputHour >= endH) {
-          alert(`Operação cancelada! O teu espaço está configurado para trabalhar apenas das ${business.opening_time} às ${business.end_time}.`);
+      const [inputHour, inputMin] = manualStartTime.split(":").map(Number);
+      const inputTotalMin = inputHour * 60 + inputMin;
+
+      let startLimitMin = 0;
+      let endLimitMin = 24 * 60;
+      if (businessHours && businessHours.length > 0) {
+         const d = new Date(manualDate);
+         const dayHours = businessHours.find((h: any) => h.weekday === d.getDay());
+         if (dayHours && !dayHours.is_closed) {
+             const [sh, sm] = dayHours.open_time.split(":").map(Number);
+             const [eh, em] = dayHours.close_time.split(":").map(Number);
+             startLimitMin = sh * 60 + sm;
+             endLimitMin = eh * 60 + em;
+         } else {
+             alert(`Operação cancelada! O teu espaço está fechado nesta data.`);
+             setIsSavingManual(false); return;
+         }
+      } else if (business?.opening_time && business?.closing_time) {
+         const [sh, sm] = business.opening_time.split(":").map(Number);
+         const [eh, em] = (business.end_time || business.closing_time || "20:00").split(":").map(Number);
+         startLimitMin = sh * 60 + sm;
+         endLimitMin = eh * 60 + em;
+      }
+
+      if (inputTotalMin < startLimitMin || inputTotalMin >= endLimitMin) {
+          alert(`Operação cancelada! Fora do horário de expediente.`);
           setIsSavingManual(false); return;
-        }
       }
 
       const selectedSvc = services.find((s: any) => s.id === manualServiceId);
@@ -116,7 +134,7 @@ export default function AgendaTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
         <div className="lg:col-span-3 flex flex-col h-full">
-            <DashboardCalendar bookings={bookings} services={services} staff={staff} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
+            <DashboardCalendar bookings={bookings} services={services} staff={staff} businessHours={businessHours} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
         </div>
         <div className="lg:col-span-1 space-y-6 shrink-0">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60">

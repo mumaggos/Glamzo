@@ -1,31 +1,13 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { CreditCard, Banknote, User } from 'lucide-react';
 
-export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
-  const hours = Array.from({ length: 14 }, (_, i) => i + 8); 
-  const scrollRef = useRef<HTMLDivElement>(null);
+export function DashboardCalendar({ bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
   
-  const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60000); 
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      const currentHour = now.getHours();
-      if (currentHour >= 8 && currentHour <= 21) {
-        const scrollAmount = (currentHour - 8) * 112;
-        scrollRef.current.scrollTo({ top: scrollAmount - 40, behavior: 'smooth' });
-      }
-    }
-  }, []); 
-
   const columns = useMemo(() => {
     const baseDate = new Date(selectedAgendaDate || new Date());
     if (agendaMode === 'day' && selectedStaffFilter === 'all') {
       return staff.map((s: any) => ({
-        id: s.id, title: s.full_name.split(' ')[0], avatar: s.avatar_url, dateStr: baseDate.toISOString().split('T')[0], isStaff: true
+        id: s.id, title: s.full_name.split(' ')[0], avatar: s.avatar_url, dateStr: baseDate.toISOString().split('T')[0], isStaff: true, weekday: baseDate.getDay()
       }));
     }
     const dates = [];
@@ -40,9 +22,52 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
       dates.push(baseDate);
     }
     return dates.map(d => ({
-      id: d.toISOString().split('T')[0], title: d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' }), dateStr: d.toISOString().split('T')[0], isStaff: false
+      id: d.toISOString().split('T')[0], title: d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' }), dateStr: d.toISOString().split('T')[0], isStaff: false, weekday: d.getDay()
     }));
   }, [agendaMode, selectedAgendaDate, staff, selectedStaffFilter]);
+
+  const hours = useMemo(() => {
+    let minH = 8;
+    let maxH = 20; // Inclusive limit
+    
+    if (businessHours && businessHours.length > 0) {
+      minH = 24;
+      maxH = 0;
+      columns.forEach((col: any) => {
+        const dayHours = businessHours.find((h: any) => h.weekday === col.weekday);
+        if (dayHours && !dayHours.is_closed) {
+          const startH = parseInt(dayHours.open_time.split(':')[0], 10);
+          const endH = parseInt(dayHours.close_time.split(':')[0], 10);
+          if (startH < minH) minH = startH;
+          if (endH > maxH) maxH = endH;
+        }
+      });
+      // Fallbacks if all selected columns are closed
+      if (minH === 24) minH = 8;
+      if (maxH === 0) maxH = 20;
+    }
+    
+    const length = maxH - minH + 1;
+    return Array.from({ length }, (_, i) => i + minH);
+  }, [columns, businessHours]);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000); 
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const currentHour = now.getHours();
+      if (currentHour >= hours[0] && currentHour <= hours[hours.length - 1]) {
+        const scrollAmount = (currentHour - hours[0]) * 112;
+        scrollRef.current.scrollTo({ top: scrollAmount - 40, behavior: 'smooth' });
+      }
+    }
+  }, [hours]); 
 
   const currentHourNum = now.getHours();
   const currentMinute = now.getMinutes();
@@ -91,7 +116,7 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
                 return (
                   <div 
                     key={`${hour}-${col.id}`} 
-                    className="flex-1 h-full border-l border-slate-50 hover:bg-purple-50/40 transition-colors cursor-pointer relative p-0.5"
+                    className="flex-1 h-full border-l border-slate-50 hover:bg-purple-50/40 transition-colors cursor-pointer relative"
                     onClick={() => onDateSelect({ date: col.dateStr, time: `${String(hour).padStart(2, '0')}:00`, staffId: colStaffId })}
                   >
                     {slotBookings.map((b: any) => {
@@ -113,11 +138,18 @@ export function DashboardCalendar({ bookings, staff, selectedStaffFilter, agenda
                       const paymentIsOnline = b.payment_method === 'stripe';
                       const paymentIsPaid = b.payment_status === 'paid' || isCompleted;
 
+                      const startParts = b.start_time.split(':').map(Number);
+                      const endParts = b.end_time.split(':').map(Number);
+                      const durationMins = (endParts[0] * 60 + endParts[1]) - (startParts[0] * 60 + startParts[1]);
+                      const topPx = (startParts[1] / 60) * 112;
+                      const heightPx = Math.max((durationMins / 60) * 112 - 2, 20); // -2 for margin, min 20px
+
                       return (
                         <div 
                           key={b.id} 
                           onClick={(e) => { e.stopPropagation(); onBookingClick(b); }}
-                          className={`absolute inset-x-1 top-1 bottom-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10 flex flex-col justify-between group`}
+                          style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                          className={`absolute left-1 right-1 bg-gradient-to-br ${bgClasses} rounded-xl p-2 text-xs font-bold text-white shadow-md hover:scale-[1.02] transition-transform overflow-hidden z-10 flex flex-col justify-between group`}
                         >
                           <div className="flex-1 overflow-hidden">
                             {!isBlock && (

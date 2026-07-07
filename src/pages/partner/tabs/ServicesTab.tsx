@@ -277,24 +277,28 @@ export default function ServicesTab() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-slate-500">Duração (min)</label>
-                  <select
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 focus:outline-none focus:border-purple-500 cursor-pointer appearance-none font-mono"
+                  <input
+                    type="number"
+                    min="15"
+                    step="15"
+                    required
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 focus:outline-none focus:border-purple-500 font-mono"
                     value={serviceForm.duration_minutes}
-                    onChange={(e) =>
-                      setServiceForm({
-                        ...serviceForm,
-                        duration_minutes: Number(e.target.value),
-                      })
-                    }
-                  >
-                    <option value={15}>15 min</option>
-                    <option value={30}>30 min</option>
-                    <option value={45}>45 min</option>
-                    <option value={60}>1 hora</option>
-                    <option value={90}>1h 30m</option>
-                    <option value={120}>2 horas</option>
-                    <option value={180}>3 horas</option>
-                  </select>
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val % 15 === 0) {
+                        setServiceForm({
+                          ...serviceForm,
+                          duration_minutes: val,
+                        });
+                      }
+                    }}
+                    onBlur={(e) => {
+                       const val = Number(e.target.value);
+                       const rounded = Math.max(15, Math.round(val / 15) * 15);
+                       setServiceForm({ ...serviceForm, duration_minutes: rounded });
+                    }}
+                  />
                 </div>
               </div>
               <div className="space-y-1.5">

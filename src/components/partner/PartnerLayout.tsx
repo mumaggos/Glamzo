@@ -22,6 +22,7 @@ export default function PartnerLayout() {
   const [services, setServices] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [businessHours, setBusinessHours] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   // ESTADO DAS NOTIFICAÇÕES (Fixo por agora, mas depois ligamos à DB)
@@ -49,14 +50,16 @@ export default function PartnerLayout() {
       const { data: tData } = await supabase.from("hardware_orders").select("*").eq("business_id", bData.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (tData) setTabletOrder(tData);
 
-      const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }] = await Promise.all([
+      const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }, { data: bhData }] = await Promise.all([
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
         supabase.from("staff").select("*").eq("business_id", bData.id).order("full_name"),
-        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false })
+        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false }),
+        supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);
 
       setCategories(catData || []); setServices(svData || []); setStaff(stData || []); setBookings(bkData || []);
+      setBusinessHours(bhData || []);
       setBookingsTodayCount((bkData || []).filter(b => b.booking_date === new Date().toISOString().split("T")[0]).length);
     } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
   };
@@ -201,7 +204,7 @@ export default function PartnerLayout() {
         {/* pb-36 garante o scroll dos Insights */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
            <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
-            <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, loadLayoutData, isLoadingData }} />
+            <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, businessHours, loadLayoutData, isLoadingData }} />
           </motion.div>
         </div>
       </main>

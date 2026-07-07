@@ -103,9 +103,8 @@ export default function BookingModal({
     const dayHours = businessHours.find(h => h.weekday === weekday);
     if (!dayHours || dayHours.is_closed) return [];
 
-    const startMin = timeToMinutes(dayHours.open_time || '09:00');
-    // CORREÇÃO: O fallback passou de 18:00 para 21:00 para evitar que o calendário feche cedo demais
-    const endMin = timeToMinutes(dayHours.close_time || '21:00'); 
+    const startMin = timeToMinutes(dayHours.open_time);
+    const endMin = timeToMinutes(dayHours.close_time); 
     const duration = totalServicesDuration;
     const dateStr = selectedDate.toISOString().split('T')[0];
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
@@ -115,7 +114,7 @@ export default function BookingModal({
     const cutoffTimeMs = Date.now() + minNoticeMs;
 
     const slots = [];
-    for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 30) {
+    for (let slotStart = startMin; slotStart <= endMin - duration; slotStart += 15) {
       const slotEnd = slotStart + duration;
 
       const slotDateTime = new Date(selectedDate);

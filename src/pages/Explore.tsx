@@ -8,7 +8,7 @@ import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData"
 import { useAuth } from "../hooks/useAuth";
 import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
 import {
-  Search, MapPin, Grid, Compass, Star, SlidersHorizontal, CheckCircle2,
+  Search, MapPin, Grid, Compass, Star, SlidersHorizontal, Sliders, CheckCircle2,
   Loader2, X, Navigation, List, Map as MapIcon, Heart
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
