@@ -21,6 +21,7 @@ export default function StaffLogin() {
         .select('*')
         .eq('email', email)
         .eq('temp_password', password)
+        .eq('is_active', true)
         .single();
         
       if (fetchErr || !data) {

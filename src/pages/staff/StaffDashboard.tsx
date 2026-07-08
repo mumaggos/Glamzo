@@ -39,6 +39,14 @@ export default function StaffDashboard() {
   const loadDashboardData = async (staffId: string, businessId: string) => {
     try {
       setLoading(true);
+      
+      // Verify if staff is still active
+      const { data: staffData } = await supabase.from('staff').select('is_active').eq('id', staffId).single();
+      if (!staffData || !staffData.is_active) {
+        handleLogout();
+        return;
+      }
+
       const today = new Date().toISOString().split('T')[0];
       
       const [bookingsRes, servicesRes] = await Promise.all([
@@ -47,7 +55,7 @@ export default function StaffDashboard() {
           .select("*, customer_profile:customer_profiles(*)")
           .eq("business_id", businessId)
           .eq("booking_date", today)
-          .in("staff_id", [staffId, "no_preference"])
+          .eq("staff_id", staffId)
           .neq("booking_status", "cancelled")
           .order("start_time", { ascending: true }),
         supabase

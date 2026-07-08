@@ -7,8 +7,7 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function run() {
-  const { data, error } = await supabase.from('businesses').select('booking_end_margin').limit(1);
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
+  const { data, error } = await supabase.from('staff').select('*').limit(1);
+  console.log(data);
 }
 run();
