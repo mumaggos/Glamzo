@@ -227,7 +227,7 @@ export default function StaffDashboard() {
 
   if (loading || !staff) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-slate-50 z-50 flex items-center justify-center">
         <div className="animate-spin text-purple-600">
           <Scissors className="w-8 h-8" />
         </div>
@@ -236,7 +236,7 @@ export default function StaffDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col font-sans">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">

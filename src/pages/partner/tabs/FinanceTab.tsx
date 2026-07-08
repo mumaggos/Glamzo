@@ -595,7 +595,7 @@ export default function FinanceTab() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
           <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
             <FileText className="w-4 h-4 text-slate-600" />
-            Livro Razão / Histórico de Transações
+            Faturação e Livro de Razões
           </h4>
           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
             {ledgerFilter === 'custom' && (

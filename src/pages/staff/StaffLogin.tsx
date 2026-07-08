@@ -61,7 +61,7 @@ export default function StaffLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center text-purple-600 mb-6">
           <Scissors className="w-12 h-12" />

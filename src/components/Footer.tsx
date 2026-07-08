@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { useLocation } from 'react-router-dom';
+
 export default function Footer() {
+  const location = useLocation();
+  const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard');
+  
+  if (isDashboardOrAdmin) return null;
   return (
     <footer className="border-t border-slate-100 mt-auto bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

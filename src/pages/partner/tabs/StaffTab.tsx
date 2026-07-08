@@ -436,16 +436,12 @@ export default function StaffTab() {
                  const metrics = getStaffMetrics(metricsStaff.id, metricsFilter);
                  return (
                    <div className="space-y-6">
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 gap-4">
                        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-center">
                           <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Serviços Concluídos</p>
                           <p className="text-3xl font-black text-emerald-700 mt-1">{metrics.totalServices}</p>
                        </div>
-                       <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl text-center">
-                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-wider">Faturação (€)</p>
-                          <p className="text-3xl font-black text-purple-700 mt-1">{metrics.totalRevenue.toFixed(2)}€</p>
                        </div>
-                     </div>
 
                      <button
                        onClick={() => handleDownloadMetrics(metricsStaff, metrics)}

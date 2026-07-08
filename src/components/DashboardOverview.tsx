@@ -171,8 +171,8 @@ export function DashboardOverview({
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Pagamentos Online</p>
                   <p className="font-black text-slate-900">Stripe Connect</p>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.stripe_account_id ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {business?.stripe_account_id ? 'Configurado' : 'Pendente'}
+                <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.charges_enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {business?.charges_enabled ? 'Configurado' : 'Pendente'}
                 </div>
               </div>
 

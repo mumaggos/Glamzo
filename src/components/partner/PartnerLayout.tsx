@@ -75,7 +75,7 @@ export default function PartnerLayout() {
     { id: "servicos", label: "Serviços", icon: Scissors, path: "/partner/dashboard/servicos" },
     { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
     { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
-    { id: "financeiro", label: "Pagamentos", icon: Landmark, path: "/partner/dashboard/financeiro" },
+    { id: "financeiro", label: "Faturação", icon: Landmark, path: "/partner/dashboard/financeiro" },
     { id: "website", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: "Mensagens", icon: MessageSquare, path: "/partner/dashboard/mensagens" },
     ...(tabletOrder ? [{ id: "tablet", label: "Terminal Glamzo", icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),
@@ -202,7 +202,7 @@ export default function PartnerLayout() {
         </div>
 
         {/* pb-36 garante o scroll dos Insights */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
+        <div className="flex-1 overflow-y-auto overflow-x-auto w-full px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
            <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
             <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, businessHours, loadLayoutData, isLoadingData }} />
           </motion.div>
