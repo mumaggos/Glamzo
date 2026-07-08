@@ -123,6 +123,26 @@ export default function StaffTab() {
         setGlobalSuccess("Profissional contratado e registado com sucesso.");
         if (payload.email) {
           setCreatedStaffAuth({ email: payload.email, temp_password: generatedPassword });
+          
+          // Envia email automaticamente
+          try {
+            await fetch("/api/emails/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "staff_credentials",
+                to: payload.email,
+                data: {
+                  shopName: business.name,
+                  email: payload.email,
+                  password: generatedPassword,
+                  loginUrl: `https://glamzo.pt/staff/login`
+                }
+              })
+            });
+          } catch (e) {
+            console.error("Falha ao enviar email automaticamente", e);
+          }
         }
       }
 
