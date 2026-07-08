@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Users, Plus, Pencil, Trash2, X, AlertCircle } from "lucide-react";
+import { Users, Plus, Pencil, Trash2, X, AlertCircle, Mail } from "lucide-react";
 import { Business, Staff } from "../../../types";
 
 import { optimizeImageBeforeUpload } from "../../../utils/imageOptimizer";
@@ -149,6 +149,34 @@ export default function StaffTab() {
     }
   };
 
+  const handleResendEmail = async (st: any) => {
+    if (!st.email || !st.temp_password) {
+      alert("Este profissional não tem email ou password temporária definida.");
+      return;
+    }
+    
+    try {
+      const res = await fetch("/api/emails/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "staff_credentials",
+          to: st.email,
+          data: {
+            shopName: business.name,
+            email: st.email,
+            password: st.temp_password,
+            loginUrl: `https://glamzo.pt/staff/login`
+          }
+        })
+      });
+      if (!res.ok) throw new Error("Erro");
+      alert("Email enviado com sucesso!");
+    } catch (err) {
+      alert("Falha ao enviar email. Tente novamente.");
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-[1600px] w-full mx-auto animate-fade-in text-slate-700">
       {globalSuccess && (
@@ -242,6 +270,13 @@ export default function StaffTab() {
                 </div>
 
                 <div className="mt-auto border-t border-slate-100 pt-4 flex gap-2">
+                  <button
+                    onClick={() => handleResendEmail(st)}
+                    className="w-10 flex items-center justify-center bg-emerald-50 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl transition border border-emerald-100 cursor-pointer"
+                    title="Enviar Credenciais"
+                  >
+                    <Mail className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => {
                       setEditingStaff(st);
@@ -449,7 +484,7 @@ export default function StaffTab() {
                       <button
                         type="button"
                         onClick={() => {
-                          const url = `${window.location.origin}/staff/login`;
+                          const url = `https://glamzo.pt/staff/login`;
                           navigator.clipboard.writeText(`Link: ${url}\nEmail: ${createdStaffAuth.email}\nPassword: ${createdStaffAuth.temp_password}`);
                           alert("Link e credenciais copiados!");
                         }}
@@ -474,7 +509,7 @@ export default function StaffTab() {
                                   shopName: business.name,
                                   email: createdStaffAuth.email,
                                   password: createdStaffAuth.temp_password,
-                                  loginUrl: `${window.location.origin}/staff/login`
+                                  loginUrl: `https://glamzo.pt/staff/login`
                                 }
                               })
                             });
