@@ -938,7 +938,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
               currency: "eur",
               product: terminalProductId,
               recurring: { interval: "month" },
-              unit_amount: 2499,
+              unit_amount: 2490,
             },
             quantity: 1,
           },
@@ -946,7 +946,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             price_data: {
               currency: "eur",
               product: terminalProductId,
-              unit_amount: 999,
+              unit_amount: 990,
             },
             quantity: 1,
           },
@@ -1567,7 +1567,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
             planNameMetadata === "TERMINAL"
               ? "Glamzo PRO Terminal"
               : "Glamzo PRO";
-          const planPrice = planNameMetadata === "TERMINAL" ? 24.99 : 19.99;
+          const planPrice = planNameMetadata === "TERMINAL" ? 24.90 : 19.90;
 
           if (existingSub) {
             console.log(
@@ -1843,7 +1843,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
             business_id: businessId,
             plan_name: "Glamzo PRO", // Defaults to PRO if missed by checkout event
             status: syncedStatus,
-            monthly_price: 19.99,
+            monthly_price: 19.90,
             started_at: new Date().toISOString(),
             expires_at: syncedExpiry,
             stripe_subscription_id: stripeSubId,

@@ -232,7 +232,7 @@ export default function Account() {
   if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">Acesso Restrito</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">Fazer Login</a></div>;
 
   return (
-    <div id="account-view" className="min-h-screen bg-[#F8F9FC] font-sans pb-20">
+    <div id="account-view" className="min-h-[100dvh] bg-[#F8F9FC] font-sans pb-28 lg:pb-12">
       
       {/* Banner de Topo e Navegação */}
       <div className="bg-slate-900 pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">

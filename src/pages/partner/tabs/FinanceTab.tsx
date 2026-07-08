@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Sparkles, Check, CheckCircle2, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
+import { Sparkles, Check, CheckCircle, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
 import { Business } from "../../../types";
 
 interface PartnerContextType {
@@ -23,6 +23,7 @@ export default function FinanceTab() {
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [ledgerFilter, setLedgerFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
 
   const loadFinanceData = async () => {
     if (!business) return;
@@ -71,17 +72,65 @@ export default function FinanceTab() {
   }, [business]);
 
   // Derived calculations
-  const totalVolumeBruto = ledgers.reduce(
+  
+  const getFilteredLedgers = () => {
+    const now = new Date();
+    return ledgers.filter(item => {
+      if (ledgerFilter === 'all') return true;
+      const itemDate = new Date(item.created_at);
+      if (ledgerFilter === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return itemDate >= weekAgo;
+      }
+      if (ledgerFilter === 'month') {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return itemDate >= monthAgo;
+      }
+      if (ledgerFilter === 'year') {
+        const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        return itemDate >= yearAgo;
+      }
+      return true;
+    }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  };
+
+  const filteredLedgers = getFilteredLedgers();
+
+  const handleDownloadCSV = () => {
+    const headers = ["ID", "Data", "Descricao", "Metodo", "Status", "Valor Total", "Valor Retido", "Valor Liquido"];
+    const rows = filteredLedgers.map(item => [
+      item.id,
+      new Date(item.created_at).toLocaleString('pt-PT'),
+      item.description || (item.booking_id ? `Reserva ${item.booking_id}` : "Venda Directa"),
+      item.payment_method === 'stripe' ? 'Online' : 'Local',
+      item.payment_status,
+      Number(item.amount_total || item.amount || 0).toFixed(2),
+      Number(item.glamzo_fee || 0).toFixed(2),
+      Number(item.business_amount || item.amount || 0).toFixed(2)
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `glamzo_transacoes_${ledgerFilter}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const totalVolumeBruto = filteredLedgers.reduce(
     (sum, item) => sum + Number(item.amount_total || item.amount || 0),
     0
   );
   
-  const totalComissoesRetidas = ledgers.reduce((sum, item) => {
+  const totalComissoesRetidas = filteredLedgers.reduce((sum, item) => {
     if (item.payment_method !== "stripe") return sum;
     return sum + Math.max(0, Number(item.glamzo_fee || 0));
   }, 0);
 
-  const totalReceivedVolume = ledgers.reduce(
+  const totalReceivedVolume = filteredLedgers.reduce(
     (sum, item) =>
       sum +
       Number(item.business_amount || item.amount_total || item.amount || 0),
@@ -302,10 +351,10 @@ export default function FinanceTab() {
             <span className="text-sm font-bold text-slate-500"> / mês</span>
           </div>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
           </ul>
           
           {business?.selected_plan === "app_tablet" ? (
@@ -345,10 +394,10 @@ export default function FinanceTab() {
             </div>
           </div>
           <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Tudo do Plano Glamzo PRO</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Tablet Samsung/Lenovo Físico</strong> configurado para a receção</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Alertas sonoros (Sininho) nas novas reservas</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Tudo do Plano Glamzo PRO</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Tablet Samsung/Lenovo Físico</strong> configurado para a receção</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Alertas sonoros (Sininho) nas novas reservas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
           </ul>
 
           {business?.selected_plan !== "app_tablet" ? (
@@ -430,75 +479,11 @@ export default function FinanceTab() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                  Status da Conta
-                </span>
-                {stripeStatus?.charges_enabled ? (
-                  <span className="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Ativa
-                  </span>
-                ) : (
-                  <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> Restrita
-                  </span>
-                )}
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-2xl font-black text-slate-900">{availableBalanceToWithdraw.toFixed(2)}€</p>
-                <p className="text-[10px] text-slate-500 font-mono mt-1">Saldo Disponível para Levantamento</p>
-              </div>
-
-              {!stripeStatus?.charges_enabled && (
-                <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl mb-4 text-[10px] text-amber-800 font-medium">
-                  A sua conta necessita de fornecer mais dados legais para desbloquear levantamentos.
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <button
-                  onClick={handleConnectStripe}
-                  className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-xl text-xs hover:bg-slate-800 transition"
-                >
-                  Painel Glamzo Pay
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-slate-200">
-               <h5 className="font-bold text-xs text-slate-900 mb-3">Solicitar Levantamento</h5>
-               {payoutSuccess && (
-                 <div className="bg-emerald-50 text-emerald-700 p-2 rounded-lg text-xs font-bold mb-3 border border-emerald-100">
-                   {payoutSuccess}
-                 </div>
-               )}
-               <form onSubmit={handleSubmitPayoutRequest} className="space-y-3">
-                 <div>
-                   <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Montante (€)</label>
-                   <input 
-                     type="number" 
-                     min="10" 
-                     max={availableBalanceToWithdraw} 
-                     step="0.01" 
-                     required
-                     value={payoutAmount}
-                     onChange={e => setPayoutAmount(Number(e.target.value))}
-                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none font-mono"
-                   />
-                 </div>
-                 <button
-                   type="submit"
-                   disabled={availableBalanceToWithdraw < 10}
-                   className="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-emerald-700 transition disabled:opacity-50 disabled:bg-slate-300"
-                 >
-                   Confirmar Levantamento
-                 </button>
-                 <p className="text-[9px] text-slate-400 text-center">
-                   O processamento demora cerca de 2-3 dias úteis. Min. 10€.
-                 </p>
-               </form>
+            <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 mt-4">
+              <h5 className="font-bold text-xs text-emerald-900 mb-1 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500"/> Transferências Automáticas</h5>
+              <p className="text-[11px] text-emerald-700/80 leading-relaxed">
+                Os seus fundos disponíveis são processados de forma automática e gratuita <b>todas as Segundas-feiras</b> para a sua conta bancária configurada.
+              </p>
             </div>
           </div>
         )}
@@ -512,11 +497,18 @@ export default function FinanceTab() {
             <FileText className="w-4 h-4 text-slate-600" />
             Livro Razão / Histórico de Transações
           </h4>
+          <select value={ledgerFilter} onChange={e => setLedgerFilter(e.target.value as any)} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs focus:outline-none focus:border-purple-500">
+            <option value="all">Sempre</option>
+            <option value="week">Últimos 7 dias</option>
+            <option value="month">Últimos 30 dias</option>
+            <option value="year">Último ano</option>
+          </select>
           <button
+            onClick={handleDownloadCSV}
             className="bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Exportar para CSV
+            Exportar CSV
           </button>
         </div>
 
@@ -540,7 +532,7 @@ export default function FinanceTab() {
            </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar shadow-sm">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
@@ -552,12 +544,12 @@ export default function FinanceTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {ledgers.length === 0 ? (
+              {filteredLedgers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-6 text-center text-slate-400 font-medium">Nenhuma transação registada.</td>
                 </tr>
               ) : (
-                ledgers.map((item) => (
+                filteredLedgers.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50 transition">
                     <td className="py-3 px-4 text-slate-500 font-mono">
                       {new Date(item.created_at).toLocaleDateString("pt-PT")}

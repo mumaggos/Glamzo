@@ -85,7 +85,7 @@ export default function PartnerLayout() {
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 
   return (
-    <div id="partner-terminal-layout" className="min-h-screen bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden h-screen relative">
+    <div id="partner-terminal-layout" className="min-h-[100dvh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden h-[100dvh] relative">
       
       <style>{`
         header, nav.sticky, footer { display: none !important; }

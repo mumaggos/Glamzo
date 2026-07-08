@@ -282,7 +282,7 @@ export default function Home() {
   ); 
 
   return ( 
-    <div className="min-h-screen bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950"> 
+    <div className="min-h-[100dvh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950"> 
        
       {/* 1. HERO SECTION & PESQUISA (IDENTIDADE GLAMZO REFINADA) */} 
       <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-[#fafbfc]"> 
