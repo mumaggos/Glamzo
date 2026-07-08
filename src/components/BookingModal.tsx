@@ -106,7 +106,7 @@ export default function BookingModal({
     const startMin = timeToMinutes(dayHours.open_time || '09:00');
     const endMin = timeToMinutes(dayHours.close_time || '19:00'); 
     const duration = totalServicesDuration;
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = [selectedDate.getFullYear(), String(selectedDate.getMonth() + 1).padStart(2, '0'), String(selectedDate.getDate()).padStart(2, '0')].join('-');
     const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
     
     // Matemática da Antecedência Mínima
@@ -197,7 +197,7 @@ export default function BookingModal({
       if (!matchedSlot) throw new Error('Este horário acabou de ser reservado por outro utilizador. Por favor escolha outra hora.');
 
       const finalStaffId = selectedStaff === 'any' ? matchedSlot.assignedStaffId : selectedStaff.id;
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = [selectedDate.getFullYear(), String(selectedDate.getMonth() + 1).padStart(2, '0'), String(selectedDate.getDate()).padStart(2, '0')].join('-');
       const endTimeStr = minutesToTime(timeToMinutes(selectedTime) + totalServicesDuration);
 
       const finalPriceToPay = Math.max(0, Number((totalServicesPrice - couponDiscount).toFixed(2)));

@@ -8,7 +8,7 @@ export default function AgendaTab() {
   const { business, user, services, staff, bookings, businessHours, loadLayoutData } = useOutletContext<any>();
 
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
-  const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>((() => { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'); })());
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>("all");
   
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
@@ -20,7 +20,7 @@ export default function AgendaTab() {
   const [manualBlockDuration, setManualBlockDuration] = useState(60);
   const [manualServiceId, setManualServiceId] = useState("");
   const [manualStaffId, setManualStaffId] = useState("");
-  const [manualDate, setManualDate] = useState(new Date().toISOString().split("T")[0]);
+  const [manualDate, setManualDate] = useState((() => { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'); })());
   const [manualStartTime, setManualStartTime] = useState("09:00");
   const [manualNotes, setManualNotes] = useState("");
   const [isSavingManual, setIsSavingManual] = useState(false);

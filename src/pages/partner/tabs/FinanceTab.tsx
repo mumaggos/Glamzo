@@ -118,7 +118,7 @@ export default function FinanceTab() {
       const res = await fetch("/api/stripe/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id, planType: planName }),
+        body: JSON.stringify({ businessId: business.id, planName: planName }),
       });
       if (!res.ok) {
         const errorData = await res.json();

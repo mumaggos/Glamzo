@@ -349,7 +349,7 @@ export default function ServicesTab() {
                         {cat.name}
                       </option>
                     ))}
-                    {business?.business_type && SUBCATEGORIES_BY_MAIN[business.business_type]?.map((preDef) => {
+                    {business?.category && SUBCATEGORIES_BY_MAIN[business.category]?.map((preDef) => {
                       if (!categories.find(c => c.name === preDef)) {
                         return <option key={preDef} value={preDef}>{preDef} (Sugerida)</option>;
                       }

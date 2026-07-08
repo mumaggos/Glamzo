@@ -16,14 +16,13 @@ interface PartnerContextType {
 }
 
 export default function OverviewTab() {
+  const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const [reviews, setReviews] = React.useState<Review[]>([]);
   React.useEffect(() => {
     if (business?.id) {
       fetchReviewsForBusiness(business.id).then(res => setReviews(res || []));
     }
   }, [business?.id]);
-
-  const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const navigate = useNavigate();
 
   // Rotas corrigidas para a navegação interna da app
