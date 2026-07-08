@@ -11,7 +11,7 @@ import {
   NewBookingEmail,
   SubscriptionActivatedEmail,
   InvoiceEmail,
-  PaymentFailedEmail, StaffCredentialsEmail,
+  PaymentFailedEmail,
 
   StaffCredentialsEmail
 } from '../emails/GlamzoTemplates';

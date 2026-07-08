@@ -52,6 +52,14 @@ const buttonStyles = {
   width: 'fit-content',
 };
 
+
+const infoCardStyles = {
+  backgroundColor: '#f3f4f6',
+  padding: '16px',
+  borderRadius: '8px',
+  marginBottom: '24px',
+};
+
 const hrStyles = {
   borderColor: '#e5e7eb',
   margin: '32px 0',
@@ -305,7 +313,7 @@ export const StaffCredentialsEmail = ({ shopName, email, password, loginUrl }: {
           <Text style={{ margin: '0', fontSize: '14px' }}><strong>Password:</strong> {password}</Text>
         </Section>
         <Button href={loginUrl} style={buttonStyles}>Aceder ao Painel</Button>
-        <Hr style={dividerStyles} />
+        <Hr style={hrStyles} />
         <Text style={footerStyles}>Se não esperavas este email, podes ignorar.</Text>
       </Container>
     </Body>
