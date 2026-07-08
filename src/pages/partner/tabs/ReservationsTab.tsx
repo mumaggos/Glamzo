@@ -1,21 +1,40 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Calendar, Clock, Scissors, User } from 'lucide-react';
 
 export function ReservationsTab() {
   const { bookings } = useOutletContext<any>();
+  const [filter, setFilter] = useState("hoje");
 
-  if (!bookings || bookings.length === 0) {
-    return (
-      <div className="bg-white rounded-3xl p-10 text-center border border-slate-200/60 shadow-sm mt-4">
-        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Calendar className="w-8 h-8 text-slate-400" />
-        </div>
-        <h3 className="text-lg font-black text-slate-900 mb-2">Sem reservas</h3>
-        <p className="text-sm text-slate-500">Ainda não há marcações agendadas para o teu espaço.</p>
-      </div>
-    );
-  }
+  const filteredBookings = useMemo(() => {
+    if (!bookings) return [];
+    
+    const today = new Date();
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(today);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(yesterday);
+    
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const startOfWeekStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(startOfWeek);
+    
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfMonthStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(startOfMonth);
+
+    return bookings.filter((b: any) => {
+      if (filter === "hoje") return b.booking_date === todayStr;
+      if (filter === "ontem") return b.booking_date === yesterdayStr;
+      if (filter === "semana") return b.booking_date >= startOfWeekStr;
+      if (filter === "mes") return b.booking_date >= startOfMonthStr;
+      if (filter === "pendentes") return b.booking_status === "pending";
+      return true; // todas
+    });
+  }, [bookings, filter]);
+
+
+
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-6">
@@ -24,9 +43,37 @@ export function ReservationsTab() {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Todas as Reservas</h1>
           <p className="text-slate-500 text-sm font-medium">Histórico completo e próximas marcações.</p>
         </div>
+        <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-auto">
+          {[
+            { id: "hoje", label: "Hoje" },
+            { id: "ontem", label: "Ontem" },
+            { id: "semana", label: "Semana" },
+            { id: "mes", label: "Mês" },
+            { id: "pendentes", label: "Pendentes" },
+            { id: "todas", label: "Todas" }
+          ].map(f => (
+             <button
+               key={f.id}
+               onClick={() => setFilter(f.id)}
+               className={`flex-1 md:flex-none px-4 py-2 text-xs font-bold rounded-xl transition ${filter === f.id ? "bg-white text-purple-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+             >
+               {f.label}
+             </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
+        
+        {filteredBookings.length === 0 ? (
+          <div className="bg-white rounded-3xl p-10 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-black text-slate-900 mb-2">Sem reservas</h3>
+            <p className="text-sm text-slate-500">Nenhuma marcação encontrada para este filtro.</p>
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
@@ -35,11 +82,12 @@ export function ReservationsTab() {
                 <th className="px-6 py-4">Cliente</th>
                 <th className="px-6 py-4">Serviço</th>
                 <th className="px-6 py-4">Profissional</th>
+                <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-right">Valor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {bookings.map((booking: any) => (
+              {filteredBookings.map((booking: any) => (
                 <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -67,6 +115,19 @@ export function ReservationsTab() {
                     </div>
                   </td>
                   <td className="px-6 py-4 font-bold text-slate-700">{booking.staff?.full_name || '-'}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${
+                       booking.booking_status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                       booking.booking_status === 'cancelled' ? 'bg-rose-100 text-rose-700' :
+                       booking.booking_status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                       'bg-purple-100 text-purple-700'
+                    }`}>
+                      {booking.booking_status === 'completed' ? 'Concluído' :
+                       booking.booking_status === 'cancelled' ? 'Cancelado' :
+                       booking.booking_status === 'pending' ? 'Pendente' :
+                       'Confirmado'}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
                       {Number(booking.total_price).toFixed(2)}€
@@ -77,6 +138,7 @@ export function ReservationsTab() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

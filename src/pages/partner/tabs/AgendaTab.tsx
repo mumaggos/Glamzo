@@ -67,7 +67,8 @@ export default function AgendaTab() {
           setIsSavingManual(false); return;
       }
 
-      const selectedSvc = services.find((s: any) => s.id === manualServiceId);
+      let finalServiceId = manualServiceId || (services.length > 0 ? services[0].id : null);
+      const selectedSvc = services.find((s: any) => s.id === finalServiceId);
       const svcPrice = selectedSvc ? Number(selectedSvc.price) : 0;
       const [startH, startM] = manualStartTime.split(":").map(Number);
       const duration = manualBookingType === "block" ? manualBlockDuration : (selectedSvc ? Number(selectedSvc.duration_minutes) : 15);
@@ -77,8 +78,6 @@ export default function AgendaTab() {
       const payloadNotes = manualBookingType === "block" 
         ? `🛑 BLOQUEIO: ${manualReason}` 
         : `Manual: ${manualClientName} ${manualNotes}`;
-
-      let finalServiceId = manualServiceId || (services.length > 0 ? services[0].id : null);
 
       // CORRIGIDO: Se for bloqueio geral (all), guardamos staff_id como null, senão vinculamos ao staff escolhido
       const targetStaffId = manualStaffId === "all" ? null : (manualStaffId || null);

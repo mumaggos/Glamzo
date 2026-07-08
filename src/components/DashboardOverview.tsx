@@ -3,13 +3,14 @@ import {
   CheckSquare, Calendar as CalendarIcon, Users, Landmark, Tag, TrendingUp, Globe, Smartphone, 
   Plus, ArrowRight, Star, Clock, AlertCircle, ShoppingBag, Euro
 } from 'lucide-react';
-import { Business, Booking, Service, Staff } from '../types';
+import { Business, Booking, Service, Staff, Review } from '../types';
 
 interface DashboardOverviewProps {
   business: Business | null;
   bookings: Booking[];
   services: Service[];
   staff: Staff[];
+  reviews?: Review[];
   resolvedSubscriptionStatus: string;
   trialDaysRemaining: number;
   setActiveTab: (tab: string) => void;
@@ -20,6 +21,7 @@ export function DashboardOverview({
   bookings,
   services,
   staff,
+  reviews = [],
   resolvedSubscriptionStatus,
   trialDaysRemaining,
   setActiveTab
@@ -39,8 +41,9 @@ export function DashboardOverview({
   const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
   const pendingBookings = bookings.filter(b => b.booking_status === 'pending');
 
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date());
   const upcomingBookings = bookings
-    .filter(b => new Date(b.booking_date) >= today && b.booking_status !== 'cancelled')
+    .filter(b => b.booking_date === todayStr && b.booking_status !== 'cancelled' && b.booking_status !== 'completed')
     .sort((a, b) => new Date(a.booking_date + 'T' + a.start_time).getTime() - new Date(b.booking_date + 'T' + b.start_time).getTime())
     .slice(0, 5);
 
@@ -110,7 +113,7 @@ export function DashboardOverview({
           <p className="text-sm font-medium text-slate-500 mt-1">Faturação Prevista</p>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div onClick={() => setActiveTab('reservas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
               <Clock className="w-5 h-5 text-amber-600" />
@@ -128,8 +131,17 @@ export function DashboardOverview({
             </div>
             <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Plataforma</span>
           </div>
-          <h3 className="text-xl font-black text-slate-400 mt-1">S/ Dados</h3>
-          <p className="text-xs font-medium text-slate-500 mt-2">As avaliações da sua loja aparecerão aqui</p>
+          {reviews.length > 0 ? (
+            <>
+              <h3 className="text-3xl font-black text-slate-900 mt-1">{(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}</h3>
+              <p className="text-xs font-medium text-slate-500 mt-2">Média de {reviews.length} avaliações</p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-xl font-black text-slate-400 mt-1">S/ Dados</h3>
+              <p className="text-xs font-medium text-slate-500 mt-2">As avaliações da sua loja aparecerão aqui</p>
+            </>
+          )}
         </div>
       </div>
 

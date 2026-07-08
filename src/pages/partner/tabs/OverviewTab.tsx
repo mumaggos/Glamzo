@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { DashboardOverview } from "../../../components/DashboardOverview";
-import { Business, Booking, Staff, Service } from "../../../types";
+import { Business, Booking, Staff, Service, Review } from "../../../types";
+import { fetchReviewsForBusiness } from "../../../utils/reviewsHelper";
 import { Sparkles, Trophy } from "lucide-react";
 
 interface PartnerContextType {
@@ -15,6 +16,13 @@ interface PartnerContextType {
 }
 
 export default function OverviewTab() {
+  const [reviews, setReviews] = React.useState<Review[]>([]);
+  React.useEffect(() => {
+    if (business?.id) {
+      fetchReviewsForBusiness(business.id).then(res => setReviews(res || []));
+    }
+  }, [business?.id]);
+
   const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const navigate = useNavigate();
 
@@ -66,6 +74,7 @@ export default function OverviewTab() {
          bookings={bookings || []}
          services={services || []}
          staff={staff || []}
+         reviews={reviews}
          resolvedSubscriptionStatus="active"
          trialDaysRemaining={14}
          setActiveTab={handleSetActiveTab}
