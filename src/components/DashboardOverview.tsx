@@ -91,7 +91,7 @@ export function DashboardOverview({
 
       {/* Main KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div onClick={() => setActiveTab('financas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-emerald-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <CheckSquare className="w-5 h-5 text-purple-600" />
@@ -102,7 +102,7 @@ export function DashboardOverview({
           <p className="text-sm font-medium text-slate-500 mt-1">Reservas Hoje</p>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div onClick={() => setActiveTab('financas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-emerald-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Euro className="w-5 h-5 text-emerald-600" />
@@ -124,7 +124,7 @@ export function DashboardOverview({
           <p className="text-sm font-medium text-slate-500 mt-1">Pedidos Pendentes</p>
         </div>
 
-                <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div onClick={() => setActiveTab('financas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-emerald-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <Star className="w-5 h-5 text-purple-600" />
@@ -171,8 +171,8 @@ export function DashboardOverview({
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Pagamentos Online</p>
                   <p className="font-black text-slate-900">Stripe Connect</p>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.charges_enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {business?.charges_enabled ? 'Configurado' : 'Pendente'}
+                <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.stripe_account_id ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {business?.stripe_account_id ? 'Configurado' : 'Pendente'}
                 </div>
               </div>
 

@@ -8,7 +8,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+  const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard');
   const isPartnerPage = location.pathname.startsWith('/partner');
   const isDarkNavbar = false; // Force light navbar everywhere to match site's style
 
@@ -219,14 +219,14 @@ export default function Navbar() {
             <Link 
               to={getProfileTargetRoute()} 
               className={`flex flex-col items-center gap-0.5 p-1 px-2.5 rounded-xl transition-all ${
-                location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner') || location.pathname === '/account'
+                location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/partner') || location.pathname === '/account'
                   ? 'text-purple-400 scale-[1.02]' 
                   : isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-555 hover:text-slate-900'
               }`}
             >
               <User className="w-5 h-5 stroke-[2]" />
               <span className="text-[9px] font-bold tracking-wide uppercase font-mono">Perfil</span>
-              {(location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/partner') || location.pathname === '/account') && (
+              {(location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/partner') || location.pathname === '/account') && (
                 <span className="w-1 h-1 bg-purple-500 rounded-full mt-0.5 animate-pulse" />
               )}
             </Link>

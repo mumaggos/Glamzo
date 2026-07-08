@@ -6,10 +6,11 @@ import { Business } from "../../../types";
 
 interface PartnerContextType {
   business: Business | null;
+  staff: any[];
 }
 
 export default function FinanceTab() {
-  const { business } = useOutletContext<PartnerContextType>();
+  const { business, staff } = useOutletContext<PartnerContextType>();
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -23,7 +24,13 @@ export default function FinanceTab() {
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
-  const [ledgerFilter, setLedgerFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
+  const [ledgerFilter, setLedgerFilter] = useState<'all' | 'week' | 'month' | 'year' | 'custom'>('all');
+  const [customStartDate, setCustomStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [customEndDate, setCustomEndDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const loadFinanceData = async () => {
     if (!business) return;
@@ -32,6 +39,7 @@ export default function FinanceTab() {
         { data: pyData },
         { data: poData },
         { data: subData },
+        { data: bkData }
       ] = await Promise.all([
         supabase.from("payments").select("*").eq("business_id", business.id),
         supabase
@@ -44,8 +52,35 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
+        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id").eq("business_id", business.id).eq("booking_status", "completed")
       ]);
-      setLedgers(pyData || []);
+
+      const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
+      const stripePaymentBookingIds = new Set(stripePayments.map(p => p.booking_id));
+
+      const localCompleted = (bkData || []).filter(b => b.total_price > 0 && b.payment_method === 'local' && !stripePaymentBookingIds.has(b.id)).map(b => ({
+        id: `loc_${b.id}`,
+        created_at: b.created_at,
+        booking_id: b.id,
+        staff_id: b.staff_id,
+        payment_method: 'local',
+        payment_status: 'paid',
+        amount_total: b.total_price,
+        amount: b.total_price,
+        glamzo_fee: 0,
+        business_amount: b.total_price,
+        description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`
+      }));
+
+      // Add staff_id to stripe payments if they map to a booking
+      const bkMap = new Map((bkData || []).map(b => [b.id, b.staff_id]));
+      stripePayments.forEach(p => {
+        if (p.booking_id && bkMap.has(p.booking_id)) {
+          p.staff_id = bkMap.get(p.booking_id);
+        }
+      });
+
+      setLedgers([...stripePayments, ...localCompleted]);
       setPayouts(poData || []);
       setSubscriptions(subData || []);
 
@@ -89,6 +124,13 @@ export default function FinanceTab() {
       if (ledgerFilter === 'year') {
         const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
         return itemDate >= yearAgo;
+      }
+      if (ledgerFilter === 'custom') {
+        const start = new Date(customStartDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(customEndDate);
+        end.setHours(23,59,59,999);
+        return itemDate >= start && itemDate <= end;
       }
       return true;
     }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -479,11 +521,69 @@ export default function FinanceTab() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 mt-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200">
+              <h5 className="font-bold text-xs text-slate-900 mb-4">Conta Glamzo Pay</h5>
+              
+              {stripeStatus && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Receber Pagamentos</span>
+                    {stripeStatus.charges_enabled ? (
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
+                    ) : (
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Levantamentos</span>
+                    {stripeStatus.payouts_enabled ? (
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
+                    ) : (
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex gap-2 mt-4">
+                {stripeStatus?.details_submitted === false ? (
+                  <button
+                    onClick={handleConnectStripe}
+                    className="flex-1 bg-amber-500 text-white font-bold py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center justify-center gap-2"
+                  >
+                    <AlertCircle className="w-4 h-4"/> Concluir Registo
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleConnectStripe}
+                    className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-xl text-xs hover:bg-slate-800 transition"
+                  >
+                    Painel Stripe / Glamzo Pay
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
               <h5 className="font-bold text-xs text-emerald-900 mb-1 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500"/> Transferências Automáticas</h5>
-              <p className="text-[11px] text-emerald-700/80 leading-relaxed">
-                Os seus fundos disponíveis são processados de forma automática e gratuita <b>todas as Segundas-feiras</b> para a sua conta bancária configurada.
+              <p className="text-[11px] text-emerald-700/80 leading-relaxed mb-3">
+                Os seus fundos disponíveis são processados de forma automática e gratuita <b>todas as Segundas-feiras</b> para a sua conta bancária.
               </p>
+              
+              <div className="bg-white p-3 rounded-xl border border-emerald-100 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Disponível para Levantamento</p>
+                  <p className="text-lg font-black text-emerald-600 font-mono">
+                    {stripeStatus?.available_balance ? (stripeStatus.available_balance / 100).toFixed(2) : "0.00"}€
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 text-right">Pendente</p>
+                  <p className="text-sm font-bold text-slate-600 font-mono text-right">
+                    {stripeStatus?.pending_balance ? (stripeStatus.pending_balance / 100).toFixed(2) : "0.00"}€
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -497,12 +597,22 @@ export default function FinanceTab() {
             <FileText className="w-4 h-4 text-slate-600" />
             Livro Razão / Histórico de Transações
           </h4>
-          <select value={ledgerFilter} onChange={e => setLedgerFilter(e.target.value as any)} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs focus:outline-none focus:border-purple-500">
-            <option value="all">Sempre</option>
-            <option value="week">Últimos 7 dias</option>
-            <option value="month">Últimos 30 dias</option>
-            <option value="year">Último ano</option>
-          </select>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+            {ledgerFilter === 'custom' && (
+              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
+                <input type="date" value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
+                <span className="text-slate-300">-</span>
+                <input type="date" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
+              </div>
+            )}
+            <select value={ledgerFilter} onChange={e => setLedgerFilter(e.target.value as any)} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs focus:outline-none focus:border-purple-500 shadow-sm">
+              <option value="all">Sempre</option>
+              <option value="week">Últimos 7 dias</option>
+              <option value="month">Últimos 30 dias</option>
+              <option value="year">Último ano</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
           <button
             onClick={handleDownloadCSV}
             className="bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
@@ -530,6 +640,42 @@ export default function FinanceTab() {
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Online</span>
              <span className="text-lg font-black text-purple-600 mt-1 block font-mono">{totalReceivedVolumeOnline.toFixed(2)}€</span>
            </div>
+        </div>
+
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <h5 className="font-bold text-xs text-slate-900 mb-3 uppercase tracking-widest">Faturação por Profissional</h5>
+            <div className="space-y-3">
+              {staff?.map(s => {
+                const staffRevenue = filteredLedgers.filter(l => l.staff_id === s.id).reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
+                if (staffRevenue === 0) return null;
+                const percentage = totalVolumeBruto > 0 ? (staffRevenue / totalVolumeBruto) * 100 : 0;
+                return (
+                  <div key={s.id} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-800">{s.full_name}</span>
+                        <span className="text-xs font-black text-purple-600">{staffRevenue.toFixed(2)}€</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1.5">
+                        <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!staff || staff.length === 0 || filteredLedgers.filter(l => l.staff_id).length === 0) && (
+                <p className="text-xs text-slate-500 text-center py-2">Sem dados de profissionais no período.</p>
+              )}
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col justify-center items-center text-center">
+            <Star className="w-8 h-8 text-amber-400 mb-2" />
+            <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-1">Total de Transações</h5>
+            <span className="text-3xl font-black text-slate-900 font-mono">{filteredLedgers.length}</span>
+            <p className="text-[10px] text-slate-400 mt-2">Transações no período selecionado</p>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar shadow-sm">

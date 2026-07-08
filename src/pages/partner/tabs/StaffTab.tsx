@@ -540,7 +540,8 @@ export default function StaffTab() {
 
               <div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-2">
+
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
                       Email de Acesso
@@ -575,7 +576,13 @@ export default function StaffTab() {
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                     />
                   </div>
+                
                 </div>
+                {!editingStaff && (
+                  <div className="bg-purple-50/50 p-3 rounded-xl border border-purple-100 mb-4 text-[10px] text-purple-700 font-medium">
+                    Ao criar a conta, será enviado um link para o funcionário com o login e a senha para o email inserido.
+                  </div>
+                )}
                 <div className="grid grid-cols-1 mb-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
