@@ -1,0 +1,26 @@
+{
+  "name": "Glamzo",
+  "short_name": "Glamzo",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#A855F7",
+  "description": "Plataforma & Agendamentos de Beleza Premium",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "144x144"
+    }
+  ]
+}

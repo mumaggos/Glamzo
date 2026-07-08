@@ -289,3 +289,25 @@ export const PaymentFailedEmail = ({ explanation, updatePaymentUrl, suspensionDa
     </Body>
   </Html>
 );
+
+export const StaffCredentialsEmail = ({ shopName, email, password, loginUrl }: { shopName: string, email: string, password: string, loginUrl: string }) => (
+  <Html>
+    <Head />
+    <Preview>Os teus dados de acesso ao Glamzo</Preview>
+    <Body style={mainStyles}>
+      <Container style={containerStyles}>
+        <Heading style={headingStyles}>Bem-vindo à equipa do {shopName}!</Heading>
+        <Text style={textStyles}>
+          A tua conta foi criada com sucesso. Podes aceder ao teu painel de funcionário no Glamzo usando as seguintes credenciais:
+        </Text>
+        <Section style={infoCardStyles}>
+          <Text style={{ margin: '0 0 8px 0', fontSize: '14px' }}><strong>Email:</strong> {email}</Text>
+          <Text style={{ margin: '0', fontSize: '14px' }}><strong>Password:</strong> {password}</Text>
+        </Section>
+        <Button href={loginUrl} style={buttonStyles}>Aceder ao Painel</Button>
+        <Hr style={dividerStyles} />
+        <Text style={footerStyles}>Se não esperavas este email, podes ignorar.</Text>
+      </Container>
+    </Body>
+  </Html>
+);

@@ -355,7 +355,7 @@ export default function StaffTab() {
 
               <div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
                       Email de Acesso
@@ -373,6 +373,25 @@ export default function StaffTab() {
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                     />
                   </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
+                      Password de Acesso
+                    </label>
+                    <input
+                      type="text"
+                      value={staffForm.temp_password}
+                      onChange={(e) =>
+                        setStaffForm((prev) => ({
+                          ...prev,
+                          temp_password: e.target.value,
+                        }))
+                      }
+                      placeholder="Deixe vazio para gerar auto"
+                      className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 mb-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
                       Telemóvel
@@ -426,17 +445,53 @@ export default function StaffTab() {
                       <strong>Email:</strong> {createdStaffAuth.email}<br/>
                       <strong>Password:</strong> {createdStaffAuth.temp_password}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = `${window.location.origin}/staff/login`;
-                        navigator.clipboard.writeText(`Link: ${url}\nEmail: ${createdStaffAuth.email}\nPassword: ${createdStaffAuth.temp_password}`);
-                        alert("Link e credenciais copiados!");
-                      }}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-3 py-2 rounded-lg transition"
-                    >
-                      Copiar Link e Dados de Acesso
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = `${window.location.origin}/staff/login`;
+                          navigator.clipboard.writeText(`Link: ${url}\nEmail: ${createdStaffAuth.email}\nPassword: ${createdStaffAuth.temp_password}`);
+                          alert("Link e credenciais copiados!");
+                        }}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-3 py-2 rounded-lg transition"
+                      >
+                        Copiar Dados
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          const btn = e.currentTarget;
+                          btn.disabled = true;
+                          btn.innerText = "A Enviar...";
+                          try {
+                            const res = await fetch("/api/emails/send", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                type: "staff_credentials",
+                                to: createdStaffAuth.email,
+                                data: {
+                                  shopName: business.name,
+                                  email: createdStaffAuth.email,
+                                  password: createdStaffAuth.temp_password,
+                                  loginUrl: `${window.location.origin}/staff/login`
+                                }
+                              })
+                            });
+                            if (!res.ok) throw new Error("Erro");
+                            btn.innerText = "Email Enviado!";
+                            btn.className = "flex-1 bg-emerald-700 text-white font-bold text-[10px] px-3 py-2 rounded-lg transition";
+                          } catch (err) {
+                            alert("Falha ao enviar email");
+                            btn.disabled = false;
+                            btn.innerText = "Enviar por Email";
+                          }
+                        }}
+                        className="flex-1 bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold text-[10px] px-3 py-2 rounded-lg transition"
+                      >
+                        Enviar por Email
+                      </button>
+                    </div>
                   </div>
                 )}
 

@@ -182,6 +182,9 @@ app.post("/api/emails/send", async (req, res) => {
       case "payment_failed":
         await EmailService.sendPaymentFailedEmail(to, data);
         break;
+      case "staff_credentials":
+        await EmailService.sendStaffCredentialsEmail(to, data);
+        break;
       case "abandoned_cart":
         await EmailService.sendAbandonedCartEmail(to);
         break;

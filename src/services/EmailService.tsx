@@ -11,7 +11,9 @@ import {
   NewBookingEmail,
   SubscriptionActivatedEmail,
   InvoiceEmail,
-  PaymentFailedEmail
+  PaymentFailedEmail, StaffCredentialsEmail,
+
+  StaffCredentialsEmail
 } from '../emails/GlamzoTemplates';
 
 let resendInstance: Resend | null = null;
@@ -140,11 +142,13 @@ export const EmailService = {
     });
   },
 
-  async sendPaymentFailedEmail(to: string, data: { explanation: string, updatePaymentUrl: string, suspensionDate: string }) {
+  async sendPaymentFailedEmail
+ (to: string, data: { explanation: string, updatePaymentUrl: string, suspensionDate: string }) {
     const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
-    const html = await render(<PaymentFailedEmail {...data} />);
+    const html = await render(<PaymentFailedEmail
+  StaffCredentialsEmail {...data} />);
     return resend.emails.send({
       from: getEmailFrom(),
       to,
@@ -166,5 +170,20 @@ export const EmailService = {
       subject: 'A sua loja Glamzo está quase pronta!',
       html: `<p>Notámos que não completou o registo. Precisa de ajuda? Clique aqui para terminar: <a href="https://glamzo.pt/partner/setup">https://glamzo.pt/partner/setup</a></p>`
     });
+  },
+
+  async sendStaffCredentialsEmail(to: string, data: { shopName: string, email: string, password: string, loginUrl: string }) {
+    const resend = getResendClient();
+    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+    
+    const html = await render(<StaffCredentialsEmail {...data} />);
+    
+    return resend.emails.send({
+      from: getEmailFrom(),
+      to,
+      subject: `Dados de Acesso - ${data.shopName}`,
+      html
+    });
   }
 };
+

@@ -1,14 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Scissors } from "lucide-react";
+import { Scissors, Share, PlusSquare, Download } from "lucide-react";
 
 export default function StaffLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    });
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      setShowInstallHelp(true);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +135,48 @@ export default function StaffLogin() {
               </button>
             </div>
           </form>
+
+          <div className="mt-8 border-t border-slate-100 pt-6">
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-purple-100 rounded-xl text-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              Instalar App no Telemóvel
+            </button>
+            
+            {showInstallHelp && (
+              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 space-y-3">
+                <p className="font-bold text-slate-800">Como instalar a App:</p>
+                
+                <div>
+                  <p className="font-bold text-purple-700 mb-1">📱 No iPhone (Safari):</p>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Clica no ícone de partilha <Share className="w-3 h-3 inline mx-1" /> na barra inferior</li>
+                    <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> <PlusSquare className="w-3 h-3 inline mx-1" /></li>
+                    <li>Clica em <strong>Adicionar</strong> no canto superior direito</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <p className="font-bold text-rose-700 mb-1">📱 No Android (Chrome):</p>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Clica nos 3 pontinhos no canto superior direito</li>
+                    <li>Escolhe <strong>"Adicionar ao ecrã principal"</strong></li>
+                    <li>Clica em <strong>Adicionar</strong></li>
+                  </ol>
+                </div>
+                
+                <button 
+                  onClick={() => setShowInstallHelp(false)}
+                  className="w-full mt-2 py-2 text-center font-bold text-slate-500 hover:text-slate-700 transition"
+                >
+                  Fechar
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
