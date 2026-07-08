@@ -20,6 +20,7 @@ export default function StaffDashboard() {
   const [manualBookingType, setManualBookingType] = useState<"booking" | "block">("booking");
   const [manualClientName, setManualClientName] = useState("");
   const [manualReason, setManualReason] = useState("");
+  const [manualBlockDuration, setManualBlockDuration] = useState(60);
   const [manualServiceId, setManualServiceId] = useState("");
   const [manualDate, setManualDate] = useState(new Date().toISOString().split("T")[0]);
   const [manualStartTime, setManualStartTime] = useState("09:00");
@@ -60,7 +61,7 @@ export default function StaffDashboard() {
       const selectedSvc = services.find((s: any) => s.id === manualServiceId);
       const svcPrice = selectedSvc ? Number(selectedSvc.price) : 0;
       const [startH, startM] = manualStartTime.split(":").map(Number);
-      const duration = selectedSvc ? Number(selectedSvc.duration_minutes) : 15;
+      const duration = manualBookingType === "block" ? manualBlockDuration : (selectedSvc ? Number(selectedSvc.duration_minutes) : 15);
       const totalMinutes = startH * 60 + startM + duration;
       const endTimeStr = `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
       
@@ -70,8 +71,11 @@ export default function StaffDashboard() {
 
       let finalServiceId = manualServiceId || (services.length > 0 ? services[0].id : null);
 
+      const { data: bData } = await supabase.from('businesses').select('owner_id').eq('id', staff.business_id).single();
+      const fallbackCustomerId = bData?.owner_id || null;
+
       const { error } = await supabase.from("bookings").insert({
-        customer_id: null, business_id: staff.business_id, service_id: finalServiceId, staff_id: staff.id,
+        customer_id: fallbackCustomerId, business_id: staff.business_id, service_id: finalServiceId, staff_id: staff.id,
         booking_date: manualDate, start_time: manualStartTime, end_time: endTimeStr,
         total_price: manualBookingType === "block" ? 0 : svcPrice, payment_method: "local",
         payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes,
@@ -387,7 +391,7 @@ export default function StaffDashboard() {
                    <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Serviço</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
                  </>
                ) : (
-                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Motivo</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                 <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Motivo</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Duração</label><select value={manualBlockDuration} onChange={(e) => setManualBlockDuration(Number(e.target.value))} className="w-full bg-slate-50 border p-3 rounded-xl"><option value={15}>15 min</option><option value={30}>30 min</option><option value={45}>45 min</option><option value={60}>1h</option><option value={90}>1h 30m</option><option value={120}>2h</option><option value={180}>3h</option><option value={240}>4h</option><option value={300}>5h</option><option value={480}>8h</option></select></div></div>
                )}
 
                <div className="grid grid-cols-2 gap-4">

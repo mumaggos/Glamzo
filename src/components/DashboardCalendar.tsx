@@ -114,10 +114,10 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
               <div className="absolute left-16 md:left-20 right-0 top-2/4 h-[1px] bg-slate-200/50 border-dashed border-b"></div>
               <div className="absolute left-16 md:left-20 right-0 top-3/4 h-[1px] bg-slate-100/50"></div>
               
-              <div className="absolute left-0 w-16 md:w-20 h-full flex flex-col justify-evenly items-end pr-2 py-4 pointer-events-none opacity-40">
-                 <span className="text-[8px] font-mono text-slate-400">15</span>
-                 <span className="text-[8px] font-mono text-slate-400">30</span>
-                 <span className="text-[8px] font-mono text-slate-400">45</span>
+              <div className="absolute left-0 w-16 md:w-20 h-full pointer-events-none opacity-40">
+                 <span className="absolute top-[25%] right-2 -translate-y-1/2 text-[8px] font-mono text-slate-400">15</span>
+                 <span className="absolute top-[50%] right-2 -translate-y-1/2 text-[8px] font-mono text-slate-400">30</span>
+                 <span className="absolute top-[75%] right-2 -translate-y-1/2 text-[8px] font-mono text-slate-400">45</span>
               </div>
 
               
