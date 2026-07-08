@@ -74,19 +74,41 @@ export default function StaffDashboard() {
       const { data: bData } = await supabase.from('businesses').select('owner_id').eq('id', staff.business_id).single();
       const fallbackCustomerId = bData?.owner_id || null;
 
-      const { error } = await supabase.from("bookings").insert({
+
+      const payload = {
         customer_id: fallbackCustomerId, business_id: staff.business_id, service_id: finalServiceId, staff_id: staff.id,
         booking_date: manualDate, start_time: manualStartTime, end_time: endTimeStr,
         total_price: manualBookingType === "block" ? 0 : svcPrice, payment_method: "local",
         payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes,
+      };
+      const response = await fetch('/api/staff/bookings/create', {
+         method: 'POST', headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ payload })
       });
+      const resData = await response.json();
+      if (resData.error) throw new Error(resData.error);
 
-      if (error) throw error;
       
       setIsManualBookingOpen(false);
       setManualClientName(""); setManualReason(""); setManualNotes("");
       loadDashboardData(staff.id, staff.business_id);
-    } catch (err: any) { alert("Erro ao guardar dados."); } finally { setIsSavingManual(false); }
+    } catch (err: any) { alert("Erro: " + err.message); } finally { setIsSavingManual(false); }
+  };
+
+
+  const handleUpdateBookingStatus = async (status: string) => {
+    if (!selectedBooking) return;
+    try {
+      const response = await fetch('/api/staff/bookings/update', {
+         method: 'POST', headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ id: selectedBooking.id, payload: { booking_status: status } })
+      });
+      const resData = await response.json();
+      if (resData.error) throw new Error(resData.error);
+      
+      setSelectedBooking(null);
+      if (staff) loadDashboardData(staff.id, staff.business_id);
+    } catch (err: any) { alert("Erro ao atualizar o estado."); }
   };
 
   const loadDashboardData = async (staffId: string, businessId: string) => {
@@ -105,14 +127,10 @@ export default function StaffDashboard() {
       const limitDate = thirtyDaysAgo.toISOString().split('T')[0];
 
       const [bookingsRes, servicesRes, businessHoursRes] = await Promise.all([
-        supabase
-          .from("bookings")
-          .select("*, customer_profile:profiles(full_name, avatar_url), service:services(name, duration_minutes, price)")
-          .eq("business_id", businessId)
-          .or(`staff_id.eq.${staffId},staff_id.is.null`)
-          .gte("booking_date", limitDate)
-          .neq("booking_status", "cancelled")
-          .order("start_time", { ascending: true }),
+        fetch('/api/staff/bookings/query', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ businessId, staffId, limitDate })
+        }).then(res => res.json()),
         supabase
           .from("services")
           .select("*")
@@ -352,6 +370,7 @@ export default function StaffDashboard() {
       </main>
 
 
+
       {/* Booking Details Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -369,10 +388,22 @@ export default function StaffDashboard() {
                {selectedBooking.notes && (
                  <div className="p-3 bg-slate-50 rounded-2xl text-xs font-mono">{selectedBooking.notes}</div>
                )}
+               {selectedBooking.booking_status !== 'completed' && !selectedBooking.notes?.includes('🛑 BLOQUEIO') && (
+                 <div className="pt-4 flex gap-2">
+                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="flex-1 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">Cancelar</button>
+                   <button onClick={() => handleUpdateBookingStatus('completed')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition shadow-md">Concluir</button>
+                 </div>
+               )}
+               {selectedBooking.notes?.includes('🛑 BLOQUEIO') && (
+                 <div className="pt-4 flex gap-2">
+                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="w-full border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">Remover Bloqueio</button>
+                 </div>
+               )}
             </div>
           </div>
         </div>
       )}
+
 
       {/* Manual Booking Modal */}
       {isManualBookingOpen && (
