@@ -45,8 +45,8 @@ export default function SettingsTab() {
 
   const [rules, setRules] = useState({
     min_notice: business?.min_booking_notice?.toString() || "60",
-    cancellation_policy: business?.cancellation_policy || "flexible",
-    booking_end_margin: business?.booking_end_margin?.toString() || "0"
+    cancellation_policy: business?.cancellation_policy?.includes(':') ? business.cancellation_policy.split(':')[0] : (business?.cancellation_policy || "flexible"),
+    booking_end_margin: business?.cancellation_policy?.includes(':') ? business.cancellation_policy.split(':')[1] : (business?.booking_end_margin?.toString() || "0")
   });
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -164,9 +164,11 @@ export default function SettingsTab() {
     e.preventDefault();
     setSavingRegras(true);
     try {
+      const combinedPolicy = `${rules.cancellation_policy}:${rules.booking_end_margin}`;
+
       const { error } = await supabase.from('businesses').update({ 
         min_booking_notice: parseInt(rules.min_notice),
-        cancellation_policy: rules.cancellation_policy,
+        cancellation_policy: combinedPolicy,
         booking_end_margin: parseInt(rules.booking_end_margin)
       }).eq('id', business.id);
       
@@ -174,9 +176,13 @@ export default function SettingsTab() {
         // Fallback for when migration hasn't been run
         const { error: fallbackError } = await supabase.from('businesses').update({ 
           min_booking_notice: parseInt(rules.min_notice),
-          cancellation_policy: rules.cancellation_policy
+          cancellation_policy: combinedPolicy
         }).eq('id', business.id);
+        
         if (fallbackError) throw fallbackError;
+        
+        showMessage('success', 'Regras de agendamento atualizadas com sucesso.');
+        return;
       }
       
       showMessage('success', 'Regras de agendamento atualizadas com sucesso.');
