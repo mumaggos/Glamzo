@@ -140,13 +140,15 @@ export default function BookingModal({
       let assignedStaffId = null;
 
       const checkOverlap = (b: any, sId?: string) => {
-        // Se a reserva/bloqueio não tem staff_id (é um bloqueio geral do salão), bloqueia tudo!
-        if (b.staff_id === null) return true; 
-        if (sId && b.staff_id !== sId) return false;
-        
         const bStart = timeToMinutes(b.start_time);
         const bEnd = timeToMinutes(b.end_time);
-        return slotStart < bEnd && bStart < slotEnd;
+        const overlapsTime = slotStart < bEnd && bStart < slotEnd;
+        
+        if (!overlapsTime) return false;
+        if (b.staff_id === null) return true; // Bloqueio geral para aquele horário
+        if (sId && b.staff_id !== sId) return false;
+        
+        return true;
       };
 
       if (staff.length === 0) {

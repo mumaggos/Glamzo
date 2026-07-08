@@ -115,7 +115,7 @@ export default function FinanceTab() {
     try {
       setIsVerifyingSub(true);
       setVerifyingText("A preparar ligação com o Stripe...");
-      const res = await fetch("/api/stripe/create-checkout-session", {
+      const res = await fetch("/api/stripe/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessId: business.id, planType: planName }),
@@ -202,7 +202,7 @@ export default function FinanceTab() {
   const handleConnectStripe = async () => {
     if (!business) return;
     try {
-      const res = await fetch("/api/stripe/create-account-link", {
+      const res = await fetch("/api/stripe/connect/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessId: business.id }),

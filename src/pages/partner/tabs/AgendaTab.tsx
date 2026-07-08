@@ -74,13 +74,39 @@ export default function AgendaTab() {
       const duration = manualBookingType === "block" ? manualBlockDuration : (selectedSvc ? Number(selectedSvc.duration_minutes) : 15);
       const totalMinutes = startH * 60 + startM + duration;
       const endTimeStr = `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
+
+      const checkOverlap = (b: any, sId: string | null) => {
+        const bStart = b.start_time.split(':').map(Number);
+        const bEnd = b.end_time.split(':').map(Number);
+        const bStartMin = bStart[0] * 60 + bStart[1];
+        const bEndMin = bEnd[0] * 60 + bEnd[1];
+        
+        const overlapsTime = inputTotalMin < bEndMin && bStartMin < totalMinutes;
+        
+        if (!overlapsTime) return false;
+        if (b.staff_id === null) return true;
+        if (sId !== null && b.staff_id !== sId) return false;
+        
+        return true;
+      };
+
+      const bookingsOnDay = bookings.filter((b: any) => b.booking_date === manualDate && b.booking_status !== 'cancelled');
+      const targetStaffId = (manualStaffId === "all" || manualStaffId === "") ? null : manualStaffId;
+      
+      let hasOverlap = bookingsOnDay.some(b => checkOverlap(b, targetStaffId));
+
+      if (hasOverlap) {
+         alert("Operação cancelada! Já existe uma marcação ou bloqueio neste horário para o profissional selecionado.");
+         setIsSavingManual(false);
+         return;
+      }
       
       const payloadNotes = manualBookingType === "block" 
         ? `🛑 BLOQUEIO: ${manualReason}` 
         : `Manual: ${manualClientName} ${manualNotes}`;
 
       // CORRIGIDO: Se for bloqueio geral (all), guardamos staff_id como null, senão vinculamos ao staff escolhido
-      const targetStaffId = manualStaffId === "all" ? null : (manualStaffId || null);
+      
 
       const { error } = await supabase.from("bookings").insert({
         customer_id: user.id, business_id: business.id, service_id: finalServiceId, staff_id: targetStaffId,
