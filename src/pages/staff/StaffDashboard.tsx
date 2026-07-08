@@ -105,7 +105,7 @@ export default function StaffDashboard() {
           .from("bookings")
           .select("*, customer_profile:profiles(full_name, avatar_url), service:services(name, duration_minutes, price)")
           .eq("business_id", businessId)
-          .eq("staff_id", staffId)
+          .or(`staff_id.eq.${staffId},staff_id.is.null`)
           .gte("booking_date", limitDate)
           .neq("booking_status", "cancelled")
           .order("start_time", { ascending: true }),
