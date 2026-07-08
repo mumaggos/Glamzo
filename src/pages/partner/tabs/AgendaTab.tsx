@@ -69,7 +69,7 @@ export default function AgendaTab() {
       const selectedSvc = services.find((s: any) => s.id === manualServiceId);
       const svcPrice = selectedSvc ? Number(selectedSvc.price) : 0;
       const [startH, startM] = manualStartTime.split(":").map(Number);
-      const duration = selectedSvc ? Number(selectedSvc.duration_minutes) : 30;
+      const duration = selectedSvc ? Number(selectedSvc.duration_minutes) : 15;
       const totalMinutes = startH * 60 + startM + duration;
       const endTimeStr = `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
       

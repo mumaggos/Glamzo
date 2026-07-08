@@ -117,7 +117,12 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
                   <div 
                     key={`${hour}-${col.id}`} 
                     className="flex-1 h-full border-l border-slate-50 hover:bg-purple-50/40 transition-colors cursor-pointer relative"
-                    onClick={() => onDateSelect({ date: col.dateStr, time: `${String(hour).padStart(2, '0')}:00`, staffId: colStaffId })}
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const y = e.clientY - rect.top;
+                      const min = Math.floor(y / (112 / 4)) * 15;
+                      onDateSelect({ date: col.dateStr, time: `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`, staffId: colStaffId });
+                    }}
                   >
                     {slotBookings.map((b: any) => {
                       const isCompleted = b.booking_status === 'completed';

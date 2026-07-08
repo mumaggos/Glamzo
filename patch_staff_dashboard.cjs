@@ -1,91 +1,96 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/pages/staff/StaffDashboard.tsx', 'utf8');
+let content = fs.readFileSync('src/pages/staff/StaffDashboard.tsx', 'utf8');
 
-code = code.replace(
-  /const \[settingsSuccess, setSettingsSuccess\] = useState\(""\);\n\s*const \[settingsError, setSettingsError\] = useState\(""\);/,
-  `const [settingsSuccess, setSettingsSuccess] = useState("");
-  const [settingsError, setSettingsError] = useState("");
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);`
-);
+const replacementQuery = `const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const limitDate = thirtyDaysAgo.toISOString().split('T')[0];
 
-code = code.replace(
-  /import \{ LogOut, Calendar, Clock, User, Scissors, Settings \} from "lucide-react";/,
-  `import { LogOut, Calendar, Clock, User, Scissors, Settings, Camera } from "lucide-react";
-import { optimizeImageBeforeUpload } from "../../utils/imageOptimizer";`
-);
+      const [bookingsRes, servicesRes, businessHoursRes] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("*, customer_profile:profiles(full_name, avatar_url), service:services(name, duration_minutes, price)")
+          .eq("business_id", businessId)
+          .eq("staff_id", staffId)
+          .gte("booking_date", limitDate)
+          .neq("booking_status", "cancelled")
+          .order("start_time", { ascending: true }),
+        supabase
+          .from("services")
+          .select("*")
+          .eq("business_id", businessId),
+        supabase
+          .from("business_hours")
+          .select("*")
+          .eq("business_id", businessId)
+      ]);
 
-code = code.replace(
-  /const handleSaveSettings = async \(e: React.FormEvent\) => \{/,
-  `const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !staff) return;
-    
-    setUploadingAvatar(true);
-    try {
-      const optimized = await optimizeImageBeforeUpload(file);
-      const filePath = \`staff_avatars/\${staff.id}-\${Date.now()}.webp\`;
-      
-      const { error: uploadErr } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, optimized.blob, {
-          cacheControl: "public, max-age=31536000",
-          contentType: "image/webp",
-        });
-        
-      if (uploadErr) throw uploadErr;
-      
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      
-      const { error: updateErr } = await supabase
-        .from('staff')
-        .update({ avatar_url: data.publicUrl })
-        .eq('id', staff.id);
-        
-      if (updateErr) throw updateErr;
-      
-      const updatedStaff = { ...staff, avatar_url: data.publicUrl };
-      localStorage.setItem('staff_session', JSON.stringify(updatedStaff));
-      setStaff(updatedStaff);
-      setSettingsSuccess("Foto de perfil atualizada!");
-    } catch (err: any) {
-      setSettingsError(err.message || "Erro ao fazer upload da foto.");
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
+      if (bookingsRes.data) setBookings(bookingsRes.data);
+      if (servicesRes.data) setServices(servicesRes.data);
+      if (businessHoursRes.data) setBusinessHours(businessHoursRes.data);`;
 
-  const handleSaveSettings = async (e: React.FormEvent) => {`
-);
+content = content.replace(/const today = new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\];[\s\S]*?if \(servicesRes\.data\) setServices\(servicesRes\.data\);/m, replacementQuery);
 
-code = code.replace(
-  /<form onSubmit=\{handleSaveSettings\} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">/,
-  `<form onSubmit={handleSaveSettings} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
-              <div className="flex flex-col items-center justify-center py-4 border-b border-slate-100 mb-4">
-                <div className="w-24 h-24 rounded-full bg-slate-100 overflow-hidden relative group">
-                  {staff.avatar_url ? (
-                     <img src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                     <div className="w-full h-full bg-gradient-to-br from-purple-500 to-rose-500 text-white flex items-center justify-center font-bold text-3xl">
-                       {staff.full_name.charAt(0)}
-                     </div>
-                  )}
-                  <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="w-6 h-6 text-white" />
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
-                  </label>
-                  {uploadingAvatar && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                      <div className="animate-spin text-purple-600"><Scissors className="w-5 h-5"/></div>
-                    </div>
-                  )}
-                </div>
-                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider">Tocar para alterar foto</p>
-                {/* Mobile tap helper */}
-                <label className="sm:hidden mt-2 px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">
-                  Alterar Foto
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
-                </label>
-              </div>`
-);
+// Add missing state for DashboardCalendar
+const imports = `import { DashboardCalendar } from "../../components/DashboardCalendar";\nimport { LogOut, Calendar, Clock, User, Scissors, Settings, Camera, Plus, X, Trash2 } from "lucide-react";`;
+content = content.replace('import { LogOut, Calendar, Clock, User, Scissors, Settings, Camera } from "lucide-react";', imports);
 
-fs.writeFileSync('src/pages/staff/StaffDashboard.tsx', code);
+const moreState = `  const [businessHours, setBusinessHours] = useState<any[]>([]);
+  const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
+  const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  
+  const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [manualBookingType, setManualBookingType] = useState<"booking" | "block">("booking");
+  const [manualClientName, setManualClientName] = useState("");
+  const [manualReason, setManualReason] = useState("");
+  const [manualServiceId, setManualServiceId] = useState("");
+  const [manualDate, setManualDate] = useState(new Date().toISOString().split("T")[0]);
+  const [manualStartTime, setManualStartTime] = useState("09:00");
+  const [manualNotes, setManualNotes] = useState("");
+  const [isSavingManual, setIsSavingManual] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);`;
+
+content = content.replace('  const [view, setView] = useState<"agenda" | "settings">("agenda");', '  const [view, setView] = useState<"agenda" | "settings">("agenda");\n' + moreState);
+
+// Replace Agenda view rendering
+const renderAgenda = `        {view === "agenda" ? (
+          <div className="flex flex-col h-full space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-purple-600" />
+                A Minha Agenda
+              </h2>
+              <div className="flex gap-2">
+                 <button onClick={() => { setAgendaMode('day'); setSelectedAgendaDate(new Date().toISOString().split('T')[0]) }} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200">Hoje</button>
+                 <select value={agendaMode} onChange={(e: any) => setAgendaMode(e.target.value)} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200 outline-none">
+                    <option value="day">1 Dia</option>
+                    <option value="3days">3 Dias</option>
+                    <option value="week">Semana</option>
+                 </select>
+                 <button onClick={() => setIsManualBookingOpen(true)} className="text-xs px-3 py-1.5 rounded-full bg-purple-600 text-white font-bold hover:bg-purple-700 flex items-center gap-1">
+                    <Plus className="w-3 h-3"/> Nova
+                 </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-hidden">
+               <DashboardCalendar 
+                  bookings={bookings} 
+                  staff={staff ? [staff] : []} 
+                  businessHours={businessHours} 
+                  selectedStaffFilter={staff?.id || "all"} 
+                  agendaMode={agendaMode} 
+                  selectedAgendaDate={selectedAgendaDate} 
+                  onDateSelect={(args: any) => {
+                     setManualDate(args.date);
+                     setManualStartTime(args.time);
+                     setIsManualBookingOpen(true);
+                  }} 
+                  onBookingClick={(b: any) => setSelectedBooking(b)} 
+               />
+            </div>
+          </div>
+        ) : (`;
+
+content = content.replace(/        \{view === "agenda" \? \([\s\S]*?        \) : \(/, renderAgenda);
+
+fs.writeFileSync('src/pages/staff/StaffDashboard.tsx', content);

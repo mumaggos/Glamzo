@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { LogOut, Calendar, Clock, User, Scissors, Settings, Camera } from "lucide-react";
+import { DashboardCalendar } from "../../components/DashboardCalendar";
+import { LogOut, Calendar, Clock, User, Scissors, Settings, Camera, Plus, X, Trash2 } from "lucide-react";
 import { optimizeImageBeforeUpload } from "../../utils/imageOptimizer";
 import { Staff, Booking, Service } from "../../types";
 
@@ -11,6 +12,20 @@ export default function StaffDashboard() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"agenda" | "settings">("agenda");
+  const [businessHours, setBusinessHours] = useState<any[]>([]);
+  const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
+  const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  
+  const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [manualBookingType, setManualBookingType] = useState<"booking" | "block">("booking");
+  const [manualClientName, setManualClientName] = useState("");
+  const [manualReason, setManualReason] = useState("");
+  const [manualServiceId, setManualServiceId] = useState("");
+  const [manualDate, setManualDate] = useState(new Date().toISOString().split("T")[0]);
+  const [manualStartTime, setManualStartTime] = useState("09:00");
+  const [manualNotes, setManualNotes] = useState("");
+  const [isSavingManual, setIsSavingManual] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
   
   // Settings state
   const [newPassword, setNewPassword] = useState("");
@@ -36,6 +51,40 @@ export default function StaffDashboard() {
     }
   }, [navigate]);
 
+
+  const handleSaveManualBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staff) return;
+    setIsSavingManual(true);
+    try {
+      const selectedSvc = services.find((s: any) => s.id === manualServiceId);
+      const svcPrice = selectedSvc ? Number(selectedSvc.price) : 0;
+      const [startH, startM] = manualStartTime.split(":").map(Number);
+      const duration = selectedSvc ? Number(selectedSvc.duration_minutes) : 15;
+      const totalMinutes = startH * 60 + startM + duration;
+      const endTimeStr = `${String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
+      
+      const payloadNotes = manualBookingType === "block" 
+        ? `🛑 BLOQUEIO: ${manualReason}` 
+        : `Manual: ${manualClientName} ${manualNotes}`;
+
+      let finalServiceId = manualServiceId || (services.length > 0 ? services[0].id : null);
+
+      const { error } = await supabase.from("bookings").insert({
+        customer_id: null, business_id: staff.business_id, service_id: finalServiceId, staff_id: staff.id,
+        booking_date: manualDate, start_time: manualStartTime, end_time: endTimeStr,
+        total_price: manualBookingType === "block" ? 0 : svcPrice, payment_method: "local",
+        payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes,
+      });
+
+      if (error) throw error;
+      
+      setIsManualBookingOpen(false);
+      setManualClientName(""); setManualReason(""); setManualNotes("");
+      loadDashboardData(staff.id, staff.business_id);
+    } catch (err: any) { alert("Erro ao guardar dados."); } finally { setIsSavingManual(false); }
+  };
+
   const loadDashboardData = async (staffId: string, businessId: string) => {
     try {
       setLoading(true);
@@ -47,25 +96,32 @@ export default function StaffDashboard() {
         return;
       }
 
-      const today = new Date().toISOString().split('T')[0];
-      
-      const [bookingsRes, servicesRes] = await Promise.all([
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const limitDate = thirtyDaysAgo.toISOString().split('T')[0];
+
+      const [bookingsRes, servicesRes, businessHoursRes] = await Promise.all([
         supabase
           .from("bookings")
-          .select("*, customer_profile:customer_profiles(*)")
+          .select("*, customer_profile:profiles(full_name, avatar_url), service:services(name, duration_minutes, price)")
           .eq("business_id", businessId)
-          .eq("booking_date", today)
           .eq("staff_id", staffId)
+          .gte("booking_date", limitDate)
           .neq("booking_status", "cancelled")
           .order("start_time", { ascending: true }),
         supabase
           .from("services")
+          .select("*")
+          .eq("business_id", businessId),
+        supabase
+          .from("business_hours")
           .select("*")
           .eq("business_id", businessId)
       ]);
 
       if (bookingsRes.data) setBookings(bookingsRes.data);
       if (servicesRes.data) setServices(servicesRes.data);
+      if (businessHoursRes.data) setBusinessHours(businessHoursRes.data);
       
     } catch (error) {
       console.error("Error loading staff dashboard", error);
@@ -188,42 +244,40 @@ export default function StaffDashboard() {
       {/* Main Content */}
       <main className="flex-1 p-4 overflow-y-auto">
         {view === "agenda" ? (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-purple-600" />
-              A Minha Agenda de Hoje
-            </h2>
+          <div className="flex flex-col h-full space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-purple-600" />
+                A Minha Agenda
+              </h2>
+              <div className="flex gap-2">
+                 <button onClick={() => { setAgendaMode('day'); setSelectedAgendaDate(new Date().toISOString().split('T')[0]) }} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200">Hoje</button>
+                 <select value={agendaMode} onChange={(e: any) => setAgendaMode(e.target.value)} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200 outline-none">
+                    <option value="day">1 Dia</option>
+                    <option value="3days">3 Dias</option>
+                    <option value="week">Semana</option>
+                 </select>
+                 <button onClick={() => setIsManualBookingOpen(true)} className="text-xs px-3 py-1.5 rounded-full bg-purple-600 text-white font-bold hover:bg-purple-700 flex items-center gap-1">
+                    <Plus className="w-3 h-3"/> Nova
+                 </button>
+              </div>
+            </div>
             
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-              {bookings.length > 0 ? (
-                <div className="divide-y divide-slate-100">
-                  {bookings.map((booking) => {
-                    const service = services.find(s => s.id === booking.service_id);
-                    return (
-                      <div key={booking.id} className="p-4 flex gap-4 hover:bg-slate-50 transition">
-                        <div className="flex flex-col items-center justify-start pt-1">
-                          <span className="text-sm font-black text-slate-900">{booking.start_time.substring(0, 5)}</span>
-                          <span className="text-[10px] font-bold text-slate-400">{booking.end_time.substring(0, 5)}</span>
-                        </div>
-                        <div className="flex-1 border-l-2 border-purple-200 pl-4">
-                          <h3 className="font-bold text-sm text-slate-900">
-                            {booking.customer_profile?.full_name || "Cliente"}
-                          </h3>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {service?.name || "Serviço"}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="p-8 text-center text-slate-500">
-                  <Clock className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-                  <p className="font-bold text-sm">Sem marcações para hoje</p>
-                  <p className="text-xs mt-1">Aproveite para descansar!</p>
-                </div>
-              )}
+            <div className="flex-1 overflow-hidden">
+               <DashboardCalendar 
+                  bookings={bookings} 
+                  staff={staff ? [staff] : []} 
+                  businessHours={businessHours} 
+                  selectedStaffFilter={staff?.id || "all"} 
+                  agendaMode={agendaMode} 
+                  selectedAgendaDate={selectedAgendaDate} 
+                  onDateSelect={(args: any) => {
+                     setManualDate(args.date);
+                     setManualStartTime(args.time);
+                     setIsManualBookingOpen(true);
+                  }} 
+                  onBookingClick={(b: any) => setSelectedBooking(b)} 
+               />
             </div>
           </div>
         ) : (
@@ -292,6 +346,60 @@ export default function StaffDashboard() {
           </div>
         )}
       </main>
+
+
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white relative">
+               <button onClick={() => setSelectedBooking(null)} className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 rounded-full p-2 transition"><X className="w-4 h-4"/></button>
+               <h3 className="font-extrabold text-lg mb-1">{selectedBooking.customer_profile?.full_name || "Cliente sem Nome"}</h3>
+               <p className="text-sm opacity-90">{selectedBooking.service?.name || "Serviço Removido"}</p>
+            </div>
+            <div className="p-6 space-y-4 text-slate-700">
+               <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                 <div><p className="text-[10px] font-bold text-slate-400 uppercase">Data</p><p className="font-bold">{new Date(selectedBooking.booking_date).toLocaleDateString('pt-PT')}</p></div>
+                 <div className="text-right"><p className="text-[10px] font-bold text-slate-400 uppercase">Horário</p><p className="font-bold">{selectedBooking.start_time.substring(0,5)} - {selectedBooking.end_time.substring(0,5)}</p></div>
+               </div>
+               {selectedBooking.notes && (
+                 <div className="p-3 bg-slate-50 rounded-2xl text-xs font-mono">{selectedBooking.notes}</div>
+               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Booking Modal */}
+      {isManualBookingOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center"><h3 className="font-extrabold text-xl">Nova Marcação</h3><button onClick={() => setIsManualBookingOpen(false)}><X className="w-5 h-5"/></button></div>
+            <form onSubmit={handleSaveManualBooking} className="p-6 overflow-y-auto space-y-5">
+               <div className="flex p-1 bg-slate-100 rounded-2xl">
+                 <button type="button" onClick={() => setManualBookingType("booking")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "booking" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>Cliente</button>
+                 <button type="button" onClick={() => setManualBookingType("block")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "block" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500"}`}>Bloqueio</button>
+               </div>
+               
+               {manualBookingType === "booking" ? (
+                 <>
+                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Nome do Cliente</label><input type="text" required value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Serviço</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                 </>
+               ) : (
+                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Motivo</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+               )}
+
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Data</label><input type="date" required value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Hora</label><input type="time" required value={manualStartTime} onChange={(e) => setManualStartTime(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+               </div>
+               
+               <button type="submit" disabled={isSavingManual} className="w-full bg-purple-600 text-white font-bold p-4 rounded-xl">{isSavingManual ? "A Guardar..." : "Confirmar"}</button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Nav */}
       <nav className="bg-white border-t border-slate-200 p-3 flex justify-around mt-auto sticky bottom-0 z-10 pb-safe">
