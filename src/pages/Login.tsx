@@ -35,7 +35,9 @@ export default function Login() {
       if (profile.role === 'admin') {
         navigate('/admin', { replace: true });
       } else if (profile.role === 'business') {
-        navigate('/dashboard', { replace: true });
+        navigate('/partner/dashboard', { replace: true });
+      } else if (profile.role === 'staff') {
+        navigate('/staff/dashboard', { replace: true });
       } else {
         navigate('/account', { replace: true });
       }

@@ -70,7 +70,7 @@ export default function PartnerLogin() {
 
       const role = profData?.role || 'customer';
 
-      let redirect = '/dashboard';
+      let redirect = '/partner/dashboard';
       if (role === 'customer') redirect = '/account';
       else if (role === 'admin') redirect = '/admin';
 

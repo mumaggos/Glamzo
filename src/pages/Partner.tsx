@@ -19,7 +19,7 @@ export default function Partner() {
 
   useEffect(() => {
     if (user && profile?.role === 'business') {
-      navigate('/dashboard', { replace: true });
+      navigate('/partner/dashboard', { replace: true });
     } else if (user && profile?.role === 'admin') {
       navigate('/admin', { replace: true });
     }

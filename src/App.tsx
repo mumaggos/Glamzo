@@ -176,7 +176,7 @@ function GlobalRoleEnforcer() {
 
     const path = location.pathname;
     
-    const isPartnerRoute = path.startsWith('/partner') || path.startsWith('/setup');
+    const isPartnerRoute = path.startsWith('/partner') || path.startsWith('/setup') || path.startsWith('/dashboard');
     const isStaffRoute = path.startsWith('/staff');
     const isAdminRoute = path.startsWith('/admin');
     const isAuthRoute = ['/login', '/signup', '/partner/login', '/partner/signup', '/admin/login', '/staff/login'].includes(path);

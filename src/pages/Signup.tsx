@@ -32,7 +32,7 @@ export default function Signup() {
       }
       
       if (profile.role === 'admin') navigate('/admin', { replace: true });
-      else if (profile.role === 'business') navigate('/dashboard', { replace: true });
+      else if (profile.role === 'business') navigate('/partner/dashboard', { replace: true });
       else navigate('/account', { replace: true });
     }
   }, [user, profile, authLoading, navigate]);

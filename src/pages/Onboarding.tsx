@@ -44,7 +44,7 @@ export default function Onboarding() {
     if (user) {
       supabase.from('businesses').select('id, setup_completed').eq('owner_id', user.id).maybeSingle().then(({ data }) => {
         if (data?.setup_completed) {
-          navigate('/dashboard', { replace: true });
+          navigate('/partner/dashboard', { replace: true });
         } else {
           const saved = localStorage.getItem(DRAFT_KEY);
           if (saved) {
@@ -230,7 +230,7 @@ export default function Onboarding() {
       // Clear draft
       localStorage.removeItem(DRAFT_KEY);
       await refreshProfile();
-      navigate('/dashboard', { replace: true });
+      navigate('/partner/dashboard', { replace: true });
 
     } catch (err: any) {
       console.error(err);

@@ -115,7 +115,7 @@ export default function StripeSimulatedConnect() {
 
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/partner/dashboard')}
                 className="w-full text-center text-xs text-slate-500 hover:text-slate-600 cursor-pointer transition py-1"
               >
                 Voltar sem conectar de momento

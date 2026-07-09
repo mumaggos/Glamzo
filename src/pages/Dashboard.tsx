@@ -1120,7 +1120,7 @@ export default function Dashboard() {
           );
 
           // 3. Clean search params to keep URL pristine
-          navigate("/dashboard", { replace: true });
+          navigate("/partner/dashboard", { replace: true });
 
           // 4. Force reload data
           await loadTerminalData();
@@ -1355,7 +1355,7 @@ export default function Dashboard() {
           );
         }
 
-        navigate("/dashboard", { replace: true });
+        navigate("/partner/dashboard", { replace: true });
         await loadTerminalData();
       };
       handleSubscriptionSuccessCheck();
@@ -1366,7 +1366,7 @@ export default function Dashboard() {
         "ℹ️ Checkout Cancelado",
         `O processo de subscrição ${business?.selected_plan === "app_tablet" ? "PRO Terminal" : "Glamzo PRO"} foi cancelado ou interrompido.`,
       );
-      navigate("/dashboard", { replace: true });
+      navigate("/partner/dashboard", { replace: true });
     }
 
     if (status === "success_credits" && user) {
@@ -1377,7 +1377,7 @@ export default function Dashboard() {
             "🎉 Créditos Adicionados!",
             "Os seus créditos promocionais foram creditados com sucesso na sua conta!",
           );
-          navigate("/dashboard", { replace: true });
+          navigate("/partner/dashboard", { replace: true });
           await loadTerminalData();
         } catch (syncErr: any) {
           console.error(syncErr);
@@ -1391,7 +1391,7 @@ export default function Dashboard() {
         "ℹ️ Compra de Créditos Cancelada",
         "O processo de aquisição de créditos foi cancelado.",
       );
-      navigate("/dashboard", { replace: true });
+      navigate("/partner/dashboard", { replace: true });
     }
   }, [user, searchParams]);
 
