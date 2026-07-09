@@ -31,8 +31,6 @@ export function DashboardOverview({
   // Simple stats calculation for today
   
   
-  const [rpcStats, setRpcStats] = useState<any>(null);
-  const [loadingRpc, setLoadingRpc] = useState(false);
 const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today');
   const [showReviewsModal, setShowReviewsModal] = useState(false);
 
