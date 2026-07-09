@@ -98,7 +98,7 @@ export default function StoreAssetsTab() {
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mt-2">
             <QRCodeSVG
               id="store-qr-code"
-              value={qrUrl}
+              value={storeUrl + "?source=qr"}
               size={140}
               level={"H"}
               includeMargin={false}

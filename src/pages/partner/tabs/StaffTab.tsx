@@ -173,84 +173,53 @@ export default function StaffTab() {
   };
 
 
-  const getStaffMetrics = (staffId: string, filter: string) => {
-    const today = new Date();
-    const staffBookings = bookings.filter((b: any) => 
-      b.staff_id === staffId && 
-      b.booking_status === "completed"
-    );
-
-    let filteredBookings = [];
-
-    if (filter === "day") {
-      const todayStr = today.toISOString().split('T')[0];
-      filteredBookings = staffBookings.filter(b => b.booking_date === todayStr);
-    } else if (filter === "week") {
-      const monday = new Date(today);
-      monday.setDate(monday.getDate() - (monday.getDay() === 0 ? 6 : monday.getDay() - 1));
-      const mondayStr = monday.toISOString().split('T')[0];
-      filteredBookings = staffBookings.filter(b => b.booking_date >= mondayStr);
-    } else if (filter === "month") {
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-      filteredBookings = staffBookings.filter(b => b.booking_date >= startOfMonth);
-    } else if (filter === "year") {
-      const startOfYear = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
-      filteredBookings = staffBookings.filter(b => b.booking_date >= startOfYear);
-    }
-
-    const totalServices = filteredBookings.length;
-    const totalRevenue = filteredBookings.reduce((sum, b) => sum + Number(b.total_price), 0);
-
-    return { totalServices, totalRevenue, filteredBookings };
-  };
-
-  const handleDownloadMetrics = (staffMember: Staff, metrics: any) => {
-    let csv = "Data,Hora,Serviço,Cliente,Valor (€)\n";
-    metrics.filteredBookings.forEach((b: any) => {
-      csv += `${b.booking_date},${b.start_time.substring(0,5)},${b.service?.name || "Manual"},${b.customer_profile?.full_name || "Manual"},${b.total_price}\n`;
-    });
+  
+  const [asyncMetrics, setAsyncMetrics] = useState({ totalBookings: 0, totalRevenue: 0 });
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
+  
+  useEffect(() => {
+    if (!metricsStaff) return;
     
-    csv += `\nTotal Serviços: ${metrics.totalServices}\nTotal Faturado: ${metrics.totalRevenue} €\n`;
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `metricas_${staffMember.full_name.replace(/\s+/g, "_")}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleResendEmail = async (st: any) => {
-    if (!st.email || !st.temp_password) {
-      alert("Este profissional não tem email ou password temporária definida.");
-      return;
-    }
+    const fetchMetrics = async () => {
+      setLoadingMetrics(true);
+      try {
+        const today = new Date();
+        let startDateStr = "";
+        
+        if (metricsFilter === "day") {
+           startDateStr = today.toISOString().split('T')[0];
+        } else if (metricsFilter === "week") {
+           const monday = new Date(today);
+           monday.setDate(monday.getDate() - (monday.getDay() === 0 ? 6 : monday.getDay() - 1));
+           startDateStr = monday.toISOString().split('T')[0];
+        } else if (metricsFilter === "month") {
+           startDateStr = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        } else if (metricsFilter === "year") {
+           startDateStr = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+        }
+        
+        const { data, error } = await supabase.rpc('get_staff_performance', {
+          p_business_id: business?.id,
+          p_start_date: startDateStr,
+          p_end_date: today.toISOString().split('T')[0]
+        });
+        
+        if (!error && data) {
+           const staffStat = data.find((s: any) => s.staff_id === metricsStaff.id);
+           if (staffStat) {
+             setAsyncMetrics({ totalBookings: staffStat.total_bookings, totalRevenue: staffStat.total_revenue });
+           } else {
+             setAsyncMetrics({ totalBookings: 0, totalRevenue: 0 });
+           }
+        }
+      } catch (err) {
+      } finally {
+        setLoadingMetrics(false);
+      }
+    };
     
-    try {
-      const res = await fetch("/api/emails/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "staff_credentials",
-          to: st.email,
-          data: {
-            shopName: business.name,
-            email: st.email,
-            password: st.temp_password,
-            loginUrl: `https://glamzo.pt/staff/login`
-          }
-        })
-      });
-      if (!res.ok) throw new Error("Erro");
-      alert("Email enviado com sucesso!");
-    } catch (err) {
-      alert("Falha ao enviar email. Tente novamente.");
-    }
-  };
-
+    fetchMetrics();
+  }, [metricsStaff, metricsFilter, business?.id]);
   return (
     <div className="space-y-6 max-w-[1600px] w-full mx-auto animate-fade-in text-slate-700">
       {globalSuccess && (
@@ -432,8 +401,9 @@ export default function StaffTab() {
                 ))}
               </div>
 
-              {(() => {
-                 const metrics = getStaffMetrics(metricsStaff.id, metricsFilter);
+              {
+                (() => {
+                 const metrics = asyncMetrics;
                  return (
                    <div className="space-y-6">
                      <div className="grid grid-cols-1 gap-4">

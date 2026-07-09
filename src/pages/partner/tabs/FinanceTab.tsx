@@ -35,13 +35,31 @@ export default function FinanceTab() {
   const loadFinanceData = async () => {
     if (!business) return;
     try {
+      const now = new Date();
+      let startDate = new Date();
+      startDate.setHours(0,0,0,0);
+      let endDate = new Date(now);
+      
+      if (ledgerFilter === 'week') {
+         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (ledgerFilter === 'month') {
+         startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      } else if (ledgerFilter === 'custom') {
+         startDate = new Date(customStartDate);
+         endDate = new Date(customEndDate);
+         endDate.setHours(23,59,59,999);
+      }
+      
+      const startStr = startDate.toISOString();
+      const endStr = endDate.toISOString();
+
       const [
         { data: pyData },
         { data: poData },
         { data: subData },
         { data: bkData }
       ] = await Promise.all([
-        supabase.from("payments").select("*").eq("business_id", business.id),
+        supabase.from("payments").select("*").eq("business_id", business.id).gte("created_at", startStr).lte("created_at", endStr),
         supabase
           .from("payouts")
           .select("*")
@@ -52,7 +70,7 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id").eq("business_id", business.id).eq("booking_status", "completed")
+        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id").eq("business_id", business.id).eq("booking_status", "completed").gte("created_at", startStr).lte("created_at", endStr)
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
@@ -106,7 +124,7 @@ export default function FinanceTab() {
 
   useEffect(() => {
     loadFinanceData();
-  }, [business]);
+  }, [business, ledgerFilter, customStartDate, customEndDate]);
 
   // Derived calculations
   

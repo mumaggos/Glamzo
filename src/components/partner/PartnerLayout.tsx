@@ -54,7 +54,21 @@ export default function PartnerLayout() {
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
         supabase.from("staff").select("*").eq("business_id", bData.id).order("full_name"),
-        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false }).limit(10000),
+        (() => {
+          const now = new Date();
+          const start = new Date(now);
+          start.setDate(now.getDate() - 30);
+          const end = new Date(now);
+          end.setDate(now.getDate() + 90);
+          return supabase.from("bookings")
+            .select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`)
+            .eq("business_id", bData.id)
+            .gte("booking_date", start.toISOString().split('T')[0])
+            .lte("booking_date", end.toISOString().split('T')[0])
+            .order("booking_date", { ascending: false })
+            .order("start_time", { ascending: false })
+            .limit(1000);
+        })(),
         supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);
 
