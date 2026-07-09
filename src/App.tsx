@@ -170,6 +170,7 @@ function NotFoundScreen() {
 function GlobalRoleEnforcer() {
   const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loading || !user || !profile) return;
@@ -185,14 +186,22 @@ function GlobalRoleEnforcer() {
     const isPublicCustomerRoute = !isPartnerRoute && !isStaffRoute && !isAdminRoute && !isAuthRoute && !isExempt;
 
     const enforceSeparation = async () => {
-       if (profile.role === 'business' || profile.role === 'staff' || profile.role === 'admin') {
-          // Se uma loja/staff/admin vai para o site publico (home, explore, etc), fazer logout
-          if (isPublicCustomerRoute) {
-             console.log("Forcing logout: Staff/Business accessing public customer route", path);
-             await signOut();
+       if (profile.role === 'business') {
+          if (isPublicCustomerRoute || isStaffRoute || isAdminRoute) {
+             console.log("Redirecting business to their dashboard instead of logout", path);
+             navigate('/partner/dashboard', { replace: true });
+          }
+       } else if (profile.role === 'staff') {
+          if (isPublicCustomerRoute || isPartnerRoute || isAdminRoute) {
+             console.log("Redirecting staff to their dashboard instead of logout", path);
+             navigate('/staff/dashboard', { replace: true });
+          }
+       } else if (profile.role === 'admin') {
+          if (isPublicCustomerRoute || isPartnerRoute || isStaffRoute) {
+             console.log("Redirecting admin to their dashboard instead of logout", path);
+             navigate('/admin', { replace: true });
           }
        } else if (profile.role === 'customer') {
-          // Se um cliente vai para a área de lojas/staff, fazer logout para permitir login de loja
           if ((isPartnerRoute && path !== '/partner') || isStaffRoute || isAdminRoute) {
              console.log("Forcing logout: Customer accessing business/staff route", path);
              await signOut();
@@ -201,7 +210,7 @@ function GlobalRoleEnforcer() {
     };
 
     enforceSeparation();
-  }, [location.pathname, user, profile, loading, signOut]);
+  }, [location.pathname, user, profile, loading, signOut, navigate]);
 
   return null;
 }

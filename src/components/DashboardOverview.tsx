@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { 
   CheckSquare, Calendar as CalendarIcon, Users, Landmark, Tag, TrendingUp, Globe, Smartphone, 
-  Plus, ArrowRight, Star, Clock, AlertCircle, ShoppingBag, Euro
+  Plus, ArrowRight, Star, Clock, AlertCircle, ShoppingBag, Euro, X
 } from 'lucide-react';
 import { supabase } from "../lib/supabase";
 import { Business, Booking, Service, Staff, Review } from '../types';
@@ -36,46 +36,6 @@ export function DashboardOverview({
 const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today');
   const [showReviewsModal, setShowReviewsModal] = useState(false);
 
-  useEffect(() => {
-    if (!business?.id) return;
-    
-    const fetchStats = async () => {
-      setLoadingRpc(true);
-      try {
-        const now = new Date();
-        let startDate = new Date();
-        startDate.setHours(0,0,0,0);
-        let endDate = new Date(now);
-        
-        if (timeFilter === 'week') {
-           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        } else if (timeFilter === 'month') {
-           startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        }
-        
-        const startStr = startDate.toISOString().split('T')[0];
-        const endStr = endDate.toISOString().split('T')[0];
-        
-        const { data, error } = await supabase.rpc('get_dashboard_stats', {
-          p_business_id: business.id,
-          p_start_date: startStr,
-          p_end_date: endStr
-        });
-        
-        if (!error && data) {
-          setRpcStats(data);
-        } else {
-          setRpcStats(null); // fallback to client side
-        }
-      } catch (err) {
-        setRpcStats(null);
-      } finally {
-        setLoadingRpc(false);
-      }
-    };
-    
-    fetchStats();
-  }, [business?.id, timeFilter]);
 
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -100,8 +60,8 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
   });
 
   
-  const filteredRevenue = rpcStats ? rpcStats.revenue : filteredBookingsList.reduce((sum, b) => sum + (b.total_price || 0), 0);
-  const displayBookingsCount = rpcStats ? rpcStats.total_bookings : filteredBookingsList.length;
+  const filteredRevenue = filteredBookingsList.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+  const displayBookingsCount = filteredBookingsList.length;
 
   const timeLabel = timeFilter === 'today' ? 'Hoje' : timeFilter === 'week' ? 'Semana' : 'Mês';
 
@@ -197,7 +157,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           <p className="text-sm font-medium text-slate-500 mt-1">Pedidos Pendentes</p>
         </div>
 
-                <div onClick={() => setActiveTab('financas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-emerald-300 transition-colors">
+                <div onClick={() => setShowReviewsModal(true)} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <Star className="w-5 h-5 text-purple-600" />

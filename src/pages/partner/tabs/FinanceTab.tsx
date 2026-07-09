@@ -131,12 +131,12 @@ export default function FinanceTab() {
   const getFilteredLedgers = () => {
     const now = new Date();
     return ledgers.filter(item => {
+      const itemDate = new Date(item.created_at);
       if (ledgerFilter === 'today') {
         const today = new Date();
         today.setHours(0,0,0,0);
         return itemDate >= today;
       }
-      const itemDate = new Date(item.created_at);
       if (ledgerFilter === 'week') {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         return itemDate >= weekAgo;
