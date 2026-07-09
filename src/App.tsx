@@ -117,6 +117,43 @@ function NotFoundScreen() {
   );
 }
 
+
+function GlobalRoleEnforcer() {
+  const { user, profile, signOut, loading } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (loading || !user || !profile) return;
+
+    const isPartnerRoute = location.pathname.startsWith('/partner') || location.pathname.startsWith('/setup');
+    const isStaffRoute = location.pathname.startsWith('/staff');
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
+    // Allow stripe and partner landing
+    const isExempt = location.pathname.includes('stripe') || location.pathname === '/partner';
+    const isPublicCustomerRoute = !isPartnerRoute && !isStaffRoute && !isAdminRoute && !isAuthRoute && !isExempt;
+
+    const enforceSeparation = async () => {
+       if (profile.role === 'business' || profile.role === 'staff' || profile.role === 'admin') {
+          if (isPublicCustomerRoute) {
+             console.log("Forcing logout: Staff/Business accessing customer route", location.pathname);
+             await signOut();
+          }
+       } else {
+          // customer
+          if ((isPartnerRoute && location.pathname !== '/partner' && !location.pathname.includes('/partner/login') && !location.pathname.includes('/partner/signup')) || isStaffRoute || isAdminRoute) {
+             console.log("Forcing logout: Customer accessing staff/business route", location.pathname);
+             await signOut();
+          }
+       }
+    };
+
+    enforceSeparation();
+  }, [location.pathname, user, profile, loading, signOut]);
+
+  return null;
+}
+
 export default function App() {
   const [loadMessenger, setLoadMessenger] = React.useState(false);
 
@@ -132,8 +169,10 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <ScrollToTop />
+          
         <AuthProvider>
           <SessionGuard />
+          <GlobalRoleEnforcer />
           <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
             <Navbar />
