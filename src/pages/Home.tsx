@@ -162,12 +162,9 @@ export default function Home() {
         let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false); 
         let revDataFinal = revData || []; 
 
-        if (loadedBiz.length === 0 || bizRes.error) { 
-          const { FALLBACK_BUSINESSES, FALLBACK_SERVICES, FALLBACK_REVIEWS } = await import("../utils/fallbackData"); 
-          loadedBiz = FALLBACK_BUSINESSES; 
-          srvData = FALLBACK_SERVICES; 
-          revDataFinal = FALLBACK_REVIEWS; 
-        } 
+        if (bizRes.error) { 
+          console.error("Home fetch error:", bizRes.error);
+        }
          
         const now = new Date(); 
          

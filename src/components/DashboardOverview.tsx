@@ -282,7 +282,9 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
                  <button onClick={() => setShowReviewsModal(false)} className="p-2 rounded-full hover:bg-slate-100 transition"><X className="w-4 h-4"/></button>
               </div>
               <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
-                 {reviews.map((r, i) => (
+                 {reviews.length === 0 ? (
+                    <div className="text-center py-10 text-slate-500 text-sm font-medium">Ainda não existem avaliações.</div>
+                 ) : reviews.map((r, i) => (
                     <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
                        <div className="flex justify-between items-center mb-2">
                           <span className="font-bold text-slate-800">{r.customer_name || "Cliente"}</span>
