@@ -152,7 +152,7 @@ export default function ClientsTab() {
           </div>
         </div>
         
-        <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
+        <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
           <table className="w-full text-left border-collapse">
             <thead className="bg-white border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
               <tr>

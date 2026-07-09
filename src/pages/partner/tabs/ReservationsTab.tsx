@@ -81,7 +81,7 @@ export function ReservationsTab() {
             <p className="text-sm text-slate-500">Nenhuma marcação encontrada para este filtro.</p>
           </div>
         ) : (
-        <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
+        <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
               <tr>

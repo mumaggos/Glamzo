@@ -141,6 +141,29 @@ app.post("/api/realtime/broadcast", (req, res) => {
 });
 
 // Real Email Dispatch endpoint
+
+app.post("/api/business/qr-scan", express.json(), async (req, res) => {
+  const { businessId } = req.body;
+  if (!businessId) return res.status(400).json({ error: "No businessId provided" });
+  try {
+    const { data: currentData } = await supabaseAdmin
+      .from('businesses')
+      .select('qr_scans')
+      .eq('id', businessId)
+      .single();
+      
+    const current = currentData?.qr_scans || 0;
+    
+    await supabaseAdmin
+      .from('businesses')
+      .update({ qr_scans: current + 1 })
+      .eq('id', businessId);
+      
+    res.json({ success: true, scans: current + 1 });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to increment QR scans" });
+  }
+});
 app.post("/api/emails/send", async (req, res) => {
   try {
     const { type, to, data } = req.body;

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { fetchChatSessionsForPartner, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
-import { ChatSession, ChatMessage } from '../types';
+import { User } from 'lucide-react';
 import { MessageSquare, Send, ArrowLeft, Search, Clock } from 'lucide-react';
 
 export default function DashboardMessages({ businessId }: { businessId: string }) {

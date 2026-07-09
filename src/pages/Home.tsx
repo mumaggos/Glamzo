@@ -6,7 +6,7 @@ import {
   Search, MapPin, Clock, Navigation,  
   ChevronRight, ChevronLeft, Map as MapIcon,  
   ShieldCheck, Loader2, ArrowRight, Heart, CalendarCheck, Zap, Star 
-} from "lucide-react"; 
+, Tag } from "lucide-react"; 
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 
@@ -85,7 +85,9 @@ const optimizeUnsplashUrl = (url: string) => {
   return url; 
 }; 
 
-export default function Home() { 
+export default function Home() {
+  const [activePromotions, setActivePromotions] = useState<any[]>([]);
+ 
   const navigate = useNavigate(); 
   const [searchParams] = useSearchParams(); 
   const scrollContainerRef = useRef<HTMLDivElement>(null); 
@@ -108,7 +110,23 @@ export default function Home() {
     } 
   }; 
 
-  useEffect(() => { 
+  useEffect(() => {
+    const fetchPromos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("business_coupons")
+          .select("*, business:businesses(name, slug)")
+          .eq("is_active", true);
+        
+        if (!error && data) {
+          const now = new Date();
+          const valid = data.filter(c => !c.valid_until || new Date(c.valid_until) > now);
+          setActivePromotions(valid);
+        }
+      } catch (err) {}
+    };
+    fetchPromos();
+ 
     if (navigator.geolocation) { 
       const gpsTimer = setTimeout(() => {
         navigator.geolocation.getCurrentPosition((pos) => { 

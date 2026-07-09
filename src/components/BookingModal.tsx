@@ -19,7 +19,11 @@ interface BookingModalProps {
 export default function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
-  const [step, setStep] = useState(1);
+  
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
+const [step, setStep] = useState(1);
   const [selectedServices, setSelectedServices] = useState<any[]>(initialSelectedService ? [initialSelectedService] : []);
   const selectedService = selectedServices[0] || null;
   const totalServicesPrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
@@ -186,7 +190,51 @@ export default function BookingModal({
 
   const availableSlots = getAvailableSlots();
 
-  const handleConfirmReservation = async () => {
+  
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setValidatingPromo(true);
+    setErrorMsg(null);
+    try {
+      const { data, error } = await supabase
+        .from('business_coupons')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('code', promoCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .maybeSingle();
+        
+      if (error || !data) {
+        setErrorMsg('Código promocional inválido ou expirado.');
+        setAppliedPromo(null);
+      } else {
+        if (data.valid_until && new Date(data.valid_until) < new Date()) {
+          setErrorMsg('Este código promocional já expirou.');
+          setAppliedPromo(null);
+        } else {
+          setAppliedPromo(data);
+          setErrorMsg(null);
+        }
+      }
+    } catch (err) {
+      setErrorMsg('Erro ao validar código.');
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const getDiscountAmount = () => {
+    if (!appliedPromo) return 0;
+    if (appliedPromo.discount_percent) {
+      return (totalServicesPrice * appliedPromo.discount_percent) / 100;
+    }
+    if (appliedPromo.discount_value) {
+      return appliedPromo.discount_value;
+    }
+    return 0;
+  };
+  const finalPrice = Math.max(0, totalServicesPrice - getDiscountAmount());
+const handleConfirmReservation = async () => {
     if (selectedServices.length === 0 || !selectedDate || !selectedTime) return;
     setSubmitting(true);
     setErrorMsg(null);
@@ -405,6 +453,7 @@ export default function BookingModal({
                 </div>
               )}
 
+              
               {step === 6 && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                   <div className="flex justify-between items-center pb-4 border-b border-slate-100">
@@ -414,10 +463,32 @@ export default function BookingModal({
                     </div>
                     <div className="text-right">
                       <span className="block text-xs font-bold text-slate-400 uppercase">Total a Pagar</span>
-                      <span className="text-2xl font-black text-purple-600">{totalServicesPrice.toFixed(2)}€</span>
+                      {appliedPromo ? (
+                        <>
+                          <span className="text-sm font-bold text-slate-400 line-through mr-2">{totalServicesPrice.toFixed(2)}€</span>
+                          <span className="text-2xl font-black text-emerald-600">{finalPrice.toFixed(2)}€</span>
+                        </>
+                      ) : (
+                        <span className="text-2xl font-black text-purple-600">{totalServicesPrice.toFixed(2)}€</span>
+                      )}
                     </div>
                   </div>
+                  <div className="pt-2 pb-4 border-b border-slate-100">
+                     <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Código Promocional</label>
+                     <div className="flex gap-2">
+                       <input value={promoCode} onChange={e => setPromoCode(e.target.value)} disabled={!!appliedPromo} placeholder="Insira o código" className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold uppercase outline-none focus:border-purple-500 disabled:opacity-50" />
+                       {!appliedPromo ? (
+                         <button onClick={handleApplyPromo} disabled={validatingPromo || !promoCode.trim()} className="bg-slate-900 hover:bg-black text-white px-4 rounded-xl font-bold text-sm transition-colors disabled:opacity-50">{validatingPromo ? 'A verificar...' : 'Aplicar'}</button>
+                       ) : (
+                         <button onClick={() => { setAppliedPromo(null); setPromoCode(''); }} className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 rounded-xl font-bold text-sm transition-colors border border-rose-200">Remover</button>
+                       )}
+                     </div>
+                     {appliedPromo && (
+                       <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Desconto de {appliedPromo.discount_percent ? `${appliedPromo.discount_percent}%` : `${appliedPromo.discount_value}€`} aplicado com sucesso!</p>
+                     )}
+                  </div>
                   <div className="space-y-2 pt-2">
+
                     <label className="text-xs font-bold text-slate-500 uppercase">Observações para o salão</label>
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Preciso de sair rápido..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:border-purple-500" rows={2} />
                   </div>

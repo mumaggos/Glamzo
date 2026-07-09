@@ -24,7 +24,7 @@ export default function FinanceTab() {
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
-  const [ledgerFilter, setLedgerFilter] = useState<'all' | 'week' | 'month' | 'year' | 'custom'>('all');
+  const [ledgerFilter, setLedgerFilter] = useState<'today' | 'week' | 'month' | 'custom'>('week');
   const [customStartDate, setCustomStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
@@ -69,14 +69,16 @@ export default function FinanceTab() {
         amount: b.total_price,
         glamzo_fee: 0,
         business_amount: b.total_price,
-        description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`
+        description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`,
+        booking: b
       }));
 
       // Add staff_id to stripe payments if they map to a booking
-      const bkMap = new Map((bkData || []).map(b => [b.id, b.staff_id]));
+      const fullBkMap = new Map((bkData || []).map(b => [b.id, b]));
       stripePayments.forEach(p => {
-        if (p.booking_id && bkMap.has(p.booking_id)) {
-          p.staff_id = bkMap.get(p.booking_id);
+        if (p.booking_id && fullBkMap.has(p.booking_id)) {
+          p.staff_id = fullBkMap.get(p.booking_id).staff_id;
+          p.booking = fullBkMap.get(p.booking_id);
         }
       });
 
@@ -111,7 +113,11 @@ export default function FinanceTab() {
   const getFilteredLedgers = () => {
     const now = new Date();
     return ledgers.filter(item => {
-      if (ledgerFilter === 'all') return true;
+      if (ledgerFilter === 'today') {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        return itemDate >= today;
+      }
       const itemDate = new Date(item.created_at);
       if (ledgerFilter === 'week') {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -361,10 +367,10 @@ export default function FinanceTab() {
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Subscrição e Faturação
+          Faturação e Livro de Razões
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          Acompanhe a sua subscrição Glamzo Pro, consulte faturas reais e verifique o estado do seu Glamzo Pay Connect.
+          Acompanhe as suas métricas de faturação e consulte o livro de razões detalhado.
         </p>
       </div>
 
@@ -373,221 +379,6 @@ export default function FinanceTab() {
           {globalError}
         </div>
       )}
-
-      {/* 1. Subscrição Atual */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        
-        {/* PLANO GLAMZO PRO */}
-        <div className={`p-8 rounded-3xl border transition-all flex flex-col ${
-            business?.selected_plan !== "app_tablet"
-              ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
-              : "bg-white border-slate-200 hover:border-purple-300"
-          }`}>
-          <div className="flex justify-between items-start mb-2">
-            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
-            {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
-          </div>
-          <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
-          <div className="mt-4 mb-6">
-            <span className="text-4xl font-black text-slate-900">19.90€</span>
-            <span className="text-sm font-bold text-slate-500"> / mês</span>
-          </div>
-          <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
-          </ul>
-          
-          {business?.selected_plan === "app_tablet" ? (
-            <button 
-              onClick={() => handleSubscribePro("PRO")}
-              className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
-              disabled={isVerifyingSub}
-            >
-              Fazer Downgrade para Base
-            </button>
-          ) : (
-            <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
-              O Seu Plano Atual
-            </button>
-          )}
-        </div>
-        
-        {/* PLANO GLAMZO PRO TERMINAL */}
-        <div className={`p-8 rounded-3xl border transition-all flex flex-col relative overflow-hidden group ${
-            business?.selected_plan === "app_tablet"
-              ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-2xl ring-2 ring-purple-500/30 text-white" 
-              : "bg-slate-900 text-white border-purple-500 shadow-2xl"
-          }`}>
-          <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-2xl shadow-lg">Recomendado</div>
-          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full group-hover:bg-purple-500/30 transition-all"></div>
-          
-          <div className="flex justify-between items-start mb-2 relative z-10">
-            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
-            {business?.selected_plan === "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
-          </div>
-          <h4 className="text-xl font-black relative z-10 mt-2">Glamzo PRO Terminal</h4>
-          <div className="mt-4 mb-6 relative z-10">
-            <span className="text-4xl font-black text-white">24.90€</span>
-            <span className="text-sm font-bold text-slate-400"> / mês</span>
-            <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
-              <span className="text-xs font-bold text-purple-300">+ 9.90€ Caução Única (Equipamento)</span>
-            </div>
-          </div>
-          <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Tudo do Plano Glamzo PRO</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Tablet Samsung/Lenovo Físico</strong> configurado para a receção</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Alertas sonoros (Sininho) nas novas reservas</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
-          </ul>
-
-          {business?.selected_plan !== "app_tablet" ? (
-            <button 
-              onClick={() => handleSubscribePro("TERMINAL")}
-              disabled={isVerifyingSub}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-            >
-              {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
-            </button>
-          ) : (
-            <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
-              O Seu Plano Atual
-            </button>
-          )}
-        </div>
-
-      </div>
-
-      {business?.stripe_subscription_id && (
-        <div className="mb-6 flex flex-wrap gap-3">
-          <button
-            onClick={handleOpenBillingPortal}
-            className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
-          >
-            <FileText className="w-4 h-4" /> Gerir Faturação e Cartão
-          </button>
-          <button
-            onClick={handleCancelSubscription}
-            disabled={cancelingSubscription}
-            className="bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
-          >
-            {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
-          </button>
-        </div>
-      )}
-
-      {/* 2. Conta Bancária / Stripe */}
-      <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 mb-6">
-        <h4 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
-          <Banknote className="w-4 h-4 text-emerald-500" />
-          Glamzo Pay / Levantamentos
-        </h4>
-        
-        {!business?.stripe_account_id ? (
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Building2 className="w-6 h-6 text-emerald-600" />
-            </div>
-            <h5 className="font-bold text-slate-900 mb-1">Receba Pagamentos Online</h5>
-            <p className="text-xs text-slate-500 mb-4 max-w-sm mx-auto">
-              Configure a sua conta Glamzo Pay (via Stripe) para aceitar pagamentos com Cartão, Apple Pay e MBWay através do sistema de reservas.
-            </p>
-            <button
-              onClick={handleConnectStripe}
-              className="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20 mx-auto"
-            >
-              Configurar Conta Bancária
-            </button>
-            <div className="mt-4 pt-4 border-t border-slate-100 max-w-xs mx-auto text-left">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ou insira ID Stripe Manual (Se já tiver conta)</label>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={manualStripeId}
-                  onChange={e => setManualStripeId(e.target.value)}
-                  placeholder="acct_1..." 
-                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono outline-none focus:border-emerald-500"
-                />
-                <button 
-                  onClick={handleSaveManualStripe}
-                  disabled={savingManualStripe || !manualStripeId}
-                  className="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold disabled:opacity-50 hover:bg-slate-900"
-                >
-                  Salvar
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200">
-              <h5 className="font-bold text-xs text-slate-900 mb-4">Conta Glamzo Pay</h5>
-              
-              {stripeStatus && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Receber Pagamentos</span>
-                    {stripeStatus.charges_enabled ? (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
-                    ) : (
-                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Levantamentos</span>
-                    {stripeStatus.payouts_enabled ? (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
-                    ) : (
-                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-2 mt-4">
-                {stripeStatus?.details_submitted === false ? (
-                  <button
-                    onClick={handleConnectStripe}
-                    className="flex-1 bg-amber-500 text-white font-bold py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center justify-center gap-2"
-                  >
-                    <AlertCircle className="w-4 h-4"/> Concluir Registo
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleConnectStripe}
-                    className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-xl text-xs hover:bg-slate-800 transition"
-                  >
-                    Painel Stripe / Glamzo Pay
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
-              <h5 className="font-bold text-xs text-emerald-900 mb-1 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500"/> Transferências Automáticas</h5>
-              <p className="text-[11px] text-emerald-700/80 leading-relaxed mb-3">
-                Os seus fundos disponíveis são processados de forma automática e gratuita <b>todas as Segundas-feiras</b> para a sua conta bancária.
-              </p>
-              
-              <div className="bg-white p-3 rounded-xl border border-emerald-100 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Disponível para Levantamento</p>
-                  <p className="text-lg font-black text-emerald-600 font-mono">
-                    {stripeStatus?.available_balance ? (stripeStatus.available_balance / 100).toFixed(2) : "0.00"}€
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 text-right">Pendente</p>
-                  <p className="text-sm font-bold text-slate-600 font-mono text-right">
-                    {stripeStatus?.pending_balance ? (stripeStatus.pending_balance / 100).toFixed(2) : "0.00"}€
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* 3. Histórico de Transações */}
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6">
@@ -598,20 +389,17 @@ export default function FinanceTab() {
             Faturação e Livro de Razões
           </h4>
           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-            {ledgerFilter === 'custom' && (
-              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
-                <input type="date" value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => setLedgerFilter('today')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'today' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Hoje</button>
+              <button onClick={() => setLedgerFilter('week')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'week' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Semana</button>
+              <button onClick={() => setLedgerFilter('month')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'month' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Mês</button>
+              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm" onClick={() => setLedgerFilter('custom')}>
+                <input type="date" value={customStartDate} onChange={e => { setCustomStartDate(e.target.value); setLedgerFilter('custom'); }} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
                 <span className="text-slate-300">-</span>
-                <input type="date" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
+                <input type="date" value={customEndDate} onChange={e => { setCustomEndDate(e.target.value); setLedgerFilter('custom'); }} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
               </div>
-            )}
-            <select value={ledgerFilter} onChange={e => setLedgerFilter(e.target.value as any)} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs focus:outline-none focus:border-purple-500 shadow-sm">
-              <option value="all">Sempre</option>
-              <option value="week">Últimos 7 dias</option>
-              <option value="month">Últimos 30 dias</option>
-              <option value="year">Último ano</option>
-              <option value="custom">Personalizado</option>
-            </select>
+            </div>
           </div>
           <button
             onClick={handleDownloadCSV}
@@ -623,7 +411,7 @@ export default function FinanceTab() {
         </div>
 
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Volume Bruto</span>
              <span className="text-lg font-black text-slate-900 mt-1 block font-mono">{totalVolumeBruto.toFixed(2)}€</span>
@@ -652,7 +440,7 @@ export default function FinanceTab() {
                 if (staffRevenue === 0) return null;
                 const percentage = totalVolumeBruto > 0 ? (staffRevenue / totalVolumeBruto) * 100 : 0;
                 return (
-                  <div key={s.id} className="flex items-center justify-between">
+                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex-1">
                       <div className="flex justify-between mb-1">
                         <span className="text-xs font-bold text-slate-800">{s.full_name}</span>
@@ -678,7 +466,7 @@ export default function FinanceTab() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar shadow-sm">
+        <div className="bg-white rounded-xl border border-slate-200 w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar shadow-sm pb-2">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
@@ -729,6 +517,79 @@ export default function FinanceTab() {
         </div>
       </div>
 
+      {/* 4. Métricas por Profissional Detalhadas */}
+      <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6">
+        <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2 mb-4">
+          <FileText className="w-4 h-4 text-slate-600" />
+          Faturação Detalhada por Profissional
+        </h4>
+        <div className="space-y-6">
+          {staff?.map(s => {
+            const staffLedgers = filteredLedgers.filter(l => l.staff_id === s.id);
+            if (staffLedgers.length === 0) return null;
+            const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
+            
+            return (
+              <div key={s.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+                  <h5 className="font-black text-lg text-slate-900">{s.full_name}</h5>
+                  <div className="flex gap-4">
+                     <div className="text-center">
+                        <p className="text-[10px] font-black uppercase text-slate-400">Serviços</p>
+                        <p className="text-xl font-black text-slate-700">{staffLedgers.length}</p>
+                     </div>
+                     <div className="text-center">
+                        <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
+                        <p className="text-xl font-black text-purple-700">{staffRevenue.toFixed(2)}€</p>
+                     </div>
+                  </div>
+                </div>
+                
+                <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                      <tr>
+                        <th className="py-2 px-3">Data</th>
+                        <th className="py-2 px-3">Cliente</th>
+                        <th className="py-2 px-3">Serviço</th>
+                        <th className="py-2 px-3">Método</th>
+                        <th className="py-2 px-3 text-right">Valor</th>
+                        <th className="py-2 px-3 text-center">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {staffLedgers.map((item: any) => (
+                         <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2 px-3 font-mono text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-PT')}</td>
+                            <td className="py-2 px-3 font-bold">{item.booking?.customer_profile?.full_name || 'Desconhecido'}</td>
+                            <td className="py-2 px-3">{item.booking?.service?.name} {item.booking?.service?.target_gender === 'male' ? '(H)' : item.booking?.service?.target_gender === 'female' ? '(M)' : ''}</td>
+                            <td className="py-2 px-3">
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                item.payment_method === "stripe"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-emerald-100 text-emerald-700"
+                              }`}>
+                                {item.payment_method}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-right font-black text-slate-800">{Number(item.amount_total || item.amount || 0).toFixed(2)}€</td>
+                            <td className="py-2 px-3 text-center">
+                               <button onClick={() => setSelectedInvoice(item)} className="text-[10px] font-bold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">Ver</button>
+                            </td>
+                         </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+          {(!staff || staff.length === 0 || filteredLedgers.filter(l => l.staff_id).length === 0) && (
+            <p className="text-xs text-slate-500 text-center py-4">Sem dados de profissionais no período.</p>
+          )}
+        </div>
+      </div>
+
       {selectedInvoice && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-up">
@@ -746,6 +607,18 @@ export default function FinanceTab() {
               <p className="text-[10px] text-slate-400 font-mono mt-1">ID: {selectedInvoice.id.substring(0, 8).toUpperCase()}</p>
             </div>
             <div className="p-6 space-y-4 text-sm">
+              {selectedInvoice.booking && (
+                <>
+                  <div className="flex justify-between border-b border-slate-100 pb-2">
+                    <span className="text-slate-500 font-bold">Cliente</span>
+                    <span className="font-bold text-slate-900">{selectedInvoice.booking.customer_profile?.full_name || 'Desconhecido'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-100 pb-2">
+                    <span className="text-slate-500 font-bold">Serviço</span>
+                    <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking.service?.name} {selectedInvoice.booking.service?.target_gender === 'male' ? '(H)' : selectedInvoice.booking.service?.target_gender === 'female' ? '(M)' : ''}</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between border-b border-slate-100 pb-2">
                 <span className="text-slate-500 font-bold">Data</span>
                 <span className="font-mono text-slate-900">{new Date(selectedInvoice.created_at).toLocaleString("pt-PT")}</span>

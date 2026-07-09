@@ -3,6 +3,7 @@ import {
   CheckSquare, Calendar as CalendarIcon, Users, Landmark, Tag, TrendingUp, Globe, Smartphone, 
   Plus, ArrowRight, Star, Clock, AlertCircle, ShoppingBag, Euro
 } from 'lucide-react';
+import { supabase } from "../lib/supabase";
 import { Business, Booking, Service, Staff, Review } from '../types';
 
 interface DashboardOverviewProps {
@@ -28,17 +29,82 @@ export function DashboardOverview({
 }: DashboardOverviewProps) {
 
   // Simple stats calculation for today
+  
+  
+  const [rpcStats, setRpcStats] = useState<any>(null);
+  const [loadingRpc, setLoadingRpc] = useState(false);
+const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today');
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+
+  useEffect(() => {
+    if (!business?.id) return;
+    
+    const fetchStats = async () => {
+      setLoadingRpc(true);
+      try {
+        const now = new Date();
+        let startDate = new Date();
+        startDate.setHours(0,0,0,0);
+        let endDate = new Date(now);
+        
+        if (timeFilter === 'week') {
+           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        } else if (timeFilter === 'month') {
+           startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        }
+        
+        const startStr = startDate.toISOString().split('T')[0];
+        const endStr = endDate.toISOString().split('T')[0];
+        
+        const { data, error } = await supabase.rpc('get_dashboard_stats', {
+          p_business_id: business.id,
+          p_start_date: startStr,
+          p_end_date: endStr
+        });
+        
+        if (!error && data) {
+          setRpcStats(data);
+        } else {
+          setRpcStats(null); // fallback to client side
+        }
+      } catch (err) {
+        setRpcStats(null);
+      } finally {
+        setLoadingRpc(false);
+      }
+    };
+    
+    fetchStats();
+  }, [business?.id, timeFilter]);
+
   const today = new Date();
   today.setHours(0,0,0,0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const todayBookings = bookings.filter(b => {
-    const d = new Date(b.booking_date);
-    return d >= today && d < tomorrow && b.booking_status !== 'cancelled';
+  
+  const filteredBookingsList = bookings.filter(b => {
+    if (b.booking_status === 'cancelled') return false;
+    const bDate = new Date(b.booking_date);
+    const now = new Date();
+    if (timeFilter === 'today') {
+      return bDate.toDateString() === now.toDateString();
+    } else if (timeFilter === 'week') {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return bDate >= weekAgo;
+    } else if (timeFilter === 'month') {
+      const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      return bDate >= monthAgo;
+    }
+    return true;
   });
 
-  const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+  
+  const filteredRevenue = rpcStats ? rpcStats.revenue : filteredBookingsList.reduce((sum, b) => sum + (b.total_price || 0), 0);
+  const displayBookingsCount = rpcStats ? rpcStats.total_bookings : filteredBookingsList.length;
+
+  const timeLabel = timeFilter === 'today' ? 'Hoje' : timeFilter === 'week' ? 'Semana' : 'Mês';
+
   const pendingBookings = bookings.filter(b => b.booking_status === 'pending');
 
   const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date());
@@ -62,7 +128,14 @@ export function DashboardOverview({
       </div>
 
       {/* Quick Actions / Shortcuts */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      
+      <div className="flex flex-wrap gap-2 mb-4">
+         <button onClick={() => setTimeFilter('today')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'today' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Hoje</button>
+         <button onClick={() => setTimeFilter('week')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'week' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Última Semana</button>
+         <button onClick={() => setTimeFilter('month')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'month' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Último Mês</button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
         <button onClick={() => setActiveTab('clientes')} className="bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
           <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
             <Users className="w-5 h-5 text-slate-600 group-hover:text-purple-600" />
@@ -96,9 +169,9 @@ export function DashboardOverview({
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <CheckSquare className="w-5 h-5 text-purple-600" />
             </div>
-            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Hoje</span>
+            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{timeLabel}</span>
           </div>
-          <h3 className="text-3xl font-black text-slate-900">{todayBookings.length}</h3>
+          <h3 className="text-3xl font-black text-slate-900">{displayBookingsCount}</h3>
           <p className="text-sm font-medium text-slate-500 mt-1">Reservas Hoje</p>
         </div>
 
@@ -107,9 +180,9 @@ export function DashboardOverview({
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Euro className="w-5 h-5 text-emerald-600" />
             </div>
-            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Hoje</span>
+            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{timeLabel}</span>
           </div>
-          <h3 className="text-3xl font-black text-slate-900">{todayRevenue.toFixed(2)}€</h3>
+          <h3 className="text-3xl font-black text-slate-900">{filteredRevenue.toFixed(2)}€</h3>
           <p className="text-sm font-medium text-slate-500 mt-1">Faturação Prevista</p>
         </div>
 
@@ -156,7 +229,7 @@ export function DashboardOverview({
             </div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               
-              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Plano Atual</p>
                   <p className="font-black text-slate-900">{business?.selected_plan === 'app_tablet' ? 'PRO + TERMINAL' : 'PRO'}</p>
@@ -166,7 +239,7 @@ export function DashboardOverview({
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Pagamentos Online</p>
                   <p className="font-black text-slate-900">Stripe Connect</p>
@@ -176,7 +249,7 @@ export function DashboardOverview({
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Visibilidade</p>
                   <p className="font-black text-slate-900">Marketplace</p>
@@ -186,7 +259,7 @@ export function DashboardOverview({
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Configuração</p>
                   <p className="font-black text-slate-900">Setup Inicial</p>
@@ -242,6 +315,28 @@ export function DashboardOverview({
           </div>
         </div>
       </div>
-    </div>
+    
+      {showReviewsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+           <div className="bg-white rounded-3xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-scale-up">
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                 <h4 className="font-extrabold text-lg text-slate-900 flex items-center gap-2"><Star className="w-5 h-5 text-purple-600"/> Avaliações dos Clientes</h4>
+                 <button onClick={() => setShowReviewsModal(false)} className="p-2 rounded-full hover:bg-slate-100 transition"><X className="w-4 h-4"/></button>
+              </div>
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                 {reviews.map((r, i) => (
+                    <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="font-bold text-slate-800">{r.customer_name || "Cliente"}</span>
+                          <span className="text-xs font-bold text-purple-600 flex items-center gap-1"><Star className="w-3 h-3 fill-purple-600"/> {r.rating}.0</span>
+                       </div>
+                       <p className="text-sm text-slate-600 italic">"{r.comment}"</p>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
+</div>
   );
 }

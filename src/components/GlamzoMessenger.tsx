@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 
@@ -8,15 +9,81 @@ export default function GlamzoMessenger() {
   const [text, setText] = useState('');
 
   // SÓ MOSTRAR DENTRO DO PERFIL DA LOJA! (Esconde na Home, Login, Explore, etc.)
-  const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
+  
+  const [messages, setMessages] = useState<any[]>([]);
+  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        setUserId(data.session.user.id);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/business/')) {
+       const slug = location.pathname.split('/business/')[1];
+       if (slug) {
+         supabase.from('businesses').select('id').eq('slug', slug).single().then(({data}) => {
+            if (data) setBusinessId(data.id);
+         });
+       }
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isOpen && businessId && userId) {
+       // load messages
+       supabase.from('messages')
+         .select('*')
+         .eq('business_id', businessId)
+         .eq('customer_id', userId)
+         .order('created_at', { ascending: true })
+         .then(({data}) => {
+            if (data) setMessages(data);
+         });
+         
+       // Realtime
+       const channel = supabase.channel('messenger_channel')
+         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${businessId}` }, payload => {
+            if (payload.new.customer_id === userId) {
+              setMessages(prev => [...prev, payload.new]);
+            }
+         }).subscribe();
+         
+       return () => { supabase.removeChannel(channel); };
+    }
+  }, [isOpen, businessId, userId]);
+const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
   if (!isBusinessPage) return null; 
 
-  const handleSend = (e: React.FormEvent) => {
+  
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    // Aqui no futuro ligamos direto ao MessagesTab da loja!
-    setText('');
+    if (!text.trim() || !businessId || !userId || sending) return;
+    
+    try {
+       setSending(true);
+       const newMsg = {
+         business_id: businessId,
+         customer_id: userId,
+         sender: 'customer',
+         content: text.trim(),
+       };
+       const { error } = await supabase.from('messages').insert([newMsg]);
+       if (!error) {
+         setText('');
+       }
+    } catch(err) {
+       console.error("Failed to send message", err);
+    } finally {
+       setSending(false);
+    }
   };
+
 
   return (
     <div className="fixed bottom-6 right-4 sm:right-6 z-[99999] font-sans">

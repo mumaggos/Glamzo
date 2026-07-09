@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
-import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell } from "lucide-react";
+import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 
 export default function PartnerLayout() {
@@ -54,7 +54,7 @@ export default function PartnerLayout() {
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
         supabase.from("staff").select("*").eq("business_id", bData.id).order("full_name"),
-        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false }),
+        supabase.from("bookings").select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`).eq("business_id", bData.id).order("booking_date", { ascending: false }).order("start_time", { ascending: false }).limit(10000),
         supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);
 
@@ -76,6 +76,7 @@ export default function PartnerLayout() {
     { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
     { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: "Faturação", icon: Landmark, path: "/partner/dashboard/financeiro" },
+    { id: "subscricao", label: "Subscrição", icon: CreditCard, path: "/partner/dashboard/subscricao" },
     { id: "website", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: "Mensagens", icon: MessageSquare, path: "/partner/dashboard/mensagens" },
     ...(tabletOrder ? [{ id: "tablet", label: "Terminal Glamzo", icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),
@@ -85,7 +86,7 @@ export default function PartnerLayout() {
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 
   return (
-    <div id="partner-terminal-layout" className="min-h-[100dvh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden h-[100dvh] relative">
+    <div id="partner-terminal-layout" className="min-h-[100dvh] h-[100dvh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden relative">
       
       <style>{`
         header, nav.sticky, footer { display: none !important; }
@@ -202,7 +203,7 @@ export default function PartnerLayout() {
         </div>
 
         {/* pb-36 garante o scroll dos Insights */}
-        <div className="flex-1 overflow-y-auto overflow-x-auto w-full px-4 sm:px-8 py-4 pb-36 lg:pb-8 relative z-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 sm:px-8 py-4 pb-32 lg:pb-12 relative z-0">
            <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
             <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, businessHours, loadLayoutData, isLoadingData }} />
           </motion.div>

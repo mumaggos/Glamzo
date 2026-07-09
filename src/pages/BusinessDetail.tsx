@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 
 export default function BusinessDetail() {
-  const { slug } = useParams<{ slug: string }>();
+  
+  const [searchParams] = useSearchParams();
+const { slug } = useParams<{ slug: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,6 +63,19 @@ export default function BusinessDetail() {
             setErrorMsg('Estabelecimento suspenso temporariamente.');
           } else {
             setBusiness(data as Business);
+            
+            // QR Scan tracking
+            const isFromQr = searchParams.get('source') === 'qr';
+            if (isFromQr) {
+               try {
+                 const qrKey = `qr_tracked_${data.id}`;
+                 if (!sessionStorage.getItem(qrKey)) {
+                   fetch("/api/business/qr-scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessId: data.id }) }).catch(() => {});
+                   sessionStorage.setItem(qrKey, 'true');
+                 }
+               } catch(e) {}
+            }
+  
           }
         } else {
           setErrorMsg('Estabelecimento não encontrado.');
@@ -437,3 +452,5 @@ export default function BusinessDetail() {
     </>
   );
 }
+
+

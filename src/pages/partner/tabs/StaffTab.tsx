@@ -443,9 +443,36 @@ export default function StaffTab() {
                        </div>
                        </div>
 
+                     
+                     <div className="w-full mt-4 bg-white border border-slate-100 rounded-2xl overflow-hidden max-h-64 overflow-y-auto custom-scrollbar">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 sticky top-0 border-b border-slate-100 text-[9px] uppercase tracking-widest text-slate-500 font-bold">
+                            <tr>
+                              <th className="py-2 px-3">Data</th>
+                              <th className="py-2 px-3">Cliente</th>
+                              <th className="py-2 px-3">Serviço</th>
+                              <th className="py-2 px-3 text-right">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {metrics.filteredBookings.length === 0 ? (
+                              <tr><td colSpan={4} className="py-4 text-center text-slate-400">Nenhum serviço encontrado.</td></tr>
+                            ) : (
+                              metrics.filteredBookings.map((b: any) => (
+                                <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                                  <td className="py-2 px-3 font-mono text-slate-500">{new Date(b.booking_date).toLocaleDateString('pt-PT')}</td>
+                                  <td className="py-2 px-3 font-bold">{b.customer_profile?.full_name || 'Desconhecido'}</td>
+                                  <td className="py-2 px-3">{b.service?.name} {b.service?.target_gender === 'male' ? '(H)' : b.service?.target_gender === 'female' ? '(M)' : ''}</td>
+                                  <td className="py-2 px-3 text-right font-black text-slate-800">{Number(b.total_price).toFixed(2)}€</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                     </div>
                      <button
                        onClick={() => handleDownloadMetrics(metricsStaff, metrics)}
-                       className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition shadow-lg"
+                       className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition shadow-lg mt-4"
                      >
                        <Download className="w-5 h-5"/> Baixar Documento (CSV)
                      </button>
@@ -536,7 +563,7 @@ export default function StaffTab() {
 
               <div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
 
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
