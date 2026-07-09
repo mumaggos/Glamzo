@@ -310,9 +310,9 @@ export default function Explore() {
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
     <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <img 
+        <img loading="lazy" 
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
-          alt={b.name} loading="lazy" 
+          alt={b.name}  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">

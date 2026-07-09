@@ -702,7 +702,7 @@ export default function SetupWizard() {
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Imagens do Estabelecimento (Capa e Perfil)</label>
                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 h-44 sm:h-52 flex flex-col justify-end">
                   {coverUrl ? (
-                    <img src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
+                    <img loading="lazy" src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-100/50">
                       <Upload className="w-8 h-8 text-slate-300 mb-1" />
@@ -726,7 +726,7 @@ export default function SetupWizard() {
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
                     <div className="relative w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden flex items-center justify-center group">
                       {logoUrl ? (
-                        <img src={logoUrl} alt="Perfil" className="w-full h-full object-cover" />
+                        <img loading="lazy" src={logoUrl} alt="Perfil" className="w-full h-full object-cover" />
                       ) : (
                         <div className="flex flex-col items-center justify-center text-slate-400">
                           <Building2 className="w-8 h-8 text-slate-300" />

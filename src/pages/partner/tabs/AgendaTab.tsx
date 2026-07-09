@@ -168,7 +168,7 @@ export default function AgendaTab() {
             <div className="space-y-2">
               <button onClick={() => setSelectedStaffFilter("all")} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === "all" ? "bg-slate-900 text-white" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">👥</div> Ver Todos</button>
               {staff.map((st: any) => (
-                <button key={st.id} onClick={() => setSelectedStaffFilter(st.id)} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === st.id ? "bg-purple-100 text-purple-900 ring-2 ring-purple-500" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><img src={st.avatar_url || `https://ui-avatars.com/api/?name=${st.full_name}`} className="w-8 h-8 rounded-full object-cover shrink-0" /> <span className="truncate">{st.full_name}</span></button>
+                <button key={st.id} onClick={() => setSelectedStaffFilter(st.id)} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === st.id ? "bg-purple-100 text-purple-900 ring-2 ring-purple-500" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><img loading="lazy" src={st.avatar_url || `https://ui-avatars.com/api/?name=${st.full_name}`} className="w-8 h-8 rounded-full object-cover shrink-0" /> <span className="truncate">{st.full_name}</span></button>
               ))}
             </div>
           </div>

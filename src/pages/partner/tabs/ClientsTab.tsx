@@ -9,7 +9,38 @@ interface PartnerContextType {
   loadLayoutData: () => Promise<void>;
 }
 
-export default function ClientsTab() {
+
+const ClientRow = React.memo(({ client }: { client: any }) => {
+  return (
+    <tr className="hover:bg-slate-50/50 transition-colors">
+      <td className="py-4 px-6 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center font-mono font-bold text-[10px]">
+          {client.name.substring(0, 2).toUpperCase()}
+        </div>
+        <div>
+          <div className="font-extrabold text-slate-900">
+            {client.name}
+          </div>
+          <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+            {client.email}
+          </div>
+        </div>
+      </td>
+      <td className="py-4 px-6 font-bold text-slate-700">{client.visits}</td>
+      <td className="py-4 px-6 font-bold text-slate-700">{client.spent.toFixed(2)}€</td>
+      <td className="py-4 px-6">
+        <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono text-[10px] font-bold">
+          {client.lastVisit}
+        </span>
+      </td>
+      <td className="py-4 px-6 text-right">
+         <button className="text-[10px] font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">Ver Perfil</button>
+      </td>
+    </tr>
+  );
+
+});
+const ClientsTab = React.memo(function ClientsTab() {
   const { bookings } = useOutletContext<PartnerContextType>();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -55,7 +86,6 @@ export default function ClientsTab() {
         });
       }
     });
-
     return map;
   }, [bookings]);
 
@@ -164,32 +194,7 @@ export default function ClientsTab() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs bg-white">
               {clientsList.map((client) => (
-                <tr key={client.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center font-mono font-bold text-[10px]">
-                      {client.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-slate-900">
-                        {client.name}
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                        {client.email}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-center font-mono font-bold text-slate-700">
-                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
-                      {client.visits}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-right font-mono font-black text-rose-500 text-sm">
-                    {client.spent.toFixed(2)} €
-                  </td>
-                  <td className="py-4 px-6 text-right font-mono text-slate-500">
-                    {client.lastVisit}
-                  </td>
-                </tr>
+                <ClientRow key={client.id} client={client} />
               ))}
               {clientsList.length === 0 && (
                 <tr>
@@ -204,4 +209,5 @@ export default function ClientsTab() {
       </div>
     </div>
   );
-}
+});
+export default ClientsTab;

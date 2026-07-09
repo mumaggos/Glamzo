@@ -287,7 +287,7 @@ export default function SettingsTab() {
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Logótipo</label>
                   <div className="flex items-center gap-6">
                     <div className="w-24 h-24 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
-                      {images.logo_url ? <img src={images.logo_url} alt="Logo" className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-slate-300" />}
+                      {images.logo_url ? <img loading="lazy" src={images.logo_url} alt="Logo" className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-slate-300" />}
                     </div>
                     <button type="button" onClick={() => logoInputRef.current?.click()} className="bg-white border border-slate-200 hover:border-purple-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
                       <Upload className="w-4 h-4" /> Escolher Logótipo
@@ -298,7 +298,7 @@ export default function SettingsTab() {
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Capa da Loja</label>
                   <div className="w-full h-40 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center relative group">
                     {images.cover_url ? (
-                      <img src={images.cover_url} alt="Cover" className="w-full h-full object-cover" />
+                      <img loading="lazy" src={images.cover_url} alt="Cover" className="w-full h-full object-cover" />
                     ) : (
                       <div className="flex flex-col items-center text-slate-400"><ImageIcon className="w-8 h-8 mb-2" /><span className="text-xs font-medium">Sem imagem de capa</span></div>
                     )}

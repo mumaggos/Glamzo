@@ -1,4 +1,53 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, Suspense, lazy } from 'react';
+
+const Home = lazy(() => import('./pages/Home'));
+const Explore = lazy(() => import('./pages/Explore'));
+const BusinessDetail = lazy(() => import('./pages/BusinessDetail'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const Account = lazy(() => import('./pages/Account'));
+const UpdatePassword = lazy(() => import('./pages/UpdatePassword'));
+const Partner = lazy(() => import('./pages/Partner'));
+const PartnerLogin = lazy(() => import('./pages/PartnerLogin'));
+const PartnerSignup = lazy(() => import('./pages/PartnerSignup'));
+const SetupWizard = lazy(() => import('./pages/partner/SetupWizard'));
+const PaymentSuccess = lazy(() => import('./pages/partner/PaymentSuccess'));
+const PartnerLayout = lazy(() => import('./components/partner/PartnerLayout'));
+const OverviewTab = lazy(() => import('./pages/partner/tabs/OverviewTab'));
+const AgendaTab = lazy(() => import('./pages/partner/tabs/AgendaTab'));
+const ServicesTab = lazy(() => import('./pages/partner/tabs/ServicesTab'));
+const StaffTab = lazy(() => import('./pages/partner/tabs/StaffTab'));
+const ClientsTab = lazy(() => import('./pages/partner/tabs/ClientsTab'));
+const HoursTab = lazy(() => import('./pages/partner/tabs/HoursTab'));
+const FinanceTab = lazy(() => import('./pages/partner/tabs/FinanceTab'));
+const StoreAssetsTab = lazy(() => import('./pages/partner/tabs/StoreAssetsTab'));
+const SettingsTab = lazy(() => import('./pages/partner/tabs/SettingsTab'));
+const ReservationsTab = lazy(() => import('./pages/partner/tabs/ReservationsTab'));
+const MarketingTab = lazy(() => import('./pages/partner/tabs/MarketingTab'));
+const MessagesTab = lazy(() => import('./pages/partner/tabs/MessagesTab'));
+const TabletTab = lazy(() => import('./pages/partner/tabs/TabletTab'));
+const Admin = lazy(() => import('./pages/Admin'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const SuperAdminLogistics = lazy(() => import('./pages/admin/SuperAdminLogistics'));
+const StaffLogin = lazy(() => import('./pages/staff/StaffLogin'));
+const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
+const StripeSimulatedCheckout = lazy(() => import('./pages/StripeSimulatedCheckout'));
+const StripeSimulatedConnect = lazy(() => import('./pages/StripeSimulatedConnect'));
+const Termos = lazy(() => import('./pages/legal/Termos'));
+const Privacidade = lazy(() => import('./pages/legal/Privacidade'));
+const Cookies = lazy(() => import('./pages/legal/Cookies'));
+const Cancelamentos = lazy(() => import('./pages/legal/Cancelamentos'));
+const Pagamentos = lazy(() => import('./pages/legal/Pagamentos'));
+const Seguranca = lazy(() => import('./pages/legal/Seguranca'));
+const FaqCliente = lazy(() => import('./pages/info/FaqCliente'));
+const FaqParceiro = lazy(() => import('./pages/info/FaqParceiro'));
+const Sobre = lazy(() => import('./pages/info/Sobre'));
+const Contactos = lazy(() => import('./pages/info/Contactos'));
+import SupabaseSetupHelper from './components/SupabaseSetupHelper';
+import GlamzoMessenger from './components/GlamzoMessenger';
+
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -9,57 +58,57 @@ import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 
 // IMPORTAÇÕES DIRETAS
-import Home from './pages/Home';
-import Explore from './pages/Explore';
-import BusinessDetail from './pages/BusinessDetail';
-import Favorites from './pages/Favorites';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Account from './pages/Account';
-import UpdatePassword from './pages/UpdatePassword';
 
-import Partner from './pages/Partner';
-import PartnerLogin from './pages/PartnerLogin';
-import PartnerSignup from './pages/PartnerSignup';
-import SetupWizard from './pages/partner/SetupWizard';
-import PaymentSuccess from './pages/partner/PaymentSuccess';
 
-import PartnerLayout from './components/partner/PartnerLayout';
-import OverviewTab from './pages/partner/tabs/OverviewTab';
-import AgendaTab from './pages/partner/tabs/AgendaTab';
-import ServicesTab from './pages/partner/tabs/ServicesTab';
-import StaffTab from './pages/partner/tabs/StaffTab';
-import ClientsTab from './pages/partner/tabs/ClientsTab';
-import HoursTab from './pages/partner/tabs/HoursTab';
-import FinanceTab from './pages/partner/tabs/FinanceTab';
-import StoreAssetsTab from './pages/partner/tabs/StoreAssetsTab';
-import SettingsTab from './pages/partner/tabs/SettingsTab';
-import { ReservationsTab } from './pages/partner/tabs/ReservationsTab';
-import { MarketingTab } from './pages/partner/tabs/MarketingTab';
-import MessagesTab from './pages/partner/tabs/MessagesTab';
-import TabletTab from './pages/partner/tabs/TabletTab';
 
-import Admin from './pages/Admin';
-import AdminLogin from './pages/AdminLogin';
-import SuperAdminLogistics from './pages/admin/SuperAdminLogistics';
-import StaffLogin from './pages/staff/StaffLogin';
-import StaffDashboard from './pages/staff/StaffDashboard';
 
-import StripeSimulatedCheckout from './pages/StripeSimulatedCheckout';
-import StripeSimulatedConnect from './pages/StripeSimulatedConnect';
-import SupabaseSetupHelper from './components/SupabaseSetupHelper';
-import GlamzoMessenger from './components/GlamzoMessenger';
 
-import Termos from './pages/legal/Termos';
-import Privacidade from './pages/legal/Privacidade';
-import Cookies from './pages/legal/Cookies';
-import Cancelamentos from './pages/legal/Cancelamentos';
-import Pagamentos from './pages/legal/Pagamentos';
-import Seguranca from './pages/legal/Seguranca';
-import FaqCliente from './pages/info/FaqCliente';
-import FaqParceiro from './pages/info/FaqParceiro';
-import Sobre from './pages/info/Sobre';
-import Contactos from './pages/info/Contactos';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ErrorBoundary was causing type issues with React 19 types, using a simple fallback for now.
 const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
@@ -125,24 +174,27 @@ function GlobalRoleEnforcer() {
   useEffect(() => {
     if (loading || !user || !profile) return;
 
-    const isPartnerRoute = location.pathname.startsWith('/partner') || location.pathname.startsWith('/setup');
-    const isStaffRoute = location.pathname.startsWith('/staff');
-    const isAdminRoute = location.pathname.startsWith('/admin');
-    const isAuthRoute = location.pathname === '/login' || location.pathname === '/signup';
-    // Allow stripe and partner landing
-    const isExempt = location.pathname.includes('stripe') || location.pathname === '/partner';
+    const path = location.pathname;
+    
+    const isPartnerRoute = path.startsWith('/partner') || path.startsWith('/setup');
+    const isStaffRoute = path.startsWith('/staff');
+    const isAdminRoute = path.startsWith('/admin');
+    const isAuthRoute = ['/login', '/signup', '/partner/login', '/partner/signup', '/admin/login', '/staff/login'].includes(path);
+    const isExempt = path.includes('stripe');
+    
     const isPublicCustomerRoute = !isPartnerRoute && !isStaffRoute && !isAdminRoute && !isAuthRoute && !isExempt;
 
     const enforceSeparation = async () => {
        if (profile.role === 'business' || profile.role === 'staff' || profile.role === 'admin') {
+          // Se uma loja/staff/admin vai para o site publico (home, explore, etc), fazer logout
           if (isPublicCustomerRoute) {
-             console.log("Forcing logout: Staff/Business accessing customer route", location.pathname);
+             console.log("Forcing logout: Staff/Business accessing public customer route", path);
              await signOut();
           }
-       } else {
-          // customer
-          if ((isPartnerRoute && location.pathname !== '/partner' && !location.pathname.includes('/partner/login') && !location.pathname.includes('/partner/signup')) || isStaffRoute || isAdminRoute) {
-             console.log("Forcing logout: Customer accessing staff/business route", location.pathname);
+       } else if (profile.role === 'customer') {
+          // Se um cliente vai para a área de lojas/staff, fazer logout para permitir login de loja
+          if ((isPartnerRoute && path !== '/partner') || isStaffRoute || isAdminRoute) {
+             console.log("Forcing logout: Customer accessing business/staff route", path);
              await signOut();
           }
        }
@@ -177,7 +229,7 @@ export default function App() {
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
             <Navbar />
             <main className="flex-1 w-full">
-                <Routes>
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>}><Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/explore" element={<Explore />} />
                   <Route path="/favorites" element={<Favorites />} />
@@ -239,7 +291,7 @@ export default function App() {
                   <Route path="/:slug" element={<BusinessDetail />} />
                   
                   <Route path="*" element={<NotFoundScreen />} />
-                </Routes>
+                </Routes></Suspense>
             </main>
             <Footer />
             <CookieBanner />

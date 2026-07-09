@@ -242,7 +242,7 @@ export default function StaffDashboard() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0">
             {staff.avatar_url ? (
-               <img src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
+               <img loading="lazy" src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
             ) : (
                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-rose-500 text-white flex items-center justify-center font-bold">
                  {staff.full_name.charAt(0)}
@@ -312,7 +312,7 @@ export default function StaffDashboard() {
               <div className="flex flex-col items-center justify-center py-4 border-b border-slate-100 mb-4">
                 <div className="w-24 h-24 rounded-full bg-slate-100 overflow-hidden relative group">
                   {staff.avatar_url ? (
-                     <img src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
+                     <img loading="lazy" src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
                   ) : (
                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-rose-500 text-white flex items-center justify-center font-bold text-3xl">
                        {staff.full_name.charAt(0)}

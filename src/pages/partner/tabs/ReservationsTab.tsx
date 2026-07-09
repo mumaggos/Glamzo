@@ -2,7 +2,59 @@ import React, { useState, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Calendar, Clock, Scissors, User } from 'lucide-react';
 
-export function ReservationsTab() {
+
+const ReservationRow = React.memo(({ booking }: { booking: any }) => {
+  return (
+    <tr className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-purple-50 text-purple-600 rounded-xl"><Calendar className="w-4 h-4" /></div>
+                      <div>
+                        <div className="font-bold text-slate-900">{new Date(booking.booking_date).toLocaleDateString('pt-PT')}</div>
+                        <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3"/> {booking.start_time}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                        {booking.customer_profile?.avatar_url ? (
+                           <img loading="lazy" src={booking.customer_profile.avatar_url} className="w-full h-full rounded-full object-cover" />
+                        ) : <User className="w-4 h-4 text-slate-500" />}
+                      </div>
+                      <span className="font-bold text-slate-700">{booking.customer_profile?.full_name || 'Cliente Manual'}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5 text-slate-600">
+                      <Scissors className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="font-medium">{booking.service?.name || 'Serviço Personalizado'}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-bold text-slate-700">{booking.staff?.full_name || '-'}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${
+                       booking.booking_status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                       booking.booking_status === 'cancelled' ? 'bg-rose-100 text-rose-700' :
+                       booking.booking_status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                       'bg-purple-100 text-purple-700'
+                    }`}>
+                      {booking.booking_status === 'completed' ? 'Concluído' :
+                       booking.booking_status === 'cancelled' ? 'Cancelado' :
+                       booking.booking_status === 'pending' ? 'Pendente' :
+                       'Confirmado'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
+                      {Number(booking.total_price).toFixed(2)}€
+                    </span>
+                  </td>
+                </tr>
+  );
+});
+
+const ReservationsTab = React.memo(function ReservationsTab() {
   const { bookings } = useOutletContext<any>();
   const [filter, setFilter] = useState("hoje");
   const [customStartDate, setCustomStartDate] = useState(() => {
@@ -95,52 +147,7 @@ export function ReservationsTab() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredBookings.map((booking: any) => (
-                <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-purple-50 text-purple-600 rounded-xl"><Calendar className="w-4 h-4" /></div>
-                      <div>
-                        <div className="font-bold text-slate-900">{new Date(booking.booking_date).toLocaleDateString('pt-PT')}</div>
-                        <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3"/> {booking.start_time}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-                        {booking.customer_profile?.avatar_url ? (
-                           <img src={booking.customer_profile.avatar_url} className="w-full h-full rounded-full object-cover" />
-                        ) : <User className="w-4 h-4 text-slate-500" />}
-                      </div>
-                      <span className="font-bold text-slate-700">{booking.customer_profile?.full_name || 'Cliente Manual'}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5 text-slate-600">
-                      <Scissors className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="font-medium">{booking.service?.name || 'Serviço Personalizado'}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-bold text-slate-700">{booking.staff?.full_name || '-'}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${
-                       booking.booking_status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                       booking.booking_status === 'cancelled' ? 'bg-rose-100 text-rose-700' :
-                       booking.booking_status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                       'bg-purple-100 text-purple-700'
-                    }`}>
-                      {booking.booking_status === 'completed' ? 'Concluído' :
-                       booking.booking_status === 'cancelled' ? 'Cancelado' :
-                       booking.booking_status === 'pending' ? 'Pendente' :
-                       'Confirmado'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
-                      {Number(booking.total_price).toFixed(2)}€
-                    </span>
-                  </td>
-                </tr>
+                <ReservationRow key={booking.id} booking={booking} />
               ))}
             </tbody>
           </table>
@@ -149,4 +156,5 @@ export function ReservationsTab() {
       </div>
     </div>
   );
-}
+});
+export default ReservationsTab;

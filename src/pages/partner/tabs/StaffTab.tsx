@@ -369,7 +369,7 @@ export default function StaffTab() {
             <div className="p-6 border-b border-slate-100 flex justify-between items-start">
               <div className="flex gap-4 items-center">
                  {metricsStaff.avatar_url ? (
-                    <img src={metricsStaff.avatar_url} className="w-12 h-12 rounded-full object-cover" />
+                    <img loading="lazy" src={metricsStaff.avatar_url} className="w-12 h-12 rounded-full object-cover" />
                  ) : (
                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
                        {metricsStaff.full_name.substring(0,2).toUpperCase()}

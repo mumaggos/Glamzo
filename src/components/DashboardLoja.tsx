@@ -334,7 +334,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
             <div>
               <h1>${business?.name || "Glamzo Store"}</h1>
               <p>Escaneie com a câmera do telemóvel para agendamento automático</p>
-              <img src="${getQrUrl('png')}" onload="window.print()" />
+              <img loading="lazy" src="${getQrUrl('png')}" onload="window.print()" />
               <div class="footer">Parceiro Oficial Glamzo • glamzo.pt</div>
             </div>
             <script>
@@ -418,7 +418,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
           <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm relative">
             <div className="h-32 sm:h-48 bg-slate-100 relative group">
               {business?.cover_url ? (
-                <img src={business.cover_url} alt="Capa" className="w-full h-full object-cover" />
+                <img loading="lazy" src={business.cover_url} alt="Capa" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-purple-100 to-indigo-100 flex items-center justify-center">
                   <Image className="w-8 h-8 text-purple-300" />
@@ -437,7 +437,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
               <div className="absolute -top-12 sm:-top-16 left-6 w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-2xl p-1 shadow-lg group">
                 <div className="w-full h-full rounded-xl bg-slate-100 overflow-hidden relative">
                   {business?.logo_url ? (
-                    <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-purple-50 text-purple-300">
                       <Image className="w-6 h-6 mb-1" />
@@ -571,7 +571,7 @@ export function DashboardLoja({ business, setBusiness, bookings, uniqueClientsCo
               Código QR Oficial
             </span>
             <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 mb-6 relative">
-              <img src={getQrUrl('png')} alt="QR Code" className="w-40 h-40 object-contain mx-auto" />
+              <img loading="lazy" src={getQrUrl('png')} alt="QR Code" className="w-40 h-40 object-contain mx-auto" />
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm whitespace-nowrap">
                 Scan para Marcar
               </div>

@@ -324,7 +324,7 @@ export default function Onboarding() {
                 <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'logo')} />
               </label>
             </div>
-            {draft.step3.logoUrl && <img src={draft.step3.logoUrl} alt="Logo" className="w-16 h-16 rounded-full object-cover border" />}
+            {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt="Logo" className="w-16 h-16 rounded-full object-cover border" />}
 
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center mt-4">
               <div><h4 className="text-sm font-bold text-slate-800">Capa da Loja</h4><p className="text-xs text-slate-500">Proporção 16:9</p></div>
@@ -333,7 +333,7 @@ export default function Onboarding() {
                 <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'cover')} />
               </label>
             </div>
-            {draft.step3.coverUrl && <img src={draft.step3.coverUrl} alt="Capa" className="w-full h-32 rounded-xl object-cover border" />}
+            {draft.step3.coverUrl && <img loading="lazy" src={draft.step3.coverUrl} alt="Capa" className="w-full h-32 rounded-xl object-cover border" />}
           </div>
         );
       case 4:
@@ -449,7 +449,7 @@ export default function Onboarding() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-slate-100 overflow-hidden shrink-0 border">
-                  {draft.step3.logoUrl && <img src={draft.step3.logoUrl} alt="Logo" className="w-full h-full object-cover" />}
+                  {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt="Logo" className="w-full h-full object-cover" />}
                 </div>
                 <div>
                   <h3 className="font-black text-lg text-slate-900">{draft.step1.name}</h3>

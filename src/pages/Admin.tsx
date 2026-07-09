@@ -3235,7 +3235,7 @@ $$;`}
             {/* Cover header block */}
             <div className="relative h-40 bg-slate-50 flex-shrink-0">
               {selectedSalon.cover_url ? (
-                <img 
+                <img loading="lazy" 
                   referrerPolicy="no-referrer"
                   src={selectedSalon.cover_url} 
                   alt="Cover" 
@@ -3257,7 +3257,7 @@ $$;`}
               <div className="absolute bottom-4 left-6 flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-900 text-xl font-bold">
                   {selectedSalon.logo_url ? (
-                    <img 
+                    <img loading="lazy" 
                       referrerPolicy="no-referrer"
                       src={selectedSalon.logo_url} 
                       alt="Logo" 
@@ -3433,7 +3433,7 @@ $$;`}
                           <div key={stf.id} className="py-2.5 flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 text-slate-600 font-mono text-[10px] font-bold">
                               {stf.avatar_url ? (
-                                <img 
+                                <img loading="lazy" 
                                   referrerPolicy="no-referrer"
                                   src={stf.avatar_url} 
                                   alt={stf.full_name} 

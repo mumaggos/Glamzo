@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import SecurityBadge from './SecurityBadge';
 import { 
@@ -16,7 +16,7 @@ interface BookingModalProps {
   initialSelectedService?: any;
 }
 
-export default function BookingModal({
+const BookingModal = React.memo(function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
   
@@ -90,9 +90,9 @@ const [step, setStep] = useState(1);
 
   if (!isOpen) return null;
 
-  const daysToShow = Array.from({ length: 30 }, (_, i) => {
+  const daysToShow = useMemo(() => Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() + i); return d;
-  });
+  }), []);
 
   const getWeekdayName = (date: Date) => ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][date.getDay()];
   const getMonthName = (date: Date) => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][date.getMonth()];
@@ -100,7 +100,7 @@ const [step, setStep] = useState(1);
   const minutesToTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 
   // MOTOR DE CÁLCULO DE VAGAS COM INTELIGÊNCIA ARTIFICIAL E HORAS CORRIGIDAS!
-  const getAvailableSlots = () => {
+  const availableSlots = useMemo(() => {
     if (!selectedDate || selectedServices.length === 0) return [];
 
     const weekday = selectedDate.getDay();
@@ -186,9 +186,7 @@ const [step, setStep] = useState(1);
       if (isAvailable) slots.push({ start: minutesToTime(slotStart), end: minutesToTime(slotEnd), assignedStaffId });
     }
     return slots;
-  };
-
-  const availableSlots = getAvailableSlots();
+  }, [selectedDate, selectedServices, businessHours, existingBookings, business, staff, selectedStaff, totalServicesDuration]);
 
   
   const handleApplyPromo = async () => {
@@ -401,7 +399,7 @@ const handleConfirmReservation = async () => {
                   </div>
                   {staff.map(s => (
                     <div key={s.id} onClick={() => { setSelectedStaff(s); setSelectedTime(null); }} className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center justify-center text-center gap-2 h-32 bg-white shadow-sm ${selectedStaff?.id === s.id ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
-                      <img src={s.avatar_url || `https://ui-avatars.com/api/?name=${s.full_name}`} className="w-12 h-12 rounded-full object-cover" />
+                      <img loading="lazy" src={s.avatar_url || `https://ui-avatars.com/api/?name=${s.full_name}`} className="w-12 h-12 rounded-full object-cover" />
                       <span className="font-bold text-sm">{s.full_name}</span>
                     </div>
                   ))}
@@ -505,4 +503,5 @@ const handleConfirmReservation = async () => {
       </div>
     </div>
   );
-}
+});
+export default BookingModal;

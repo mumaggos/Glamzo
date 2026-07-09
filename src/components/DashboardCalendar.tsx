@@ -79,7 +79,7 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
         {columns.map((col: any) => (
           <div key={col.id} className="flex-1 flex flex-col items-center justify-center gap-1.5 border-l border-slate-200/50">
             {col.isStaff ? (
-              <img src={col.avatar || 'https://ui-avatars.com/api/?name=' + col.title} className="w-10 h-10 rounded-full border border-purple-100 shadow-sm object-cover" />
+              <img loading="lazy" src={col.avatar || 'https://ui-avatars.com/api/?name=' + col.title} className="w-10 h-10 rounded-full border border-purple-100 shadow-sm object-cover" />
             ) : (
                <div className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-[10px] font-bold text-purple-600">
                   {col.title.split(',')[0]}

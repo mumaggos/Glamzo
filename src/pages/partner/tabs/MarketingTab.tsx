@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Tag, Plus, Check, X, Edit2, Trash2 } from "lucide-react";
 
-export function MarketingTab() {
+export default function MarketingTab() {
   const { business } = useOutletContext<any>();
 
   const [coupons, setCoupons] = useState<any[]>([]);

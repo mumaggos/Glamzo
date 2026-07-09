@@ -106,7 +106,7 @@ export default function Favorites() {
           {favorites.map(biz => (
             <div key={biz.id} className="bg-white border border-slate-150 p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-purple-200 transition-all group flex items-start gap-4 cursor-pointer" onClick={() => navigate(`/business/${biz.slug}`)}>
               {biz.logo_url ? (
-                <img src={biz.logo_url} alt={biz.name} className="w-16 h-16 rounded-xl object-cover border border-slate-100 shrink-0 bg-slate-50 group-hover:scale-105 transition-transform" />
+                <img loading="lazy" src={biz.logo_url} alt={biz.name} className="w-16 h-16 rounded-xl object-cover border border-slate-100 shrink-0 bg-slate-50 group-hover:scale-105 transition-transform" />
               ) : (
                 <div className="w-16 h-16 rounded-xl bg-purple-50 text-purple-300 flex items-center justify-center shrink-0 border border-purple-100 group-hover:scale-105 transition-transform font-bold text-xl uppercase">
                   {biz.name.charAt(0)}

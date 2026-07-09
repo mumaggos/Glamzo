@@ -414,7 +414,7 @@ export default function Home() {
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
-                <img src={cat.image} alt={cat.name} loading={index < 3 ? "eager" : "lazy"} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
+                <img src={cat.image} alt={cat.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']"> 
                   {cat.name} 

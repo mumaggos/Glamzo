@@ -240,7 +240,7 @@ export default function Account() {
         <div className="max-w-5xl mx-auto relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
           <div className="flex items-center gap-6">
             <div className="relative group w-24 h-24">
-              {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
+              {avatarUrl ? <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
               <label className="absolute bottom-0 right-0 p-2 bg-purple-600 text-white rounded-full cursor-pointer hover:bg-purple-700 shadow-md">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} className="hidden" />

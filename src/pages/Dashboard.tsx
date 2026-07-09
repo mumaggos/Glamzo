@@ -1054,7 +1054,7 @@ export default function Dashboard() {
             <div class="outer-wrap">
               <h1>${business?.name || "Glamzo Store"}</h1>
               <p>Escaneie com a câmera do telemóvel para agendamento automático</p>
-              <img src="${getQrUrl('png')}" onload="window.print()" />
+              <img loading="lazy" src="${getQrUrl('png')}" onload="window.print()" />
               <div class="footer">Parceiro Oficial Glamzo • glamzo.pt</div>
             </div>
             <script>
