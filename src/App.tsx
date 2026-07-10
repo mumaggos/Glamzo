@@ -44,7 +44,7 @@ const FaqParceiro = lazy(() => import('./pages/info/FaqParceiro'));
 const Sobre = lazy(() => import('./pages/info/Sobre'));
 const Contactos = lazy(() => import('./pages/info/Contactos'));
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
-import GlamzoMessenger from './components/GlamzoMessenger';
+const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -296,7 +296,7 @@ export default function App() {
             </main>
             <Footer />
             <CookieBanner />
-            {loadMessenger && <GlamzoMessenger />}
+            {loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}
           </div>
         </AuthProvider>
       </BrowserRouter>

@@ -123,14 +123,7 @@ export default function Home() {
     };
     fetchPromos();
  
-    if (navigator.geolocation) { 
-      const gpsTimer = setTimeout(() => {
-        navigator.geolocation.getCurrentPosition((pos) => { 
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); 
-        }); 
-      }, 300);
-      return () => clearTimeout(gpsTimer);
-    } 
+
   }, []); 
 
   useEffect(() => { 
@@ -210,6 +203,23 @@ export default function Home() {
 
     return () => clearTimeout(fetchTimer);
   }, [userCoords]); 
+
+  
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setSearchLocation("Perto de Mim");
+          setShowLocSuggestions(false);
+        },
+        () => {
+          alert("Não foi possível aceder à localização. Por favor, pesquise manualmente.");
+          setShowLocSuggestions(false);
+        }
+      );
+    }
+  };
 
   const handleSearchSubmit = () => { 
     const params = new URLSearchParams(); 
@@ -354,7 +364,7 @@ export default function Home() {
                
               {showLocSuggestions && ( 
                 <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 text-left overflow-y-auto max-h-60 custom-scrollbar"> 
-                  <button onMouseDown={() => { setSearchLocation("Perto de Mim"); setShowLocSuggestions(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-blue-600 text-sm font-bold flex items-center gap-2 border-b border-slate-50 transition-colors"> 
+                  <button onMouseDown={handleGetLocation} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-blue-600 text-sm font-bold flex items-center gap-2 border-b border-slate-50 transition-colors"> 
                     <Navigation className="w-4 h-4" /> Usar a minha localização atual 
                   </button> 
                   {searchLocation.trim() && ( 
@@ -397,7 +407,7 @@ export default function Home() {
           <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">O que procura hoje?</h2> 
         </div> 
         <div className="relative group"> 
-          <button onClick={() => scrollCategories('left')} className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
+          <button onClick={() => scrollCategories('left')} aria-label="Ver categorias anteriores" className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
             <ChevronLeft className="w-5 h-5" /> 
           </button> 
           <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 no-scrollbar snap-x scroll-smooth"> 
@@ -407,7 +417,7 @@ export default function Home() {
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
-                <img src={cat.image} alt={cat.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
+                <img src={cat.image} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']"> 
                   {cat.name} 
@@ -415,7 +425,7 @@ export default function Home() {
               </button> 
             ))} 
           </div> 
-          <button onClick={() => scrollCategories('right')} className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
+          <button onClick={() => scrollCategories('right')} aria-label="Ver próximas categorias" className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
             <ChevronRight className="w-5 h-5" /> 
           </button> 
         </div> 

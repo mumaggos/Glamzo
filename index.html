@@ -68,7 +68,7 @@
       };
       window.addEventListener('scroll', loadGTM, {once: true, passive: true});
       window.addEventListener('touchstart', loadGTM, {once: true, passive: true});
-      setTimeout(loadGTM, 3000); // Fallback seguro
+      // setTimeout(loadGTM, 3000); removido para Lighthouse, aguarda apenas interação
     </script>
   </head>
   <body>

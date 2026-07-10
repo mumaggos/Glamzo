@@ -332,7 +332,7 @@ const { slug } = useParams<{ slug: string }>();
                         <label className="block text-xs font-bold text-slate-500 mb-1">Pontuação (1 a 5 Estrelas)</label>
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <button type="button" key={star} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">
+                            <button type="button" key={star} aria-label={`Avaliar ${star} estrelas`} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">
                               <Star className={`w-6 h-6 ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                             </button>
                           ))}
