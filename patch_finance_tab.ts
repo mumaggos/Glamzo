@@ -1,38 +1,58 @@
 import fs from 'fs';
 let code = fs.readFileSync('src/pages/partner/tabs/FinanceTab.tsx', 'utf-8');
 
-// Replace the bookings query to correctly reference profiles
+// Ensure we don't query with strict dates in the backend for payments and bookings
 code = code.replace(
-  'customer_profile:profiles(id, full_name, email)',
-  'profiles!bookings_customer_id_fkey(id, full_name, email)'
-);
-
-// We need to also safely access it
-code = code.replace(
-  /item\.booking\?\.customer_profile\?\.full_name/g,
-  "item.booking?.profiles?.full_name"
+  /\.gte\("created_at", startStr\)\.lte\("created_at", endStr\)/g,
+  ''
 );
 
 code = code.replace(
-  /selectedInvoice\.booking\.customer_profile\?\.full_name/g,
-  "selectedInvoice.booking?.profiles?.full_name"
+  /\.gte\("booking_date", formatDateStr\(startDate\)\)\.lte\("booking_date", formatDateStr\(endDate\)\)/g,
+  ''
 );
 
-// Fallback for query results
-// Let's ensure data is wrapped with || []
+// We should also check business.id existence and add the console.logs required by the user
+const loadFinanceDataStart = `const loadFinanceData = async () => {
+    if (!business || !business.id) {
+       console.error("ERRO: ID da loja está nulo ou indefinido no FinanceTab");
+       return;
+    }
+    
+    try {`;
+
 code = code.replace(
-  /const stripePayments = \(pyData \|\| \[\]\)\.filter/g,
-  "const stripePayments = (pyData || []).filter"
+  /const loadFinanceData = async \(\) => \{\n\s*if \(\!business\) return;\n\s*try \{/g,
+  loadFinanceDataStart
 );
 
-// Just safety
-code = code.replace(
-  /setLedger\(ledgerData/g,
-  "setLedger(ledgerData || []"
-);
-code = code.replace(
-  /setSubscriptions\(subData/g,
-  "setSubscriptions(subData || []"
-);
+const supabaseCallPattern = `      const [
+        { data: pyData },
+        { data: poData },
+        { data: subData },
+        { data: bkData, error: bkError }
+      ] = await Promise.all([
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name))").eq("business_id", business.id),
+        supabase
+          .from("payouts")
+          .select("*")
+          .eq("business_id", business.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("subscriptions")
+          .select("*")
+          .eq("business_id", business.id)
+          .order("created_at", { ascending: false }),
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).in("booking_status", ["completed", "confirmed"])
+      ]);
+
+      console.log("ID DA LOJA ATUAL:", business.id);
+      console.log("RESPOSTA SUPABASE FATURAÇÃO:", { pyData, bkData, error: bkError });
+`;
+
+// we need to safely replace the whole Promise.all
+const originalPromiseAll = /const \[\s*\{ data: pyData \},\s*\{ data: poData \},\s*\{ data: subData \},\s*\{ data: bkData \}\s*\] = await Promise\.all\(\[[\s\S]*?\]\);/m;
+
+code = code.replace(originalPromiseAll, supabaseCallPattern);
 
 fs.writeFileSync('src/pages/partner/tabs/FinanceTab.tsx', code);

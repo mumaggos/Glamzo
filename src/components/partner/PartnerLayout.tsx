@@ -65,11 +65,11 @@ export default function PartnerLayout() {
           return supabase.from("bookings")
             .select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`)
             .eq("business_id", bData.id)
-            .gte("booking_date", start.toISOString().split('T')[0])
-            .lte("booking_date", end.toISOString().split('T')[0])
+            
+            
             .order("booking_date", { ascending: false })
             .order("start_time", { ascending: false })
-            .limit(1000);
+            .limit(3000);
         })(),
         supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);

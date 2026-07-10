@@ -59,9 +59,9 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
   const filteredRevenue = filteredBookingsList.reduce((sum, b) => {
     const isPaidOnline = b.payment_status === 'paid';
-    const isCompletedLocal = b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed');
+    const isCompletedLocal = (b.payment_method === 'local' || !b.payment_method) && (b.booking_status === 'completed' || b.booking_status === 'confirmed');
     if (isPaidOnline || isCompletedLocal) {
-      return sum + (Number(b.total_price) || 0);
+      return sum + Number(b.total_price || (b.service as any)?.price || 0);
     }
     return sum;
   }, 0);

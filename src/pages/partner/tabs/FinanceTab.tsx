@@ -98,7 +98,11 @@ export default function FinanceTab() {
   const [customEndDate, setCustomEndDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const loadFinanceData = async () => {
-    if (!business) return;
+    if (!business || !business.id) {
+       console.error("ERRO: ID da loja está nulo ou indefinido no FinanceTab");
+       return;
+    }
+    
     try {
       const now = new Date();
       let startDate = new Date();
@@ -126,13 +130,13 @@ export default function FinanceTab() {
       const startStr = startDate.toISOString();
       const endStr = endDate.toISOString();
 
-      const [
-        { data: pyData },
+            const [
+        { data: pyData, error: pyError },
         { data: poData },
         { data: subData },
-        { data: bkData }
+        { data: bkData, error: bkError }
       ] = await Promise.all([
-        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name))").eq("business_id", business.id).gte("created_at", startStr).lte("created_at", endStr),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name))").eq("business_id", business.id),
         supabase
           .from("payouts")
           .select("*")
@@ -143,26 +147,38 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).gte("booking_date", formatDateStr(startDate)).lte("booking_date", formatDateStr(endDate))
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).in("booking_status", ["completed", "confirmed"])
       ]);
+
+      console.log("ID DA LOJA ATUAL:", business.id);
+      console.log("📊 RESPOSTA BOOKINGS:", { data: bkData, error: bkError });
+      console.log("💳 RESPOSTA PAYMENTS:", { data: pyData, error: pyError });
+
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
       const stripePaymentBookingIds = new Set(stripePayments.map(p => p.booking_id));
 
-      const localCompleted = (bkData || []).filter(b => b.total_price > 0 && b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id)).map(b => ({
-        id: `loc_${b.id}`,
-        created_at: b.booking_date + "T12:00:00Z", // Use booking_date as the revenue date for local payments
-        booking_id: b.id,
-        staff_id: b.staff_id,
-        payment_method: 'local',
-        payment_status: 'paid',
-        amount_total: b.total_price,
-        amount: b.total_price,
-        glamzo_fee: 0,
-        business_amount: b.total_price,
-        description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`,
-        booking: b
-      }));
+      const localCompleted = (bkData || []).filter(b => {
+        const isLocal = b.payment_method === 'local' || !b.payment_method;
+        const fallbackPrice = Number(b.total_price || (b.service && (b.service as any).price) || 0);
+        return fallbackPrice > 0 && isLocal && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id);
+      }).map(b => {
+        const fallbackPrice = Number(b.total_price || (b.service && (b.service as any).price) || 0);
+        return {
+          id: `loc_${b.id}`,
+          created_at: b.booking_date + "T12:00:00Z",
+          booking_id: b.id,
+          staff_id: b.staff_id,
+          payment_method: 'local',
+          payment_status: 'paid',
+          amount_total: fallbackPrice,
+          amount: fallbackPrice,
+          glamzo_fee: 0,
+          business_amount: fallbackPrice,
+          description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`,
+          booking: b
+        };
+      });
 
       // Add staff_id to stripe payments if they map to a booking
       const fullBkMap = new Map((bkData || []).map(b => [b.id, b]));
@@ -203,7 +219,7 @@ export default function FinanceTab() {
 
   useEffect(() => {
     loadFinanceData();
-  }, [business, ledgerFilter, customStartDate, customEndDate]);
+  }, [business]);
 
   // Derived calculations
   
