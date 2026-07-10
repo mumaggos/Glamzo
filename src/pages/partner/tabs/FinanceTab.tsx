@@ -54,7 +54,7 @@ function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { s
                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2 px-3 font-mono text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-PT')}</td>
                   <td className="py-2 px-3 font-bold">{item.booking?.profiles?.full_name || 'Desconhecido'}</td>
-                  <td className="py-2 px-3">{item.booking?.service?.name} {item.booking?.service?.target_gender === 'male' ? '(H)' : item.booking?.service?.target_gender === 'female' ? '(M)' : ''}</td>
+                  <td className="py-2 px-3">{item.booking?.service?.name}</td>
                   <td className="py-2 px-3">
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.payment_method === "stripe" ? "bg-purple-100 text-purple-700" : "bg-emerald-100 text-emerald-700"}`}>
                       {item.payment_method === "stripe" ? "Online" : "Loja"}
@@ -136,7 +136,7 @@ export default function FinanceTab() {
         { data: subData },
         { data: bkData, error: bkError }
       ] = await Promise.all([
-        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender, price), staff:staff(id, full_name))").eq("business_id", business.id),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff:staff(id, full_name))").eq("business_id", business.id),
         supabase
           .from("payouts")
           .select("*")
@@ -147,21 +147,11 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("*").eq("business_id", business.id)
+        supabase.from("bookings").select("*, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff(id, full_name)").eq("business_id", business.id)
       ]);
 
       console.log("ID DA LOJA ATUAL:", business.id);
-      let debugMsg = `ID Loja: ${business.id} | `;
-      if (bkError) {
-         debugMsg += `ERRO BOOKINGS: ${bkError.message} | `;
-      } else {
-         debugMsg += `Bookings Encontradas: ${bkData?.length || 0} | `;
-      }
-      if (pyError) {
-         debugMsg += `ERRO PAYMENTS: ${pyError.message}`;
-      }
       
-      setGlobalError(debugMsg);
 
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
@@ -688,7 +678,11 @@ export default function FinanceTab() {
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
                     <span className="text-slate-500 font-bold">Serviço</span>
-                    <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking.service?.name} {selectedInvoice.booking.service?.target_gender === 'male' ? '(H)' : selectedInvoice.booking.service?.target_gender === 'female' ? '(M)' : ''}</span>
+                    <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking.service?.name}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-100 pb-2">
+                    <span className="text-slate-500 font-bold">Profissional</span>
+                    <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking?.staff?.full_name || 'Funcionário Desconhecido'}</span>
                   </div>
                 </>
               )}
