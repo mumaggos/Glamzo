@@ -222,7 +222,7 @@ const { slug } = useParams<{ slug: string }>();
         
         {/* Banner Premium */}
         <div className="h-[320px] w-full relative bg-slate-900 overflow-hidden">
-          <img loading="lazy" 
+          <img fetchPriority="high" 
             src={business.cover_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80'}
             alt={business.name}
             className="w-full h-full object-cover opacity-60"
@@ -256,7 +256,7 @@ const { slug } = useParams<{ slug: string }>();
               {/* Header da Loja */}
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
                 <div className="w-28 h-28 rounded-2xl overflow-hidden shadow-lg bg-white shrink-0 border-4 border-white">
-                  <img loading="lazy" src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'} className="w-full h-full object-cover" />
+                  <img fetchPriority="high" src={business.logo_url || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=150&q=70'} className="w-full h-full object-cover" />
                 </div>
                 <div className="text-center sm:text-left flex-1">
                   <div className="flex justify-center sm:justify-start gap-2 mb-2">

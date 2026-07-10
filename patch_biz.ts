@@ -1,10 +1,12 @@
 import fs from 'fs';
 
-let content = fs.readFileSync('src/pages/BusinessDetail.tsx', 'utf-8');
-
-content = content.replace(
-  '<button type="button" key={star} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">',
-  '<button type="button" key={star} aria-label={`Avaliar ${star} estrelas`} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">'
+let business = fs.readFileSync('src/pages/BusinessDetail.tsx', 'utf-8');
+business = business.replace(
+  '<img loading="lazy" \n            src={business.cover_url',
+  '<img fetchPriority="high" \n            src={business.cover_url'
 );
-
-fs.writeFileSync('src/pages/BusinessDetail.tsx', content);
+business = business.replace(
+  '<img loading="lazy" src={business.logo_url',
+  '<img fetchPriority="high" src={business.logo_url'
+);
+fs.writeFileSync('src/pages/BusinessDetail.tsx', business);
