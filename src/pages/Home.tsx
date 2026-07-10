@@ -279,10 +279,11 @@ export default function Home() {
           )} 
         </div> 
          
-        <button  
-          onClick={(e) => { e.preventDefault(); }}  
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10" 
-        > 
+        <button
+            onClick={(e) => { e.preventDefault(); }}
+            aria-label="Adicionar aos favoritos"
+            className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
+         > 
           <Heart className="w-6 h-6 fill-black/20 stroke-white stroke-[1.5]" /> 
         </button> 
       </div> 
