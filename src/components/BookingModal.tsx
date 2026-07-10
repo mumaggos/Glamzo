@@ -96,7 +96,7 @@ const [step, setStep] = useState(1);
 
   const getWeekdayName = (date: Date) => ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][date.getDay()];
   const getMonthName = (date: Date) => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][date.getMonth()];
-  const timeToMinutes = (timeStr: string) => { const [h, m] = timeStr.split(':').map(Number); return h * 60 + m; };
+  const timeToMinutes = (timeStr: string) => { const [h, m] = (timeStr || "").split(':').map(Number); return h * 60 + m; };
   const minutesToTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 
   // MOTOR DE CÁLCULO DE VAGAS COM INTELIGÊNCIA ARTIFICIAL E HORAS CORRIGIDAS!
@@ -367,7 +367,7 @@ const handleConfirmReservation = async () => {
 
               {step === 1 && (
                 <div className="space-y-3">
-                  {services.map(srv => {
+                  {(services || []).map(srv => {
                     const isSelected = selectedServices.some(s => s.id === srv.id);
                     return (
                       <div key={srv.id} onClick={() => {
@@ -397,7 +397,7 @@ const handleConfirmReservation = async () => {
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center"><Sparkles className="w-6 h-6 text-purple-500" /></div>
                     <span className="font-bold text-sm">Qualquer Profissional</span>
                   </div>
-                  {staff.map(s => (
+                  {(staff || []).map(s => (
                     <div key={s.id} onClick={() => { setSelectedStaff(s); setSelectedTime(null); }} className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center justify-center text-center gap-2 h-32 bg-white shadow-sm ${selectedStaff?.id === s.id ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                       <img loading="lazy" src={s.avatar_url || `https://ui-avatars.com/api/?name=${s.full_name}`} className="w-12 h-12 rounded-full object-cover" />
                       <span className="font-bold text-sm">{s.full_name}</span>
@@ -408,7 +408,7 @@ const handleConfirmReservation = async () => {
 
               {step === 3 && (
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                  {daysToShow.map((date, idx) => {
+                  {(daysToShow || []).map((date, idx) => {
                     const isClosed = !businessHours.find(h => h.weekday === date.getDay()) || businessHours.find(h => h.weekday === date.getDay()).is_closed;
                     const isSelected = selectedDate?.toDateString() === date.toDateString();
                     return (
@@ -427,7 +427,7 @@ const handleConfirmReservation = async () => {
                   {availableSlots.length === 0 ? (
                     <div className="col-span-full p-8 text-center bg-white rounded-2xl border border-slate-200"><Clock className="w-8 h-8 text-slate-400 mx-auto mb-2"/><p className="font-bold text-slate-700">Sem horários disponíveis</p></div>
                   ) : (
-                    availableSlots.map(slot => (
+                    (availableSlots || []).map(slot => (
                       <div key={slot.start} onClick={() => setSelectedTime(slot.start)} className={`p-3 rounded-xl border text-center cursor-pointer font-bold transition-all ${selectedTime === slot.start ? 'bg-purple-600 text-white border-purple-600 shadow-md' : 'bg-white border-slate-200 hover:border-purple-400 text-slate-700'}`}>
                         {slot.start}
                       </div>

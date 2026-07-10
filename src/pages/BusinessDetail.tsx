@@ -7,6 +7,8 @@ import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
 import { startChatSession, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
 import { useAuth } from '../hooks/useAuth';
 import BookingModal from '../components/BookingModal';
+import toast from 'react-hot-toast';
+import ErrorBoundary from '../components/ErrorBoundary';
 import SecurityBadge from '../components/SecurityBadge';
 import { toggleFavorite, isFavorite, reportReview, createDispute } from '../utils/marketingHelper';
 import { 
@@ -63,6 +65,18 @@ const { slug } = useParams<{ slug: string }>();
             setErrorMsg('Estabelecimento suspenso temporariamente.');
           } else {
             setBusiness(data as Business);
+            // Fetch business hours
+            const { data: hoursData } = await supabase.from('business_hours').select('*').eq('business_id', data.id);
+            if (hoursData) setBusinessHours(hoursData);
+            
+            // Fetch services
+            const { data: servicesData } = await supabase.from('services').select('*').eq('business_id', data.id);
+            if (servicesData) setServices(servicesData);
+            
+            // Fetch staff
+            const { data: staffData } = await supabase.from('staff').select('*').eq('business_id', data.id);
+            if (staffData) setStaff(staffData);
+
             
             // QR Scan tracking
             const isFromQr = searchParams.get('source') === 'qr';
@@ -140,7 +154,7 @@ const { slug } = useParams<{ slug: string }>();
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      alert('Inicie sessão para guardar nos favoritos!');
+      toast('Inicie sessão para guardar nos favoritos!');
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
@@ -156,7 +170,7 @@ const { slug } = useParams<{ slug: string }>();
   const handleCreateReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert('Por favor, inicie sessão para enviar uma avaliação.');
+      toast('Por favor, inicie sessão para enviar uma avaliação.');
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
@@ -178,22 +192,22 @@ const { slug } = useParams<{ slug: string }>();
       const created = await submitReview(input);
       setReviews(prev => [created, ...prev]);
       setNewReviewComment(''); setNewReviewService(''); setNewReviewFileBlob(null); setReviewFormOpen(false);
-      alert('Avaliação submetida com sucesso! Obrigado.');
+      toast('Avaliação submetida com sucesso! Obrigado.');
     } catch (e) {
-      alert('Falha ao registar a avaliação.');
+      toast('Falha ao registar a avaliação.');
     } finally {
       setSubmittingReview(false);
     }
   };
 
   const handleReportReviewSubmit = async (reviewId: string) => {
-    if (!user) return alert('Inicie sessão para reportar conteúdo.');
-    if (!reportReasonText.trim()) return alert('Por favor, descreva a razão.');
+    if (!user) return toast('Inicie sessão para reportar conteúdo.');
+    if (!reportReasonText.trim()) return toast('Por favor, descreva a razão.');
     try {
       await reportReview(reviewId, reportReasonText.trim());
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, is_reported: true, report_reason: reportReasonText.trim() } : r));
       setReportingReviewId(null); setReportReasonText('');
-      alert('Denúncia enviada para a equipa Glamzo.');
+      toast('Denúncia enviada para a equipa Glamzo.');
     } catch (e) { console.error(e); }
   };
 
@@ -440,6 +454,7 @@ const { slug } = useParams<{ slug: string }>();
         </div>
       </div>
 
+      <ErrorBoundary>
       <BookingModal
         isOpen={bookingOpen}
         onClose={() => setBookingOpen(false)}
@@ -449,6 +464,7 @@ const { slug } = useParams<{ slug: string }>();
         profile={profile}
         initialSelectedService={selectedService}
       />
+      </ErrorBoundary>
     </>
   );
 }

@@ -9,6 +9,71 @@ interface PartnerContextType {
   staff: any[];
 }
 
+
+function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { staffMember: any, staffLedgers: any[], setSelectedInvoice: any }) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
+  
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h5 className="font-black text-lg text-slate-900">{staffMember.full_name}</h5>
+        <div className="flex gap-4">
+           <div className="text-center">
+              <p className="text-[10px] font-black uppercase text-slate-400">Serviços</p>
+              <p className="text-xl font-black text-slate-700">{staffLedgers.length}</p>
+           </div>
+           <div className="text-center">
+              <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
+              <p className="text-xl font-black text-purple-700">{staffRevenue.toFixed(2)}€</p>
+           </div>
+        </div>
+      </div>
+      
+      <div className="mt-4 border-t border-slate-100 pt-3 flex justify-center">
+        <button onClick={() => setIsExpanded(!isExpanded)} className="text-xs font-bold text-slate-500 hover:text-purple-600 transition-colors">
+          {isExpanded ? 'Ocultar Serviços' : 'Expandir/Ver Serviços'}
+        </button>
+      </div>
+
+      {isExpanded && (
+        <div className="mt-4 border-t border-slate-100 pt-4 w-full overflow-x-auto custom-scrollbar pb-2 min-w-0">
+          <table className="w-full text-left text-xs min-w-max">
+            <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+              <tr>
+                <th className="py-2 px-3">Data</th>
+                <th className="py-2 px-3">Cliente</th>
+                <th className="py-2 px-3">Serviço</th>
+                <th className="py-2 px-3">Método</th>
+                <th className="py-2 px-3 text-right">Valor</th>
+                <th className="py-2 px-3 text-center">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {staffLedgers.map(item => (
+                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2 px-3 font-mono text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-PT')}</td>
+                  <td className="py-2 px-3 font-bold">{item.booking?.customer_profile?.full_name || 'Desconhecido'}</td>
+                  <td className="py-2 px-3">{item.booking?.service?.name} {item.booking?.service?.target_gender === 'male' ? '(H)' : item.booking?.service?.target_gender === 'female' ? '(M)' : ''}</td>
+                  <td className="py-2 px-3">
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.payment_method === "stripe" ? "bg-purple-100 text-purple-700" : "bg-emerald-100 text-emerald-700"}`}>
+                      {item.payment_method === "stripe" ? "Online" : "Loja"}
+                    </span>
+                  </td>
+                  <td className="py-2 px-3 text-right font-black text-slate-700">{Number(item.amount_total || item.amount || 0).toFixed(2)}€</td>
+                  <td className="py-2 px-3 text-center">
+                    <button onClick={() => setSelectedInvoice({ ...item, booking: item.booking })} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold text-[10px] transition">Recibo</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FinanceTab() {
   const { business, staff } = useOutletContext<PartnerContextType>();
   const [ledgers, setLedgers] = useState<any[]>([]);
@@ -70,7 +135,7 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id").eq("business_id", business.id).eq("booking_status", "completed").gte("created_at", startStr).lte("created_at", endStr)
+        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, name)").eq("business_id", business.id).eq("booking_status", "completed").gte("created_at", startStr).lte("created_at", endStr)
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
@@ -382,7 +447,7 @@ export default function FinanceTab() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6 min-w-0">
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
           Faturação e Livro de Razões
@@ -484,7 +549,7 @@ export default function FinanceTab() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar shadow-sm pb-2">
+        <div className="bg-white rounded-xl border border-slate-200 w-full overflow-x-auto custom-scrollbar shadow-sm pb-2 min-w-0">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
@@ -548,60 +613,11 @@ export default function FinanceTab() {
             const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
             
             return (
-              <div key={s.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
-                  <h5 className="font-black text-lg text-slate-900">{s.full_name}</h5>
-                  <div className="flex gap-4">
-                     <div className="text-center">
-                        <p className="text-[10px] font-black uppercase text-slate-400">Serviços</p>
-                        <p className="text-xl font-black text-slate-700">{staffLedgers.length}</p>
-                     </div>
-                     <div className="text-center">
-                        <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
-                        <p className="text-xl font-black text-purple-700">{staffRevenue.toFixed(2)}€</p>
-                     </div>
-                  </div>
-                </div>
-                
-                <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-                      <tr>
-                        <th className="py-2 px-3">Data</th>
-                        <th className="py-2 px-3">Cliente</th>
-                        <th className="py-2 px-3">Serviço</th>
-                        <th className="py-2 px-3">Método</th>
-                        <th className="py-2 px-3 text-right">Valor</th>
-                        <th className="py-2 px-3 text-center">Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {staffLedgers.map((item: any) => (
-                         <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="py-2 px-3 font-mono text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-PT')}</td>
-                            <td className="py-2 px-3 font-bold">{item.booking?.customer_profile?.full_name || 'Desconhecido'}</td>
-                            <td className="py-2 px-3">{item.booking?.service?.name} {item.booking?.service?.target_gender === 'male' ? '(H)' : item.booking?.service?.target_gender === 'female' ? '(M)' : ''}</td>
-                            <td className="py-2 px-3">
-                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                                item.payment_method === "stripe"
-                                  ? "bg-purple-100 text-purple-700"
-                                  : "bg-emerald-100 text-emerald-700"
-                              }`}>
-                                {item.payment_method}
-                              </span>
-                            </td>
-                            <td className="py-2 px-3 text-right font-black text-slate-800">{Number(item.amount_total || item.amount || 0).toFixed(2)}€</td>
-                            <td className="py-2 px-3 text-center">
-                               <button onClick={() => setSelectedInvoice(item)} className="text-[10px] font-bold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">Ver</button>
-                            </td>
-                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
+              
+<StaffFinanceCard key={s.id} staffMember={s} staffLedgers={staffLedgers} setSelectedInvoice={setSelectedInvoice} />
+          );
+        })
+}
           {(!staff || staff.length === 0 || filteredLedgers.filter(l => l.staff_id).length === 0) && (
             <p className="text-xs text-slate-500 text-center py-4">Sem dados de profissionais no período.</p>
           )}

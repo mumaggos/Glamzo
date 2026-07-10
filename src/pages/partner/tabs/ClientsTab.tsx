@@ -58,7 +58,7 @@ const ClientsTab = React.memo(function ClientsTab() {
     >();
 
     bookings.forEach((bk) => {
-      if (bk.booking_status === "cancelled") return;
+      if (bk.booking_status !== "completed") return;
 
       const custId = bk.customer_id || "GUEST";
       const spentAmount = Number(bk.total_price) || 0;

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2 } from "lucide-react";
+import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 
 export default function AgendaTab() {
@@ -146,8 +146,28 @@ export default function AgendaTab() {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 shrink-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 shrink-0 w-full flex-wrap">
         <div><h3 className="text-2xl font-black text-slate-900 flex items-center gap-2"><Sparkles className="w-6 h-6 text-purple-500" /> Agenda</h3></div>
+        
+        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+          <button onClick={() => {
+            const d = new Date(selectedAgendaDate);
+            d.setDate(d.getDate() - 1);
+            setSelectedAgendaDate([d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'));
+          }} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+          <input 
+            type="date" 
+            value={selectedAgendaDate} 
+            onChange={(e) => setSelectedAgendaDate(e.target.value)}
+            className="bg-transparent border-none outline-none font-bold text-sm text-slate-800 text-center w-36 cursor-pointer"
+          />
+          <button onClick={() => {
+            const d = new Date(selectedAgendaDate);
+            d.setDate(d.getDate() + 1);
+            setSelectedAgendaDate([d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'));
+          }} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"><ChevronRight className="w-4 h-4" /></button>
+        </div>
+
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <div className="flex bg-slate-200/50 p-1 rounded-xl w-full sm:w-auto">
             <button onClick={() => setAgendaMode("day")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === 'day' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Dia</button>
@@ -216,7 +236,7 @@ export default function AgendaTab() {
                   <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Nome</label><input type="text" required placeholder="Ex: Maria" value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Serviço</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Equipa</label><select value={manualStaffId} onChange={(e) => setManualStaffId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold"><option value="all">Toda a Equipa</option>{staff.map((st:any) => <option key={st.id} value={st.id}>{st.full_name}</option>)}</select></div>
+                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Equipa</label><select value={manualStaffId} onChange={(e) => setManualStaffId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{staff.length === 0 ? <option value="all">Toda a Equipa</option> : <option value="" disabled hidden>Selecione um funcionário</option>}{staff.map((st:any) => <option key={st.id} value={st.id}>{st.full_name}</option>)}</select></div>
                   </div>
                 </>
               ) : (

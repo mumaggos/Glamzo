@@ -93,11 +93,6 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
       {/* Quick Actions / Shortcuts */}
       
-      <div className="flex flex-wrap gap-2 mb-4">
-         <button onClick={() => setTimeFilter('today')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'today' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Hoje</button>
-         <button onClick={() => setTimeFilter('week')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'week' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Última Semana</button>
-         <button onClick={() => setTimeFilter('month')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${timeFilter === 'month' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Último Mês</button>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         <button onClick={() => setActiveTab('clientes')} className="bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">

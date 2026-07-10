@@ -159,15 +159,15 @@ app.post("/api/business/qr-scan", express.json(), async (req, res) => {
   try {
     const { data: currentData } = await getSupabaseAdmin()
       .from('businesses')
-      .select('qr_scans')
+      .select('qr_scans_count')
       .eq('id', businessId)
       .single();
       
-    const current = currentData?.qr_scans || 0;
+    const current = currentData?.qr_scans_count || 0;
     
     await getSupabaseAdmin()
       .from('businesses')
-      .update({ qr_scans: current + 1 })
+      .update({ qr_scans_count: current + 1 })
       .eq('id', businessId);
       
     res.json({ success: true, scans: current + 1 });

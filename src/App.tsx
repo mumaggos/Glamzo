@@ -24,6 +24,7 @@ const HoursTab = lazy(() => import('./pages/partner/tabs/HoursTab'));
 const FinanceTab = lazy(() => import('./pages/partner/tabs/FinanceTab'));
 const StoreAssetsTab = lazy(() => import('./pages/partner/tabs/StoreAssetsTab'));
 const SettingsTab = lazy(() => import('./pages/partner/tabs/SettingsTab'));
+const SubscriptionTab = lazy(() => import('./pages/partner/tabs/SubscriptionTab'));
 const ReservationsTab = lazy(() => import('./pages/partner/tabs/ReservationsTab'));
 const MarketingTab = lazy(() => import('./pages/partner/tabs/MarketingTab'));
 const MessagesTab = lazy(() => import('./pages/partner/tabs/MessagesTab'));
@@ -46,6 +47,7 @@ const Contactos = lazy(() => import('./pages/info/Contactos'));
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
+import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -222,6 +224,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <Toaster position="top-center" />
       <BrowserRouter>
         <ScrollToTop />
           
@@ -281,6 +284,7 @@ export default function App() {
                     <Route path="mensagens" element={<MessagesTab />} />
                     <Route path="tablet" element={<TabletTab />} />
                     <Route path="configuracoes" element={<SettingsTab />} />
+                    <Route path="subscricao" element={<SubscriptionTab />} />
                   </Route>
 
                   <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
