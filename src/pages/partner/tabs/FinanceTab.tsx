@@ -135,7 +135,7 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, name)").eq("business_id", business.id).eq("booking_status", "completed").gte("created_at", startStr).lte("created_at", endStr)
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).eq("booking_status", "completed").gte("booking_date", startDate.toISOString().split("T")[0]).lte("booking_date", endDate.toISOString().split("T")[0])
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');

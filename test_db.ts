@@ -1,6 +1,8 @@
 import { supabase } from './src/lib/supabase.ts';
 async function test() {
-  const { data } = await supabase.from('bookings').select('id, customer_id, customer:profiles(id, full_name)').limit(1);
-  console.log(data);
+  const { data, error } = await supabase.from('businesses').select('*').limit(1);
+  if (data) {
+    console.log(Object.keys(data[0]));
+  }
 }
 test();

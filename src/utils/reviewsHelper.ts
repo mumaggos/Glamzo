@@ -70,6 +70,7 @@ export async function submitReview(reviewInput: Omit<Review, 'id' | 'created_at'
 
     if (error) {
       console.error('Error submitting review:', error);
+      alert("Error submitting review: " + error.message);
       throw error;
     }
     

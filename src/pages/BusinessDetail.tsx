@@ -179,15 +179,10 @@ const { slug } = useParams<{ slug: string }>();
     try {
       const author = profile?.full_name || user.email?.split('@')[0] || 'Cliente Glamzo';
       const input = {
-        booking_id: crypto.randomUUID(),
         business_id: business.id,
         customer_id: user.id,
-        customer_name: author,
         rating: newReviewRating,
         comment: newReviewComment,
-        service_id: crypto.randomUUID(),
-        service_name: newReviewService || 'Serviço Geral',
-        photo_url: newReviewFileBlob || null
       };
       const created = await submitReview(input);
       setReviews(prev => [created, ...prev]);

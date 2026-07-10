@@ -37,22 +37,10 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     if (isOpen && businessId && userId) {
        // load messages
-       supabase.from('messages')
-         .select('*')
-         .eq('business_id', businessId)
-         .eq('customer_id', userId)
-         .order('created_at', { ascending: true })
-         .then(({data}) => {
-            if (data) setMessages(data);
-         });
+       // messages table doesn't exist, skip fetch
          
        // Realtime
-       const channel = supabase.channel('messenger_channel')
-         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${businessId}` }, payload => {
-            if (payload.new.customer_id === userId) {
-              setMessages(prev => [...prev, payload.new]);
-            }
-         }).subscribe();
+       // skip channel
          
        return () => { supabase.removeChannel(channel); };
     }
@@ -73,8 +61,27 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
          sender: 'customer',
          content: text.trim(),
        };
-       const { error } = await supabase.from('messages').insert([newMsg]);
-       if (!error) {
+       // Fetch business email to send notification
+       const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email)').eq('id', businessId).single();
+       const toEmail = businessData?.email || businessData?.profiles?.email;
+       if (toEmail) {
+         await fetch('/api/emails/send', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             type: 'chat_message',
+             to: toEmail,
+             data: {
+               customerName: 'Cliente (App)',
+               message: text.trim()
+             }
+           })
+         });
+       }
+       // Since there is no messages table, we'll just optimistically show it locally
+       setMessages(prev => [...prev, { ...newMsg, id: Date.now().toString(), created_at: new Date().toISOString() } as any]);
+       
+       if (true) {
          setText('');
        }
     } catch(err) {
@@ -126,6 +133,11 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
             <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-700 shadow-sm max-w-[85%] font-medium leading-relaxed">
               Olá! 👋 Tem alguma dúvida sobre os nossos serviços, horários ou preços?
             </div>
+            {messages.map((m: any) => (
+              <div key={m.id} className={`p-3.5 rounded-2xl text-xs font-medium leading-relaxed max-w-[85%] ${m.sender === 'customer' ? 'bg-slate-900 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start shadow-sm'}`}>
+                {m.content}
+              </div>
+            ))}
           </div>
           
           <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 shrink-0">
