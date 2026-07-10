@@ -136,7 +136,7 @@ export default function FinanceTab() {
         { data: subData },
         { data: bkData, error: bkError }
       ] = await Promise.all([
-        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name))").eq("business_id", business.id),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender, price), staff:staff(id, full_name))").eq("business_id", business.id),
         supabase
           .from("payouts")
           .select("*")
@@ -147,7 +147,7 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).in("booking_status", ["completed", "confirmed"])
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender, price), staff:staff(id, full_name)").eq("business_id", business.id).in("booking_status", ["completed", "confirmed"])
       ]);
 
       console.log("ID DA LOJA ATUAL:", business.id);
@@ -161,12 +161,12 @@ export default function FinanceTab() {
       const localCompleted = (bkData || []).filter(b => {
         const isLocal = b.payment_method === 'local' || !b.payment_method;
         const fallbackPrice = Number(b.total_price || (b.service && (b.service as any).price) || 0);
-        return fallbackPrice > 0 && isLocal && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id);
+        return fallbackPrice >= 0 && isLocal && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id);
       }).map(b => {
         const fallbackPrice = Number(b.total_price || (b.service && (b.service as any).price) || 0);
         return {
           id: `loc_${b.id}`,
-          created_at: b.booking_date + "T12:00:00Z",
+          created_at: b.booking_date ? b.booking_date + "T12:00:00Z" : b.created_at,
           booking_id: b.id,
           staff_id: b.staff_id,
           payment_method: 'local',
