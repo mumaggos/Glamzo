@@ -2,9 +2,8 @@ import fs from 'fs';
 let code = fs.readFileSync('src/components/DashboardOverview.tsx', 'utf-8');
 
 code = code.replace(
-  /<div className="flex flex-wrap gap-2 mb-4">[\s\S]*?<\/div>\s*<div className="grid grid-cols-1/m,
-  '<div className="grid grid-cols-1'
+  "const isCompletedLocal = b.payment_method === 'local' && b.booking_status === 'completed';",
+  "const isCompletedLocal = b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed');"
 );
 
 fs.writeFileSync('src/components/DashboardOverview.tsx', code);
-console.log("Removed time selectors.");

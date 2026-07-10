@@ -115,6 +115,14 @@ export default function FinanceTab() {
          endDate.setHours(23,59,59,999);
       }
       
+      
+      const formatDateStr = (d: Date) => {
+         const yyyy = d.getFullYear();
+         const mm = String(d.getMonth() + 1).padStart(2, '0');
+         const dd = String(d.getDate()).padStart(2, '0');
+         return `${yyyy}-${mm}-${dd}`;
+      }
+
       const startStr = startDate.toISOString();
       const endStr = endDate.toISOString();
 
@@ -124,7 +132,7 @@ export default function FinanceTab() {
         { data: subData },
         { data: bkData }
       ] = await Promise.all([
-        supabase.from("payments").select("*").eq("business_id", business.id).gte("created_at", startStr).lte("created_at", endStr),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name))").eq("business_id", business.id).gte("created_at", startStr).lte("created_at", endStr),
         supabase
           .from("payouts")
           .select("*")
@@ -135,15 +143,15 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).eq("booking_status", "completed").gte("booking_date", startDate.toISOString().split("T")[0]).lte("booking_date", endDate.toISOString().split("T")[0])
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).gte("booking_date", formatDateStr(startDate)).lte("booking_date", formatDateStr(endDate))
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
       const stripePaymentBookingIds = new Set(stripePayments.map(p => p.booking_id));
 
-      const localCompleted = (bkData || []).filter(b => b.total_price > 0 && b.payment_method === 'local' && !stripePaymentBookingIds.has(b.id)).map(b => ({
+      const localCompleted = (bkData || []).filter(b => b.total_price > 0 && b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id)).map(b => ({
         id: `loc_${b.id}`,
-        created_at: b.created_at,
+        created_at: b.booking_date + "T12:00:00Z", // Use booking_date as the revenue date for local payments
         booking_id: b.id,
         staff_id: b.staff_id,
         payment_method: 'local',
@@ -159,7 +167,13 @@ export default function FinanceTab() {
       // Add staff_id to stripe payments if they map to a booking
       const fullBkMap = new Map((bkData || []).map(b => [b.id, b]));
       stripePayments.forEach(p => {
-        if (p.booking_id && fullBkMap.has(p.booking_id)) {
+        if (p.booking) {
+           p.staff_id = p.booking.staff_id;
+           // ensure customer profile is there if not loaded by join
+           if (!p.booking.customer_profile && fullBkMap.has(p.booking_id)) {
+              p.booking = fullBkMap.get(p.booking_id);
+           }
+        } else if (p.booking_id && fullBkMap.has(p.booking_id)) {
           p.staff_id = fullBkMap.get(p.booking_id).staff_id;
           p.booking = fullBkMap.get(p.booking_id);
         }

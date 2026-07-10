@@ -43,23 +43,23 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
   
   const filteredBookingsList = bookings.filter(b => {
     if (b.booking_status === 'cancelled') return false;
-    const bDate = new Date(b.booking_date);
     const now = new Date();
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(now);
     if (timeFilter === 'today') {
-      return bDate.toDateString() === now.toDateString();
+      return b.booking_date === todayStr;
     } else if (timeFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return bDate >= weekAgo;
+      return new Date(b.booking_date + "T12:00:00Z") >= weekAgo;
     } else if (timeFilter === 'month') {
       const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-      return bDate >= monthAgo;
+      return new Date(b.booking_date + "T12:00:00Z") >= monthAgo;
     }
     return true;
   });
 
   const filteredRevenue = filteredBookingsList.reduce((sum, b) => {
     const isPaidOnline = b.payment_status === 'paid';
-    const isCompletedLocal = b.payment_method === 'local' && b.booking_status === 'completed';
+    const isCompletedLocal = b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed');
     if (isPaidOnline || isCompletedLocal) {
       return sum + (Number(b.total_price) || 0);
     }
