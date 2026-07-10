@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"; 
-import { useNavigate, Link, useSearchParams } from "react-router-dom"; 
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper"; 
 import { supabase } from "../lib/supabase"; 
 import { fetchAllReviews } from "../utils/reviewsHelper"; 
 import { 
@@ -175,25 +177,40 @@ export default function Home() {
           console.error("Home fetch error:", bizRes.error);
         }
          
-        const now = new Date(); 
-         
-        const processed = loadedBiz.map(b => { 
-          const bReviews = revDataFinal.filter((r: any) => r.business_id === b.id); 
-          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / bReviews.length : 0; 
-           
-          const bServices = srvData.filter((s: any) => s.business_id === b.id); 
-          let realStartPrice = 0; 
-          let hasRealPromotion = b.is_promoted || false; 
+                const now = new Date();
+        
+        // Performance optimization: Create maps for O(1) lookups instead of nested filters
+        const reviewsMap = new Map();
+        revDataFinal.forEach((r: any) => {
+          if (!reviewsMap.has(r.business_id)) reviewsMap.set(r.business_id, []);
+          reviewsMap.get(r.business_id).push(r);
+        });
 
-          if (bServices.length > 0) { 
-            const prices = bServices.map((s: any) => { 
-              const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0); 
-              if (hasDiscount) hasRealPromotion = true; 
-              return s.discount_price || s.price_promotion || s.price; 
-            }).filter((p: number) => p != null && !isNaN(p)); 
+        const servicesMap = new Map();
+        srvData.forEach((s: any) => {
+          if (!servicesMap.has(s.business_id)) servicesMap.set(s.business_id, []);
+          servicesMap.get(s.business_id).push(s);
+        });
+            
+        const processed = loadedBiz.map(b => {
+          const bReviews = reviewsMap.get(b.id) || [];
+          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / bReviews.length : 0;
+              
+          const bServices = servicesMap.get(b.id) || [];
+          let realStartPrice = 0;
+          let hasRealPromotion = b.is_promoted || false;
 
-            if (prices.length > 0) realStartPrice = Math.min(...prices); 
-          } 
+          if (bServices.length > 0) {
+            let minPrice = Infinity;
+            for (let i = 0; i < bServices.length; i++) {
+               const s = bServices[i];
+               const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0);
+               if (hasDiscount) hasRealPromotion = true;
+               const p = s.discount_price || s.price_promotion || s.price;
+               if (p != null && !isNaN(p) && p < minPrice) minPrice = p;
+            }
+            if (minPrice !== Infinity) realStartPrice = minPrice;
+          }
 
           const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude; 
           const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude; 

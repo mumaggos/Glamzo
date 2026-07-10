@@ -421,7 +421,7 @@ const optimizeImageUrl = (url: string) => {
             <div>
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Serviço ou Nome</label>
               <div className="relative">
-                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Ex: Manicure, Barbearia..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <input type="text" aria-label="Pesquisar serviço ou salão" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Ex: Manicure, Barbearia..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
             </div>
@@ -429,7 +429,7 @@ const optimizeImageUrl = (url: string) => {
             <div>
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Localização Livre</label>
               <div className="relative mb-2">
-                <input type="text" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Concelho, Morada..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <input type="text" aria-label="Localização" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Concelho, Morada..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
               <button type="button" onClick={handleNearMeToggle} className={`w-full flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-xl border transition-all ${useNearMe ? "bg-purple-600 text-white border-purple-600" : "bg-white text-blue-600 border-slate-200 hover:bg-slate-50"}`}>
@@ -456,13 +456,13 @@ const optimizeImageUrl = (url: string) => {
             <div className="space-y-3.5 pt-2">
               <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider pl-0.5">Preferências</span>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
+                <input type="checkbox" aria-label="Filtro Ao Domicílio" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
               </label>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Premium Partner
+                <input type="checkbox" aria-label="Filtro Parceiro Premium" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Premium Partner
               </label>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" checked={filterAvailableToday} onChange={(e) => setFilterAvailableToday(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Aberto Hoje
+                <input type="checkbox" aria-label="Filtro Aberto Hoje" checked={filterAvailableToday} onChange={(e) => setFilterAvailableToday(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Aberto Hoje
               </label>
             </div>
           </div>
@@ -535,12 +535,12 @@ const optimizeImageUrl = (url: string) => {
             <div className="flex-1 overflow-y-auto p-5 space-y-6 max-h-[calc(100vh-140px)] custom-scrollbar">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Serviço ou Nome</label>
-                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                <input type="text" aria-label="O que procura?" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Localização Livre</label>
-                <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Pedroso, Gaia, Funchal..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
+                <input type="text" aria-label="Localização (Filtros)" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Pedroso, Gaia, Funchal..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
                 <button type="button" onClick={handleNearMeToggle} className={`w-full py-3 rounded-xl text-sm font-bold flex justify-center gap-2 ${useNearMe ? "bg-purple-600 text-white" : "bg-blue-50 text-blue-600"}`}>
                   <Navigation className="w-4 h-4" /> Ativar GPS do Telemóvel
                 </button>
