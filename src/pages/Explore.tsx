@@ -303,12 +303,29 @@ export default function Explore() {
   const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
-  const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
+const optimizeImageUrl = (url: string) => { 
+  if (!url) return ""; 
+  if (url.includes("images.unsplash.com")) { 
+    let optimized = url; 
+    optimized = optimized.replace(/w=\d+/, "w=400"); 
+    optimized = optimized.replace(/q=\d+/, "q=75"); 
+    if (!optimized.includes("fm=webp")) optimized += "&fm=webp"; 
+    return optimized; 
+  }
+  if (url.includes("supabase.co/storage/v1/object/public/")) {
+    try {
+      return url.replace('/object/public/', '/render/image/public/') + "?width=400&quality=75&format=webp";
+    } catch (e) {
+      return url;
+    }
+  }
+  return url; 
+};
+
+  const BusinessCard: React.FC<{ b: any, priority?: boolean }> = ({ b, priority }) => (
     <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <img loading="lazy" 
-          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
-          alt={b.name}  
+        <img loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} src={optimizeImageUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=75&fm=webp"} alt={b.name}  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
@@ -481,7 +498,7 @@ export default function Explore() {
             ) : paginatedBusinesses.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} />)}
+                  {paginatedBusinesses.map((b, i) => <BusinessCard key={b.id} b={b} priority={i < 4} />)}
                 </div>
                 {sortedBusinesses.length > itemsLimit && (
                   <div className="text-center pt-10">
