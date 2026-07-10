@@ -146,7 +146,7 @@ app.post("/api/business/qr-scan", express.json(), async (req, res) => {
   const { businessId } = req.body;
   if (!businessId) return res.status(400).json({ error: "No businessId provided" });
   try {
-    const { data: currentData } = await supabaseAdmin
+    const { data: currentData } = await getSupabaseAdmin()
       .from('businesses')
       .select('qr_scans')
       .eq('id', businessId)
@@ -154,7 +154,7 @@ app.post("/api/business/qr-scan", express.json(), async (req, res) => {
       
     const current = currentData?.qr_scans || 0;
     
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('businesses')
       .update({ qr_scans: current + 1 })
       .eq('id', businessId);

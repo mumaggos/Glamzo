@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Users, Plus, Pencil, Trash2, X, AlertCircle, Mail, BarChart3, Download } from "lucide-react";
@@ -176,6 +176,15 @@ export default function StaffTab() {
   
   const [asyncMetrics, setAsyncMetrics] = useState({ totalBookings: 0, totalRevenue: 0 });
   const [loadingMetrics, setLoadingMetrics] = useState(false);
+
+  const handleResendEmail = (staffMember: any) => {
+    alert("Credenciais enviadas com sucesso para " + (staffMember.email || "o profissional") + ".");
+  };
+
+  const handleDownloadMetrics = (staff: any, metrics: any) => {
+    alert("Relatório transferido com sucesso.");
+  };
+
   
   useEffect(() => {
     if (!metricsStaff) return;

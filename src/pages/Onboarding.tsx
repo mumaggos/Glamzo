@@ -199,15 +199,7 @@ export default function Onboarding() {
       let { data: bData, error: insertError } = await supabase.from('businesses').insert(businessPayload).select('id').single();
       
       if (insertError) {
-        // Fallback for missing columns
-        if (insertError.code === '42703' || insertError.message?.includes('column')) {
-          const fallback: any = { ...businessPayload };
-          delete fallback.latitude; delete fallback.longitude; delete fallback.door_number; delete fallback.setup_completed; delete fallback.subscription_status;
-          const retry = await supabase.from('businesses').insert(fallback).select('id').single();
-          insertError = retry.error;
-          bData = retry.data;
-        }
-        if (insertError) throw insertError;
+        throw insertError;
       }
       
       const bId = bData?.id;

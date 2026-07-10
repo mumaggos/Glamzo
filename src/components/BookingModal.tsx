@@ -287,7 +287,7 @@ const handleConfirmReservation = async () => {
 
       if (!isAvailableNow) throw new Error('Este horário acabou de ser reservado ou bloqueado. Por favor, escolha outra hora.');
       
-      const currentAvailable = getAvailableSlots();
+      const currentAvailable = availableSlots;
       const matchedSlot = currentAvailable.find(s => s.start === selectedTime);
 
       if (!matchedSlot) throw new Error('Este horário acabou de ser reservado por outro utilizador. Por favor escolha outra hora.');

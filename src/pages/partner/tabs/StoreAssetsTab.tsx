@@ -115,7 +115,7 @@ export default function StoreAssetsTab() {
           <div className="w-full bg-rose-50 border border-rose-100 rounded-xl p-4 mt-4 flex items-center justify-between">
             <div className="text-left">
               <span className="block text-[10px] font-black uppercase tracking-widest text-rose-500">Scans Totais</span>
-              <span className="text-xl font-black text-rose-700">{business.qr_scans || 0}</span>
+              <span className="text-xl font-black text-rose-700">{(business as any).qr_scans || 0}</span>
             </div>
             <QrCode className="w-6 h-6 text-rose-200" />
           </div>

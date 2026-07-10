@@ -32,16 +32,10 @@ export default function MarketingTab() {
       }
       if (resCoupons) {
         setCoupons(resCoupons);
-        localStorage.setItem("glamzo_coupons", JSON.stringify(resCoupons));
       }
     } catch (err: any) {
-      console.warn("Table business_coupons probably does not exist yet or offline sandbox active, using cached coupons list:", err);
-      try {
-        const localStr = localStorage.getItem("glamzo_coupons");
-        if (localStr) setCoupons(JSON.parse(localStr));
-      } catch (e) {
-        setCoupons([]);
-      }
+      console.error("Error loading coupons:", err);
+      setCoupons([]);
     } finally {
       setLoadingCoupons(false);
     }
@@ -84,29 +78,8 @@ export default function MarketingTab() {
       });
       loadCoupons(); // Refresh to be safe
     } catch (err) {
-      console.warn("Table business_coupons structure might be setup-pending on Supabase, falling back to cached local storage:", err);
-      // Fallback
-      const newLocalCoupon = {
-        id: crypto.randomUUID(),
-        business_id: business.id,
-        code: couponForm.code.toUpperCase().trim(),
-        discount_percent: couponForm.discount_percent ? parseFloat(couponForm.discount_percent) : null,
-        discount_value: couponForm.discount_value ? parseFloat(couponForm.discount_value) : null,
-        valid_until: couponForm.valid_until || null,
-        is_active: couponForm.is_active,
-        created_at: new Date().toISOString(),
-      };
-      const updatedLocals = [newLocalCoupon, ...coupons];
-      setCoupons(updatedLocals);
-      localStorage.setItem("glamzo_coupons", JSON.stringify(updatedLocals));
-      setShowAddCouponModal(false);
-      setCouponForm({
-        code: "",
-        discount_percent: "",
-        discount_value: "",
-        valid_until: "",
-        is_active: true,
-      });
+      console.error("Error creating coupon:", err);
+      alert("Erro ao criar cupão.");
     }
   };
 
@@ -119,10 +92,8 @@ export default function MarketingTab() {
       if (error) throw error;
       loadCoupons();
     } catch (err) {
-      // Fallback
-      const updatedLocals = coupons.map((c) => c.id === id ? { ...c, is_active: !currentStatus } : c);
-      setCoupons(updatedLocals);
-      localStorage.setItem("glamzo_coupons", JSON.stringify(updatedLocals));
+      console.error("Error toggling coupon:", err);
+      alert("Erro ao alterar cupão.");
     }
   };
 
@@ -133,10 +104,8 @@ export default function MarketingTab() {
       if (error) throw error;
       loadCoupons();
     } catch (err) {
-      // Fallback
-      const updatedLocals = coupons.filter((c) => c.id !== id);
-      setCoupons(updatedLocals);
-      localStorage.setItem("glamzo_coupons", JSON.stringify(updatedLocals));
+      console.error("Error deleting coupon:", err);
+      alert("Erro ao eliminar cupão.");
     }
   };
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { ChatSession, ChatMessage } from "../types";
+import { fetchChatSessionsForPartner, fetchMessagesForSession, submitMessage } from "../utils/communicationHelper";
 import { User } from 'lucide-react';
 import { MessageSquare, Send, ArrowLeft, Search, Clock } from 'lucide-react';
 

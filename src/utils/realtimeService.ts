@@ -22,7 +22,6 @@ export const realtimeService = {
     if (broadcastChannel) {
       broadcastChannel.onmessage = (eventMsg) => {
         const { event, payload } = eventMsg.data;
-        console.log(`[Realtime:Broadcast] Event received: ${event}`, payload);
         callback(event, payload);
       };
     }
@@ -36,7 +35,6 @@ export const realtimeService = {
         eventSource.onmessage = (e) => {
           try {
             const data = JSON.parse(e.data);
-            console.log(`[Realtime:SSE] Event received: ${data.event}`, data.payload);
             callback(data.event, data.payload);
           } catch (err) {
             console.error('Failed to parse SSE payload:', err);
@@ -58,7 +56,6 @@ export const realtimeService = {
 
   // Broadcast an event to all open client instances and server-side channels
   async broadcast(event: string, payload: any) {
-    console.log(`[RealtimeService] Broadcasting: ${event}`, payload);
 
     // Broadcast across windows/tabs instantly via browser bus
     if (broadcastChannel) {
@@ -76,7 +73,6 @@ export const realtimeService = {
       }
     } catch (e) {
       // Background failure safe-guard
-      console.log('Backend broadcast skipped (offline or server restarting)');
     }
   },
 
@@ -306,7 +302,6 @@ export const realtimeService = {
 
   // 5. Automated Premium Mailer Simulator
   async sendEmailViaResend(toEmail: string, subject: string, templateName: string, params: any) {
-    console.log(`[Resend Engine] Dispatching email to ${toEmail}:`, { subject, templateName, params });
     
     // Save to simulated outbox history log so they can audit it in UI
     const outboxKey = 'glamzo_mailer_outbox';

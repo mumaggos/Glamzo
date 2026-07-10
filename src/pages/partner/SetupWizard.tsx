@@ -230,12 +230,6 @@ export default function SetupWizard() {
           if (createErr.code === '23505') {
             const { data: existingBiz } = await supabase.from('businesses').select('*').eq('owner_id', user.id).single();
             currentBiz = existingBiz;
-          } else if (createErr.code === '42703' || createErr.message?.includes('column')) {
-            const fallbackPayload = { ...payload };
-            delete (fallbackPayload as any).setup_step;
-            delete (fallbackPayload as any).setup_completed;
-            const { data: fbBiz } = await supabase.from('businesses').insert(fallbackPayload).select().single();
-            currentBiz = fbBiz;
           } else {
              throw createErr;
           }

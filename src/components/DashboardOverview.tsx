@@ -57,8 +57,14 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
     return true;
   });
 
-  
-  const filteredRevenue = filteredBookingsList.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+  const filteredRevenue = filteredBookingsList.reduce((sum, b) => {
+    const isPaidOnline = b.payment_status === 'paid';
+    const isCompletedLocal = b.payment_method === 'local' && b.booking_status === 'completed';
+    if (isPaidOnline || isCompletedLocal) {
+      return sum + (Number(b.total_price) || 0);
+    }
+    return sum;
+  }, 0);
   const displayBookingsCount = filteredBookingsList.length;
 
   const timeLabel = timeFilter === 'today' ? 'Hoje' : timeFilter === 'week' ? 'Semana' : 'Mês';

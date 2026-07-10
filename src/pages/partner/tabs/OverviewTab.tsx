@@ -46,7 +46,9 @@ export default function OverviewTab() {
     
     const serviceRevenue: Record<string, number> = {};
     bookings.forEach(b => {
-      if (b.booking_status !== 'cancelled' && b.service) {
+      const isPaidOnline = b.payment_status === 'paid';
+      const isCompletedLocal = b.payment_method === 'local' && b.booking_status === 'completed';
+      if ((isPaidOnline || isCompletedLocal) && b.service) {
         const serviceName = b.service.name;
         serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + (b.total_price || 0);
       }

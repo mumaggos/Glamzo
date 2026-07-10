@@ -10,11 +10,7 @@ import {
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 
-const API_KEY = 
-  process.env.GOOGLE_MAPS_PLATFORM_KEY || 
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || 
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || 
-  ""; 
+const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || ""; 
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
 const HOME_CATEGORIES = [ 

@@ -33,8 +33,6 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const SuperAdminLogistics = lazy(() => import('./pages/admin/SuperAdminLogistics'));
 const StaffLogin = lazy(() => import('./pages/staff/StaffLogin'));
 const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
-const StripeSimulatedCheckout = lazy(() => import('./pages/StripeSimulatedCheckout'));
-const StripeSimulatedConnect = lazy(() => import('./pages/StripeSimulatedConnect'));
 const Termos = lazy(() => import('./pages/legal/Termos'));
 const Privacidade = lazy(() => import('./pages/legal/Privacidade'));
 const Cookies = lazy(() => import('./pages/legal/Cookies'));
@@ -188,22 +186,18 @@ function GlobalRoleEnforcer() {
     const enforceSeparation = async () => {
        if (profile.role === 'business') {
           if (isPublicCustomerRoute || isStaffRoute || isAdminRoute) {
-             console.log("Redirecting business to their dashboard instead of logout", path);
              navigate('/partner/dashboard', { replace: true });
           }
        } else if (profile.role === 'staff') {
           if (isPublicCustomerRoute || isPartnerRoute || isAdminRoute) {
-             console.log("Redirecting staff to their dashboard instead of logout", path);
              navigate('/staff/dashboard', { replace: true });
           }
        } else if (profile.role === 'admin') {
           if (isPublicCustomerRoute || isPartnerRoute || isStaffRoute) {
-             console.log("Redirecting admin to their dashboard instead of logout", path);
              navigate('/admin', { replace: true });
           }
        } else if (profile.role === 'customer') {
           if ((isPartnerRoute && path !== '/partner') || isStaffRoute || isAdminRoute) {
-             console.log("Forcing logout: Customer accessing business/staff route", path);
              await signOut();
           }
        }
@@ -267,8 +261,6 @@ export default function App() {
                   <Route path="/partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
                   <Route path="/setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
                   <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
-                  <Route path="/stripe-simulated-checkout" element={<StripeSimulatedCheckout />} />
-                  <Route path="/stripe-simulated-connect" element={<StripeSimulatedConnect />} />
 
                   <Route path="/staff/login" element={<StaffLogin />} />
                   <Route path="/staff/dashboard" element={<StaffDashboard />} />

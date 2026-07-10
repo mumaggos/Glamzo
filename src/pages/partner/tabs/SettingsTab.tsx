@@ -173,16 +173,7 @@ export default function SettingsTab() {
       }).eq('id', business.id);
       
       if (error) {
-        // Fallback for when migration hasn't been run
-        const { error: fallbackError } = await supabase.from('businesses').update({ 
-          min_booking_notice: parseInt(rules.min_notice),
-          cancellation_policy: combinedPolicy
-        }).eq('id', business.id);
-        
-        if (fallbackError) throw fallbackError;
-        
-        showMessage('success', 'Regras de agendamento atualizadas com sucesso.');
-        return;
+        throw error;
       }
       
       showMessage('success', 'Regras de agendamento atualizadas com sucesso.');
