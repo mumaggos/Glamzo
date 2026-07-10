@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
@@ -7,13 +7,12 @@ export default function GlamzoMessenger() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState('');
-
-  // SÓ MOSTRAR DENTRO DO PERFIL DA LOJA! (Esconde na Home, Login, Explore, etc.)
   
   const [messages, setMessages] = useState<any[]>([]);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -37,22 +36,42 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     if (isOpen && businessId && userId) {
        // load messages
-       // messages table doesn't exist, skip fetch
-         
+       supabase.from('messages')
+         .select('*')
+         .eq('business_id', businessId)
+         .eq('customer_id', userId)
+         .order('created_at', { ascending: true })
+         .then(({data, error}) => {
+            if (error) console.error("Error loading messages:", error);
+            if (data) setMessages(data);
+         });
+                
        // Realtime
-       // skip channel
-         
+       const channel = supabase.channel('messenger_channel')
+         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${businessId}` }, payload => {
+            if (payload.new.customer_id === userId) {
+              setMessages(prev => {
+                 if (prev?.find(m => m.id === payload.new.id)) return prev;
+                 return [...(prev || []), payload.new];
+              });
+            }
+         }).subscribe();
+                
        return () => { supabase.removeChannel(channel); };
     }
   }, [isOpen, businessId, userId]);
-const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
-  if (!isBusinessPage) return null; 
 
-  
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isOpen]);
+
+  const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
+  if (!isBusinessPage) return null;
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || !businessId || !userId || sending) return;
-    
+        
     try {
        setSending(true);
        const newMsg = {
@@ -61,6 +80,19 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
          sender: 'customer',
          content: text.trim(),
        };
+       
+       const { data: insertedMsg, error: insertError } = await supabase.from('messages').insert([newMsg]).select().single();
+       if (insertError) {
+         console.error("Insert message error:", insertError);
+       }
+       if (insertedMsg) {
+         setMessages(prev => {
+            if (prev?.find(m => m.id === insertedMsg.id)) return prev;
+            return [...(prev || []), insertedMsg];
+         });
+       }
+       setText('');
+
        // Fetch business email to send notification
        const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email)').eq('id', businessId).single();
        const toEmail = businessData?.email || businessData?.profiles?.email;
@@ -76,13 +108,7 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
                message: text.trim()
              }
            })
-         });
-       }
-       // Since there is no messages table, we'll just optimistically show it locally
-       setMessages(prev => [...prev, { ...newMsg, id: Date.now().toString(), created_at: new Date().toISOString() } as any]);
-       
-       if (true) {
-         setText('');
+         }).catch(console.error);
        }
     } catch(err) {
        console.error("Failed to send message", err);
@@ -91,13 +117,12 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
     }
   };
 
-
   return (
     <div className="fixed bottom-6 right-4 sm:right-6 z-[99999] font-sans">
       {!isOpen ? (
         <button 
-          onClick={() => setIsOpen(true)} 
-          className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 hover:bg-black transition-all border-[3px] border-white group"
+           onClick={() => setIsOpen(true)} 
+           className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 hover:bg-black transition-all border-[3px] border-white group"
         >
           <MessageSquare className="w-6 h-6 group-hover:animate-pulse" />
           <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -125,36 +150,36 @@ const isBusinessPage = location.pathname.startsWith('/business/') || location.pa
             </button>
           </div>
           
-          <div className="flex-1 p-4 bg-[#F8F9FC] overflow-y-auto flex flex-col justify-end space-y-4">
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-2 pb-4 opacity-50">
+          <div className="flex-1 p-4 bg-[#F8F9FC] overflow-y-auto flex flex-col space-y-4">
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-2 pb-4 opacity-50 mt-auto">
               <MessageSquare className="w-8 h-8 text-slate-300" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Inicie a Conversa</p>
             </div>
-            <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-700 shadow-sm max-w-[85%] font-medium leading-relaxed">
+            <div className="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-700 shadow-sm max-w-[85%] font-medium leading-relaxed self-start">
               Olá! 👋 Tem alguma dúvida sobre os nossos serviços, horários ou preços?
             </div>
-            {messages.map((m: any) => (
+            {messages?.map((m: any) => (
               <div key={m.id} className={`p-3.5 rounded-2xl text-xs font-medium leading-relaxed max-w-[85%] ${m.sender === 'customer' ? 'bg-slate-900 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start shadow-sm'}`}>
                 {m.content}
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
           
           <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 shrink-0">
             <div className="flex items-center gap-2 bg-[#F8F9FC] border border-slate-200 focus-within:border-purple-400 rounded-2xl px-3 py-1.5 transition-colors">
               <input 
-                type="text" 
-                placeholder="Escreva aqui..." 
-                value={text} 
-                onChange={e => setText(e.target.value)} 
-                className="flex-1 bg-transparent border-none outline-none text-xs text-slate-800 placeholder-slate-400 font-medium py-1" 
-              />
-              <button type="submit" disabled={!text.trim()} className="w-8 h-8 rounded-full bg-slate-900 disabled:bg-slate-300 text-white flex items-center justify-center shrink-0 transition-colors">
+                 type="text" 
+                 placeholder="Escreva aqui..." 
+                 value={text} 
+                 onChange={e => setText(e.target.value)} 
+                 className="flex-1 bg-transparent border-none outline-none text-xs text-slate-800 placeholder-slate-400 font-medium py-1" 
+               />
+              <button type="submit" disabled={!text.trim() || sending} className="w-8 h-8 rounded-full bg-slate-900 disabled:bg-slate-300 text-white flex items-center justify-center shrink-0 transition-colors">
                 <Send className="w-3.5 h-3.5 ml-0.5" />
               </button>
             </div>
           </form>
-
         </div>
       )}
     </div>

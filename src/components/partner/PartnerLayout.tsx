@@ -17,6 +17,8 @@ export default function PartnerLayout() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [tabletOrder, setTabletOrder] = useState<any>(null);
   const [bookingsTodayCount, setBookingsTodayCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [unreadCountByCustomer, setUnreadCountByCustomer] = useState<Record<string, number>>({});
 
   const [categories, setCategories] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -75,10 +77,52 @@ export default function PartnerLayout() {
       setCategories(catData || []); setServices(svData || []); setStaff(stData || []); setBookings(bkData || []);
       setBusinessHours(bhData || []);
       setBookingsTodayCount((bkData || []).filter(b => b.booking_date === new Date().toISOString().split("T")[0]).length);
+
+      const { data: messagesData } = await supabase
+        .from("messages")
+        .select("id, customer_id, sender, is_read, content")
+        .eq("business_id", bData.id)
+        .eq("sender", "customer")
+        .eq("is_read", false);
+        
+      if (messagesData && messagesData.length > 0) {
+        setUnreadMessages(messagesData.length);
+        
+        // Count by customer (for future use or notifications)
+        const counts = {};
+        messagesData.forEach(m => {
+           counts[m.customer_id] = (counts[m.customer_id] || 0) + 1;
+        });
+        setUnreadCountByCustomer(counts);
+        
+        // Add a notification for unread messages
+        setNotifications([{
+          id: 999,
+          title: "Novas Mensagens Recebidas",
+          desc: `Você tem ${messagesData.length} mensagem(s) não lida(s) de clientes.`,
+          time: "Agora"
+        }]);
+      } else {
+        setUnreadMessages(0);
+        setNotifications([]);
+      }
+
     } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
   };
 
   useEffect(() => { setIsMobileSidebarOpen(false); setIsNotificationsOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    if (!business) return;
+    const channel = supabase.channel('partner_layout_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${business.id}` }, payload => {
+        if (payload.new.sender === 'customer') {
+          loadLayoutData();
+        }
+      }).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [business]);
+
 
   const navItems = [
     { id: "overview", label: "Resumo", icon: LayoutDashboard, path: "/partner/dashboard/overview" },
@@ -122,6 +166,9 @@ export default function PartnerLayout() {
                 return (
                   <Link key={tab.id} to={tab.path} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
                     <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
+                    {tab.id === "mensagens" && unreadMessages > 0 && (
+                      <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
+                    )}
                   </Link>
                 );
               })}
@@ -150,7 +197,11 @@ export default function PartnerLayout() {
               const isActive = location.pathname.startsWith(tab.path);
               return (
                 <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
-                  <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span></div>
+                  <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span>
+                    {tab.id === "mensagens" && unreadMessages > 0 && (
+                      <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
+                    )}
+                  </div>
                 </Link>
               );
             })}

@@ -1,10 +1,38 @@
 import fs from 'fs';
 let code = fs.readFileSync('src/pages/partner/tabs/FinanceTab.tsx', 'utf-8');
 
+// Replace the bookings query to correctly reference profiles
 code = code.replace(
-  'supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, name)").eq("business_id", business.id).eq("booking_status", "completed").gte("created_at", startStr).lte("created_at", endStr)',
-  'supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, name)").eq("business_id", business.id).eq("booking_status", "completed").gte("booking_date", startDate.toISOString().split("T")[0]).lte("booking_date", endDate.toISOString().split("T")[0])'
+  'customer_profile:profiles(id, full_name, email)',
+  'profiles!bookings_customer_id_fkey(id, full_name, email)'
+);
+
+// We need to also safely access it
+code = code.replace(
+  /item\.booking\?\.customer_profile\?\.full_name/g,
+  "item.booking?.profiles?.full_name"
+);
+
+code = code.replace(
+  /selectedInvoice\.booking\.customer_profile\?\.full_name/g,
+  "selectedInvoice.booking?.profiles?.full_name"
+);
+
+// Fallback for query results
+// Let's ensure data is wrapped with || []
+code = code.replace(
+  /const stripePayments = \(pyData \|\| \[\]\)\.filter/g,
+  "const stripePayments = (pyData || []).filter"
+);
+
+// Just safety
+code = code.replace(
+  /setLedger\(ledgerData/g,
+  "setLedger(ledgerData || []"
+);
+code = code.replace(
+  /setSubscriptions\(subData/g,
+  "setSubscriptions(subData || []"
 );
 
 fs.writeFileSync('src/pages/partner/tabs/FinanceTab.tsx', code);
-console.log("Patched bookings date query in FinanceTab");

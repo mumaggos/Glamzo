@@ -1,44 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { ChatSession, ChatMessage } from "../types";
-import { fetchChatSessionsForPartner, fetchMessagesForSession, submitMessage } from "../utils/communicationHelper";
-import { User } from 'lucide-react';
-import { MessageSquare, Send, ArrowLeft, Search, Clock } from 'lucide-react';
+import { User, MessageSquare, Send, ArrowLeft, Search, Clock } from 'lucide-react';
+
+interface ChatSession {
+  unread_count?: number;
+  customer_id: string;
+  customer_name: string;
+  last_message: string;
+  updated_at: string;
+}
 
 export default function DashboardMessages({ businessId }: { businessId: string }) {
   const { user, profile } = useAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const playPingChime = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.2);
-    } catch (_) {}
-  };
-
   const loadSessions = async () => {
     try {
-      const data = await fetchChatSessionsForPartner(businessId);
-      setSessions(data);
+      // Group messages by customer_id to form sessions
+      const { data: allMessages, error } = await supabase
+        .from('messages')
+        .select('*, profiles!messages_customer_id_fkey(full_name)')
+        .eq('business_id', businessId)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("Error loading messages for sessions:", error);
+      }
+
+      
+      if (allMessages) {
+        const sessionMap = new Map<string, ChatSession>();
+        allMessages.forEach((msg: any) => {
+          if (!sessionMap.has(msg.customer_id)) {
+            sessionMap.set(msg.customer_id, {
+              customer_id: msg.customer_id,
+              customer_name: msg.profiles?.full_name || 'Cliente Desconhecido',
+              last_message: msg.content,
+              updated_at: msg.created_at,
+              unread_count: 0
+            });
+          }
+          
+          if (msg.sender === 'customer' && !msg.is_read) {
+             const sess = sessionMap.get(msg.customer_id);
+             if (sess) sess.unread_count = (sess.unread_count || 0) + 1;
+          }
+        });
+
+        
+        const sortedSessions = Array.from(sessionMap.values()).sort((a, b) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
+        setSessions(sortedSessions);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -50,20 +72,19 @@ export default function DashboardMessages({ businessId }: { businessId: string }
     if (!businessId) return;
     loadSessions();
 
-    const channel = supabase.channel('business_messages')
+    const channel = supabase.channel('business_dashboard_messages')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'chat_messages',
-        filter: `session_id=in.(${sessions.map(s => s.id).join(',')})`
+        table: 'messages',
+        filter: `business_id=eq.${businessId}`
       }, (payload) => {
-        const msg = payload.new as ChatMessage;
-        if (msg.sender_type === 'customer') {
-          playPingChime();
-          loadSessions();
-          if (selectedSession && msg.session_id === selectedSession.id) {
-            setMessages(prev => [...prev, msg]);
-          }
+        loadSessions(); // Reload sessions to update last message
+        if (selectedSession && payload.new.customer_id === selectedSession.customer_id) {
+          setMessages(prev => {
+             if (prev?.find(m => m.id === payload.new.id)) return prev;
+             return [...(prev || []), payload.new];
+          });
         }
       })
       .subscribe();
@@ -71,19 +92,38 @@ export default function DashboardMessages({ businessId }: { businessId: string }
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [businessId, sessions.length, selectedSession?.id]);
+  }, [businessId, selectedSession?.customer_id]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSelectSession = async (sess: ChatSession) => {
     setSelectedSession(sess);
     setMessages([]);
-    const msgs = await fetchMessagesForSession(sess.id);
-    setMessages(msgs);
+    
+    
+    // Load messages for this specific customer
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('business_id', businessId)
+      .eq('customer_id', sess.customer_id)
+      .order('created_at', { ascending: true });
+      
+    if (error) {
+      console.error("Error loading chat messages:", error);
+    }
+    if (data) {
+      setMessages(data);
+      
+      // Mark as read
+      const unreadIds = data.filter(m => m.sender === 'customer' && !m.is_read).map(m => m.id);
+      if (unreadIds.length > 0) {
+         await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
+      }
+    }
+
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -91,19 +131,33 @@ export default function DashboardMessages({ businessId }: { businessId: string }
     if (!chatInput.trim() || !selectedSession || !user) return;
 
     const messageText = chatInput.trim();
-    setChatInput('');
-
-    const shopName = profile?.full_name || 'Loja';
-    const msg = await submitMessage(selectedSession.id, 'business', shopName, messageText);
     
-    setMessages(prev => [...prev, msg]);
-    loadSessions(); // update last message
+    const newMsg = {
+      business_id: businessId,
+      customer_id: selectedSession.customer_id,
+      sender: 'business',
+      content: messageText,
+    };
+    
+    const { data: insertedMsg, error: insertError } = await supabase.from('messages').insert([newMsg]).select().single();
+    if (insertError) {
+      console.error("Insert message error:", insertError);
+    }
+    
+    if (insertedMsg) {
+      setMessages(prev => {
+         if (prev?.find(m => m.id === insertedMsg.id)) return prev;
+         return [...(prev || []), insertedMsg];
+      });
+      loadSessions(); // update last message
+    }
+    setChatInput('');
   };
 
-  const activeSessions = sessions.filter(s => 
-    s.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const activeSessions = sessions?.filter(s => 
+    s.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     s.last_message?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) || [];
 
   return (
     <div className="flex bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden h-[600px] shadow-2xl relative">
@@ -133,20 +187,27 @@ export default function DashboardMessages({ businessId }: { businessId: string }
           ) : (
             activeSessions.map(sess => (
               <button
-                key={sess.id}
+                key={sess.customer_id}
                 onClick={() => handleSelectSession(sess)}
                 className={`w-full p-3 rounded-xl text-left transition-all ${
-                  selectedSession?.id === sess.id 
+                  selectedSession?.customer_id === sess.customer_id 
                     ? 'bg-purple-100 border border-purple-200' 
                     : 'hover:bg-slate-100 border border-transparent'
                 }`}
               >
+                
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-bold text-slate-800 text-[11px] truncate">{sess.customer_name}</span>
-                  <span className="text-[9px] text-slate-500 shrink-0 ml-2">
-                    {sess.updated_at ? new Date(sess.updated_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {sess.unread_count ? (
+                      <span className="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{sess.unread_count}</span>
+                    ) : null}
+                    <span className="text-[9px] text-slate-500">
+                      {sess.updated_at ? new Date(sess.updated_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}
+                    </span>
+                  </div>
                 </div>
+
                 <span className="block text-[10px] text-slate-500 truncate w-full">{sess.last_message || 'Início da conversa'}</span>
               </button>
             ))
@@ -193,29 +254,29 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 ? (
+              {!messages || messages.length === 0 ? (
                 <div className="text-center text-xs text-slate-500 py-6">A carregar mensagens...</div>
               ) : (
-                messages.map(msg => {
-                  const isSystem = msg.sender_type === 'system';
+                messages?.map(msg => {
+                  const isSystem = msg.sender === 'system';
                   if (isSystem) {
                     return (
                       <div key={msg.id} className="text-center my-3">
                         <span className="inline-block bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-mono px-3 py-1 rounded-full">
-                          {msg.message}
+                          {msg.content}
                         </span>
                       </div>
                     );
                   }
 
-                  const isStore = msg.sender_type === 'business' || msg.sender_type === 'ai';
+                  const isStore = msg.sender === 'business';
                   return (
                     <div 
                       key={msg.id}
                       className={`flex flex-col ${isStore ? 'items-end' : 'items-start'} max-w-[85%] ${isStore ? 'ml-auto' : 'mr-auto'}`}
                     >
                       <div className="flex items-center gap-1 text-[9px] font-bold font-mono text-slate-500 mb-1">
-                        <span>{msg.sender_name}</span>
+                        <span>{isStore ? 'Loja' : selectedSession.customer_name}</span>
                         <span>•</span>
                         <span>{new Date(msg.created_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
@@ -226,7 +287,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
                             : 'bg-slate-100 text-slate-700 border border-slate-300 rounded-tl-none'
                         }`}
                       >
-                        {msg.message}
+                        {msg.content}
                       </div>
                     </div>
                   );
@@ -237,7 +298,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
             {/* Auto reply context hint */}
             <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-[9px] text-slate-500 text-center font-mono">
-              Se estiver offline, responderemos ao cliente com aguarde pela loja.
+              Se estiver offline, o sistema avisará o cliente.
             </div>
 
             {/* Input area */}

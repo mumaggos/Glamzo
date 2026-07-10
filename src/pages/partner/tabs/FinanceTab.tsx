@@ -53,7 +53,7 @@ function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { s
               {staffLedgers.map(item => (
                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2 px-3 font-mono text-slate-500">{new Date(item.created_at).toLocaleDateString('pt-PT')}</td>
-                  <td className="py-2 px-3 font-bold">{item.booking?.customer_profile?.full_name || 'Desconhecido'}</td>
+                  <td className="py-2 px-3 font-bold">{item.booking?.profiles?.full_name || 'Desconhecido'}</td>
                   <td className="py-2 px-3">{item.booking?.service?.name} {item.booking?.service?.target_gender === 'male' ? '(H)' : item.booking?.service?.target_gender === 'female' ? '(M)' : ''}</td>
                   <td className="py-2 px-3">
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.payment_method === "stripe" ? "bg-purple-100 text-purple-700" : "bg-emerald-100 text-emerald-700"}`}>
@@ -135,7 +135,7 @@ export default function FinanceTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, customer_profile:profiles(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).eq("booking_status", "completed").gte("booking_date", startDate.toISOString().split("T")[0]).lte("booking_date", endDate.toISOString().split("T")[0])
+        supabase.from("bookings").select("id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, target_gender), staff:staff(id, full_name)").eq("business_id", business.id).eq("booking_status", "completed").gte("booking_date", startDate.toISOString().split("T")[0]).lte("booking_date", endDate.toISOString().split("T")[0])
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
@@ -167,7 +167,7 @@ export default function FinanceTab() {
 
       setLedgers([...stripePayments, ...localCompleted]);
       setPayouts(poData || []);
-      setSubscriptions(subData || []);
+      setSubscriptions(subData || [] || []);
 
       if (business.stripe_account_id) {
         try {
@@ -645,7 +645,7 @@ export default function FinanceTab() {
                 <>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
                     <span className="text-slate-500 font-bold">Cliente</span>
-                    <span className="font-bold text-slate-900">{selectedInvoice.booking.customer_profile?.full_name || 'Desconhecido'}</span>
+                    <span className="font-bold text-slate-900">{selectedInvoice.booking?.profiles?.full_name || 'Desconhecido'}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
                     <span className="text-slate-500 font-bold">Serviço</span>

@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
   customer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   sender TEXT NOT NULL CHECK (sender IN ('customer', 'business', 'system')),
   content TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -188,6 +189,7 @@ CREATE TABLE IF NOT EXISTS public.glamzo_notifications (
   recipient_type TEXT NOT NULL CHECK (recipient_type IN ('customer', 'partner', 'admin')),
   title TEXT NOT NULL,
   content TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT false,
   channel TEXT NOT NULL CHECK (channel IN ('in_app', 'email', 'push', 'whatsapp')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
