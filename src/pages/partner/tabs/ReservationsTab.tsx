@@ -134,7 +134,7 @@ const ReservationsTab = React.memo(function ReservationsTab() {
           </div>
         ) : (
         <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+          <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">Data & Hora</th>
@@ -150,7 +150,7 @@ const ReservationsTab = React.memo(function ReservationsTab() {
                 <ReservationRow key={booking.id} booking={booking} />
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
         )}
       </div>

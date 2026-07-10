@@ -10,7 +10,7 @@ interface PartnerContextType {
 }
 
 
-function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { staffMember: any, staffLedgers: any[], setSelectedInvoice: any }) {
+const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSelectedInvoice: any }> = ({ staffMember, staffLedgers, setSelectedInvoice }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
   
@@ -38,7 +38,7 @@ function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { s
 
       {isExpanded && (
         <div className="mt-4 border-t border-slate-100 pt-4 w-full overflow-x-auto custom-scrollbar pb-2 min-w-0">
-          <table className="w-full text-left text-xs min-w-max">
+          <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs min-w-max">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
                 <th className="py-2 px-3">Data</th>
@@ -67,7 +67,7 @@ function StaffFinanceCard({ staffMember, staffLedgers, setSelectedInvoice }: { s
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>
@@ -579,7 +579,7 @@ export default function FinanceTab() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 w-full overflow-x-auto custom-scrollbar shadow-sm pb-2 min-w-0">
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
                 <th className="py-3 px-4">Data</th>
@@ -625,7 +625,7 @@ export default function FinanceTab() {
                 ))
               )}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
 

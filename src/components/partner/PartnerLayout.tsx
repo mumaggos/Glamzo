@@ -144,7 +144,7 @@ export default function PartnerLayout() {
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 
   return (
-    <div id="partner-terminal-layout" className="min-h-[100dvh] h-[100dvh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden relative">
+    <div id="partner-terminal-layout" className="min-h-[100dvh] h-[100dvh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden relative overflow-x-hidden">
       
       <style>{`
         header, nav.sticky, footer { display: none !important; }
@@ -208,7 +208,7 @@ export default function PartnerLayout() {
           </nav>
       </aside>
 
-      <main className="flex-1 flex flex-col h-full relative isolate">
+      <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
         <div className="relative z-[99999] h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 hidden lg:block">Bom dia, <span className="text-purple-600">{profile?.full_name?.split(" ")[0] || "Profissional"}</span> 👋</h2>

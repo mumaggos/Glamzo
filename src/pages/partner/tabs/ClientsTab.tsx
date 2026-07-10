@@ -183,7 +183,7 @@ const ClientsTab = React.memo(function ClientsTab() {
         </div>
         
         <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
-          <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left border-collapse">
             <thead className="bg-white border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
               <tr>
                 <th className="py-4.5 px-6">Cliente</th>
@@ -204,7 +204,7 @@ const ClientsTab = React.memo(function ClientsTab() {
                 </tr>
               )}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>

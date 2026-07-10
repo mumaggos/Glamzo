@@ -424,7 +424,7 @@ export default function StaffTab() {
 
                      
                      <div className="w-full mt-4 bg-white border border-slate-100 rounded-2xl overflow-hidden max-h-64 overflow-y-auto custom-scrollbar">
-                        <table className="w-full text-left text-xs">
+                        <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs">
                           <thead className="bg-slate-50 sticky top-0 border-b border-slate-100 text-[9px] uppercase tracking-widest text-slate-500 font-bold">
                             <tr>
                               <th className="py-2 px-3">Data</th>
@@ -447,7 +447,7 @@ export default function StaffTab() {
                               ))
                             )}
                           </tbody>
-                        </table>
+                        </table></div>
                      </div>
                      <button
                        onClick={() => handleDownloadMetrics(metricsStaff, metrics)}

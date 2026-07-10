@@ -95,7 +95,7 @@ export default function GlamzoMessenger() {
 
        // Fetch business email to send notification
        const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email)').eq('id', businessId).single();
-       const toEmail = businessData?.email || businessData?.profiles?.email;
+       const toEmail = businessData?.email || (businessData?.profiles as any)?.email;
        if (toEmail) {
          await fetch('/api/emails/send', {
            method: 'POST',
