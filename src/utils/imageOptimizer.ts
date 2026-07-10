@@ -94,12 +94,3 @@ export async function optimizeImageBeforeUpload(
     };
   });
 }
-
-export function optimizeSupabaseUrl(url: string, width: number = 800, quality: number = 80): string {
-  if (!url || !url.includes('supabase.co/storage/v1/object/public/')) return url;
-  try {
-    return url.replace('/object/public/', '/render/image/public/') + `?width=${width}&quality=${quality}&format=webp`;
-  } catch (e) {
-    return url;
-  }
-}

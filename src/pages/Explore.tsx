@@ -303,29 +303,12 @@ export default function Explore() {
   const paginatedBusinesses = sortedBusinesses.slice(0, viewMode === "map" ? 50 : itemsLimit);
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
-const optimizeImageUrl = (url: string) => { 
-  if (!url) return ""; 
-  if (url.includes("images.unsplash.com")) { 
-    let optimized = url; 
-    optimized = optimized.replace(/w=\d+/, "w=400"); 
-    optimized = optimized.replace(/q=\d+/, "q=75"); 
-    if (!optimized.includes("fm=webp")) optimized += "&fm=webp"; 
-    return optimized; 
-  }
-  if (url.includes("supabase.co/storage/v1/object/public/")) {
-    try {
-      return url.replace('/object/public/', '/render/image/public/') + "?width=400&quality=75&format=webp";
-    } catch (e) {
-      return url;
-    }
-  }
-  return url; 
-};
-
-  const BusinessCard: React.FC<{ b: any, priority?: boolean }> = ({ b, priority }) => (
+  const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
     <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer font-['Inter']">
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <img loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} src={optimizeImageUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=75&fm=webp"} alt={b.name}  
+        <img loading="lazy" 
+          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
+          alt={b.name}  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
@@ -421,7 +404,7 @@ const optimizeImageUrl = (url: string) => {
             <div>
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Serviço ou Nome</label>
               <div className="relative">
-                <input type="text" aria-label="Pesquisar serviço ou salão" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Ex: Manicure, Barbearia..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Ex: Manicure, Barbearia..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
             </div>
@@ -429,7 +412,7 @@ const optimizeImageUrl = (url: string) => {
             <div>
               <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-2 pl-0.5">Localização Livre</label>
               <div className="relative mb-2">
-                <input type="text" aria-label="Localização" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Concelho, Morada..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                <input type="text" value={localSearchLocation} onChange={(e) => { setLocalSearchLocation(e.target.value); setUseNearMe(false); setUserCoords(null); }} placeholder="Cidade, Concelho, Morada..." className="block w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
               <button type="button" onClick={handleNearMeToggle} className={`w-full flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-xl border transition-all ${useNearMe ? "bg-purple-600 text-white border-purple-600" : "bg-white text-blue-600 border-slate-200 hover:bg-slate-50"}`}>
@@ -456,13 +439,13 @@ const optimizeImageUrl = (url: string) => {
             <div className="space-y-3.5 pt-2">
               <span className="block text-[9px] font-bold text-slate-600 uppercase tracking-wider pl-0.5">Preferências</span>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" aria-label="Filtro Ao Domicílio" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
+                <input type="checkbox" checked={filterHomeService} onChange={(e) => setFilterHomeService(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Ao domicílio
               </label>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" aria-label="Filtro Parceiro Premium" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Premium Partner
+                <input type="checkbox" checked={filterPremiumPartner} onChange={(e) => setFilterPremiumPartner(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Premium Partner
               </label>
               <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" aria-label="Filtro Aberto Hoje" checked={filterAvailableToday} onChange={(e) => setFilterAvailableToday(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Aberto Hoje
+                <input type="checkbox" checked={filterAvailableToday} onChange={(e) => setFilterAvailableToday(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500" /> Aberto Hoje
               </label>
             </div>
           </div>
@@ -498,7 +481,7 @@ const optimizeImageUrl = (url: string) => {
             ) : paginatedBusinesses.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {paginatedBusinesses.map((b, i) => <BusinessCard key={b.id} b={b} priority={i < 4} />)}
+                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} />)}
                 </div>
                 {sortedBusinesses.length > itemsLimit && (
                   <div className="text-center pt-10">
@@ -535,12 +518,12 @@ const optimizeImageUrl = (url: string) => {
             <div className="flex-1 overflow-y-auto p-5 space-y-6 max-h-[calc(100vh-140px)] custom-scrollbar">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Serviço ou Nome</label>
-                <input type="text" aria-label="O que procura?" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="O que procura?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Localização Livre</label>
-                <input type="text" aria-label="Localização (Filtros)" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Pedroso, Gaia, Funchal..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
+                <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Pedroso, Gaia, Funchal..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-3" />
                 <button type="button" onClick={handleNearMeToggle} className={`w-full py-3 rounded-xl text-sm font-bold flex justify-center gap-2 ${useNearMe ? "bg-purple-600 text-white" : "bg-blue-50 text-blue-600"}`}>
                   <Navigation className="w-4 h-4" /> Ativar GPS do Telemóvel
                 </button>

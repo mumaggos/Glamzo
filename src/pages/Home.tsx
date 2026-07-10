@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"; 
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper"; 
+import { useNavigate, Link, useSearchParams } from "react-router-dom"; 
 import { supabase } from "../lib/supabase"; 
 import { fetchAllReviews } from "../utils/reviewsHelper"; 
 import { 
@@ -65,18 +63,21 @@ const optimizeUnsplashUrl = (url: string) => {
   if (!url) return ""; 
   if (url.includes("images.unsplash.com")) { 
     let optimized = url; 
-    optimized = optimized.replace(/w=\d+/, "w=400"); 
+    optimized = optimized.replace(/w=\d+/, "w=200"); 
     optimized = optimized.replace(/q=\d+/, "q=75"); 
-    if (!optimized.includes("fm=webp")) optimized += "&fm=webp"; 
-    return optimized; 
-  }
-  if (url.includes("supabase.co/storage/v1/object/public/")) {
-    try {
-      return url.replace('/object/public/', '/render/image/public/') + "?width=400&quality=75&format=webp";
-    } catch (e) {
-      return url;
+    if (!optimized.includes("w=")) {
+      optimized += "&w=200";
     }
-  }
+    if (!optimized.includes("q=")) {
+      optimized += "&q=75";
+    }
+    if (!optimized.includes("fm=")) {
+      optimized += "&fm=webp";
+    } else {
+      optimized = optimized.replace(/fm=[^&]+/, "fm=webp");
+    }
+    return optimized; 
+  } 
   return url; 
 }; 
 
@@ -93,25 +94,6 @@ export default function Home() {
 
   const [businesses, setBusinesses] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true); 
-  const [userFavorites, setUserFavorites] = useState<string[]>([]);
-  const { user } = useAuth();
-  
-  useEffect(() => {
-    if (user) {
-      fetchCustomerFavorites(user.id).then(setUserFavorites);
-    } else {
-      setUserFavorites([]);
-    }
-  }, [user]);
-
-  const handleToggleFavorite = async (businessId: string) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    const isNowFav = await toggleFavorite(user.id, businessId);
-    setUserFavorites((prev) => isNowFav ? [...prev, businessId] : prev.filter((id) => id !== businessId));
-  };
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null); 
   const [mapVisible, setMapVisible] = useState(false); 
   const mapRef = useRef<HTMLElement>(null); 
@@ -177,40 +159,25 @@ export default function Home() {
           console.error("Home fetch error:", bizRes.error);
         }
          
-                const now = new Date();
-        
-        // Performance optimization: Create maps for O(1) lookups instead of nested filters
-        const reviewsMap = new Map();
-        revDataFinal.forEach((r: any) => {
-          if (!reviewsMap.has(r.business_id)) reviewsMap.set(r.business_id, []);
-          reviewsMap.get(r.business_id).push(r);
-        });
+        const now = new Date(); 
+         
+        const processed = loadedBiz.map(b => { 
+          const bReviews = revDataFinal.filter((r: any) => r.business_id === b.id); 
+          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / bReviews.length : 0; 
+           
+          const bServices = srvData.filter((s: any) => s.business_id === b.id); 
+          let realStartPrice = 0; 
+          let hasRealPromotion = b.is_promoted || false; 
 
-        const servicesMap = new Map();
-        srvData.forEach((s: any) => {
-          if (!servicesMap.has(s.business_id)) servicesMap.set(s.business_id, []);
-          servicesMap.get(s.business_id).push(s);
-        });
-            
-        const processed = loadedBiz.map(b => {
-          const bReviews = reviewsMap.get(b.id) || [];
-          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / bReviews.length : 0;
-              
-          const bServices = servicesMap.get(b.id) || [];
-          let realStartPrice = 0;
-          let hasRealPromotion = b.is_promoted || false;
+          if (bServices.length > 0) { 
+            const prices = bServices.map((s: any) => { 
+              const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0); 
+              if (hasDiscount) hasRealPromotion = true; 
+              return s.discount_price || s.price_promotion || s.price; 
+            }).filter((p: number) => p != null && !isNaN(p)); 
 
-          if (bServices.length > 0) {
-            let minPrice = Infinity;
-            for (let i = 0; i < bServices.length; i++) {
-               const s = bServices[i];
-               const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0);
-               if (hasDiscount) hasRealPromotion = true;
-               const p = s.discount_price || s.price_promotion || s.price;
-               if (p != null && !isNaN(p) && p < minPrice) minPrice = p;
-            }
-            if (minPrice !== Infinity) realStartPrice = minPrice;
-          }
+            if (prices.length > 0) realStartPrice = Math.min(...prices); 
+          } 
 
           const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude; 
           const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude; 
@@ -234,7 +201,11 @@ export default function Home() {
       } 
     }; 
     
-    fetchData();
+    const fetchTimer = setTimeout(() => {
+      fetchData(); 
+    }, 150);
+
+    return () => clearTimeout(fetchTimer);
   }, [userCoords]); 
 
   
@@ -290,10 +261,13 @@ export default function Home() {
   }, [businesses]); 
 
   // Cartão Minimalista de Elite (Estilo Airbnb) 
-  const BusinessCard: React.FC<{ b: any, priority?: boolean }> = ({ b, priority }) => ( 
+  const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
     <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100"> 
-        <img src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=75&fm=webp"} alt={b.name} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"}  
+        <img  
+          src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
+          alt={b.name}  
+          loading="lazy"  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
         /> 
          
@@ -306,12 +280,12 @@ export default function Home() {
         </div> 
          
         <button
-            onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }}
-            aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            onClick={(e) => { e.preventDefault(); }}
+            aria-label="Adicionar aos favoritos"
             className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
-         >
-           <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
-         </button> 
+         > 
+          <Heart className="w-6 h-6 fill-black/20 stroke-white stroke-[1.5]" /> 
+        </button> 
       </div> 
 
       <div className="flex justify-between items-start gap-2"> 
@@ -477,7 +451,7 @@ export default function Home() {
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">Espaços com vagas nas redondezas da sua localização.</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {locaisProximos.map((b, i) => <div key={b.id} className="snap-start"><BusinessCard b={b} priority={i < 4} /></div>)} 
+                  {locaisProximos.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
                 </div> 
               </section> 
             )} 
@@ -489,7 +463,7 @@ export default function Home() {
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">Os espaços com melhores notas reais no Glamzo.</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {recomendados.map((b, i) => <div key={b.id} className="snap-start"><BusinessCard b={b} priority={i < 4} /></div>)} 
+                  {recomendados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
                 </div> 
               </section> 
             )} 
@@ -501,7 +475,7 @@ export default function Home() {
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">As mais recentes novidades adicionadas à nossa rede.</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {novasLojas.map((b, i) => <div key={b.id} className="snap-start"><BusinessCard b={b} priority={i < 4} /></div>)} 
+                  {novasLojas.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
                 </div> 
               </section> 
             )} 
