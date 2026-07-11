@@ -229,7 +229,7 @@ const { slug } = useParams<{ slug: string }>();
         customer_name: author,
         rating: newReviewRating,
         comment: newReviewComment,
-        service_id: 'general',
+        service_id: null,
         service_name: newReviewService || 'Geral',
         image_urls: uploadedUrls.length > 0 ? uploadedUrls : null
       };
