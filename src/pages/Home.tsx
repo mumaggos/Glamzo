@@ -32,102 +32,77 @@ const mapStyles = [
 ]; 
 
 // O Novo Marcador Oficial em Gota (Estilo Uber / Glamzo #9333ea) 
-const getCustomMarkerIcon = (rating: number) => { 
-  const finalRating = rating > 0 ? rating : 5.0; 
-  const ratingText = `${finalRating.toFixed(1)} ★`; 
-  const bgColor = "#9333ea";  
-  const textColor = "#ffffff";  
+const getCustomMarkerIcon = (rating: number) => {
+  const finalRating = rating > 0 ? rating : 5.0;
+  const ratingText = `${finalRating.toFixed(1)}`;
+  const bgColor = "#9333ea"; 
+  const textColor = "#ffffff";
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+      <g filter="drop-shadow(0px 4px 4px rgba(0,0,0,0.25))">
+        <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="20" y="21" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
+          ${ratingText}
+        </text>
+        <text x="20" y="28" fill="${textColor}" font-size="7px" font-family="Outfit, system-ui, sans-serif" font-weight="bold" text-anchor="middle">
+          ★
+        </text>
+      </g>
+    </svg>
+  `;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg.trim())}`;
+};
 
-  const svg = ` 
-    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="42" viewBox="0 0 56 42"> 
-      <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.3))"> 
-        <path d="M 8 2 L 48 2 C 51.3 2 54 4.7 54 8 L 54 22 C 54 25.3 51.3 28 48 28 L 34 28 L 28 38 L 22 28 L 8 28 C 4.7 28 2 25.3 2 22 L 2 8 C 2 4.7 4.7 2 8 2 Z"  
-              fill="${bgColor}"  
-              stroke="#ffffff"  
-              stroke-width="1.5" /> 
-        <text x="28" y="19"  
-              fill="${textColor}"  
-              font-size="12px"  
-              font-family="Outfit, system-ui, sans-serif"  
-              font-weight="900"  
-              text-anchor="middle"> 
-          ${ratingText} 
-        </text> 
-      </g> 
-    </svg> 
-  `; 
-  return `data:image/svg+xml;utf-8,${encodeURIComponent(svg.trim())}`; 
-}; 
 
-const optimizeUnsplashUrl = (url: string) => { 
-  if (!url) return ""; 
-  if (url.includes("images.unsplash.com")) { 
-    let optimized = url; 
-    optimized = optimized.replace(/w=\d+/, "w=200"); 
-    optimized = optimized.replace(/q=\d+/, "q=75"); 
-    if (!optimized.includes("w=")) {
-      optimized += "&w=200";
-    }
-    if (!optimized.includes("q=")) {
-      optimized += "&q=75";
-    }
-    if (!optimized.includes("fm=")) {
-      optimized += "&fm=webp";
-    } else {
-      optimized = optimized.replace(/fm=[^&]+/, "fm=webp");
-    }
-    return optimized; 
-  } 
-  return url; 
-}; 
+const optimizeUnsplashUrl = (url: string | null) => {
+  if (!url) return null;
+  if (url.includes('unsplash.com')) {
+    if (!url.includes('w=')) return `${url}?auto=format&fit=crop&w=400&q=75`;
+    return url;
+  }
+  return url;
+};
 
 export default function Home() {
-  const [activePromotions, setActivePromotions] = useState<any[]>([]);
- 
-  const navigate = useNavigate(); 
-  const [searchParams] = useSearchParams(); 
-  const scrollContainerRef = useRef<HTMLDivElement>(null); 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
+  const [showLocSuggestions, setShowLocSuggestions] = useState(false);
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [mapVisible, setMapVisible] = useState(false);
+  const mapRef = useRef<HTMLElement>(null);
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || ""); 
-  const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || ""); 
-  const [showLocSuggestions, setShowLocSuggestions] = useState(false); 
-
-  const [businesses, setBusinesses] = useState<any[]>([]); 
-  const [loading, setLoading] = useState(true); 
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null); 
-  const [mapVisible, setMapVisible] = useState(false); 
-  const mapRef = useRef<HTMLElement>(null); 
+  useEffect(() => {
+    // Auto-locate user on mount
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setSearchLocation("Perto de Mim");
+        },
+        () => {} // fail silently on auto-locate
+      );
+    }
+  }, []);
 
   const scrollCategories = (direction: 'left' | 'right') => {
     requestAnimationFrame(() => {
       if (scrollContainerRef.current) {
-        // Read clientWidth efficiently inside rAF to avoid layout thrashing
         const containerWidth = scrollContainerRef.current.clientWidth || 300;
         const scrollAmount = Math.max(300, containerWidth * 0.8);
         const targetScroll = direction === 'right' ? scrollAmount : -scrollAmount;
         scrollContainerRef.current.scrollBy({ left: targetScroll, behavior: 'smooth' });
       }
     });
-  }; 
+  };
 
   useEffect(() => {
-    const fetchPromos = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("business_coupons")
-          .select("*, business:businesses(name, slug)")
-          .eq("is_active", true);
-        
-        if (!error && data) {
-          const now = new Date();
-          const valid = data.filter(c => !c.valid_until || new Date(c.valid_until) > now);
-          setActivePromotions(valid);
-        }
-      } catch (err) {}
-    };
+    const fetchPromos = async () => {};
     fetchPromos();
- 
-
   }, []); 
 
   useEffect(() => { 
@@ -550,7 +525,7 @@ export default function Home() {
                       key={b.id}  
                       position={{ lat: b.lat, lng: b.lng }} 
                       title={b.name} 
-                      icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 29, y: 32 } }} 
+                      icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 20, y: 50 } }} 
                       onClick={() => navigate("/business/" + b.slug)} 
                     /> 
                   ))} 
