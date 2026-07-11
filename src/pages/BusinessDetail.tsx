@@ -211,12 +211,12 @@ const { slug } = useParams<{ slug: string }>();
           const filePath = `${user.id}/${fileName}`;
           
           const { error: uploadError, data } = await supabase.storage
-            .from('review_photos')
+            .from('review-photos')
             .upload(filePath, file);
             
           if (uploadError) throw uploadError;
           
-          const { data: { publicUrl } } = supabase.storage.from('review_photos').getPublicUrl(filePath);
+          const { data: { publicUrl } } = supabase.storage.from('review-photos').getPublicUrl(filePath);
           uploadedUrls.push(publicUrl);
         }
         setUploadingPhotos(false);
