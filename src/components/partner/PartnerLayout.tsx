@@ -63,7 +63,7 @@ export default function PartnerLayout() {
           const end = new Date(now);
           end.setDate(now.getDate() + 90);
           return supabase.from("bookings")
-            .select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url)`)
+            .select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url, email, phone)`)
             .eq("business_id", bData.id)
             
             

@@ -1,14 +1,16 @@
 import fs from 'fs';
-
 let content = fs.readFileSync('src/App.tsx', 'utf-8');
 
-// Replace static import with lazy import for GlamzoMessenger
-content = content.replace("import GlamzoMessenger from './components/GlamzoMessenger';", "const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));");
-
-// Wrap it in Suspense
-content = content.replace(
-  "{loadMessenger && <GlamzoMessenger />}",
-  "{loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}"
-);
-
-fs.writeFileSync('src/App.tsx', content);
+if (!content.includes('ProfileCompletionGuard')) {
+  // Add import
+  const importStatement = `import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';\n`;
+  content = importStatement + content;
+  
+  // Add component inside AuthProvider
+  content = content.replace(
+    /<GlobalRoleEnforcer \/>/,
+    `<GlobalRoleEnforcer />\n          <ProfileCompletionGuard />`
+  );
+  
+  fs.writeFileSync('src/App.tsx', content);
+}

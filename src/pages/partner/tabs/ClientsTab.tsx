@@ -69,7 +69,7 @@ const ClientsTab = React.memo(function ClientsTab() {
       if (!map.has(custId)) {
         const fullName = bk.customer?.full_name || bk.customer_profile?.full_name || bk.customer?.email || bk.customer_profile?.email || "Cliente Sem Nome";
         const email = bk.customer?.email || bk.customer_profile?.email || "";
-        const phone = bk.customer?.phone || bk.customer_profile?.phone || "Não definido";
+        const phone = bk.customer?.phone || bk.customer_profile?.phone || "Não fornecido";
 
         map.set(custId, {
           id: custId,
