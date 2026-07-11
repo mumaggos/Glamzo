@@ -70,6 +70,44 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
+  const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
+  const [querySuggestions, setQuerySuggestions] = useState<any[]>([]);
+  const [servicesData, setServicesData] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("services").select("id, name, business_id").eq("is_active", true).then(res => {
+      if (res.data) setServicesData(res.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setQuerySuggestions([]);
+      return;
+    }
+    const q = searchQuery.toLowerCase().trim();
+    const matches: any[] = [];
+    
+    // Check businesses
+    businesses.forEach(b => {
+      if (b.name.toLowerCase().includes(q) || b.category.toLowerCase().includes(q)) {
+        matches.push({ type: 'business', id: b.id, name: b.name, slug: b.slug, text: b.name });
+      }
+    });
+    
+    // Check services
+    servicesData.forEach(s => {
+      if (s.name.toLowerCase().includes(q)) {
+        const b = businesses.find(bz => bz.id === s.business_id);
+        if (b) {
+          matches.push({ type: 'service', id: b.id, name: b.name, slug: b.slug, text: `${s.name} em ${b.name}` });
+        }
+      }
+    });
+    
+    const uniqueMatches = Array.from(new Map(matches.map(m => [m.id + m.text, m])).values());
+    setQuerySuggestions(uniqueMatches.slice(0, 5));
+  }, [searchQuery, businesses, servicesData]);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
@@ -315,10 +353,23 @@ export default function Home() {
                   type="text" 
                   placeholder="Ex: Corte, Manicure..." 
                   value={searchQuery} 
-                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowQuerySuggestions(true); }}
+                  onFocus={() => setShowQuerySuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowQuerySuggestions(false), 200)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit(); }}
                   className="bg-transparent border-none w-full text-sm font-medium text-slate-600 placeholder-slate-400 focus:outline-none p-0 text-left" 
                 /> 
               </div> 
+              {showQuerySuggestions && querySuggestions.length > 0 && (
+                <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 text-left overflow-y-auto max-h-60 custom-scrollbar">
+                  {querySuggestions.map((s, idx) => (
+                    <button key={idx} onMouseDown={() => navigate(`/business/${s.slug}`)} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-slate-800 text-sm flex items-center gap-2 border-b border-slate-50 transition-colors last:border-0">
+                      <Search className="w-4 h-4 text-slate-400" />
+                      <span className="truncate">{s.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div> 
 
             <div className="hidden md:block w-px bg-slate-100 my-2" /> 

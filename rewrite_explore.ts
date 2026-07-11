@@ -1,53 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
-import { Business, Review } from "../types";
-import { fetchAllReviews } from "../utils/reviewsHelper";
-import { calculateDistanceInKm, getCoordinatesForCity } from "../utils/geoData";
-import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData";
-import { useAuth } from "../hooks/useAuth";
-import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
-import {
-  Search, MapPin, Grid, Compass, Star, SlidersHorizontal, Sliders, CheckCircle2,
-  Loader2, X, Navigation, List, Map as MapIcon, Heart
-} from "lucide-react";
-import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+import fs from 'fs';
+let content = fs.readFileSync('src/pages/Explore.tsx', 'utf-8');
 
-const getCategoryDisplayName = (name: string) => {
-  if (name === "Wellness") return "Wellness & Spa";
-  if (name === "Ao domicílio") return "Ao Domicílio";
-  return name;
-};
+const targetContentStart = `export default function Explore() {`;
 
-// Marcador Oficial Glamzo no Mapa
-const getCustomMarkerIcon = (rating: number) => {
-  const finalRating = rating > 0 ? rating : 5.0;
-  const ratingText = `${finalRating.toFixed(1)}`;
-  const bgColor = "#9333ea"; 
-  const textColor = "#ffffff";
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-      <g filter="drop-shadow(0px 4px 4px rgba(0,0,0,0.25))">
-        <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="1.5"/>
-        <text x="20" y="21" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
-          ${ratingText}
-        </text>
-        <text x="20" y="28" fill="${textColor}" font-size="7px" font-family="Outfit, system-ui, sans-serif" font-weight="bold" text-anchor="middle">
-          ★
-        </text>
-      </g>
-    </svg>
-  `;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg.trim())}`;
-};
+const parts = content.split(targetContentStart);
 
-const mapStyles = [
-  { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
-];
-
-export default function Explore() {
+content = parts[0] + `export default function Explore() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -268,7 +226,7 @@ export default function Explore() {
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
-    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all font-['Inter']">
+    <Link to={\`/business/\${b.slug}\`} className="group flex flex-col w-full cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all font-['Inter']">
       <div className="relative aspect-[16/10] w-full bg-slate-100">
         <img loading="lazy" 
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
@@ -281,7 +239,7 @@ export default function Explore() {
           )}
         </div>
         <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
-          <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
+          <Heart className={\`w-6 h-6 stroke-[1.5] transition-colors \${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}\`} />
         </button>
       </div>
       <div className="p-4 flex flex-col gap-1.5">
@@ -293,7 +251,7 @@ export default function Explore() {
           </div>
         </div>
         <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
-        <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
+        <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && \`(\${b.distance.toFixed(1)}km)\`}</p>
       </div>
     </Link>
   );
@@ -304,9 +262,9 @@ export default function Explore() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">
-            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Todos</button>
+            <button onClick={() => setSelectedCategory("All")} className={\`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors \${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}\`}>Todos</button>
             {MAIN_CATEGORIES.map((cat) => (
-              <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat)}</button>
+              <button key={cat} onClick={() => setSelectedCategory(cat)} className={\`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors \${selectedCategory === cat ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}\`}>{getCategoryDisplayName(cat)}</button>
             ))}
           </div>
           <div className="ml-4 pl-4 border-l border-slate-200 hidden md:flex items-center gap-3">
@@ -328,7 +286,7 @@ export default function Explore() {
 
       <div className="flex-1 flex w-full relative">
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
-        <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
+        <div className={\`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 \${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}\`}>
            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 font-['Outfit']">Explorar ({sortedBusinesses.length})</h2>
            </div>
@@ -364,13 +322,13 @@ export default function Explore() {
         </div>
 
         {/* Lado Direito - Mapa (Escondido em Mobile se list, Desktop sempre) */}
-        <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}`}>
+        <div className={\`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 \${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}\`}>
            {mapApiKey ? (
              <APIProvider apiKey={mapApiKey}>
                <Map defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 6} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
                  {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                  {sortedBusinesses.slice(0, 50).map((b) => (
-                   <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 20, y: 50 } }} onClick={() => navigate(`/business/${b.slug}`)} />
+                   <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 20, y: 50 } }} onClick={() => navigate(\`/business/\${b.slug}\`)} />
                  ))}
                </Map>
              </APIProvider>
@@ -414,7 +372,7 @@ export default function Explore() {
                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                    <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Lisboa..." className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
                  </div>
-                 <button onClick={handleNearMeToggle} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors ${useNearMe ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'}`}>
+                 <button onClick={handleNearMeToggle} className={\`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors \${useNearMe ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'}\`}>
                     <Navigation className="w-4 h-4" /> Usar a minha localização
                  </button>
                </div>
@@ -422,8 +380,8 @@ export default function Explore() {
                   <label className="block text-xs font-bold text-slate-700 mb-2">Pontuação Mínima</label>
                   <div className="flex gap-2">
                     {[0, 3, 4, 4.5].map(r => (
-                      <button key={r} onClick={() => setMinRating(r)} className={`flex-1 py-2 text-xs font-bold rounded-lg border ${minRating === r ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white border-slate-200 text-slate-600'}`}>
-                        {r === 0 ? "Todas" : `${r}+`}
+                      <button key={r} onClick={() => setMinRating(r)} className={\`flex-1 py-2 text-xs font-bold rounded-lg border \${minRating === r ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white border-slate-200 text-slate-600'}\`}>
+                        {r === 0 ? "Todas" : \`\${r}+\`}
                       </button>
                     ))}
                   </div>
@@ -438,3 +396,5 @@ export default function Explore() {
     </div>
   );
 }
+`;
+fs.writeFileSync('src/pages/Explore.tsx', content);
