@@ -180,7 +180,7 @@ export default function AgendaTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
         <div className="lg:col-span-3 flex flex-col h-full">
-            <DashboardCalendar bookings={bookings} services={services} staff={staff} businessHours={businessHours} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
+            <DashboardCalendar business={business} bookings={bookings} services={services} staff={staff} businessHours={businessHours} selectedStaffFilter={selectedStaffFilter} agendaMode={agendaMode} selectedAgendaDate={selectedAgendaDate} onDateSelect={(info: any) => { setSelectedAgendaDate(info.date); setManualDate(info.date); setManualStartTime(info.time); if(info.staffId !== 'all') setManualStaffId(info.staffId); setManualBookingType("booking"); setIsManualBookingOpen(true); }} onBookingClick={(booking: any) => setSelectedBooking(booking)} />
         </div>
         <div className="lg:col-span-1 space-y-6 shrink-0">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60">

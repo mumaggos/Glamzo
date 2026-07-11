@@ -152,35 +152,33 @@ export default function PartnerLayout() {
       `}</style>
 
       {/* Drawer Mobile / Tablet */}
-      {isMobileSidebarOpen && (
-        <div className="fixed inset-0 z-[80] flex lg:hidden">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)} />
-          <div className="relative flex flex-col w-72 h-full bg-white border-r shadow-2xl z-10">
-            <div className="flex items-center justify-between p-5 border-b shrink-0 bg-slate-50">
-              <div className="flex items-center gap-3"><GlamzoLogo size={28} glow={false} /><span className="font-extrabold text-sm">Menu</span></div>
-              <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-xl text-slate-500 bg-white shadow-sm border"><X className="w-4 h-4" /></button>
-            </div>
-            <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
-              {navItems.map((tab) => {
-                const isActive = location.pathname.startsWith(tab.path);
-                return (
-                  <Link key={tab.id} to={tab.path} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
-                    <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
-                    {tab.id === "mensagens" && unreadMessages > 0 && (
-                      <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
-              <button onClick={async () => { await signOut(); navigate("/"); }} className="w-full py-3 bg-white hover:bg-slate-100 border border-slate-200 text-rose-500 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
-                <LogOut className="w-4 h-4" /> Terminar Sessão
-              </button>
-            </div>
+      <div className={`fixed inset-0 z-[100] flex lg:hidden transition-opacity duration-300 ${isMobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)} />
+        <div className={`relative flex flex-col w-72 h-full bg-white border-r shadow-2xl z-10 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between p-5 border-b shrink-0 bg-slate-50">
+            <div className="flex items-center gap-3"><GlamzoLogo size={28} glow={false} /><span className="font-extrabold text-sm">Menu</span></div>
+            <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-xl text-slate-500 bg-white shadow-sm border"><X className="w-4 h-4" /></button>
+          </div>
+          <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
+            {navItems.map((tab) => {
+              const isActive = location.pathname.startsWith(tab.path);
+              return (
+                <Link key={tab.id} to={tab.path} onClick={() => setIsMobileSidebarOpen(false)} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
+                  <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
+                  {tab.id === "mensagens" && unreadMessages > 0 && (
+                    <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="p-4 bg-slate-50 border-t border-slate-100">
+            <button onClick={async () => { await signOut(); navigate("/"); }} className="w-full py-3 bg-white hover:bg-slate-100 border border-slate-200 text-rose-500 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+              <LogOut className="w-4 h-4" /> Terminar Sessão
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Sidebar Desktop */}
       <aside className="hidden lg:flex w-[260px] border-r border-slate-200 bg-white flex-col shrink-0 h-full z-20 shadow-sm">

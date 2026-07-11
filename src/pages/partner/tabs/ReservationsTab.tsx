@@ -22,7 +22,12 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
                            <img loading="lazy" src={booking.customer_profile.avatar_url} className="w-full h-full rounded-full object-cover" />
                         ) : <User className="w-4 h-4 text-slate-500" />}
                       </div>
-                      <span className="font-bold text-slate-700">{booking.customer_profile?.full_name || 'Cliente Manual'}</span>
+                      
+<div className="flex flex-col">
+  <span className="font-bold text-slate-700">{booking.customer?.full_name || booking.customer_profile?.full_name || booking.notes?.includes('Manual:') ? booking.notes.split(' ')[1] : 'Cliente Manual'}</span>
+  <span className="text-[10px] text-slate-500 font-mono">{booking.customer?.email || booking.customer_profile?.email || 'Sem e-mail'}</span>
+</div>
+
                     </div>
                   </td>
                   <td className="px-6 py-4">

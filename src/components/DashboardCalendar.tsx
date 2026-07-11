@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { CreditCard, Banknote, User } from 'lucide-react';
 
-export function DashboardCalendar({ bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
+export function DashboardCalendar({ business, bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
   
   const columns = useMemo(() => {
     const baseDate = new Date(selectedAgendaDate || new Date());
@@ -26,7 +26,7 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
     }));
   }, [agendaMode, selectedAgendaDate, staff, selectedStaffFilter]);
 
-  const hours = useMemo(() => {
+    const hours = useMemo(() => {
     let minH = 8;
     let maxH = 20; // Inclusive limit
     
@@ -45,11 +45,14 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
       // Fallbacks if all selected columns are closed
       if (minH === 24) minH = 8;
       if (maxH === 0) maxH = 20;
+    } else if (business?.opening_time && business?.closing_time) {
+      minH = parseInt(business.opening_time.split(':')[0], 10);
+      maxH = parseInt((business.end_time || business.closing_time).split(':')[0], 10);
     }
     
     const length = maxH - minH + 1;
     return Array.from({ length }, (_, i) => i + minH);
-  }, [columns, businessHours]);
+  }, [columns, businessHours, business]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -73,7 +76,7 @@ export function DashboardCalendar({ bookings, staff, businessHours, selectedStaf
   const currentMinute = now.getMinutes();
 
   return (
-    <div className="flex flex-col h-[75vh] min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl border border-slate-200/50 shadow-sm">
+    <div className="flex flex-col h-[65vh] md:h-[75vh] min-h-[500px] md:min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl border border-slate-200/50 shadow-sm">
       <div className="flex mb-2 bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 shrink-0">
         <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hora</div>
         {columns.map((col: any) => (
