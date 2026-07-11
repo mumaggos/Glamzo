@@ -143,11 +143,26 @@ const { slug } = useParams<{ slug: string }>();
     }
   }, [user, business?.id]);
 
+  useEffect(() => {
+    if (business?.id && !user) {
+      const source = searchParams.get('source');
+      const autoFavorite = searchParams.get('autoFavorite');
+      
+      if (source === 'qr' && autoFavorite === 'true') {
+        localStorage.setItem('pendingFavoriteShopId', business.id);
+        localStorage.setItem('returnTo', location.pathname + location.search);
+      }
+    }
+  }, [business?.id, user, searchParams, location.pathname, location.search]);
+
   const handleOpenBooking = (service: any | null) => {
     if (!user) {
       if (service) sessionStorage.setItem('pre_selected_service_id', service.id);
-      // Aqui dizemos ao Login para devolver à Loja!
-      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      localStorage.setItem('returnTo', location.pathname + location.search);
+      if (business?.id) {
+        localStorage.setItem('pendingFavoriteShopId', business.id);
+      }
+      navigate(`/login`);
       return;
     }
     setSelectedService(service || null);

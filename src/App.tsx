@@ -1,3 +1,4 @@
+import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
 
 import React, { useEffect, Suspense, lazy } from 'react';
@@ -232,6 +233,7 @@ export default function App() {
         <AuthProvider>
           <SessionGuard />
           <GlobalRoleEnforcer />
+          <GlobalIntentHandler />
           <ProfileCompletionGuard />
           <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />

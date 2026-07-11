@@ -15,7 +15,7 @@ export default function Footer() {
           <div>
             <h2 className="font-bold text-slate-900 mb-4 whitespace-nowrap">Glamzo</h2>
             <p className="text-sm text-slate-600 mb-4 pr-4">
-              O principal marketplace ibérico para agendamentos online nos melhores espaços de beleza e bem-estar.
+              O marketplace ibérico que liga os clientes mais exigentes aos melhores profissionais de beleza e bem-estar.
             </p>
           </div>
           

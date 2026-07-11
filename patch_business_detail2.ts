@@ -1,35 +1,13 @@
 import fs from 'fs';
 let content = fs.readFileSync('src/pages/BusinessDetail.tsx', 'utf-8');
 
-const targetUseEffect = `  useEffect(() => {
-    if (user && business?.id) {
-      isFavorite(user.id, business.id).then(setFavoriteActive);
-    }
-  }, [user, business?.id]);`;
-
-const replacementUseEffect = `  useEffect(() => {
-    if (user && business?.id) {
-      isFavorite(user.id, business.id).then(setFavoriteActive);
-    }
-  }, [user, business?.id]);
-
-  useEffect(() => {
-    if (business?.id && !user) {
-      const source = searchParams.get('source');
-      const autoFavorite = searchParams.get('autoFavorite');
-      
-      if (source === 'qr' && autoFavorite === 'true') {
-        localStorage.setItem('pendingFavoriteShopId', business.id);
-        localStorage.setItem('returnTo', location.pathname + location.search);
-      }
-    }
-  }, [business?.id, user, searchParams, location.pathname, location.search]);`;
-
-content = content.replace(targetUseEffect, replacementUseEffect);
-
 const targetHandleBooking = `  const handleOpenBooking = (service: any | null) => {
     if (!user) {
       if (service) sessionStorage.setItem('pre_selected_service_id', service.id);
+      localStorage.setItem('returnTo', location.pathname + location.search);
+      if (business?.id) {
+        localStorage.setItem('pendingFavoriteShopId', business.id);
+      }
       // Aqui dizemos ao Login para devolver à Loja!
       navigate(\`/login?redirect=\${encodeURIComponent(location.pathname)}\`);
       return;
@@ -45,8 +23,7 @@ const replacementHandleBooking = `  const handleOpenBooking = (service: any | nu
       if (business?.id) {
         localStorage.setItem('pendingFavoriteShopId', business.id);
       }
-      // Aqui dizemos ao Login para devolver à Loja!
-      navigate(\`/login?redirect=\${encodeURIComponent(location.pathname)}\`);
+      navigate(\`/login\`);
       return;
     }
     setSelectedService(service || null);

@@ -155,9 +155,12 @@ export default function Signup() {
     setErrorMsg(null);
     try {
       const savedRedirect = sessionStorage.getItem('post_login_redirect');
-      const redirectTo = savedRedirect 
-        ? `${window.location.origin}${savedRedirect}`
-        : `${window.location.origin}/account`;
+      const returnTo = localStorage.getItem('returnTo');
+      const redirectTo = returnTo 
+        ? `${window.location.origin}${returnTo}`
+        : savedRedirect 
+          ? `${window.location.origin}${savedRedirect}`
+          : `${window.location.origin}/account`;
         
       await supabase.auth.signInWithOAuth({
         provider: 'google',
