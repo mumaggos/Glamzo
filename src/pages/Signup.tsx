@@ -20,22 +20,6 @@ export default function Signup() {
     }
   }, [location.search]);
 
-  // 2. Redirecionar Automaticamente Assim que o Registo/Verificação tem Sucesso
-  useEffect(() => {
-    if (!authLoading && user && profile) {
-      const savedRedirect = sessionStorage.getItem('post_login_redirect');
-      
-      if (savedRedirect) {
-        sessionStorage.removeItem('post_login_redirect');
-        navigate(savedRedirect, { replace: true });
-        return;
-      }
-      
-      if (profile.role === 'admin') navigate('/admin', { replace: true });
-      else if (profile.role === 'business') navigate('/partner/dashboard', { replace: true });
-      else navigate('/account', { replace: true });
-    }
-  }, [user, profile, authLoading, navigate]);
 
   // Signup fields
   const [fullName, setFullName] = useState('');
@@ -156,15 +140,9 @@ export default function Signup() {
     try {
       const savedRedirect = sessionStorage.getItem('post_login_redirect');
       const returnTo = localStorage.getItem('returnTo');
-      const redirectTo = returnTo 
-        ? `${window.location.origin}${returnTo}`
-        : savedRedirect 
-          ? `${window.location.origin}${savedRedirect}`
-          : `${window.location.origin}/account`;
-        
       await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectTo }
+        options: { redirectTo: `${window.location.origin}${window.location.pathname}` }
       });
     } catch (err: any) {
       console.error('Google Sign Up Error:', err);

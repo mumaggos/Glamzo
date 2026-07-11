@@ -19,30 +19,6 @@ export default function Login() {
     }
   }, [location.search]);
 
-  // 2. Redirecionar Automaticamente Assim que o Login tem Sucesso
-  useEffect(() => {
-    if (!authLoading && user && profile) {
-      // Verifica primeiro se há um URL guardado na sessão
-      const savedRedirect = sessionStorage.getItem('post_login_redirect');
-      
-      if (savedRedirect) {
-        sessionStorage.removeItem('post_login_redirect');
-        navigate(savedRedirect, { replace: true });
-        return;
-      }
-
-      // Se não houver redirect guardado, manda para o dashboard por defeito consoante a role
-      if (profile.role === 'admin') {
-        navigate('/admin', { replace: true });
-      } else if (profile.role === 'business') {
-        navigate('/partner/dashboard', { replace: true });
-      } else if (profile.role === 'staff') {
-        navigate('/staff/dashboard', { replace: true });
-      } else {
-        navigate('/account', { replace: true });
-      }
-    }
-  }, [user, profile, authLoading, navigate]);
 
   const [email, setEmail] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -79,6 +55,20 @@ export default function Login() {
           setLoading(false);
           return;
         }
+
+        const returnTo = localStorage.getItem('returnTo');
+        if (returnTo) {
+          localStorage.removeItem('returnTo');
+          navigate(returnTo, { replace: true });
+          return;
+        }
+        
+        const savedRedirect = sessionStorage.getItem('post_login_redirect');
+        if (savedRedirect) {
+          sessionStorage.removeItem('post_login_redirect');
+          navigate(savedRedirect, { replace: true });
+          return;
+        }
       }
       // Não navegamos aqui manualmente. O useEffect ali de cima (Passo 2) apanha a mudança do `user` 
       // e envia o utilizador para a loja automaticamente (lendo do sessionStorage)!
@@ -104,16 +94,10 @@ export default function Login() {
       // O Supabase tem uma propriedade nativa para redirecionar após OAuth
       const savedRedirect = sessionStorage.getItem('post_login_redirect');
       const returnTo = localStorage.getItem('returnTo');
-      const redirectTo = returnTo 
-        ? `${window.location.origin}${returnTo}`
-        : savedRedirect 
-          ? `${window.location.origin}${savedRedirect}`
-          : `${window.location.origin}/account`;
-        
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectTo
+          redirectTo: `${window.location.origin}${window.location.pathname}`
         }
       });
     } catch (err: any) {
