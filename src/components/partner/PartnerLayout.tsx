@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
-import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard } from "lucide-react";
+import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 
 export default function PartnerLayout() {
@@ -132,6 +132,7 @@ export default function PartnerLayout() {
     { id: "equipa", label: "Equipa", icon: Users, path: "/partner/dashboard/equipa" },
     { id: "servicos", label: "Serviços", icon: Scissors, path: "/partner/dashboard/servicos" },
     { id: "horarios", label: "Horários", icon: Clock, path: "/partner/dashboard/horarios" },
+    { id: "avaliacoes", label: "Avaliações", icon: Star, path: "/partner/dashboard/avaliacoes" },
     { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: "Faturação", icon: Landmark, path: "/partner/dashboard/financeiro" },
     { id: "subscricao", label: "Subscrição", icon: CreditCard, path: "/partner/dashboard/subscricao" },

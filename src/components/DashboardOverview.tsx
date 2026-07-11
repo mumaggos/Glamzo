@@ -32,7 +32,7 @@ export function DashboardOverview({
   
   
 const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today');
-  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  
 
 
   const today = new Date();
@@ -156,7 +156,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           <p className="text-sm font-medium text-slate-500 mt-1">Pedidos Pendentes</p>
         </div>
 
-                <div onClick={() => setShowReviewsModal(true)} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">
+                <div onClick={() => setActiveTab('avaliacoes')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <Star className="w-5 h-5 text-purple-600" />

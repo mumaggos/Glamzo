@@ -153,6 +153,8 @@ export interface Review {
   customer_stats?: { total_reviews: number; total_photos: number };
   is_reported?: boolean; // Reported by business partner
   report_reason?: string | null; // Reason why reported
+  reply_text?: string | null;
+  replied_at?: string | null;
   created_at: string;
 }
 

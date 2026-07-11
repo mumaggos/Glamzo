@@ -1,16 +1,14 @@
 import fs from 'fs';
 let content = fs.readFileSync('src/App.tsx', 'utf-8');
 
-if (!content.includes('ProfileCompletionGuard')) {
-  // Add import
-  const importStatement = `import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';\n`;
-  content = importStatement + content;
-  
-  // Add component inside AuthProvider
-  content = content.replace(
-    /<GlobalRoleEnforcer \/>/,
-    `<GlobalRoleEnforcer />\n          <ProfileCompletionGuard />`
-  );
-  
-  fs.writeFileSync('src/App.tsx', content);
-}
+const targetImport = `const HoursTab = lazy(() => import('./pages/partner/tabs/HoursTab'));`;
+const replacementImport = `const HoursTab = lazy(() => import('./pages/partner/tabs/HoursTab'));
+const PartnerReviewsTab = lazy(() => import('./pages/partner/tabs/PartnerReviewsTab'));`;
+content = content.replace(targetImport, replacementImport);
+
+const targetRoute = `<Route path="horarios" element={<HoursTab />} />`;
+const replacementRoute = `<Route path="horarios" element={<HoursTab />} />
+                    <Route path="avaliacoes" element={<PartnerReviewsTab />} />`;
+content = content.replace(targetRoute, replacementRoute);
+
+fs.writeFileSync('src/App.tsx', content);

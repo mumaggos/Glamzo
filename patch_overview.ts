@@ -1,9 +1,20 @@
 import fs from 'fs';
-let code = fs.readFileSync('src/components/DashboardOverview.tsx', 'utf-8');
+let content = fs.readFileSync('src/components/DashboardOverview.tsx', 'utf-8');
 
-code = code.replace(
-  "const isCompletedLocal = b.payment_method === 'local' && b.booking_status === 'completed';",
-  "const isCompletedLocal = b.payment_method === 'local' && (b.booking_status === 'completed' || b.booking_status === 'confirmed');"
-);
+const targetState = `const [showReviewsModal, setShowReviewsModal] = useState(false);`;
+content = content.replace(targetState, '');
 
-fs.writeFileSync('src/components/DashboardOverview.tsx', code);
+const targetClick = `onClick={() => setShowReviewsModal(true)}`;
+const replacementClick = `onClick={() => setActiveTab('avaliacoes')}`;
+content = content.replace(targetClick, replacementClick);
+
+const targetModalStart = `{showReviewsModal && (`;
+const targetModalEnd = `      )}
+    </div>`;
+
+// We will just do a regex replace to remove the modal completely
+// Let's do it safely
+const modalRegex = /\{showReviewsModal && \([\s\S]*?\}\)/g;
+content = content.replace(modalRegex, '');
+
+fs.writeFileSync('src/components/DashboardOverview.tsx', content);

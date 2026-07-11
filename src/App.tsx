@@ -23,6 +23,7 @@ const ServicesTab = lazy(() => import('./pages/partner/tabs/ServicesTab'));
 const StaffTab = lazy(() => import('./pages/partner/tabs/StaffTab'));
 const ClientsTab = lazy(() => import('./pages/partner/tabs/ClientsTab'));
 const HoursTab = lazy(() => import('./pages/partner/tabs/HoursTab'));
+const PartnerReviewsTab = lazy(() => import('./pages/partner/tabs/PartnerReviewsTab'));
 const FinanceTab = lazy(() => import('./pages/partner/tabs/FinanceTab'));
 const StoreAssetsTab = lazy(() => import('./pages/partner/tabs/StoreAssetsTab'));
 const SettingsTab = lazy(() => import('./pages/partner/tabs/SettingsTab'));
@@ -292,6 +293,7 @@ export default function App() {
                     <Route path="equipa" element={<StaffTab />} />
                     <Route path="servicos" element={<ServicesTab />} />
                     <Route path="horarios" element={<HoursTab />} />
+                    <Route path="avaliacoes" element={<PartnerReviewsTab />} />
                     <Route path="campanhas" element={<MarketingTab />} />
                     <Route path="financeiro" element={<FinanceTab />} />
                     <Route path="website" element={<StoreAssetsTab />} />
