@@ -149,7 +149,8 @@ export interface Review {
   comment: string;
   service_id: string;
   service_name: string;
-  photo_url?: string | null; // Customer uploaded feedback photo
+  image_urls?: string[] | null;
+  customer_stats?: { total_reviews: number; total_photos: number };
   is_reported?: boolean; // Reported by business partner
   report_reason?: string | null; // Reason why reported
   created_at: string;
