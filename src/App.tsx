@@ -1,3 +1,4 @@
+import { Compass } from 'lucide-react';
 import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
 
@@ -51,7 +52,7 @@ import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';

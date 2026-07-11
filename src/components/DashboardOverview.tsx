@@ -274,30 +274,6 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           </div>
         </div>
       </div>
-    
-      {showReviewsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-           <div className="bg-white rounded-3xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-scale-up">
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                 <h4 className="font-extrabold text-lg text-slate-900 flex items-center gap-2"><Star className="w-5 h-5 text-purple-600"/> Avaliações dos Clientes</h4>
-                 <button onClick={() => setShowReviewsModal(false)} className="p-2 rounded-full hover:bg-slate-100 transition"><X className="w-4 h-4"/></button>
-              </div>
-              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
-                 {reviews.length === 0 ? (
-                    <div className="text-center py-10 text-slate-500 text-sm font-medium">Ainda não existem avaliações.</div>
-                 ) : reviews.map((r, i) => (
-                    <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                       <div className="flex justify-between items-center mb-2">
-                          <span className="font-bold text-slate-800">{r.customer_name || "Cliente"}</span>
-                          <span className="text-xs font-bold text-purple-600 flex items-center gap-1"><Star className="w-3 h-3 fill-purple-600"/> {r.rating}.0</span>
-                       </div>
-                       <p className="text-sm text-slate-600 italic">"{r.comment}"</p>
-                    </div>
-                 ))}
-              </div>
-           </div>
-        </div>
-      )}
-</div>
+    </div>
   );
 }

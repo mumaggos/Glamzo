@@ -69,6 +69,11 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [mapVisible, setMapVisible] = useState(false);
+  const mapRef = useRef<HTMLElement>(null);
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
   const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
   const [querySuggestions, setQuerySuggestions] = useState<any[]>([]);
@@ -108,11 +113,6 @@ export default function Home() {
     const uniqueMatches = Array.from(new Map(matches.map(m => [m.id + m.text, m])).values());
     setQuerySuggestions(uniqueMatches.slice(0, 5));
   }, [searchQuery, businesses, servicesData]);
-  const [businesses, setBusinesses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
-  const [mapVisible, setMapVisible] = useState(false);
-  const mapRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // Auto-locate user on mount

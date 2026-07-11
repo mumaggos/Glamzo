@@ -306,7 +306,7 @@ export default function Explore() {
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">
             <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Todos</button>
             {MAIN_CATEGORIES.map((cat) => (
-              <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat)}</button>
+              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat.name)}</button>
             ))}
           </div>
           <div className="ml-4 pl-4 border-l border-slate-200 hidden md:flex items-center gap-3">

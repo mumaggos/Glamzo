@@ -92,9 +92,12 @@ export async function fetchReviewsByCustomer(customerId: string): Promise<Review
 
 export async function submitReview(reviewInput: Omit<Review, 'id' | 'created_at'>): Promise<Review | null> {
   try {
+    const finalServiceId = (reviewInput.service_id === 'general' || !reviewInput.service_id) ? null : reviewInput.service_id;
+    const finalInput = { ...reviewInput, service_id: finalServiceId };
+
     const { data, error } = await supabase
       .from('reviews')
-      .insert(reviewInput)
+      .insert(finalInput)
       .select()
       .single();
 
