@@ -54,6 +54,8 @@ export default function Explore() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewModeMobile, setViewModeMobile] = useState<"list" | "map">("list");
+  const [viewLayout, setViewLayout] = useState<"list" | "grid">("list");
+  const [searchRadius, setSearchRadius] = useState<number | null>(null);
   
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -83,6 +85,8 @@ export default function Explore() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(searchParams.get("subcategory") || "All");
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; } | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
+  const [mapZoom, setMapZoom] = useState<number>(6);
+  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
   const [useNearMe, setUseNearMe] = useState(searchParams.get("nearMe") === "true");
   const [mapBounds, setMapBounds] = useState<any>(null);
   const [sortBy, setSortBy] = useState<string>("recomendados"); // recomendados, distancia, preco_asc, rating
@@ -185,6 +189,17 @@ export default function Explore() {
     setSearchParams(params, { replace: true });
   }, [searchQuery, searchLocation, selectedCategory, selectedSubcategory, useNearMe]);
 
+  useEffect(() => {
+    if (userCoords) {
+      setMapCenter({ lat: userCoords.latitude, lng: userCoords.longitude });
+      if (searchRadius === null) setMapZoom(6);
+      else if (searchRadius <= 5) setMapZoom(12);
+      else if (searchRadius <= 10) setMapZoom(11);
+      else if (searchRadius <= 25) setMapZoom(10);
+      else if (searchRadius <= 50) setMapZoom(9);
+    }
+  }, [searchRadius, userCoords]);
+
   const handleNearMeToggle = () => {
     if (useNearMe) {
       setUseNearMe(false);
@@ -250,6 +265,9 @@ export default function Explore() {
       const matchServices = services.some(s => s.business_id === b.id && s.name.toLowerCase().includes(q));
       if (!matchName && !matchCat && !matchServices) return false;
     }
+    if (searchRadius !== null && b.distance !== null && b.distance > searchRadius) {
+      return false;
+    }
     if (searchLocation.trim() && !useNearMe) {
       const locQ = searchLocation.toLowerCase().trim();
       const matchCity = (b.city || "").toLowerCase().includes(locQ);
@@ -295,7 +313,7 @@ export default function Explore() {
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   
-  const BusinessCard: React.FC<{ b: any }> = ({ b }) => {
+  const BusinessCard: React.FC<{ b: any, viewMode?: "list" | "grid" }> = ({ b, viewMode = "list" }) => {
     const isHighlighted = clickedPinId === b.id || hoveredShopId === b.id;
     
     // Social Proof Badge Logic (Mock)
@@ -308,6 +326,7 @@ export default function Explore() {
       badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Nova Loja</span>;
     }
     
+    const isGrid = viewMode === 'grid';
     // Use slots directly from the RPC response
     const availableSlots = Array.isArray(b.available_slots) ? b.available_slots : [];
 
@@ -317,9 +336,9 @@ export default function Explore() {
         onMouseEnter={() => setHoveredShopId(b.id)}
         onMouseLeave={() => setHoveredShopId(null)}
         onClick={() => navigate(`/business/${b.slug}`)}
-        className={`group flex flex-col w-full cursor-pointer bg-white rounded-2xl overflow-hidden transition-all font-['Inter'] ${isHighlighted ? 'ring-2 ring-purple-600 shadow-xl scale-[1.02] z-10' : 'border border-slate-100 shadow-sm hover:shadow-md'}`}
+        className={`group flex ${viewMode === 'list' ? 'flex-col sm:flex-row' : 'flex-col'} w-full cursor-pointer bg-white rounded-2xl overflow-hidden transition-all font-['Inter'] ${isHighlighted ? 'ring-2 ring-purple-600 shadow-xl scale-[1.02] z-10' : 'border border-slate-100 shadow-sm hover:shadow-md'}`}
       >
-        <div className="relative aspect-[16/10] w-full bg-slate-100">
+        <div className={`relative ${viewMode === 'list' ? 'w-full sm:w-2/5 aspect-[16/10] sm:aspect-[4/3]' : 'w-full aspect-[16/10]'} bg-slate-100 shrink-0`}>
           <img loading="lazy" 
             src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
             alt={b.name}  
@@ -335,7 +354,7 @@ export default function Explore() {
             <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
           </button>
         </div>
-        <div className="p-4 flex flex-col gap-1.5">
+        <div className={`p-4 flex flex-col gap-1.5 flex-1 ${viewMode === 'grid' ? 'justify-between' : 'justify-center'}`}>
           <div className="flex justify-between items-start">
             <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
             <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
@@ -345,6 +364,9 @@ export default function Explore() {
           </div>
           <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
           <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
+          {viewMode === 'list' && b.description && (
+            <p className="text-xs text-slate-400 mt-1 line-clamp-2">{b.description}</p>
+          )}
           
           {/* Instant Booking Slots */}
           <div className="mt-3 pt-3 border-t border-slate-100 flex gap-2 overflow-x-auto no-scrollbar">
@@ -392,9 +414,16 @@ export default function Explore() {
                 <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Pesquisar loja..." className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
              </div>
              <div className="hidden lg:flex items-center gap-2">
+      <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
+        <option value="">Raio: Todos</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
+      </select>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
         <option value="recomendados">Recomendados</option>
-        <option value="distancia">Mais Próximo (Km)</option>
+        <option value="distancia">Distância: Mais Próximo</option>
         <option value="preco_asc">Preço: Mais barato primeiro</option>
         <option value="rating">Melhor Avaliação</option>
       </select>
@@ -420,8 +449,19 @@ export default function Explore() {
       <div className="flex-1 flex w-full relative">
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
-           <div className="mb-4 flex items-center justify-between">
+           <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h2 className="text-xl font-black text-slate-900 font-['Outfit']">Explorar ({sortedBusinesses.length})</h2>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                  <button onClick={() => setViewLayout('list')} className={`p-1.5 rounded-md transition-colors ${viewLayout === 'list' ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <List className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setViewLayout('grid')} className={`p-1.5 rounded-md transition-colors ${viewLayout === 'grid' ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <Grid className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
            </div>
            
            {loading ? (
@@ -431,8 +471,8 @@ export default function Explore() {
               </div>
             ) : sortedBusinesses.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} />)}
+                <div className={viewLayout === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"}>
+                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} viewMode={viewLayout} />)}
                 </div>
                 {sortedBusinesses.length > itemsLimit && (
                   <div className="text-center pt-8 pb-12">
@@ -459,11 +499,15 @@ export default function Explore() {
            {mapApiKey ? (
              <APIProvider apiKey={mapApiKey}>
                <Map 
-     defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} 
-     defaultZoom={userCoords ? 11 : 6} 
+     center={mapCenter || (userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 })} 
+     zoom={mapZoom} 
      disableDefaultUI 
      styles={mapStyles} 
      options={{ styles: mapStyles }}
+     onCameraChanged={(e) => {
+        setMapCenter(e.detail.center);
+        setMapZoom(e.detail.zoom);
+     }}
      onBoundsChanged={(e) => {
        if (e.detail.bounds) {
          setMapBounds(e.detail.bounds);
@@ -535,10 +579,18 @@ export default function Explore() {
                  </button>
                </div>
                <div>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Raio de Pesquisa</label>
+      <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
+        <option value="">Todos</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
+      </select>
       <label className="block text-xs font-bold text-slate-700 mb-2">Ordenação</label>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
         <option value="recomendados">Recomendados</option>
-        <option value="distancia">Mais Próximo (Km)</option>
+        <option value="distancia">Distância: Mais Próximo</option>
         <option value="preco_asc">Preço: Mais barato primeiro</option>
         <option value="rating">Melhor Avaliação</option>
       </select>
