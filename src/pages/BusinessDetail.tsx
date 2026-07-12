@@ -340,7 +340,7 @@ const { slug } = useParams<{ slug: string }>();
               </div>
 
               {/* Serviços Premium */}
-              <div id="services" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
+              <div id="booking-section" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-black text-slate-900">Menu de Serviços</h2>
                   <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">{services.length}</span>
@@ -554,7 +554,7 @@ const { slug } = useParams<{ slug: string }>();
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                 <h3 className="text-xl font-black mb-2 relative z-10">Marcar Atendimento</h3>
                 <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento online, rápido e com vagas reais atualizadas ao minuto.</p>
-                <button onClick={() => { document.getElementById("services")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
+                <button onClick={() => { document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
                   <Calendar className="w-5 h-5" /> Reservar Agora
                 </button>
               </div>

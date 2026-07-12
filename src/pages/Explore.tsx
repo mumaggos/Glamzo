@@ -428,11 +428,11 @@ export default function Explore() {
     const availableSlots = Array.isArray(b.available_slots) ? b.available_slots : [];
 
     return (
-      <div key={b.id} 
-        id={`shop-card-${b.id}`}
+      <Link key={b.id}
+         to={`/business/${b.slug}`}
+         id={`shop-card-${b.id}`}
         onMouseEnter={() => setHoveredShopId(b.id)}
         onMouseLeave={() => setHoveredShopId(null)}
-        onClick={() => navigate(`/business/${b.slug}`)}
         className={`group flex ${viewMode === 'list' ? 'flex-col sm:flex-row' : 'flex-col'} w-full cursor-pointer bg-white rounded-2xl overflow-hidden transition-all font-['Inter'] ${isHighlighted ? 'ring-2 ring-purple-600 shadow-xl scale-[1.02] z-10' : 'border border-slate-100 shadow-sm hover:shadow-md'}`}
       >
         <div className={`relative ${viewMode === 'list' ? 'w-full sm:w-2/5 aspect-[16/10] sm:aspect-[4/3]' : 'w-full aspect-[16/10]'} bg-slate-100 shrink-0`}>
@@ -447,7 +447,7 @@ export default function Explore() {
             )}
             {badge}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
+          <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
             <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
           </button>
         </div>
@@ -479,7 +479,7 @@ export default function Explore() {
                   // If the RPC doesn't return dates, we can omit it or use today's date placeholder
                   const slotDate = typeof slot === 'string' ? new Date().toISOString().split('T')[0] : slot.date;
                   return (
-                    <button key={idx} onClick={(e) => { e.stopPropagation(); navigate(`/business/${b.slug}?date=${slotDate}&time=${slotTime}`); }} className="shrink-0 px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 hover:border-purple-200 rounded-lg text-[11px] font-bold transition-colors">
+                    <button key={idx} onClick={(e) => { e.preventDefault(); navigate(`/business/${b.slug}?date=${slotDate}&time=${slotTime}`); }} className="shrink-0 px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 hover:border-purple-200 rounded-lg text-[11px] font-bold transition-colors">
                       {slotTime}
                     </button>
                   );
@@ -489,7 +489,7 @@ export default function Explore() {
              )}
           </div>
         </div>
-      </div>
+      </Link>
     );
   };
 
