@@ -420,12 +420,12 @@ export default function SubscriptionTab() {
             <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
           </ul>
           
-          {business?.selected_plan === "app_tablet" ? (
-            <button 
-              onClick={() => handleSubscribePro("PRO")}
-              className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
-              disabled={isVerifyingSub}
-            >
+          {isSuspended ? (
+            <button onClick={() => handleSubscribePro("PRO")} disabled={isVerifyingSub} className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-purple-700 transition shadow-lg">
+              {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
+            </button>
+          ) : business?.selected_plan === "app_tablet" ? (
+            <button onClick={() => handleSubscribePro("PRO")} disabled={isVerifyingSub} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg">
               Fazer Downgrade para Base
             </button>
           ) : (
@@ -472,12 +472,12 @@ export default function SubscriptionTab() {
             <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
           </ul>
 
-          {business?.selected_plan !== "app_tablet" ? (
-            <button 
-              onClick={() => handleSubscribePro("TERMINAL")}
-              disabled={isVerifyingSub}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-            >
+          {isSuspended ? (
+            <button onClick={() => handleSubscribePro("TERMINAL")} disabled={isVerifyingSub} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs">
+              {isVerifyingSub ? "A carregar..." : "Reativar com Terminal"}
+            </button>
+          ) : business?.selected_plan !== "app_tablet" ? (
+            <button onClick={() => handleSubscribePro("TERMINAL")} disabled={isVerifyingSub} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs">
               {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
             </button>
           ) : (
@@ -497,13 +497,15 @@ export default function SubscriptionTab() {
           >
             <FileText className="w-4 h-4" /> Gerir Faturação e Cartão
           </button>
-          <button
-            onClick={handleCancelSubscription}
-            disabled={cancelingSubscription}
-            className="bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
-          >
-            {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
-          </button>
+          {!isSuspended && (
+            <button
+              onClick={handleCancelSubscription}
+              disabled={cancelingSubscription}
+              className="bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
+            >
+              {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
+            </button>
+          )}
         </div>
       )}
 
