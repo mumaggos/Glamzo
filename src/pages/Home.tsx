@@ -86,7 +86,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (searchQuery.trim().length < 2) {
       setQuerySuggestions([]);
       return;
     }
@@ -95,14 +95,17 @@ export default function Home() {
     
     // Check businesses
     businesses.forEach(b => {
-      if (b.name.toLowerCase().includes(q) || b.category.toLowerCase().includes(q)) {
+      const bName = b.name || "";
+      const bCat = b.category || "";
+      if (bName.toLowerCase().includes(q) || bCat.toLowerCase().includes(q)) {
         matches.push({ type: 'business', id: b.id, name: b.name, slug: b.slug, text: b.name });
       }
     });
     
     // Check services
     servicesData.forEach(s => {
-      if (s.name.toLowerCase().includes(q)) {
+      const sName = s.name || "";
+      if (sName.toLowerCase().includes(q)) {
         const b = businesses.find(bz => bz.id === s.business_id);
         if (b) {
           matches.push({ type: 'service', id: b.id, name: b.name, slug: b.slug, text: `${s.name} em ${b.name}` });

@@ -12,6 +12,7 @@ import {
   Loader2, X, Navigation, List, Map as MapIcon, Heart
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+// Removed obsolete local calculations
 
 const getCategoryDisplayName = (name: string) => {
   if (name === "Wellness") return "Wellness & Spa";
@@ -20,15 +21,16 @@ const getCategoryDisplayName = (name: string) => {
 };
 
 // Marcador Oficial Glamzo no Mapa
-const getCustomMarkerIcon = (rating: number) => {
+const getCustomMarkerIcon = (rating: number, isHovered: boolean = false) => {
   const finalRating = rating > 0 ? rating : 5.0;
   const ratingText = `${finalRating.toFixed(1)}`;
-  const bgColor = "#9333ea"; 
+  const bgColor = isHovered ? "#0f172a" : "#9333ea"; 
   const textColor = "#ffffff";
+  const scale = isHovered ? 1.15 : 1;
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-      <g filter="drop-shadow(0px 4px 4px rgba(0,0,0,0.25))">
-        <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="1.5"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="${40 * scale}" height="${50 * scale}" viewBox="0 0 40 50">
+      <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.4))">
+        <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="2"/>
         <text x="20" y="21" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
           ${ratingText}
         </text>
@@ -60,7 +62,10 @@ export default function Explore() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
   const [promotions, setPromotions] = useState<Record<string, { is_promoted: boolean }>>({});
+  
 
+  const [hoveredShopId, setHoveredShopId] = useState<string | null>(null);
+  const [clickedPinId, setClickedPinId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [localSearchQuery, setLocalSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
@@ -79,14 +84,10 @@ export default function Explore() {
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; } | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
   const [useNearMe, setUseNearMe] = useState(searchParams.get("nearMe") === "true");
-  
-  const [nearMeRadius, setNearMeRadius] = useState<number>(20);
-  const [minRating, setMinRating] = useState<number>(0);
-  const [priceLevel, setPriceLevel] = useState<string>("All");
-  const [filterHomeService, setFilterHomeService] = useState(false);
-  const [filterPremiumPartner, setFilterPremiumPartner] = useState(false);
-  const [filterAvailableToday, setFilterAvailableToday] = useState(false);
-  
+  const [mapBounds, setMapBounds] = useState<any>(null);
+  const [sortBy, setSortBy] = useState<string>("recomendados"); // recomendados, distancia, preco_asc, rating
+  const [abertoAgora, setAbertoAgora] = useState(false);
+  const [minimo4Estrelas, setMinimo4Estrelas] = useState(false);
   const [itemsLimit, setItemsLimit] = useState(12);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -111,21 +112,20 @@ export default function Explore() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const [bizRes, servRes, realRev, hoursRes] = await Promise.all([
-        supabase.from("businesses").select("*").eq("status", "active"),
+      const [bizRes, servRes, realRev] = await Promise.all([
+        supabase.rpc("get_explore_shops_with_analytics"),
         supabase.from("services").select("*").eq("is_active", true),
-        fetchAllReviews(),
-        supabase.from("business_hours").select("*"),
+        fetchAllReviews()
       ]);
       let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
       let loadedServices = servRes.data || [];
       let loadedReviews = realRev || [];
-      let loadedHours = hoursRes.data || [];
+      
       
       setBusinesses(loadedBiz);
       setServices(loadedServices);
       setReviews(loadedReviews || []);
-      (window as any).__exploreBusinessHours = loadedHours || [];
+      
       
       const promoMap: Record<string, { is_promoted: boolean }> = {};
       const now = Date.now();
@@ -135,6 +135,7 @@ export default function Explore() {
         promoMap[b.id] = { is_promoted: isPromoted && (!endsAt || new Date(endsAt).getTime() > now) };
       });
       setPromotions(promoMap);
+      
     } catch (err: any) {
       setErrorMsg("Falha ao carregar diretório. Tente novamente.");
     } finally {
@@ -200,9 +201,10 @@ export default function Explore() {
     setLocalSearchQuery(""); setSearchQuery("");
     setLocalSearchLocation(""); setSearchLocation("");
     setUseNearMe(false); setUserCoords(null);
-    setSelectedCategory("All"); setSelectedSubcategory("All");
-    setMinRating(0); setPriceLevel("All");
-    setFilterHomeService(false); setFilterPremiumPartner(false); setFilterAvailableToday(false);
+    setSelectedCategory("All");
+    setSortBy("recomendados");
+    setAbertoAgora(false);
+    setMinimo4Estrelas(false);
     setItemsLimit(12);
   };
 
@@ -226,11 +228,11 @@ export default function Explore() {
     return { ...b, lat, lng, distance, rating, reviewsCount, startPrice: realStartPrice, isOpenNow, is_promoted: hasRealPromotion, is_premium: isPremiumVal };
   });
 
-  const filteredBusinesses = processedBusinesses.filter((b) => {
+    const filteredBusinesses = processedBusinesses.filter((b) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchName = b.name.toLowerCase().includes(q);
-      const matchCat = b.category.toLowerCase().includes(q);
+      const matchName = (b.name || "").toLowerCase().includes(q);
+      const matchCat = (b.category || "").toLowerCase().includes(q);
       const matchServices = services.some(s => s.business_id === b.id && s.name.toLowerCase().includes(q));
       if (!matchName && !matchCat && !matchServices) return false;
     }
@@ -241,24 +243,35 @@ export default function Explore() {
       const matchAddress = (b.address || "").toLowerCase().includes(locQ);
       if (!matchCity && !matchDist && !matchAddress) return false;
     }
-    if (useNearMe && userCoords && b.distance !== null) {
-      if (b.distance > nearMeRadius) return false;
+    
+    // Bounds filtering
+    if (mapBounds) {
+      const lat = b.lat;
+      const lng = b.lng;
+      if (lat < mapBounds.south || lat > mapBounds.north || lng < mapBounds.west || lng > mapBounds.east) {
+        return false;
+      }
+    } else if (useNearMe && userCoords && b.distance !== null) {
+      // fallback to radius if no map bounds
+      if (b.distance > 50) return false; // expanded default to 50km
     }
+
     if (selectedCategory !== "All" && b.category !== selectedCategory) return false;
-    if (selectedSubcategory !== "All" && b.subcategory !== selectedSubcategory) return false;
-    if (filterHomeService) {
-      const isDomicil = b.category === "Ao domicílio" || (b.description || "").toLowerCase().includes("domicílio");
-      if (!isDomicil) return false;
-    }
-    if (filterPremiumPartner && !b.is_verified) return false;
-    if (minRating > 0 && b.rating < minRating) return false;
+    if (abertoAgora && !b.isOpenNow) return false;
+    if (minimo4Estrelas && b.rating < 4) return false;
+
     return true;
   });
 
   const sortedBusinesses = [...filteredBusinesses].sort((x, y) => {
+    if (sortBy === 'distancia' && x.distance !== null && y.distance !== null) return x.distance - y.distance;
+    if (sortBy === 'preco_asc') return x.startPrice - y.startPrice;
+    if (sortBy === 'rating') return y.rating - x.rating;
+    
+    // Recomendados
     if (x.is_promoted && !y.is_promoted) return -1;
     if (!x.is_promoted && y.is_promoted) return 1;
-    if (useNearMe && x.distance !== null && y.distance !== null) return x.distance - y.distance;
+    if (x.distance !== null && y.distance !== null && useNearMe) return x.distance - y.distance;
     if (x.is_verified && !y.is_verified) return -1;
     if (!x.is_verified && y.is_verified) return 1;
     return y.rating - x.rating;
@@ -267,36 +280,86 @@ export default function Explore() {
   const paginatedBusinesses = sortedBusinesses.slice(0, itemsLimit);
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
-  const BusinessCard: React.FC<{ b: any }> = ({ b }) => (
-    <Link to={`/business/${b.slug}`} className="group flex flex-col w-full cursor-pointer bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all font-['Inter']">
-      <div className="relative aspect-[16/10] w-full bg-slate-100">
-        <img loading="lazy" 
-          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
-          alt={b.name}  
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
-        />
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {b.is_promoted && (
-            <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">Destaque</span>
-          )}
+  
+  const BusinessCard: React.FC<{ b: any }> = ({ b }) => {
+    const isHighlighted = clickedPinId === b.id || hoveredShopId === b.id;
+    
+    // Social Proof Badge Logic (Mock)
+    let badge = null;
+    if (b.is_top_rated) {
+      badge = <span className="bg-[#0f172a] text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400"/> Top Rated</span>;
+    } else if (b.is_popular) {
+      badge = <span className="bg-rose-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">🔥 Muito Procurado</span>;
+    } else if (b.is_new) {
+      badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Nova Loja</span>;
+    }
+    
+    // Use slots directly from the RPC response
+    const availableSlots = Array.isArray(b.available_slots) ? b.available_slots : [];
+
+    return (
+      <div 
+        id={`shop-card-${b.id}`}
+        onMouseEnter={() => setHoveredShopId(b.id)}
+        onMouseLeave={() => setHoveredShopId(null)}
+        onClick={() => navigate(`/business/${b.slug}`)}
+        className={`group flex flex-col w-full cursor-pointer bg-white rounded-2xl overflow-hidden transition-all font-['Inter'] ${isHighlighted ? 'ring-2 ring-purple-600 shadow-xl scale-[1.02] z-10' : 'border border-slate-100 shadow-sm hover:shadow-md'}`}
+      >
+        <div className="relative aspect-[16/10] w-full bg-slate-100">
+          <img loading="lazy" 
+            src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
+            alt={b.name}  
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+          />
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+            {b.is_promoted && (
+              <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">Destaque</span>
+            )}
+            {badge}
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
+            <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
+          </button>
         </div>
-        <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
-          <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
-        </button>
-      </div>
-      <div className="p-4 flex flex-col gap-1.5">
-        <div className="flex justify-between items-start">
-          <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
-          <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
-            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span>{b.rating > 0 ? b.rating.toFixed(1) : "Novo"}</span>
+        <div className="p-4 flex flex-col gap-1.5">
+          <div className="flex justify-between items-start">
+            <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
+            <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span>{b.rating > 0 ? b.rating.toFixed(1) : "Novo"}</span>
+            </div>
+          </div>
+          <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
+          <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
+          
+          {/* Instant Booking Slots */}
+          <div className="mt-3 pt-3 border-t border-slate-100 flex gap-2 overflow-x-auto no-scrollbar">
+             {loading ? (
+                <div className="flex gap-2 w-full animate-pulse">
+                  <div className="h-7 bg-slate-200 rounded-lg w-14"></div>
+                  <div className="h-7 bg-slate-200 rounded-lg w-14"></div>
+                  <div className="h-7 bg-slate-200 rounded-lg w-14"></div>
+                </div>
+             ) : availableSlots.length > 0 ? (
+                availableSlots.slice(0, 4).map((slot: any, idx: number) => {
+                  const slotTime = typeof slot === 'string' ? slot : slot.time;
+                  // If the RPC doesn't return dates, we can omit it or use today's date placeholder
+                  const slotDate = typeof slot === 'string' ? new Date().toISOString().split('T')[0] : slot.date;
+                  return (
+                    <button key={idx} onClick={(e) => { e.stopPropagation(); navigate(`/business/${b.slug}?date=${slotDate}&time=${slotTime}`); }} className="shrink-0 px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 hover:border-purple-200 rounded-lg text-[11px] font-bold transition-colors">
+                      {slotTime}
+                    </button>
+                  );
+                })
+             ) : (
+                <span className="text-[11px] text-slate-500 font-medium py-1.5">Sem vagas próximas</span>
+             )}
           </div>
         </div>
-        <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
-        <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
       </div>
-    </Link>
-  );
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -314,9 +377,23 @@ export default function Explore() {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Pesquisar loja..." className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
              </div>
-             <button onClick={() => setIsDrawerOpen(true)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors">
-               <SlidersHorizontal className="w-4 h-4" /> Mais Filtros
-             </button>
+             <div className="hidden lg:flex items-center gap-2">
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
+        <option value="recomendados">Recomendados</option>
+        <option value="distancia">Mais Próximo (Km)</option>
+        <option value="preco_asc">Preço: Mais barato primeiro</option>
+        <option value="rating">Melhor Avaliação</option>
+      </select>
+      <button onClick={() => setAbertoAgora(!abertoAgora)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+        Aberto Agora
+      </button>
+      <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+        Apenas 4+ ⭐
+      </button>
+   </div>
+   <button onClick={() => setIsDrawerOpen(true)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors lg:ml-2">
+     <SlidersHorizontal className="w-4 h-4" /> Filtros
+   </button>
           </div>
           <div className="md:hidden ml-2 flex items-center">
              <button onClick={() => setIsDrawerOpen(true)} className="p-2 bg-slate-100 rounded-lg text-slate-700">
@@ -367,10 +444,35 @@ export default function Explore() {
         <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}`}>
            {mapApiKey ? (
              <APIProvider apiKey={mapApiKey}>
-               <Map defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} defaultZoom={userCoords ? 11 : 6} disableDefaultUI styles={mapStyles} options={{ styles: mapStyles }}>
+               <Map 
+     defaultCenter={userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 }} 
+     defaultZoom={userCoords ? 11 : 6} 
+     disableDefaultUI 
+     styles={mapStyles} 
+     options={{ styles: mapStyles }}
+     onBoundsChanged={(e) => {
+       if (e.detail.bounds) {
+         setMapBounds(e.detail.bounds);
+       }
+     }}
+  >
                  {userCoords && <Marker position={{ lat: userCoords.latitude, lng: userCoords.longitude }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
                  {sortedBusinesses.slice(0, 50).map((b) => (
-                   <Marker key={b.id} position={{ lat: b.lat, lng: b.lng }} icon={{ url: getCustomMarkerIcon(b.rating), anchor: { x: 20, y: 50 } }} onClick={() => navigate(`/business/${b.slug}`)} />
+                   <Marker 
+     key={b.id} 
+     position={{ lat: b.lat, lng: b.lng }} 
+     icon={{ url: getCustomMarkerIcon(b.rating, hoveredShopId === b.id || clickedPinId === b.id), anchor: { x: 20, y: 50 } }} 
+     onClick={() => {
+       setClickedPinId(b.id);
+       // We can still navigate, but we'll let them click the pin to focus list instead if they prefer. Let's just scroll to list.
+       const cardEl = document.getElementById(`shop-card-${b.id}`);
+       if (cardEl) {
+         cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+       }
+     }}
+     onMouseOver={() => setHoveredShopId(b.id)}
+     onMouseOut={() => setHoveredShopId(null)}
+  />
                  ))}
                </Map>
              </APIProvider>
@@ -419,16 +521,24 @@ export default function Explore() {
                  </button>
                </div>
                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">Pontuação Mínima</label>
-                  <div className="flex gap-2">
-                    {[0, 3, 4, 4.5].map(r => (
-                      <button key={r} onClick={() => setMinRating(r)} className={`flex-1 py-2 text-xs font-bold rounded-lg border ${minRating === r ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white border-slate-200 text-slate-600'}`}>
-                        {r === 0 ? "Todas" : `${r}+`}
-                      </button>
-                    ))}
-                  </div>
-               </div>
-            </div>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Ordenação</label>
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
+        <option value="recomendados">Recomendados</option>
+        <option value="distancia">Mais Próximo (Km)</option>
+        <option value="preco_asc">Preço: Mais barato primeiro</option>
+        <option value="rating">Melhor Avaliação</option>
+      </select>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Filtros Rápidos</label>
+      <div className="flex gap-2">
+        <button onClick={() => setAbertoAgora(!abertoAgora)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
+          Aberto Agora
+        </button>
+        <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
+          Apenas 4+ ⭐
+        </button>
+      </div>
+   </div>
+</div>
             <div className="p-5 border-t border-slate-100">
                <button onClick={() => setIsDrawerOpen(false)} className="w-full py-3.5 bg-purple-600 text-white rounded-xl text-sm font-bold shadow-md">Aplicar Filtros</button>
             </div>
