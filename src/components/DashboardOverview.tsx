@@ -58,9 +58,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
   });
 
   const filteredRevenue = filteredBookingsList.reduce((sum, b) => {
-    const isPaidOnline = b.payment_status === 'paid';
-    const isCompletedLocal = (b.payment_method === 'local' || !b.payment_method) && (b.booking_status === 'completed' || b.booking_status === 'confirmed');
-    if (isPaidOnline || isCompletedLocal) {
+    if (b.booking_status === 'completed') {
       return sum + Number(b.total_price || (b.service as any)?.price || 0);
     }
     return sum;
@@ -69,7 +67,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
   const timeLabel = timeFilter === 'today' ? 'Hoje' : timeFilter === 'week' ? 'Semana' : 'Mês';
 
-  const pendingBookings = bookings.filter(b => b.booking_status === 'pending');
+  const tasksPending = bookings.filter(b => b.booking_status === 'confirmed' && b.booking_date <= todayStr);
 
   const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date());
   const upcomingBookings = bookings
@@ -145,15 +143,20 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           <p className="text-sm font-medium text-slate-500 mt-1">Faturação Prevista</p>
         </div>
 
-        <div onClick={() => setActiveTab('reservas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">
+        <div onClick={() => setActiveTab('agenda')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-amber-300 transition-colors group">
           <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
             </div>
-            <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Ação</span>
+            <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Tarefas</span>
           </div>
-          <h3 className="text-3xl font-black text-slate-900">{pendingBookings.length}</h3>
-          <p className="text-sm font-medium text-slate-500 mt-1">Pedidos Pendentes</p>
+          <h3 className="text-3xl font-black text-slate-900">{tasksPending.length}</h3>
+          <p className="text-sm font-medium text-slate-500 mt-1">{tasksPending.length === 1 ? 'Reserva aguarda conclusão' : 'Reservas aguardam conclusão'}</p>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <span className="text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:text-amber-700">
+              Concluir Reservas <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
         </div>
 
                 <div onClick={() => setActiveTab('avaliacoes')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-purple-300 transition-colors">

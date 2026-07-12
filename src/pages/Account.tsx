@@ -126,7 +126,15 @@ export default function Account() {
   };
 
   useEffect(() => {
-    if (user) { loadUserRewards(); loadUserReviews(); loadTickets(); fetchUserFavoritesList(); }
+    if (user) {
+      Promise.all([
+        fetchUserBookings(),
+        fetchUserFavoritesList(),
+        loadUserRewards(),
+        loadUserReviews(),
+        loadTickets()
+      ]);
+    }
   }, [user]);
 
   const currentPointsBalance = financeService.getCustomerPoints(user?.id || 'default');
@@ -179,7 +187,7 @@ export default function Account() {
     } catch (err: any) { setBookingError('Falha ao recuperar reservas.'); } finally { setLoadingBookings(false); }
   };
 
-  useEffect(() => { if (user) fetchUserBookings(); }, [user]);
+
 
   const handleCancelBooking = async (bookingId: string) => {
     if (!window.confirm('Deseja mesmo cancelar esta reserva?')) return;

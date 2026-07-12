@@ -160,7 +160,7 @@ export default function FinanceTab() {
       const localCompleted = (bkData || []).filter(b => {
         const isLocal = b.payment_method === 'local' || !b.payment_method;
         const fallbackPrice = Number(b.total_price || 0);
-        return fallbackPrice >= 0 && isLocal && (b.booking_status === 'completed' || b.booking_status === 'confirmed') && !stripePaymentBookingIds.has(b.id);
+        return fallbackPrice >= 0 && isLocal && (b.booking_status === 'completed') && !stripePaymentBookingIds.has(b.id);
       }).map(b => {
         const fallbackPrice = Number(b.total_price || 0);
         return {
@@ -188,13 +188,16 @@ export default function FinanceTab() {
            if (!p.booking.customer_profile && fullBkMap.has(p.booking_id)) {
               p.booking = fullBkMap.get(p.booking_id);
            }
+           p.created_at = p.booking.booking_date ? p.booking.booking_date + "T12:00:00Z" : p.created_at;
         } else if (p.booking_id && fullBkMap.has(p.booking_id)) {
           p.staff_id = fullBkMap.get(p.booking_id).staff_id;
           p.booking = fullBkMap.get(p.booking_id);
+          p.created_at = p.booking.booking_date ? p.booking.booking_date + "T12:00:00Z" : p.created_at;
         }
       });
 
-      setLedgers([...stripePayments, ...localCompleted]);
+      const validStripePayments = stripePayments.filter(p => p.booking && p.booking.booking_status === 'completed');
+      setLedgers([...validStripePayments, ...localCompleted]);
       setPayouts(poData || []);
       setSubscriptions(subData || [] || []);
 

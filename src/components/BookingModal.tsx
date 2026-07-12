@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import SecurityBadge from './SecurityBadge';
 import { 
   X, Calendar, Clock, User, CreditCard, Check, 
@@ -19,7 +20,7 @@ interface BookingModalProps {
 const BookingModal = React.memo(function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
-  
+  const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
@@ -318,7 +319,7 @@ const handleConfirmReservation = async () => {
       }
 
       setSuccessBooking(data);
-      setTimeout(() => window.location.href = "/account?status=success", 2000);
+      setTimeout(() => { onClose(); navigate('/account'); }, 1500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Falha ao processar agendamento. Tente novamente.');
     } finally {

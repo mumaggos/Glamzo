@@ -16,14 +16,18 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   // 1. Show dynamic, high-fidelity spinner while authenticating
   if (loading) {
     return (
-      <div id="loading-page" className="min-h-screen flex flex-col items-center justify-center bg-[#07040E] gap-4">
-        {/* Glamzo style delicate purple glowing activity spinner */}
+      <div id="loading-page" className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FC] gap-6">
+        {/* Premium Glamzo spinner */}
         <div className="relative flex items-center justify-center">
-          <div className="w-10 h-10 border-2 border-purple-500/10 border-t-purple-500 rounded-full animate-spin" />
-          <div className="absolute w-2 h-2 bg-pink-500 rounded-full animate-pulse" />
+          {/* Outer rotating ring */}
+          <div className="absolute w-16 h-16 border-[3px] border-transparent border-t-purple-600 border-r-indigo-500 rounded-full animate-[spin_1.5s_linear_infinite]" />
+          {/* Inner pulsing logo */}
+          <div className="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center animate-pulse z-10">
+            <span className="text-xl font-black text-slate-900 tracking-tighter">G</span>
+          </div>
         </div>
-        <span className="text-[10px] tracking-widest font-bold font-mono text-purple-400 uppercase select-none">
-          GLAMZO • VERIFICANDO CREDENCIAIS...
+        <span className="text-xs tracking-widest font-bold font-sans text-slate-500 uppercase select-none animate-pulse">
+          A preparar o seu espaço...
         </span>
       </div>
     );
