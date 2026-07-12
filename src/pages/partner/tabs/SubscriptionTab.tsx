@@ -11,6 +11,9 @@ interface PartnerContextType {
 
 export default function SubscriptionTab() {
   const { business, staff } = useOutletContext<PartnerContextType>();
+  const hasUsedTrial = business?.subscription_status === 'canceled' || business?.subscription_status === 'past_due' || (business?.trial_ends_at && new Date(business.trial_ends_at) < new Date());
+  const isSuspended = business?.subscription_status === 'canceled' || business?.subscription_status === 'past_due' || (business?.subscription_status === 'trialing' && hasUsedTrial);
+
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -209,7 +212,7 @@ export default function SubscriptionTab() {
       const res = await fetch("/api/stripe/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id, planName: planName }),
+        body: JSON.stringify({ businessId: business.id, planName: planName, skipTrial: hasUsedTrial }),
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -368,6 +371,17 @@ export default function SubscriptionTab() {
         </p>
       </div>
 
+      {isSuspended && (
+        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"/>
+          <div>
+            <h4 className="text-sm font-bold text-rose-900">Loja Suspensa</h4>
+            <p className="text-xs text-rose-700 mt-1">O seu período de utilização expirou ou a sua subscrição foi cancelada. A sua página pública não está visível. Selecione um plano para reativar de imediato.</p>
+          </div>
+        </div>
+      )}
+
+
       {globalError && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-bold animate-fade-in">
           {globalError}
@@ -388,9 +402,16 @@ export default function SubscriptionTab() {
             {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
           <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
-          <div className="mt-4 mb-6">
-            <span className="text-4xl font-black text-slate-900">19.90€</span>
-            <span className="text-sm font-bold text-slate-500"> / mês</span>
+          <div className="mt-4 mb-6 flex flex-wrap items-center gap-3">
+            <div>
+              <span className="text-4xl font-black text-slate-900">19.90€</span>
+              <span className="text-sm font-bold text-slate-500"> / mês</span>
+            </div>
+            {!hasUsedTrial ? (
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">14 Dias Grátis</span>
+            ) : (
+              <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">Cobrança Imediata</span>
+            )}
           </div>
           <ul className="space-y-4 mb-8 flex-1">
             <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
@@ -429,8 +450,17 @@ export default function SubscriptionTab() {
           </div>
           <h4 className="text-xl font-black relative z-10 mt-2">Glamzo PRO Terminal</h4>
           <div className="mt-4 mb-6 relative z-10">
-            <span className="text-4xl font-black text-white">24.90€</span>
-            <span className="text-sm font-bold text-slate-400"> / mês</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div>
+                <span className="text-4xl font-black text-white">24.90€</span>
+                <span className="text-sm font-bold text-slate-400"> / mês</span>
+              </div>
+              {!hasUsedTrial ? (
+                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-lg">14 Dias Grátis</span>
+              ) : (
+                <span className="bg-slate-700 text-slate-300 text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-inner">Cobrança Imediata</span>
+              )}
+            </div>
             <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
               <span className="text-xs font-bold text-purple-300">+ 9.90€ Caução Única (Equipamento)</span>
             </div>

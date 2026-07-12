@@ -124,6 +124,14 @@ export default function PartnerLayout() {
   }, [business]);
 
 
+  const hasValidSubscription = !business || business.subscription_status === 'active' || (business.subscription_status === 'trialing' && business.trial_ends_at && new Date(business.trial_ends_at) > new Date());
+
+  useEffect(() => {
+    if (business && !hasValidSubscription && !location.pathname.includes('/subscricao')) {
+      navigate('/partner/dashboard/subscricao', { replace: true });
+    }
+  }, [business, hasValidSubscription, location.pathname, navigate]);
+
   const navItems = [
     { id: "overview", label: "Resumo", icon: LayoutDashboard, path: "/partner/dashboard/overview" },
     { id: "agenda", label: "Agenda", icon: Calendar, path: "/partner/dashboard/agenda" },
@@ -163,6 +171,14 @@ export default function PartnerLayout() {
           <nav className="flex-1 overflow-y-auto space-y-1 p-3 pb-24 custom-scrollbar">
             {navItems.map((tab) => {
               const isActive = location.pathname.startsWith(tab.path);
+              const isDisabled = !hasValidSubscription && tab.id !== "subscricao";
+              if (isDisabled) {
+                return (
+                  <div key={tab.id} className="w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold opacity-50 cursor-not-allowed text-slate-400 bg-slate-50">
+                    <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
+                  </div>
+                );
+              }
               return (
                 <Link key={tab.id} to={tab.path} onClick={() => setIsMobileSidebarOpen(false)} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
                   <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
@@ -194,6 +210,14 @@ export default function PartnerLayout() {
           <nav className="px-4 py-2 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar">
             {navItems.map((tab) => {
               const isActive = location.pathname.startsWith(tab.path);
+              const isDisabled = !hasValidSubscription && tab.id !== "subscricao";
+              if (isDisabled) {
+                return (
+                  <div key={tab.id} className="w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold opacity-50 cursor-not-allowed text-slate-400">
+                    <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span></div>
+                  </div>
+                );
+              }
               return (
                 <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
                   <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span>
@@ -276,11 +300,19 @@ export default function PartnerLayout() {
 
       {/* Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-6 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>Resumo</span></Link>
-        <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>Clientes</span></Link>
-        <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
-        <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>Reservas</span></Link>
-        <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /><span className="text-[10px] font-bold mt-1 text-slate-400">Menu</span></button>
+        {!hasValidSubscription ? (
+          <div className="w-full text-center py-2 flex items-center justify-center gap-2 text-rose-500 font-bold text-xs">
+            Acesso Bloqueado. Por favor, regulariza a tua subscrição.
+          </div>
+        ) : (
+          <>
+            <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>Resumo</span></Link>
+            <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>Clientes</span></Link>
+            <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
+            <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>Reservas</span></Link>
+            <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /><span className="text-[10px] font-bold mt-1 text-slate-400">Menu</span></button>
+          </>
+        )}
       </div>
     </div>
   );

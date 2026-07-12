@@ -795,7 +795,7 @@ async function getOrCreatePriceIdFallback(stripe: Stripe): Promise<string> {
 const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
   console.log("Creating Stripe Checkout...");
   try {
-    const { businessId, planName, successUrl, cancelUrl } = req.body;
+    const { businessId, planName, successUrl, cancelUrl, skipTrial } = req.body;
 
     // Validate request parameters
     if (!businessId) {
@@ -953,7 +953,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     );
 
     const hasUsedTrial = !!business.trial_started_at;
-    const subscriptionData = hasUsedTrial ? {} : { trial_period_days: 14 };
+    const subscriptionData = (hasUsedTrial || skipTrial) ? {} : { trial_period_days: 14 };
 
     console.log(
       `Initiating stripe.checkout.sessions.create... (Trial Used previously: ${hasUsedTrial})`,
