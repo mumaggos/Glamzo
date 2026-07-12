@@ -49,6 +49,70 @@ const mapStyles = [
   { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
 ];
 
+
+function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData: any[]) {
+  const shopHours = hoursData.find((h: any) => h.business_id === shopId);
+  if (!shopHours || shopHours.is_closed) return [];
+
+  const now = new Date();
+  
+  const [openHourStr, openMinuteStr] = (shopHours.open_time || "09:00").split(':');
+  const openHour = parseInt(openHourStr, 10);
+  const openMinute = parseInt(openMinuteStr, 10);
+  const openTotalMins = openHour * 60 + openMinute;
+
+  let currentHour = now.getHours();
+  let currentMinute = now.getMinutes();
+  let startMinuteRounded = currentMinute < 30 ? 30 : 0;
+  let startHourRounded = currentHour;
+  if (startMinuteRounded === 0) startHourRounded += 1;
+  
+  let startTotalMins = startHourRounded * 60 + startMinuteRounded;
+  
+  if (startTotalMins < openTotalMins) {
+    startTotalMins = openTotalMins;
+  }
+
+  const [closeHourStr, closeMinuteStr] = (shopHours.close_time || "19:00").split(':');
+  const closeTotalMins = parseInt(closeHourStr, 10) * 60 + parseInt(closeMinuteStr, 10);
+
+  const shopBookings = bookingsData.filter((b: any) => b.business_id === shopId);
+
+  const slots = [];
+  let currentSlotMins = startTotalMins;
+
+  while (currentSlotMins + 30 <= closeTotalMins) {
+    const sHour = Math.floor(currentSlotMins / 60);
+    const sMin = currentSlotMins % 60;
+    const timeStr = `${sHour.toString().padStart(2, '0')}:${sMin.toString().padStart(2, '0')}`;
+    
+    const slotStartMins = currentSlotMins;
+    const slotEndMins = currentSlotMins + 30;
+
+    let isAvailable = true;
+    for (const b of shopBookings) {
+      if (!b.start_time || !b.end_time) continue;
+      const [bStartH, bStartM] = b.start_time.split(':');
+      const bStartMins = parseInt(bStartH, 10) * 60 + parseInt(bStartM, 10);
+      const [bEndH, bEndM] = b.end_time.split(':');
+      const bEndMins = parseInt(bEndH, 10) * 60 + parseInt(bEndM, 10);
+
+      if (slotStartMins < bEndMins && slotEndMins > bStartMins) {
+        isAvailable = false;
+        break;
+      }
+    }
+
+    if (isAvailable) {
+      slots.push(timeStr);
+    }
+
+    currentSlotMins += 30;
+  }
+
+  return slots.slice(0, 3);
+}
+
 export default function Explore() {
   const { user } = useAuth();
   const navigate = useNavigate();
