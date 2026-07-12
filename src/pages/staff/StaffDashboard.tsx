@@ -13,6 +13,7 @@ export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"agenda" | "settings">("agenda");
   const [businessHours, setBusinessHours] = useState<any[]>([]);
+  const [business, setBusiness] = useState<any>(null);
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>(new Date().toISOString().split("T")[0]);
   
@@ -125,7 +126,7 @@ export default function StaffDashboard() {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const limitDate = thirtyDaysAgo.toISOString().split('T')[0];
 
-      const [bookingsRes, servicesRes, businessHoursRes] = await Promise.all([
+      const [bookingsRes, servicesRes, businessHoursRes, businessRes] = await Promise.all([
         fetch('/api/staff/bookings/query', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ businessId, staffId, limitDate })
@@ -137,12 +138,18 @@ export default function StaffDashboard() {
         supabase
           .from("business_hours")
           .select("*")
-          .eq("business_id", businessId)
+          .eq("business_id", businessId),
+        supabase
+          .from("businesses")
+          .select("*")
+          .eq("id", businessId)
+          .single()
       ]);
 
       if (bookingsRes.data) setBookings(bookingsRes.data);
       if (servicesRes.data) setServices(servicesRes.data);
       if (businessHoursRes.data) setBusinessHours(businessHoursRes.data);
+      if (businessRes.data) setBusiness(businessRes.data);
       
     } catch (error) {
       console.error("Error loading staff dashboard", error);
@@ -231,6 +238,28 @@ export default function StaffDashboard() {
         <div className="animate-spin text-purple-600">
           <Scissors className="w-8 h-8" />
         </div>
+      </div>
+    );
+  }
+
+  const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > new Date());
+
+  if (business && !hasValidSubscription) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 shadow-sm">
+          <svg className="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h2 className="text-xl font-black text-slate-900 mb-2">Sistema em Pausa</h2>
+        <p className="text-sm text-slate-500 max-w-sm mb-8 leading-relaxed">
+          O acesso à plataforma do seu espaço encontra-se temporariamente suspenso. Por favor, contacte a gerência para restabelecer a ligação.
+        </p>
+        <button 
+          onClick={async () => { await supabase.auth.signOut(); navigate('/staff/login'); }} 
+          className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-100 transition shadow-sm"
+        >
+          Terminar Sessão
+        </button>
       </div>
     );
   }
