@@ -285,6 +285,7 @@ const { slug } = useParams<{ slug: string }>();
     <>
       <Helmet>
         <title>{business.name} - Reservas Online | Glamzo</title>
+        {business.logo_url && <link rel="icon" href={business.logo_url} />}
       </Helmet>
       
       <div className="bg-[#F8F9FC] min-h-screen pb-20 font-sans text-slate-800">

@@ -67,7 +67,8 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
   const timeLabel = timeFilter === 'today' ? 'Hoje' : timeFilter === 'week' ? 'Semana' : 'Mês';
 
-  const tasksPending = bookings.filter(b => b.booking_status === 'confirmed' && b.booking_date <= todayStr);
+  const todayStrTemp = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Lisbon" }).format(new Date());
+  const tasksPending = bookings.filter(b => b.booking_status === "confirmed" && b.booking_date <= todayStrTemp);
 
   const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date());
   const upcomingBookings = bookings
@@ -256,13 +257,15 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
                 {upcomingBookings.map(bk => {
                   const srv = services.find(s => s.id === bk.service_id);
                   const stf = staff.find(s => s.id === bk.staff_id);
-                  const d = new Date(bk.booking_date + 'T' + bk.start_time);
+                  const isValidDate = bk.booking_date && bk.start_time;
+                  const d = isValidDate ? new Date(bk.booking_date + 'T' + bk.start_time) : new Date();
+                  const timeString = isValidDate && !isNaN(d.getTime()) ? d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : (bk.start_time || 'N/A');
                   return (
                     <li key={bk.id} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setActiveTab('agenda')}>
                       <div className="flex justify-between items-start mb-2">
                         <span className="font-bold text-slate-900 text-sm">{bk.customer_profile?.full_name || 'Cliente'}</span>
                         <span className="text-xs font-mono font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">
-                          {d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                          {timeString}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-slate-500">
