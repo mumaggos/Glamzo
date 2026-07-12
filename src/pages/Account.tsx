@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
@@ -6,7 +7,7 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag } from 'lucide-react';
+import { User, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
@@ -535,6 +536,13 @@ export default function Account() {
       )}
 
 
+
+
+      {/* FAB - Explorar */}
+      <Link to="/explore" className="fixed bottom-24 lg:bottom-10 right-6 bg-purple-600 text-white p-4 rounded-full shadow-lg shadow-purple-600/30 hover:bg-purple-700 hover:scale-105 transition-all z-[60] flex items-center justify-center group">
+        <Compass className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+      </Link>
+      
       {/* Bottom Nav para Mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-6 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[
