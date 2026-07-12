@@ -112,12 +112,26 @@ export default function Explore() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const [bizRes, servRes, realRev] = await Promise.all([
+      const [bizRes, analyticsRes, servRes, realRev] = await Promise.all([
+        supabase.from("businesses").select("*").eq("status", "active"),
         supabase.rpc("get_explore_shops_with_analytics"),
         supabase.from("services").select("*").eq("is_active", true),
         fetchAllReviews()
       ]);
-      let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
+      
+      let baseBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
+      let analyticsData = analyticsRes.data || [];
+      
+      let loadedBiz = baseBiz.map(b => {
+        const stats = analyticsData.find((a: any) => a.shop_id === b.id) || {};
+        return {
+           ...b,
+           is_new: stats.is_new || false,
+           is_popular: stats.is_popular || false,
+           is_top_rated: stats.is_top_rated || false,
+           available_slots: stats.available_slots || []
+        };
+      });
       let loadedServices = servRes.data || [];
       let loadedReviews = realRev || [];
       
