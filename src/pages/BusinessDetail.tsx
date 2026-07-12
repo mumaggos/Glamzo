@@ -348,6 +348,8 @@ const { slug } = useParams<{ slug: string }>();
 
                 {loadingServices ? (
                   <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-purple-600" /></div>
+                ) : (services || []).length === 0 ? (
+                  <div className="text-center py-6 text-slate-500 font-medium bg-slate-50 rounded-2xl">Nenhum serviço disponível de momento.</div>
                 ) : (
                   <div className="space-y-3">
                     {(services || []).map((srv) => (
@@ -554,7 +556,7 @@ const { slug } = useParams<{ slug: string }>();
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                 <h3 className="text-xl font-black mb-2 relative z-10">Marcar Atendimento</h3>
                 <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento online, rápido e com vagas reais atualizadas ao minuto.</p>
-                <button onClick={() => { document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
+                <button onClick={(e) => { e.preventDefault(); document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
                   <Calendar className="w-5 h-5" /> Reservar Agora
                 </button>
               </div>
@@ -633,17 +635,19 @@ const { slug } = useParams<{ slug: string }>();
         </div>
       </div>
 
-      <ErrorBoundary>
-      <BookingModal
-        isOpen={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-        business={business}
-        services={services}
-        user={user}
-        profile={profile}
-        initialSelectedService={selectedService}
-      />
-      </ErrorBoundary>
+      {bookingOpen && (
+        <ErrorBoundary>
+          <BookingModal
+            isOpen={bookingOpen}
+            onClose={() => setBookingOpen(false)}
+            business={business}
+            services={services}
+            user={user}
+            profile={profile}
+            initialSelectedService={selectedService}
+          />
+        </ErrorBoundary>
+      )}
     </>
   );
 }

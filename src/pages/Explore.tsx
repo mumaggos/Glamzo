@@ -181,11 +181,13 @@ export default function Explore() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const [bizRes, analyticsRes, servRes, realRev] = await Promise.all([
+      const [bizRes, analyticsRes, servRes, realRev, hoursRes, bookingsRes] = await Promise.all([
         supabase.from("businesses").select("*").eq("status", "active"),
         supabase.rpc("get_explore_shops_with_analytics"),
         supabase.from("services").select("*").eq("is_active", true),
-        fetchAllReviews()
+        fetchAllReviews(),
+        supabase.from('business_hours').select('*'),
+        supabase.from('bookings').select('business_id, start_time, end_time, booking_date').gte('booking_date', new Date().toISOString().split('T')[0])
       ]);
       
       let baseBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
@@ -198,7 +200,7 @@ export default function Explore() {
            is_new: stats.is_new || false,
            is_popular: stats.is_popular || false,
            is_top_rated: stats.is_top_rated || false,
-           available_slots: stats.available_slots || []
+           available_slots: calculateImmediateSlots(b.id, hoursRes.data || [], bookingsRes.data || [])
         };
       });
       let loadedServices = servRes.data || [];
@@ -345,7 +347,9 @@ export default function Explore() {
     // Simplification for the rewrite
     const isOpenNow = true; 
     const isPremiumVal = !!b.is_premium || (rating >= 4.5 && reviewsCount >= 1 && b.is_verified);
-    return { ...b, lat, lng, distance, rating, reviewsCount, startPrice: realStartPrice, isOpenNow, is_promoted: hasRealPromotion, is_premium: isPremiumVal };
+    const is_top_rated = rating >= 4.7 && reviewsCount > 0;
+    const is_new = b.created_at ? (new Date().getTime() - new Date(b.created_at).getTime()) / (1000 * 3600 * 24) < 30 : false;
+    return { ...b, lat, lng, distance, rating, reviewsCount, startPrice: realStartPrice, isOpenNow, is_promoted: hasRealPromotion, is_premium: isPremiumVal, is_top_rated, is_new };
   });
 
     const filteredBusinesses = processedBusinesses.filter((b) => {
