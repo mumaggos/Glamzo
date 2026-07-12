@@ -51,6 +51,7 @@ const mapStyles = [
 
 
 function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData: any[]) {
+  if (!hoursData) return [];
   const shopHours = hoursData.find((h: any) => h.business_id === shopId);
   if (!shopHours || shopHours.is_closed) return [];
 
@@ -409,7 +410,7 @@ export default function Explore() {
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   
-  const BusinessCard: React.FC<{ b: any, viewMode?: "list" | "grid" }> = ({ b, viewMode = "list" }) => {
+  const renderBusinessCard = (b: any, viewMode: 'list' | 'grid' = 'list') => {
     const isHighlighted = clickedPinId === b.id || hoveredShopId === b.id;
     
     // Social Proof Badge Logic (Mock)
@@ -427,7 +428,7 @@ export default function Explore() {
     const availableSlots = Array.isArray(b.available_slots) ? b.available_slots : [];
 
     return (
-      <div 
+      <div key={b.id} 
         id={`shop-card-${b.id}`}
         onMouseEnter={() => setHoveredShopId(b.id)}
         onMouseLeave={() => setHoveredShopId(null)}
@@ -568,7 +569,7 @@ export default function Explore() {
             ) : sortedBusinesses.length > 0 ? (
               <>
                 <div className={viewLayout === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"}>
-                  {paginatedBusinesses.map((b) => <BusinessCard key={b.id} b={b} viewMode={viewLayout} />)}
+                  {paginatedBusinesses.map((b) => renderBusinessCard(b, viewLayout))}
                 </div>
                 {sortedBusinesses.length > itemsLimit && (
                   <div className="text-center pt-8 pb-12">

@@ -104,14 +104,14 @@ const [step, setStep] = useState(1);
     if (!selectedDate || selectedServices.length === 0) return [];
 
     const weekday = selectedDate.getDay();
-    const dayHours = businessHours.find(h => h.weekday === weekday);
+    const dayHours = (businessHours || []).find(h => h.weekday === weekday);
     if (!dayHours || dayHours.is_closed) return [];
 
     const startMin = timeToMinutes(dayHours.open_time || '09:00');
     const endMin = timeToMinutes(dayHours.close_time || '19:00'); 
     const duration = totalServicesDuration;
     const dateStr = [selectedDate.getFullYear(), String(selectedDate.getMonth() + 1).padStart(2, '0'), String(selectedDate.getDate()).padStart(2, '0')].join('-');
-    const bookingsToday = existingBookings.filter(b => b.booking_date === dateStr);
+    const bookingsToday = (existingBookings || []).filter(b => b.booking_date === dateStr);
     
     // Matemática da Antecedência Mínima
     const minNoticeMs = (business?.min_booking_notice || 0) * 60000;
@@ -409,7 +409,7 @@ const handleConfirmReservation = async () => {
               {step === 3 && (
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                   {(daysToShow || []).map((date, idx) => {
-                    const isClosed = !businessHours.find(h => h.weekday === date.getDay()) || businessHours.find(h => h.weekday === date.getDay()).is_closed;
+                    const isClosed = !(businessHours || []).find(h => h.weekday === date.getDay()) || (businessHours || []).find(h => h.weekday === date.getDay()).is_closed;
                     const isSelected = selectedDate?.toDateString() === date.toDateString();
                     return (
                       <div key={idx} onClick={() => { if (!isClosed) { setSelectedDate(date); setSelectedTime(null); } }} className={`p-3 rounded-2xl border text-center transition-all ${isClosed ? 'opacity-40 bg-slate-100 cursor-not-allowed' : isSelected ? 'bg-purple-600 text-white border-purple-600 shadow-lg cursor-pointer' : 'bg-white border-slate-200 hover:border-purple-400 cursor-pointer'}`}>

@@ -340,7 +340,7 @@ const { slug } = useParams<{ slug: string }>();
               </div>
 
               {/* Serviços Premium */}
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
+              <div id="services" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-black text-slate-900">Menu de Serviços</h2>
                   <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">{services.length}</span>
@@ -350,7 +350,7 @@ const { slug } = useParams<{ slug: string }>();
                   <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-purple-600" /></div>
                 ) : (
                   <div className="space-y-3">
-                    {services.map((srv) => (
+                    {(services || []).map((srv) => (
                       <div key={srv.id} className="p-4 border border-slate-100 hover:border-purple-200 hover:shadow-md rounded-2xl transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group bg-slate-50/50 hover:bg-white">
                         <div>
                           <h4 className="text-base font-bold text-slate-900">{srv.name}</h4>
@@ -441,7 +441,7 @@ const { slug } = useParams<{ slug: string }>();
                         <label className="block text-xs font-bold text-slate-500 mb-1">Serviço Realizado</label>
                         <select value={newReviewService} onChange={(e) => setNewReviewService(e.target.value)} className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500">
                           <option value="">-- Escolha um serviço --</option>
-                          {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                          {(services || []).map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                           <option value="Outro Serviço">Outro Serviço Geral</option>
                         </select>
                       </div>
@@ -521,13 +521,13 @@ const { slug } = useParams<{ slug: string }>();
                         </div>
                       ))}
                     </div>
-                    {reviews.filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length === 0 && (
+                    {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length === 0 && (
                        <div className="text-center py-6 text-slate-500 text-xs">Nenhuma avaliação encontrada com este filtro.</div>
                     )}
-                    {reviews.filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length > 3 && !showAllReviews && (
+                    {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length > 3 && !showAllReviews && (
                       <div className="mt-2 pt-4 border-t border-slate-100 flex justify-center">
                         <button onClick={() => setShowAllReviews(true)} className="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-xl transition-colors">
-                          Ver todas as {reviews.filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length} avaliações
+                          Ver todas as {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length} avaliações
                         </button>
                       </div>
                     )}
@@ -554,7 +554,7 @@ const { slug } = useParams<{ slug: string }>();
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                 <h3 className="text-xl font-black mb-2 relative z-10">Marcar Atendimento</h3>
                 <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento online, rápido e com vagas reais atualizadas ao minuto.</p>
-                <button onClick={() => handleOpenBooking(null)} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
+                <button onClick={() => { document.getElementById("services")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
                   <Calendar className="w-5 h-5" /> Reservar Agora
                 </button>
               </div>
@@ -563,7 +563,7 @@ const { slug } = useParams<{ slug: string }>();
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm space-y-5">
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-2">Informações</h3>
                 
-                {businessHours && businessHours.length > 0 && (
+                {(businessHours || []).length > 0 && (
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Clock className="w-4 h-4 text-slate-500" />
@@ -571,7 +571,7 @@ const { slug } = useParams<{ slug: string }>();
                     </div>
                     <div className="space-y-2 text-xs">
                       {['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'].map((day, idx) => {
-                        const h = businessHours.find(bh => bh.weekday === idx);
+                        const h = (businessHours || []).find(bh => bh.weekday === idx);
                         if (!h) return null;
                         return (
                           <div key={idx} className="flex justify-between items-center py-1 border-b border-slate-100/50 last:border-0">
