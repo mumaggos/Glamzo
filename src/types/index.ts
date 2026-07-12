@@ -51,6 +51,7 @@ export interface Business {
   onboarding_step?: number | null;
   public_page_enabled?: boolean;
   qr_scans_count?: number;
+  page_views?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
     latitude?: number | null;

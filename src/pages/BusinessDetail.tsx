@@ -68,8 +68,17 @@ const { slug } = useParams<{ slug: string }>();
       try {
         const { data } = await supabase.from('businesses').select('*').eq('slug', slug).maybeSingle();
         if (data) {
-          // Increment page views
-          supabase.rpc('increment_page_views', { store_id: data.id }).then(() => {});
+          // Increment page views / QR scans
+          const isQr = new URLSearchParams(window.location.search).get('source') === 'qr';
+          if (isQr) {
+            supabase.rpc('increment_store_stats', { store_id: data.id, stat_type: 'qr_scans_count' }).then((res) => {
+              if (res.error) console.error("Error incrementing QR scans:", res.error);
+            });
+          } else {
+            supabase.rpc('increment_store_stats', { store_id: data.id, stat_type: 'page_views' }).then((res) => {
+              if (res.error) console.error("Error incrementing page views:", res.error);
+            });
+          }
           if (data.subscription_status === 'suspended') {
             setErrorMsg('Estabelecimento suspenso temporariamente.');
           } else {
