@@ -13,7 +13,7 @@ import {
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
   X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
-} from 'lucide-react';
+, CreditCard, ArrowRightLeft, Package } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart as RLineChart, Line, AreaChart, Area, PieChart, Pie, Cell, Legend
@@ -347,6 +347,7 @@ export default function Admin() {
 
   // States to view all details of a salon inserted by the shop
     const [selectedSalon, setSelectedSalon] = useState<Business | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [eliteTab, setEliteTab] = useState<'overview' | 'stripe' | 'catalog' | 'edit'>('overview');
   const [selectedSalonServices, setSelectedSalonServices] = useState<any[]>([]);
   const [selectedSalonStaff, setSelectedSalonStaff] = useState<any[]>([]);

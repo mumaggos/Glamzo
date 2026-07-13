@@ -7,7 +7,7 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
+import { User, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
@@ -188,6 +188,21 @@ ${disputeDescription}`
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const statusColors: Record<string, string> = {
+    pending: 'bg-amber-100 text-amber-700',
+    confirmed: 'bg-emerald-100 text-emerald-700',
+    completed: 'bg-slate-100 text-slate-700',
+    cancelled: 'bg-rose-100 text-rose-700'
+  };
+
+  const statusText: Record<string, string> = {
+    pending: 'Pendente',
+    confirmed: 'Confirmada',
+    completed: 'Concluída',
+    cancelled: 'Cancelada'
+  };
+
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const fetchUserBookings = async () => {

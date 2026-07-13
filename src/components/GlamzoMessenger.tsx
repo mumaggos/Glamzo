@@ -6,6 +6,7 @@ import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 export default function GlamzoMessenger() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isStoreOnline, setIsStoreOnline] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
@@ -29,8 +30,9 @@ export default function GlamzoMessenger() {
     if (!businessId) return;
     const fetchStatus = async () => {
       const { data } = await supabase.from('businesses').select('profiles:owner_id(last_active)').eq('id', businessId).single();
-      if (data?.profiles?.last_active) {
-        const last = new Date(data.profiles.last_active).getTime();
+      const p = Array.isArray(data?.profiles) ? data?.profiles[0] : data?.profiles;
+      if (p?.last_active) {
+        const last = new Date(p.last_active).getTime();
         const now = new Date().getTime();
         setIsStoreOnline((now - last) < 5 * 60 * 1000);
       } else {
