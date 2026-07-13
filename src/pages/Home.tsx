@@ -183,7 +183,12 @@ export default function Home() {
         ]); 
          
         let srvData = srvRes.data || []; 
-        let loadedBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false); 
+        const nowFilter = new Date();
+        let loadedBiz = (bizRes.data || []).filter((b: any) => {
+          const isActive = b.subscription_status === 'active';
+          const isValidTrial = b.subscription_status === 'trialing' && b.trial_ends_at && new Date(b.trial_ends_at) > nowFilter;
+          return (isActive || isValidTrial) && b.public_page_enabled !== false;
+        }); 
         let revDataFinal = revData || []; 
 
         if (bizRes.error) { 
