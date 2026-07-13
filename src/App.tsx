@@ -1,4 +1,4 @@
-import { Compass } from 'lucide-react';
+
 import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
 
