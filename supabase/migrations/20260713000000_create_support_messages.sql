@@ -19,3 +19,5 @@ DROP POLICY IF EXISTS "Users can insert own support messages" ON public.support_
 CREATE POLICY "Users can insert own support messages" ON public.support_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Admins can do everything. Assuming there's a way to check admin, or just let service_role bypass RLS.
+CREATE POLICY "Admins can do everything" ON public.support_messages 
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));

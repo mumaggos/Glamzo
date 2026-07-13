@@ -54,8 +54,12 @@ export default function GlamzoMessenger() {
   }, []);
 
   useEffect(() => {
-    if (location.pathname.startsWith('/business/')) {
-       const slug = location.pathname.split('/business/')[1];
+    let slug = null;
+    if (location.pathname.startsWith('/business/')) slug = location.pathname.split('/business/')[1];
+    else if (location.pathname.startsWith('/store/')) slug = location.pathname.split('/store/')[1];
+    else if (location.pathname.split('/').length === 2 && location.pathname !== '/explore' && location.pathname !== '/favorites' && location.pathname !== '/login' && location.pathname !== '/signup') slug = location.pathname.split('/')[1];
+
+    if (slug) {
        if (slug) {
          supabase.from('businesses').select('id').eq('slug', slug).single().then(({data}) => {
             if (data) setBusinessId(data.id);
@@ -96,7 +100,7 @@ export default function GlamzoMessenger() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/');
+  const isBusinessPage = location.pathname.startsWith('/business/') || location.pathname.startsWith('/store/') || (location.pathname.split('/').length === 2 && location.pathname !== '/explore' && location.pathname !== '/favorites' && location.pathname !== '/login' && location.pathname !== '/signup');
   if (!isBusinessPage) return null;
 
   const handleSend = async (e: React.FormEvent) => {

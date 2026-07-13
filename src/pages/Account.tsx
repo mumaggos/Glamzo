@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import ClientMessages from '../components/ClientMessages';
+import SupportChat from '../components/SupportChat';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, MessageSquare, ShieldAlert, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
+import { User, MessageSquare, ShieldAlert, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle,  Gift, Sparkles, Copy, Check, Star,  AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
@@ -15,6 +17,7 @@ export default function Account() {
   
   // Tabs Navigation State
   const [activeTab, setActiveTab] = useState('reservas');
+  const [messageTab, setMessageTab] = useState<'lojas' | 'suporte'>('lojas');
 
   // Favorites management state
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<any[]>([]);
