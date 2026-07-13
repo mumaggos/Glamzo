@@ -191,8 +191,8 @@ function ClientFAB() {
   const isExcluded = location.pathname.startsWith('/login') || 
                      location.pathname.startsWith('/register') || 
                      location.pathname.startsWith('/partner') || 
-                     location.pathname === '/explore' ||
-                     location.pathname === '/';
+                     location.pathname === '/explore';
+
                      
   // Show if unauthenticated or if authenticated as client
   const isClientOrGuest = !user || profile?.role === 'customer' || profile?.role === 'client';
