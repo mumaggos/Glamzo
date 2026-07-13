@@ -7,7 +7,7 @@ import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
-import { User, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
+import { User, MessageSquare, ShieldAlert, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle, ShieldAlert, Gift, Sparkles, Copy, Check, Star, MessageSquare, AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
@@ -307,6 +307,7 @@ ${disputeDescription}`
         <div className="hidden lg:flex overflow-x-auto bg-white rounded-2xl shadow-lg border border-slate-100 p-2 gap-2 mb-8 no-scrollbar items-center">
           {[
             { id: 'reservas', icon: Calendar, label: 'Minhas Reservas' },
+            { id: 'mensagens', icon: MessageSquare, label: 'Mensagens' },
             { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
             { id: 'recompensas', icon: Gift, label: 'Recompensas' },
             { id: 'favoritos', icon: Heart, label: 'Favoritos' },
@@ -314,7 +315,7 @@ ${disputeDescription}`
           ].map(tab => (
             <button 
               key={tab.id} 
-              onClick={() => setActiveTab(tab.id as 'reservas' | 'perfil' | 'recompensas' | 'favoritos' | 'suporte')} 
+              onClick={() => setActiveTab(tab.id as 'reservas' | 'mensagens' | 'perfil' | 'recompensas' | 'favoritos' | 'suporte')} 
               className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex-1 justify-center ${activeTab === tab.id ? 'bg-purple-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -402,6 +403,30 @@ ${disputeDescription}`
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        
+        {activeTab === 'mensagens' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in flex flex-col h-[70vh]">
+            <h3 className="text-xl font-black text-slate-900 mb-6">A Minha Caixa de Entrada</h3>
+            <div className="flex gap-4 mb-4">
+              <button 
+                onClick={() => setMessageTab('lojas')} 
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${messageTab === 'lojas' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                <MessageSquare className="w-4 h-4" /> Lojas / Clientes
+              </button>
+              <button 
+                onClick={() => setMessageTab('suporte')} 
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${messageTab === 'suporte' ? 'bg-slate-900 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                <ShieldAlert className="w-4 h-4" /> Suporte Glamzo
+              </button>
+            </div>
+            <div className="flex-1 w-full relative bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+              {messageTab === 'lojas' ? <ClientMessages /> : <SupportChat />}
+            </div>
           </div>
         )}
 
@@ -603,6 +628,7 @@ ${disputeDescription}`
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-4 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[
           { id: 'reservas', icon: Calendar, label: 'Reservas' },
+          { id: 'mensagens', icon: MessageSquare, label: 'Mensagens' },
           { id: 'perfil', icon: UserCircle, label: 'Perfil' }
         ].map(tab => (
           <button 
