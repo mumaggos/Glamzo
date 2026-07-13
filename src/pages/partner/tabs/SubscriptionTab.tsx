@@ -371,23 +371,23 @@ export default function SubscriptionTab() {
         </p>
       </div>
 
-      {isSuspended && (
-  <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between gap-4 flex-wrap shadow-sm">
-    <div className="flex items-start gap-3">
-      <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"/>
-      <div>
-        <h4 className="text-sm font-bold text-rose-900">Loja Suspensa</h4>
-        <p className="text-xs text-rose-700 mt-1">O seu período de utilização expirou ou a subscrição foi cancelada. A sua página pública não está visível.</p>
-      </div>
-    </div>
-    <button 
-      onClick={async () => { await supabase.auth.signOut(); window.location.href = '/partner/login'; }} 
-      className="px-4 py-2 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap"
-    >
-      Terminar Sessão
-    </button>
-  </div>
-)}
+            {isSuspended && (
+        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between gap-4 flex-wrap shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"/>
+            <div>
+              <h4 className="text-sm font-bold text-rose-900">Loja Suspensa</h4>
+              <p className="text-xs text-rose-700 mt-1">O seu período de utilização expirou ou a subscrição foi cancelada. A sua página pública não está visível.</p>
+            </div>
+          </div>
+          <button 
+            onClick={async () => { await supabase.auth.signOut(); window.location.href = '/partner/login'; }} 
+            className="px-4 py-2 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap"
+          >
+            Terminar Sessão
+          </button>
+        </div>
+      )}
 
 
       {globalError && (
@@ -428,27 +428,27 @@ export default function SubscriptionTab() {
             <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
           </ul>
           
-          {isSuspended ? (
-  <button 
-    onClick={() => handleSubscribePro("PRO")}
-    disabled={isVerifyingSub}
-    className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-purple-700 transition shadow-lg"
-  >
-    {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
-  </button>
-) : business?.selected_plan === "app_tablet" ? (
-  <button 
-    onClick={() => handleSubscribePro("PRO")}
-    disabled={isVerifyingSub}
-    className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
-  >
-    Fazer Downgrade para Base
-  </button>
-) : (
-  <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
-    O Seu Plano Atual
-  </button>
-)}
+                    {isSuspended ? (
+            <button 
+              onClick={() => handleSubscribePro("PRO")}
+              disabled={isVerifyingSub}
+              className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-purple-700 transition shadow-lg"
+            >
+              {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
+            </button>
+          ) : business?.selected_plan === "app_tablet" ? (
+            <button 
+              onClick={() => handleSubscribePro("PRO")}
+              disabled={isVerifyingSub}
+              className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
+            >
+              Fazer Downgrade para Base
+            </button>
+          ) : (
+            <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
+              O Seu Plano Atual
+            </button>
+          )}
         </div>
         
         {/* PLANO GLAMZO PRO TERMINAL */}
@@ -488,27 +488,27 @@ export default function SubscriptionTab() {
             <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
           </ul>
 
-          {isSuspended ? (
-  <button 
-    onClick={() => handleSubscribePro("TERMINAL")}
-    disabled={isVerifyingSub}
-    className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-  >
-    {isVerifyingSub ? "A carregar..." : "Reativar com Terminal"}
-  </button>
-) : business?.selected_plan !== "app_tablet" ? (
-  <button 
-    onClick={() => handleSubscribePro("TERMINAL")}
-    disabled={isVerifyingSub}
-    className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-  >
-    {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
-  </button>
-) : (
-  <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
-    O Seu Plano Atual
-  </button>
-)}
+                    {isSuspended ? (
+            <button 
+              onClick={() => handleSubscribePro("TERMINAL")}
+              disabled={isVerifyingSub}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
+            >
+              {isVerifyingSub ? "A carregar..." : "Reativar com Terminal"}
+            </button>
+          ) : business?.selected_plan !== "app_tablet" ? (
+            <button 
+              onClick={() => handleSubscribePro("TERMINAL")}
+              disabled={isVerifyingSub}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
+            >
+              {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
+            </button>
+          ) : (
+            <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
+              O Seu Plano Atual
+            </button>
+          )}
         </div>
 
       </div>
