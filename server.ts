@@ -1003,6 +1003,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
       session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: "subscription",
+        allow_promotion_codes: true,
         line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
@@ -1036,6 +1037,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
           session = await stripe.checkout.sessions.create({
             customer: customerId,
             mode: "subscription",
+            allow_promotion_codes: true,
             line_items: [
               {
                 price: fallbackPriceId,
