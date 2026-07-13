@@ -323,11 +323,7 @@ const { slug } = useParams<{ slug: string }>();
           <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FC] via-[#F8F9FC]/20 to-transparent" />
 
           {/* Top Actions */}
-          <div className="absolute top-6 left-4 sm:left-8 z-10">
-            <Link to="/explore" className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">
-              <ArrowLeft className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">Voltar</span>
-            </Link>
-          </div>
+          {/* Back button to Explore removed per request */}
           <div className="absolute top-6 right-4 sm:right-8 z-10 flex gap-2">
             <button onClick={handleToggleFavorite} className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">
               <Heart className={`w-4 h-4 ${favoriteActive ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
@@ -382,16 +378,16 @@ const { slug } = useParams<{ slug: string }>();
                         {member.avatar_url ? (
                           <img
                             src={member.avatar_url}
-                            alt={member.name}
+                            alt={member.full_name}
                             className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md ring-1 ring-slate-100"
                           />
                         ) : (
                           <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center border-2 border-white shadow-md ring-1 ring-slate-100 text-slate-500 font-black text-xl">
-                            {member.name.charAt(0).toUpperCase()}
+                            {(member.full_name || 'E').charAt(0).toUpperCase()}
                           </div>
                         )}
                         <span className="text-xs font-bold text-slate-700 mt-2 text-center w-full truncate px-1">
-                          {member.name.split(' ')[0]} {/* Mostra apenas o primeiro nome para ficar limpo */}
+                          {(member.full_name || 'Equipa').split(' ')[0]} {/* Mostra apenas o primeiro nome para ficar limpo */}
                         </span>
                       </div>
                     ))}
