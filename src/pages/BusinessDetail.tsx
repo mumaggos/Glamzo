@@ -27,6 +27,7 @@ const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
 
   const [business, setBusiness] = useState<Business | null>(null);
+  const [isStoreOnline, setIsStoreOnline] = useState(false);
   const [availability, setAvailability] = useState<{ available: boolean, label: string } | null>(null);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,11 +67,14 @@ const { slug } = useParams<{ slug: string }>();
       if (!slug) return;
       setLoading(true);
       try {
-        let { data, error } = await supabase.from('businesses').select('*, profiles!businesses_owner_id_fkey(last_active)').eq('slug', slug).maybeSingle();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        const matchColumn = isUuid ? 'id' : 'slug';
+        
+        let { data, error } = await supabase.from('businesses').select('*, profiles!businesses_owner_id_fkey(last_active)').eq(matchColumn, slug).maybeSingle();
         if (error) {
           console.error('SUPABASE ERROR (with last_active):', error);
           // Fallback if last_active column doesn't exist
-          const fallback = await supabase.from('businesses').select('*').eq('slug', slug).maybeSingle();
+          const fallback = await supabase.from('businesses').select('*').eq(matchColumn, slug).maybeSingle();
           data = fallback.data;
           error = fallback.error;
         }
@@ -125,6 +129,7 @@ const { slug } = useParams<{ slug: string }>();
           setErrorMsg('Estabelecimento não encontrado.');
         }
       } catch (err) {
+        console.error('Fetch Business Catch Error:', err);
         setErrorMsg('Erro de ligação.');
       } finally {
         setLoading(false);
@@ -296,7 +301,8 @@ const { slug } = useParams<{ slug: string }>();
   const now = new Date();
   const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > now);
 
-  if (business && (!hasValidSubscription || business.public_page_enabled === false)) {
+  // Temporarily relaxed filter for testing
+  if (false && business && (!hasValidSubscription || business.public_page_enabled === false)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FC] p-6 text-center animate-fade-in">
         <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4">
@@ -698,7 +704,7 @@ const { slug } = useParams<{ slug: string }>();
                     Falar com a Loja no Chat
                   </button>
                   <a 
-                    href={business.whatsapp || `https://wa.me/${business.phone.replace(/[^0-9]/g, '')}`} 
+                    href={business.whatsapp || `https://wa.me/${(business.phone || '').replace(/[^0-9]/g, '')}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all"
