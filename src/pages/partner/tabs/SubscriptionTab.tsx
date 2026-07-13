@@ -11,8 +11,9 @@ interface PartnerContextType {
 
 export default function SubscriptionTab() {
   const { business, staff } = useOutletContext<PartnerContextType>();
-  const hasUsedTrial = business?.subscription_status === 'canceled' || business?.subscription_status === 'past_due' || (business?.trial_ends_at && new Date(business.trial_ends_at) < new Date());
-  const isSuspended = business?.subscription_status === 'canceled' || business?.subscription_status === 'past_due' || (business?.subscription_status === 'trialing' && hasUsedTrial);
+  const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > new Date());
+  const isSuspended = business ? !hasValidSubscription : false;
+  const hasUsedTrial = business?.subscription_status === 'canceled' || business?.subscription_status === 'expired' || business?.subscription_status === 'past_due' || (business?.trial_ends_at && new Date(business.trial_ends_at) < new Date());
 
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
