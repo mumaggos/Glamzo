@@ -17,6 +17,25 @@ export default function Footer() {
             <p className="text-sm text-slate-600 mb-4 pr-4">
               O marketplace ibérico que liga os clientes mais exigentes aos melhores profissionais de beleza e bem-estar.
             </p>
+            {/* Botão Trustpilot */}
+            <div className="mt-6">
+              <a 
+                href="https://pt.trustpilot.com/review/glamzo.pt" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition group"
+              >
+                <div className="w-8 h-8 bg-[#00B67A] rounded flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <svg viewBox="0 0 512 512" className="w-5 h-5 text-white" fill="currentColor">
+                    <path d="M256 36.8l56.5 174.1h183.1L347.5 318.5l56.5 174.1L256 384.9 108 492.6l56.5-174.1L16.4 210.9h183.1L256 36.8z"/>
+                  </svg>
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">Avalie-nos no</span>
+                  <span className="text-sm font-black text-slate-900 leading-none mt-1">Trustpilot</span>
+                </div>
+              </a>
+            </div>
           </div>
           
           <div>
