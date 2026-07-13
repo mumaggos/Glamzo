@@ -281,6 +281,29 @@ const { slug } = useParams<{ slug: string }>();
   let finalRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 5.0;
   let finalReviewsCount = reviews.length;
 
+  const now = new Date();
+  const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > now);
+
+  if (business && (!hasValidSubscription || business.public_page_enabled === false)) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FC] p-6 text-center animate-fade-in">
+        <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-slate-500" />
+        </div>
+        <h1 className="text-2xl font-black text-slate-900 mb-2">Loja Indisponível</h1>
+        <p className="text-slate-500 text-sm max-w-sm mb-6">
+          As reservas online para este espaço encontram-se temporariamente suspensas.
+        </p>
+        <button 
+          onClick={() => navigate('/')} 
+          className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition"
+        >
+          Voltar ao Explorar
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>

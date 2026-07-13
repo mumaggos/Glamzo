@@ -190,7 +190,12 @@ export default function Explore() {
         supabase.from('bookings').select('business_id, start_time, end_time, booking_date').gte('booking_date', new Date().toISOString().split('T')[0])
       ]);
       
-      let baseBiz = (bizRes.data || []).filter(b => b.public_page_enabled !== false);
+      const nowFilter = new Date();
+      let baseBiz = (bizRes.data || []).filter((b: any) => {
+        const isActive = b.subscription_status === 'active';
+        const isValidTrial = b.subscription_status === 'trialing' && b.trial_ends_at && new Date(b.trial_ends_at) > nowFilter;
+        return (isActive || isValidTrial) && b.public_page_enabled !== false;
+      });
       let analyticsData = analyticsRes.data || [];
       
       let loadedBiz = baseBiz.map(b => {
