@@ -6,6 +6,16 @@ import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 export default function GlamzoMessenger() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setHasInteracted(true);
+    };
+    window.addEventListener('open-glamzo-chat', handleOpen);
+    return () => window.removeEventListener('open-glamzo-chat', handleOpen);
+  }, []);
   const [text, setText] = useState('');
   
   const [messages, setMessages] = useState<any[]>([]);
@@ -93,22 +103,48 @@ export default function GlamzoMessenger() {
        }
        setText('');
 
-       // Fetch business email to send notification
-       const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email)').eq('id', businessId).single();
-       const toEmail = businessData?.email || (businessData?.profiles as any)?.email;
-       if (toEmail) {
-         await fetch('/api/emails/send', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-             type: 'chat_message',
-             to: toEmail,
-             data: {
-               customerName: 'Cliente (App)',
-               message: text.trim()
-             }
-           })
-         }).catch(console.error);
+       // Lógica de Notificações Inteligentes
+       // Verificar se é a primeira mensagem nos últimos 30 minutos
+       const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+       const { data: recentMsgs } = await supabase
+         .from('messages')
+         .select('id')
+         .eq('business_id', businessId)
+         .eq('customer_id', userId)
+         .gte('created_at', thirtyMinsAgo);
+
+       // Se houver mais do que 1 mensagem (a que acabámos de inserir), então não é a primeira
+       const isFirstMessage = !recentMsgs || recentMsgs.length <= 1;
+
+       if (isFirstMessage) {
+         // Fetch business email to send notification
+         const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email, last_active)').eq('id', businessId).single();
+         const toEmail = businessData?.email || (businessData?.profiles as any)?.email;
+         const lastActive = (businessData?.profiles as any)?.last_active;
+         
+         let isStoreOnline = false;
+         if (lastActive) {
+           const last = new Date(lastActive).getTime();
+           const now = new Date().getTime();
+           isStoreOnline = (now - last) < 5 * 60 * 1000;
+         }
+         
+         // Se a loja não estiver online (neste caso, enviamos sempre se for a primeira mensagem, 
+         // ou se tivéssemos um campo last_active verificávamos aqui)
+         if (toEmail && !isStoreOnline) {
+           await fetch('/api/emails/send', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({
+               type: 'chat_message',
+               to: toEmail,
+               data: {
+                 customerName: 'Cliente (App)',
+                 message: text.trim()
+               }
+             })
+           }).catch(console.error);
+         }
        }
     } catch(err) {
        console.error("Failed to send message", err);
@@ -120,6 +156,7 @@ export default function GlamzoMessenger() {
   return (
     <div className="fixed bottom-6 right-4 sm:right-6 z-[99999] font-sans">
       {!isOpen ? (
+        hasInteracted ? (
         <button 
            onClick={() => setIsOpen(true)} 
            className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 hover:bg-black transition-all border-[3px] border-white group"
@@ -130,6 +167,7 @@ export default function GlamzoMessenger() {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-white"></span>
           </span>
         </button>
+        ) : null
       ) : (
         <div className="w-[320px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[420px] animate-in slide-in-from-bottom-8">
           

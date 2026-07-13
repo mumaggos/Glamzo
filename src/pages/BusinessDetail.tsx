@@ -66,8 +66,13 @@ const { slug } = useParams<{ slug: string }>();
       if (!slug) return;
       setLoading(true);
       try {
-        const { data } = await supabase.from('businesses').select('*').eq('slug', slug).maybeSingle();
+        const { data } = await supabase.from('businesses').select('*, profiles!businesses_owner_id_fkey(last_active)').eq('slug', slug).maybeSingle();
         if (data) {
+          if (data.profiles && data.profiles.last_active) {
+            const last = new Date(data.profiles.last_active).getTime();
+            const now = new Date().getTime();
+            setIsStoreOnline(now - last < 5 * 60 * 1000);
+          }
           // Increment page views / QR scans
           const isQr = new URLSearchParams(window.location.search).get('source') === 'qr';
           if (isQr) {
@@ -678,6 +683,13 @@ const { slug } = useParams<{ slug: string }>();
 
                 {/* BOTÕES DE CONTACTO RÁPIDOS RECUPERADOS */}
                 <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <button 
+                    onClick={() => window.dispatchEvent(new Event('open-glamzo-chat'))}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition mb-3"
+                  >
+                    <div className={`w-2.5 h-2.5 rounded-full ${isStoreOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-400'}`}></div>
+                    Falar com a Loja no Chat
+                  </button>
                   <a 
                     href={business.whatsapp || `https://wa.me/${business.phone.replace(/[^0-9]/g, '')}`} 
                     target="_blank" 

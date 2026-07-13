@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   phone TEXT,
   role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'business', 'admin')),
   reputation INTEGER DEFAULT 0,
+  last_active TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

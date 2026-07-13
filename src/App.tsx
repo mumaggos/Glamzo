@@ -183,32 +183,7 @@ function NotFoundScreen() {
 
 
 
-function ClientFAB() {
-  const location = useLocation();
-  const { user, profile } = useAuth();
-  
-  // Do not show on auth pages, partner dashboard, or explore page itself
-  const isExcluded = location.pathname.startsWith('/login') || 
-                     location.pathname.startsWith('/register') || 
-                     location.pathname.startsWith('/partner') || 
-                     location.pathname === '/explore';
 
-                     
-  // Show if unauthenticated or if authenticated as client
-  const isClientOrGuest = !user || profile?.role === 'customer' || profile?.role === 'client';
-                     
-  if (isExcluded || !isClientOrGuest) return null;
-
-  return (
-    <Link 
-      to="/explore" 
-      className="fixed bottom-6 right-6 z-50 bg-purple-600 text-white p-4 rounded-full shadow-2xl hover:bg-purple-700 hover:scale-105 transition-all flex items-center justify-center group"
-      title="Explorar Lojas"
-    >
-      <Compass className="w-6 h-6 group-hover:rotate-45 transition-transform duration-300" />
-    </Link>
-  );
-}
 
 function GlobalRoleEnforcer() {
   const { user, profile, signOut, loading } = useAuth();
@@ -276,7 +251,6 @@ export default function App() {
           <GlobalRoleEnforcer />
           <GlobalIntentHandler />
           <ProfileCompletionGuard />
-          <ClientFAB />
           <div id="glamzo-app-root" className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans selection:bg-purple-200 selection:text-purple-900 relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-600 to-rose-450 z-50" />
             <Navbar />
