@@ -7,9 +7,9 @@ import { UserProfile, UserRole, Business } from '../types';
 import { MAIN_CATEGORIES } from '../utils/categoriesData';
 import { financeService } from '../utils/financeService';
 import GlamzoLogo from '../components/GlamzoLogo';
-import { fetchSupportTickets, resolveSupportTicket, sendAbandonedCartEmail } from '../utils/communicationHelper';
+import { sendAbandonedCartEmail } from '../utils/communicationHelper';
 import { 
-  Shield, Users, Search, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
+  Shield, Users, Search, MessageSquare, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
   X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
@@ -42,7 +42,7 @@ export default function Admin() {
   };
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'salons' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -51,7 +51,7 @@ export default function Admin() {
   const [paymentsList, setPaymentsList] = useState<any[]>([]);
   
   // Custom operational state extensions (local state backup for unrepresented databases features)
-  const [disputes, setDisputes] = useState<any[]>(() => financeService.getDisputes());
+  const [disputes, setDisputes] = useState<any[]>([]);
   const [couponsList, setCouponsList] = useState<any[]>(() => financeService.getAdminCoupons());
 
   // Coupon creator state
@@ -77,10 +77,10 @@ export default function Admin() {
     setCouponCode('');
   };
 
-  const [tickets, setTickets] = useState<any[]>([
-    { id: 'tc-801', title: 'Integração de Contas Stripe Connect falhou', category: 'Parceiro', status: 'open' },
-    { id: 'tc-802', title: 'Não recebi o CTT de entrega do Tablet Terminal', category: 'Logística', status: 'open' }
-  ]);
+    const [supportChats, setSupportChats] = useState<any[]>([]);
+  const [supportSubTab, setSupportSubTab] = useState<'messages' | 'disputes'>('messages');
+  const [selectedSupportUser, setSelectedSupportUser] = useState<any>(null);
+  const [supportInput, setSupportInput] = useState("");
   const [terminalRequests, setTerminalRequests] = useState<any[]>([
     { id: 'term-r01', salon: 'Luxe Nails Porto', city: 'Porto', status: 'pending_deposit', serial: 'GZ-TERM-90218' },
     { id: 'term-r02', salon: 'Barbearia da Linha', city: 'Cascais', status: 'shipped', serial: 'GZ-TERM-80125' }
@@ -346,7 +346,8 @@ export default function Admin() {
   };
 
   // States to view all details of a salon inserted by the shop
-  const [selectedSalon, setSelectedSalon] = useState<Business | null>(null);
+    const [selectedSalon, setSelectedSalon] = useState<Business | null>(null);
+  const [eliteTab, setEliteTab] = useState<'overview' | 'stripe' | 'catalog' | 'edit'>('overview');
   const [selectedSalonServices, setSelectedSalonServices] = useState<any[]>([]);
   const [selectedSalonStaff, setSelectedSalonStaff] = useState<any[]>([]);
   const [selectedSalonHours, setSelectedSalonHours] = useState<any[]>([]);
@@ -467,19 +468,30 @@ export default function Admin() {
         setPaymentsList([]);
       }
 
-      // Fetch and sync real support tickets from clients and partners
+                  // Fetch disputes
       try {
-        const realTickets = await fetchSupportTickets();
-        const combined = realTickets.map(t => ({
-            id: t.id,
-            customer_name: t.customer_name,
-            business_name: t.business_name || 'Geral',
-            status: t.status,
-            priority: t.priority,
-            description: t.description,
-            created_at: t.created_at
-          }));
-        setTickets(combined);
+        const { data: disputesData, error: disputesErr } = await supabase
+          .from('disputes')
+          .select('*, bookings(*), profiles!initiator_id(id, full_name, email, phone), businesses(id, name, phone, email)')
+          .order('created_at', { ascending: false });
+
+        if (!disputesErr && disputesData) {
+          setDisputes(disputesData);
+        }
+      } catch (err) {
+        console.warn('Fallback: Unable to fetch disputes', err);
+      }
+      
+      // Fetch and sync real support messages
+      try {
+        const { data: messagesData, error: messagesErr } = await supabase
+          .from('support_messages')
+          .select('*, profiles:user_id(id, full_name, email, role, avatar_url)')
+          .order('created_at', { ascending: true });
+
+        if (!messagesErr && messagesData) {
+          setSupportChats(messagesData);
+        }
       } catch (_) {}
 
     } catch (err: any) {
@@ -1046,6 +1058,20 @@ export default function Admin() {
   };
 
   // Approve or complete payout request
+    const handleResolveDispute = async (disputeId: string, status: 'resolved' | 'refunded' | 'dismissed') => {
+    try {
+      const { error } = await supabase
+        .from('disputes')
+        .update({ status })
+        .eq('id', disputeId);
+      if (error) throw error;
+      setSuccessMsg(`Disputa atualizada para ${status}.`);
+      setDisputes(prev => prev.map(d => d.id === disputeId ? { ...d, status } : d));
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao atualizar disputa.');
+    }
+  };
+
   const handleUpdatePayoutStatus = async (payoutId: string, targetStatus: 'completed' | 'rejected') => {
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -1204,7 +1230,6 @@ export default function Admin() {
                 { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
                 { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'salons', label: 'Salões de Beleza', icon: Briefcase },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
@@ -1283,7 +1308,6 @@ export default function Admin() {
               { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
               { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
               { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-              { id: 'salons', label: 'Salões de Beleza', icon: Briefcase },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
@@ -1514,97 +1538,95 @@ export default function Admin() {
                               </div>
                             </div>
 
-                            {/* Action Buttons Hub */}
+                                                        {/* Action Buttons Hub */}
                             <div className="mt-6 border-t border-purple-100 pt-4 space-y-2.5">
-                              {/* Open detail dashboard page & reset trial */}
-                              <div className="grid grid-cols-2 gap-2">
-                                <a 
-                                  href={`/${sal.slug}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="py-2 px-3 bg-slate-50 border border-slate-200 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
-                                >
-                                  <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
-                                  <span>Ver Loja Pública</span>
-                                </a>
+                                {/* Row 1 */}
+                                <div className="grid grid-cols-2 gap-2">
+                                  <a 
+                                    href={`/${sal.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="py-2.5 px-3 bg-slate-50 border border-slate-200 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+                                    <span>Ver Dados</span>
+                                  </a>
 
-                                <button
-                                  type="button"
-                                  onClick={() => handleResetTrial(sal.id)}
-                                  className="py-2 px-3 bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 cursor-pointer"
-                                >
-                                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                                  <span>Reiniciar Trial</span>
-                                </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleSalonVerification(sal.id, sal.is_verified)}
+                                    className="py-2.5 px-3 bg-blue-950/50 hover:bg-blue-900/60 text-blue-300 hover:text-slate-900 border border-blue-900/40 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 cursor-pointer"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
+                                    <span>{sal.is_verified ? "Retirar Selo" : "Verificar Selo"}</span>
+                                  </button>
+                                </div>
+
+                                {/* Row 2 */}
+                                <div className="grid grid-cols-2 gap-2">
+                                  {isPro ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveProManual(sal.id)}
+                                      className="py-2.5 px-3 bg-slate-50 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-200 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
+                                    >
+                                      Remover PRO
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleActivateProManual(sal.id)}
+                                      className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
+                                    >
+                                      Ativar PRO
+                                    </button>
+                                  )}
+
+                                  {isSuspended ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleReactivatePartner(sal.id)}
+                                      className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-slate-900 border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
+                                    >
+                                      Reativar Loja
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSuspendPartner(sal.id)}
+                                      className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-slate-900 border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
+                                    >
+                                      Suspender
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Row 3 */}
+                                <div className="pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDeleteAccountTarget({
+                                        ownerId: sal.owner_id,
+                                        businessId: sal.id,
+                                        name: sal.name
+                                      });
+                                      setDeleteAccountDoubleConfirmText('');
+                                      setDeleteAccountModalOpen(true);
+                                    }}
+                                    className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-600 hover:text-slate-900 border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Eliminar Conta</span>
+                                  </button>
+                                </div>
                               </div>
-
-                              {/* Manual activation toggles */}
-                              <div className="grid grid-cols-2 gap-2">
-                                {isPro ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-slate-50 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-200 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
-                                  >
-                                    Remover PRO
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleActivateProManual(sal.id)}
-                                    className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
-                                  >
-                                    Ativar PRO Manual
-                                  </button>
-                                )}
-
-                                {isSuspended ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleReactivatePartner(sal.id)}
-                                    className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-slate-900 border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
-                                  >
-                                    Reativar Loja
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSuspendPartner(sal.id)}
-                                    className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-slate-900 border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
-                                  >
-                                    Suspender Loja
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Delete partner account with double confirmation modal trigger */}
-                              <div className="pt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setDeleteAccountTarget({
-                                      ownerId: sal.owner_id,
-                                      businessId: sal.id,
-                                      name: sal.name
-                                    });
-                                    setDeleteAccountDoubleConfirmText('');
-                                    setDeleteAccountModalOpen(true);
-                                  }}
-                                  className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-600 hover:text-slate-900 border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>Eliminar Conta e Todos os Dados</span>
-                                </button>
-                              </div>
-
                             </div>
-                          </div>
                         );
                       })}
                   </div>
                 </div>
               )}
-
               {/* ==================================================== */}
               {/* SECTION 1: UTILIZADORES & CRÉDITOS                 */}
               {/* ==================================================== */}
@@ -1735,95 +1757,6 @@ export default function Admin() {
                         </tbody>
                       </table>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==================================================== */}
-              {/* SECTION 2: LOJAS PARCEIRAS (VERIFICATION TOGGLES)    */}
-              {/* ==================================================== */}
-              {activeTab === 'salons' && (
-                <div id="admin-salons" className="space-y-6">
-                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Lojas & Salões de Beleza Parceiros</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Controle a homologação das lojas, aprovação de novas inscrições e atribuição de selo verificado.</p>
-                    </div>
-
-                    <div className="relative w-full sm:max-w-xs">
-                      <Search className="w-4 h-4 text-slate-550 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
-                      <input 
-                        type="text"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Pesquise por salão ou concelho..."
-                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Salons List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredSalons.map(sal => (
-                      <div key={sal.id} className="bg-white border border-slate-200/60 p-5 rounded-3xl hover:border-purple-900/40 transition-all space-y-4 flex flex-col justify-between">
-                        <div onClick={() => setSelectedSalon(sal)} className="cursor-pointer group">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono uppercase bg-slate-50 p-1 rounded font-bold text-slate-600 leading-none">{sal.category}</span>
-                            <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
-                              sal.is_verified 
-                                ? 'bg-purple-950/45 text-purple-600 border-purple-900/50' 
-                                : 'bg-slate-50 text-slate-500 border-slate-200'
-                            }`}>
-                              {sal.is_verified ? 'Verificado' : 'Aguardando'}
-                            </span>
-                          </div>
-
-                          <h4 className="font-black text-slate-900 text-base mt-2.5 leading-tight group-hover:text-purple-600 transition-colors flex items-center gap-1">
-                            <span>{sal.name}</span>
-                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all text-purple-600" />
-                          </h4>
-                          <p className="text-[11px] text-slate-600 mt-2 font-medium">📍 {sal.address}, {sal.city}</p>
-                          <p className="text-[11px] text-slate-500 font-mono mt-1">📞 {sal.phone}</p>
-                        </div>
-
-                        <div className="border-t border-slate-950 w-full pt-3.5 space-y-2 text-xs mt-auto">
-                          <button 
-                            onClick={() => setSelectedSalon(sal)}
-                            className="w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-850 text-slate-350 hover:text-slate-900 cursor-pointer transition-all"
-                          >
-                            🔍 Ver Dados Inseridos
-                          </button>
-
-                          <button 
-                            onClick={() => handleToggleSalonVerification(sal.id, sal.is_verified)}
-                            className={`w-full text-center py-2.5 rounded-xl font-bold uppercase tracking-wide text-[10px] whitespace-nowrap cursor-pointer transition-all border ${
-                              sal.is_verified 
-                                ? 'bg-white/60 border-slate-805 hover:bg-slate-100 text-slate-450 hover:text-slate-900' 
-                                : 'bg-purple-600 hover:bg-purple-700 text-slate-900 shadow-lg shadow-purple-950/25 border-transparent'
-                            }`}
-                          >
-                            {sal.is_verified ? 'Retirar Selo de Verificação' : 'Atribuir Selo de Verificação'}
-                          </button>
-
-                          <div className="grid grid-cols-2 gap-2 pt-1">
-                            <button
-                              onClick={() => handleStartEditSalon(sal)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-indigo-950/45 hover:bg-indigo-905/45 hover:bg-indigo-900/45 text-indigo-300 hover:text-slate-900 border border-indigo-900/40 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
-                            >
-                              <Settings className="w-3.5 h-3.5" />
-                              <span>Editar</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSalon(sal.id)}
-                              className="py-2 rounded-xl text-center font-bold uppercase text-[9px] bg-rose-950/35 hover:bg-rose-900/45 text-rose-600 hover:text-rose-350 transition-all cursor-pointer inline-flex items-center justify-center gap-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Remover</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               )}
@@ -2000,136 +1933,225 @@ export default function Admin() {
               {/* ==================================================== */}
               {activeTab === 'support' && (
                 <div id="admin-support" className="space-y-6 animate-fade-in max-w-2xl">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Disputas Bancárias & Suporte</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">Avalie reclamações de clientes da cadeira e conflitos de cobrança relacionados ao Stripe.</p>
-                  </div>
-
-                  {/* Disputes segment */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                      <Scale className="w-4.5 h-4.5 text-purple-600" />
-                      <span>Processos de Disputa de Cobrança</span>
-                    </h4>
-
-                    <div className="space-y-3">
-                      {disputes.map((ds) => (
-                        <div key={ds.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs font-semibold">
-                          <div className="text-left">
-                            <span className="block font-black text-slate-900">{ds.customer || ds.customer_name} vs {ds.salon || ds.business_name}</span>
-                            <span className="text-[10px] text-slate-500 mt-0.5 block">Causa: {ds.reason} • Detalhes: {ds.description || 'Nenhum detalhe adicional'}</span>
-                          </div>
-
-                          <div className="space-x-1.5 flex items-center font-sans">
-                            {ds.status === 'pending' || ds.status === 'open' ? (
-                              <>
-                                <button 
-                                  onClick={() => {
-                                    financeService.resolveDispute(ds.id, 'refund', 'Reembolso autorizado via Stripe Sandbox pelo Admin.');
-                                    setDisputes(financeService.getDisputes());
-                                    setSuccessMsg("Disputa encerrada. Estorno autorizado e devolvido à conta do cliente.");
-                                  }}
-                                  className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded font-mono text-[9px] cursor-pointer font-bold transition"
-                                >
-                                  Reembolsar
-                                </button>
-                                <button 
-                                  onClick={() => {
-                                    financeService.resolveDispute(ds.id, 'dismissed', 'Reivindicação de disputa rejeitada pelo Admin.');
-                                    setDisputes(financeService.getDisputes());
-                                    setSuccessMsg("Disputa rejeitada. Comissão do lojista salvaguardada legalmente.");
-                                  }}
-                                  className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] cursor-pointer hover:bg-slate-700"
-                                >
-                                  Rejeitar Reivindicação
-                                </button>
-                              </>
-                            ) : (
-                              <span className={`text-[9px] font-mono font-bold uppercase bg-slate-50 px-2 py-0.5 rounded border ${
-                                ds.admin_decision === 'refund' || ds.status === 'refunded' ? 'text-emerald-600 border-emerald-950' : 'text-rose-400 border-rose-950'
-                              }`}>
-                                {ds.admin_decision === 'refund' || ds.status === 'refunded' ? 'Reembolsada' : 'Rejeitada'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                                    <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Disputas Bancárias & Suporte</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Avalie reclamações de clientes da cadeira e conflitos de cobrança relacionados ao Stripe.</p>
+                    </div>
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      <button
+                        onClick={() => setSupportSubTab('messages')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${supportSubTab === 'messages' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Mensagens
+                      </button>
+                      <button
+                        onClick={() => setSupportSubTab('disputes')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${supportSubTab === 'disputes' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Disputas
+                        {disputes.filter(d => d.status === 'open').length > 0 && (
+                          <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">{disputes.filter(d => d.status === 'open').length}</span>
+                        )}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Support Tickets queue */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                        <HelpCircle className="w-4.5 h-4.5 text-purple-600" />
-                        <span>Fila Unificada de Suporte Global</span>
+                  {supportSubTab === 'messages' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    {/* Left Column: Users List */}
+                    <div className="md:col-span-1 bg-white border border-slate-200 rounded-3xl p-4 sm:p-6 space-y-4 max-h-[600px] overflow-y-auto">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 font-mono mb-4">
+                        <Users className="w-4 h-4 text-purple-600" />
+                        <span>Conversas Abertas</span>
                       </h4>
-                      <span className="text-[10px] text-slate-500 font-bold font-mono">
-                        {tickets.filter(t => t.status !== 'resolved').length} Pendentes Coletados em Portugual
-                      </span>
+                      <div className="space-y-2">
+                        {Object.values(
+                          supportChats.reduce((acc: any, msg: any) => {
+                            if (!acc[msg.user_id]) {
+                              acc[msg.user_id] = { user_id: msg.user_id, user: msg.profiles, messages: [], last_active: msg.created_at };
+                            }
+                            acc[msg.user_id].messages.push(msg);
+                            return acc;
+                          }, {})
+                        ).map((chat: any) => (
+                          <button
+                            key={chat.user_id}
+                            onClick={() => setSelectedSupportUser(chat.user_id)}
+                            className={`w-full text-left p-3 rounded-xl border transition-all ${selectedSupportUser === chat.user_id ? 'bg-purple-50 border-purple-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                          >
+                            <span className="block font-bold text-xs text-slate-900 truncate">{chat.user?.full_name || 'Utilizador Desconhecido'}</span>
+                            <span className="block text-[10px] text-slate-500 font-mono mt-0.5 truncate">{chat.user?.email || 'N/A'}</span>
+                          </button>
+                        ))}
+                        {supportChats.length === 0 && (
+                          <p className="text-[10px] text-slate-500 italic text-center py-4">Nenhuma mensagem encontrada.</p>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="space-y-3">
-                      {tickets.length > 0 ? (
-                        tickets.map((tc) => {
-                          const isResolved = tc.status === 'resolved';
-                          return (
-                            <div 
-                              key={tc.id} 
-                              className={`p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs ${
-                                isResolved ? 'opacity-50 ring-1 ring-slate-900' : ''
-                              }`}
+                    {/* Right Column: Chat Window */}
+                    <div className="md:col-span-2 bg-white border border-slate-200 rounded-3xl p-4 sm:p-6 flex flex-col h-[600px]">
+                      {selectedSupportUser ? (
+                        <>
+                          <div className="border-b border-slate-200 pb-4 mb-4">
+                            <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4 text-purple-600" />
+                              <span>Inbox: Histórico de Conversa</span>
+                            </h4>
+                          </div>
+                          
+                          <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                            {supportChats
+                              .filter(m => m.user_id === selectedSupportUser)
+                              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                              .map(msg => {
+                                const isAdmin = msg.sender_role === 'admin';
+                                return (
+                                  <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[80%] rounded-xl p-3 text-xs ${isAdmin ? 'bg-purple-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'}`}>
+                                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                                      <span className={`block text-[9px] mt-1.5 font-mono ${isAdmin ? 'text-purple-200' : 'text-slate-400'}`}>
+                                        {new Date(msg.created_at).toLocaleString('pt-PT')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                            })}
+                          </div>
+                          
+                          <div className="pt-4 border-t border-slate-200 flex gap-2">
+                            <input
+                              type="text"
+                              value={supportInput}
+                              onChange={(e) => setSupportInput(e.target.value)}
+                              onKeyDown={async (e) => {
+                                if (e.key === 'Enter' && supportInput.trim()) {
+                                  const { error } = await supabase.from('support_messages').insert({
+                                    user_id: selectedSupportUser,
+                                    sender_role: 'admin',
+                                    content: supportInput.trim()
+                                  });
+                                  if (!error) {
+                                    setSupportInput('');
+                                    const { data } = await supabase.from('support_messages').select('*, profiles:user_id(id, full_name, email, role, avatar_url)').order('created_at', { ascending: true });
+                                    if (data) setSupportChats(data);
+                                  }
+                                }
+                              }}
+                              placeholder="Escreva a sua resposta..."
+                              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-purple-600 focus:bg-white transition-all"
+                            />
+                            <button
+                              onClick={async () => {
+                                if (supportInput.trim()) {
+                                  const { error } = await supabase.from('support_messages').insert({
+                                    user_id: selectedSupportUser,
+                                    sender_role: 'admin',
+                                    content: supportInput.trim()
+                                  });
+                                  if (!error) {
+                                    setSupportInput('');
+                                    const { data } = await supabase.from('support_messages').select('*, profiles:user_id(id, full_name, email, role, avatar_url)').order('created_at', { ascending: true });
+                                    if (data) setSupportChats(data);
+                                  }
+                                }
+                              }}
+                              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center shrink-0"
                             >
-                              <div className="space-y-1 overflow-hidden">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-[9px] font-mono text-purple-600 font-bold uppercase">
-                                    Ticket #{tc.id}
-                                  </span>
-                                  <span className="text-slate-700 font-mono">•</span>
-                                  <span className="text-[9px] text-slate-600 font-bold uppercase truncate max-w-[150px]">
-                                    De: {tc.customer_name || 'Utilizador'} ({tc.business_name || 'Geral'})
-                                  </span>
-                                  {tc.priority === 'high' && !isResolved && (
-                                    <span className="bg-rose-950/20 text-rose-400 text-[8px] font-black font-mono border border-rose-950 rounded px-1.5 py-0.2">
-                                      URGENTE
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-slate-900 text-[11px] font-semibold leading-relaxed">
-                                  {tc.description || tc.title}
-                                </p>
-                              </div>
-
-                              <div className="shrink-0">
-                                {isResolved ? (
-                                  <span className="text-[10px] text-emerald-600 bg-emerald-950/20 border border-emerald-950 rounded-lg px-2.5 py-1 font-mono font-bold flex items-center gap-1">
-                                    ✓ RESOLVIDO
-                                  </span>
-                                ) : (
-                                  <button 
-                                    onClick={async () => {
-                                      try {
-                                        await resolveSupportTicket(tc.id);
-                                      } catch (_) {}
-                                      setTickets(prev => prev.map(t => t.id === tc.id ? { ...t, status: 'resolved' } : t));
-                                      setSuccessMsg(`Ticket ${tc.id} solucionado de forma conclusiva.`);
-                                    }}
-                                    className="px-3.5 py-1.5 bg-purple-650 hover:bg-purple-550 text-slate-900 rounded-lg border border-purple-900/10 text-[10px] font-mono font-black cursor-pointer transition-all duration-200"
-                                  >
-                                    Resolver
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
+                              Enviar
+                            </button>
+                          </div>
+                        </>
                       ) : (
-                        <div className="text-center py-8 text-xs text-slate-600 font-mono italic">
-                          Parabéns! Fila de suporte limpa. Sem chamados ativos.
+                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+                          <MessageSquare className="w-12 h-12 mb-3 opacity-20" />
+                          <p className="text-xs font-mono">Selecione uma conversa para começar a responder.</p>
                         </div>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {disputes.length === 0 ? (
+                        <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-500">
+                          <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald-400 opacity-50" />
+                          <p className="text-sm font-bold text-slate-900">Sem Disputas</p>
+                          <p className="text-xs mt-1">Não existem disputas abertas no momento.</p>
+                        </div>
+                      ) : (
+                        disputes.map(dispute => (
+                          <div key={dispute.id} className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm flex flex-col gap-4">
+                            <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+                              <div>
+                                <h4 className="font-extrabold text-slate-900 flex items-center gap-2">
+                                  <AlertTriangle className={`w-4 h-4 ${dispute.status === 'open' ? 'text-rose-500' : 'text-slate-400'}`} />
+                                  <span>Disputa #{dispute.id.split('-')[0]}</span>
+                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest ${
+                                    dispute.status === 'open' ? 'bg-rose-100 text-rose-700' : 
+                                    dispute.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 
+                                    dispute.status === 'refunded' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
+                                  }`}>
+                                    {dispute.status}
+                                  </span>
+                                </h4>
+                                <p className="text-[10px] font-mono text-slate-500 mt-1">Aberta a: {new Date(dispute.created_at).toLocaleString('pt-PT')}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-900 mb-2">Motivo / Descrição</h5>
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                  <p className="text-xs text-slate-700 whitespace-pre-wrap">{dispute.reason}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-900 mb-1">Contactos Cliente</h5>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Nome:</span> {dispute.profiles?.full_name}</p>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Email:</span> {dispute.profiles?.email}</p>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Tel:</span> {dispute.profiles?.phone || 'N/A'}</p>
+                                </div>
+                                
+                                <div>
+                                  <h5 className="text-xs font-bold text-slate-900 mb-1">Contactos Parceiro</h5>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Loja:</span> {dispute.businesses?.name}</p>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Email:</span> {dispute.businesses?.email}</p>
+                                  <p className="text-[11px] text-slate-600"><span className="font-medium">Tel:</span> {dispute.businesses?.phone || 'N/A'}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {dispute.status === 'open' && (
+                              <div className="pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => handleResolveDispute(dispute.id, 'refunded')}
+                                  className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-bold transition-all"
+                                >
+                                  Autorizar Reembolso
+                                </button>
+                                <button
+                                  onClick={() => handleResolveDispute(dispute.id, 'dismissed')}
+                                  className="px-4 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold transition-all"
+                                >
+                                  Rejeitar
+                                </button>
+                                <button
+                                  onClick={() => handleResolveDispute(dispute.id, 'resolved')}
+                                  className="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold transition-all"
+                                >
+                                  Marcar como Resolvido
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3193,322 +3215,184 @@ $$;`}
         </div>
       </main>
 
-      {/* Detailed Modal to inspect All Salon Data Inserido pela Loja */}
+            {/* Detailed Modal to inspect All Salon Data Inserido pela Loja (Painel Elite) */}
       {selectedSalon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex justify-end">
           {/* Backdrop screen blur */}
           <div 
             onClick={() => setSelectedSalon(null)} 
-            className="fixed inset-0 bg-slate-50/80 backdrop-blur-xs transition-opacity cursor-pointer" 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity cursor-pointer" 
           />
           
-          <div className="relative bg-white border border-slate-200 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden text-xs max-h-[90vh] flex flex-col animate-scale-up">
+          <div className="relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
             
-            {/* Cover header block */}
-            <div className="relative h-40 bg-slate-50 flex-shrink-0">
-              {selectedSalon.cover_url ? (
-                <img loading="lazy" 
-                  referrerPolicy="no-referrer"
-                  src={selectedSalon.cover_url} 
-                  alt="Cover" 
-                  className="w-full h-full object-cover opacity-60" 
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-50 opacity-80" />
-              )}
-              
-              {/* Close Button badge */}
-              <button 
-                onClick={() => setSelectedSalon(null)}
-                className="absolute top-4 right-4 bg-slate-50/80 hover:bg-white border border-slate-850 p-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              
-              {/* Logo & Headline */}
-              <div className="absolute bottom-4 left-6 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-900 text-xl font-bold">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50 shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center text-slate-900 text-lg font-bold">
                   {selectedSalon.logo_url ? (
-                    <img loading="lazy" 
-                      referrerPolicy="no-referrer"
-                      src={selectedSalon.logo_url} 
-                      alt="Logo" 
-                      className="w-full h-full object-cover" 
-                    />
+                    <img loading="lazy" referrerPolicy="no-referrer" src={selectedSalon.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
                     selectedSalon.name.substring(0, 2).toUpperCase()
                   )}
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-slate-900">{selectedSalon.name}</h3>
-                    <span className="px-2 py-0.5 rounded bg-purple-950 border border-purple-900/40 text-purple-600 font-mono text-[9px] uppercase font-bold">
-                      ID: {selectedSalon.id.substring(0, 8)}
-                    </span>
-                  </div>
-                  <p className="text-purple-600 font-bold mt-1 uppercase tracking-wider text-[10px]">{selectedSalon.category}</p>
+                  <h2 className="text-xl font-black text-slate-900 leading-tight">{selectedSalon.name}</h2>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">ID: {selectedSalon.id}</p>
                 </div>
               </div>
+              <button 
+                onClick={() => setSelectedSalon(null)}
+                className="p-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5 text-slate-600" />
+              </button>
             </div>
 
-            {/* Scrollable Container Body */}
-            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 scrollbar-thin scrollbar-thumb-slate-800">
-              
-              {/* LEFT Column (Generic info & geography & socials) */}
-              <div className="lg:col-span-5 space-y-6">
-                
-                {/* Description card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2 mb-2.5">
-                    Descrição da Marca
-                  </h4>
-                  <p className="text-slate-600 leading-normal whitespace-pre-line text-[11px]">
-                    {selectedSalon.description || 'Nenhuma descrição inserida pelo salão parceiro.'}
-                  </p>
-                </div>
+            {/* Navigation Tabs */}
+            <div className="flex border-b border-slate-100 px-6 gap-6 bg-white shrink-0 overflow-x-auto custom-scrollbar">
+              <button onClick={() => setEliteTab('overview')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'overview' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Visão Geral</button>
+              <button onClick={() => setEliteTab('stripe')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'stripe' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Faturação Stripe</button>
+              <button onClick={() => setEliteTab('catalog')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'catalog' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Catálogo & Equipa</button>
+              <button onClick={() => { setEliteTab('edit'); handleStartEditSalon(selectedSalon); }} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'edit' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Editar Loja</button>
+            </div>
 
-                {/* Contacts & Links card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl space-y-3">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2 mb-1">
-                    Sistemas de Contacto & Redes
-                  </h4>
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+              {eliteTab === 'overview' && (
+                <div className="space-y-6">
+                  {/* Actions Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => handleToggleSalonVerification(selectedSalon.id, selectedSalon.is_verified)} className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-purple-300 transition-all flex flex-col gap-2 items-center text-center">
+                      <ShieldAlert className={`w-6 h-6 ${selectedSalon.is_verified ? 'text-blue-500' : 'text-slate-400'}`} />
+                      <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">{selectedSalon.is_verified ? 'Retirar Homologação' : 'Homologar Loja'}</span>
+                    </button>
+                    {selectedSalon.status === 'suspended' ? (
+                      <button onClick={() => handleReactivatePartner(selectedSalon.id)} className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-emerald-300 transition-all flex flex-col gap-2 items-center text-center">
+                        <CheckCircle className="w-6 h-6 text-emerald-500" />
+                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">Reativar Conta</span>
+                      </button>
+                    ) : (
+                      <button onClick={() => handleSuspendPartner(selectedSalon.id)} className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-rose-300 transition-all flex flex-col gap-2 items-center text-center">
+                        <AlertTriangle className="w-6 h-6 text-rose-500" />
+                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">Suspender Conta</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><MapPin className="w-4 h-4 text-purple-600" /> Detalhes & Contactos</h3>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div><p className="text-slate-500 font-bold mb-1">Telefone</p><p className="font-mono text-slate-900">{selectedSalon.phone || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Email Público</p><p className="font-mono text-slate-900 truncate">{selectedSalon.email || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Cidade</p><p className="font-bold text-slate-900 uppercase">{selectedSalon.city || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Morada</p><p className="text-slate-900">{selectedSalon.address || 'N/A'}</p></div>
+                    </div>
+                  </div>
                   
-                  <div className="grid grid-cols-1 gap-2.5">
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Telefone Principal</span>
-                      <span className="text-slate-900 font-mono font-bold">{selectedSalon.phone || '-'}</span>
-                    </div>
-
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Correio Eletrónico</span>
-                      <span className="text-slate-900 font-mono">{selectedSalon.email || 'Não configurado'}</span>
-                    </div>
-
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Donatário / Owner ID</span>
-                      <span className="text-slate-900 font-mono select-all text-[10px] text-slate-600">{selectedSalon.owner_id}</span>
-                    </div>
-
-                    <div className="border-t border-slate-200 pt-2.5 grid grid-cols-2 gap-2">
-                      {selectedSalon.whatsapp && (
-                        <a 
-                          href={`https://wa.me/${selectedSalon.whatsapp.replace(/[^0-9]/g, '')}`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="p-2 bg-white hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block"
-                        >
-                          💬 WhatsApp
-                        </a>
-                      )}
-                      
-                      {selectedSalon.instagram && (
-                        <a 
-                          href={selectedSalon.instagram} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="p-2 bg-white hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block truncate"
-                        >
-                          📸 Instagram
-                        </a>
-                      )}
-
-                      {selectedSalon.website && (
-                        <a 
-                          href={selectedSalon.website} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="p-2 bg-slate-905 hover:bg-slate-850 hover:text-slate-900 border border-slate-200 rounded-xl font-bold text-center block col-span-2 truncate"
-                        >
-                          🌐 Website Institucional
-                        </a>
-                      )}
-                    </div>
+                  <div className="bg-rose-50 border border-rose-100 p-5 rounded-2xl">
+                    <h3 className="font-black text-rose-900 text-sm flex items-center gap-2 mb-3"><Trash2 className="w-4 h-4" /> Zona de Perigo</h3>
+                    <button 
+                      onClick={() => {
+                        setDeleteAccountTarget({ ownerId: selectedSalon.owner_id, businessId: selectedSalon.id, name: selectedSalon.name });
+                        setDeleteAccountDoubleConfirmText('');
+                        setDeleteAccountModalOpen(true);
+                      }}
+                      className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md shadow-rose-900/20"
+                    >
+                      Eliminar Conta & Dados
+                    </button>
                   </div>
                 </div>
+              )}
 
-                {/* Geography Map details card */}
-                <div className="bg-slate-50 border border-slate-850 p-4 rounded-2xl space-y-2.5">
-                  <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-widest border-b border-slate-200 pb-2">
-                    Localização & Morada Real
-                  </h4>
-                  <div>
-                    <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Morada Física Completa</span>
-                    <span className="text-slate-900 mt-1 block leading-normal">{selectedSalon.address}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-2">
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Concelho / Cidade</span>
-                      <span className="text-slate-900 font-bold">{selectedSalon.city}</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Distrito</span>
-                      <span className="text-slate-900 font-bold">{selectedSalon.district}</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase block font-bold">Código Postal</span>
-                      <span className="text-slate-900 font-mono">{selectedSalon.postal_code || '-'}</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* RIGHT Column (Loaded database sub details: services, staff, hours) */}
-              <div className="lg:col-span-7 space-y-6">
-                
-                {loadingSalonDetails ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-slate-500 gap-2">
-                    <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-                    <span className="text-[10px] font-mono">Carregando catálogo, equipa e horários inseridos...</span>
-                  </div>
-                ) : (
-                  <>
-                    {/* Catalog: Services List block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
-                        Catálogo de Serviços Registados ({selectedSalonServices.length})
-                      </h4>
-                      
-                      <div className="mt-3 divide-y divide-slate-100/5 max-h-48 overflow-y-auto scrollbar-thin">
-                        {selectedSalonServices.map((srv) => (
-                          <div key={srv.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                            <div>
-                              <span className="font-black text-slate-900 block">{srv.name}</span>
-                              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-600">
-                                <span>⏱️ {srv.duration_minutes} min</span>
-                                {srv.category?.name && (
-                                  <>
-                                    <span className="text-slate-700 font-sans">•</span>
-                                    <span>📂 {srv.category.name}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <span className="font-mono font-black text-purple-600">{srv.price.toFixed(2)} €</span>
-                          </div>
-                        ))}
-
-                        {selectedSalonServices.length === 0 && (
-                          <p className="text-slate-550 font-mono py-6 text-center text-xs">O salão não registou nenhum serviço no catálogo.</p>
-                        )}
+              {eliteTab === 'stripe' && (
+                <div className="space-y-6">
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><Award className="w-4 h-4 text-purple-600" /> Assinatura</h3>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Plano Atual</p>
+                        <p className="text-sm font-black text-slate-900">{selectedSalon.selected_plan_name || 'Comissionado Base'}</p>
                       </div>
+                      {selectedSalon.is_premium ? (
+                        <button onClick={() => handleRemoveProManual(selectedSalon.id)} className="px-4 py-2 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold transition-all">Remover PRO</button>
+                      ) : (
+                        <button onClick={() => handleActivateProManual(selectedSalon.id)} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-900/20">Ativar PRO</button>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Team Staff List block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
-                        Membros da Equipa Cadastrados ({selectedSalonStaff.length})
-                      </h4>
-                      
-                      <div className="mt-3 divide-y divide-slate-100/5 max-h-36 overflow-y-auto scrollbar-thin">
-                        {selectedSalonStaff.map((stf) => (
-                          <div key={stf.id} className="py-2.5 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 text-slate-600 font-mono text-[10px] font-bold">
-                              {stf.avatar_url ? (
-                                <img loading="lazy" 
-                                  referrerPolicy="no-referrer"
-                                  src={stf.avatar_url} 
-                                  alt={stf.full_name} 
-                                  className="w-full h-full object-cover" 
-                                />
-                              ) : (
-                                stf.full_name.substring(0, 2).toUpperCase()
-                              )}
-                            </div>
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-blue-600" /> Detalhes Stripe Connect</h3>
+                    <div className="space-y-3 text-xs">
+                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">Account ID</span><span className="font-mono text-slate-900 font-bold">{selectedSalon.stripe_account_id || 'Não conectado'}</span></div>
+                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">Cobranças (charges_enabled)</span><span className={selectedSalon.charges_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.charges_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
+                      <div className="flex justify-between pb-1"><span className="text-slate-500 font-bold">Repasses (payouts_enabled)</span><span className={selectedSalon.payouts_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.payouts_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-slate-600" /> Histórico de Payouts da Loja</h3>
+                    <div className="space-y-2">
+                      {payoutRequests.filter((p: any) => p.business_id === selectedSalon.id).length === 0 ? (
+                        <p className="text-xs text-slate-500">Sem histórico de payouts para esta loja.</p>
+                      ) : (
+                        payoutRequests.filter((p: any) => p.business_id === selectedSalon.id).map((po: any, idx: number) => (
+                          <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
                             <div>
-                              <span className="font-black text-slate-900 block">{stf.full_name}</span>
-                              <span className="text-[10px] text-slate-500 block font-bold uppercase mt-0.5">{stf.role_title || 'Colaborador Profissional'}</span>
+                              <p className="text-xs font-bold text-slate-900">{po.amount}€</p>
+                              <p className="text-[10px] text-slate-500 font-mono mt-0.5">{po.date || 'Data desconhecida'}</p>
                             </div>
-                            <span className="ml-auto font-mono text-[8px] tracking-wider uppercase bg-emerald-950/40 border border-emerald-900 text-emerald-600 px-1.5 py-0.5 rounded-full">
-                              Activo
+                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                              po.status === 'pago' ? 'bg-emerald-100 text-emerald-700' : 
+                              po.status === 'pendente' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+                            }`}>
+                              {po.status}
                             </span>
                           </div>
-                        ))}
-
-                        {selectedSalonStaff.length === 0 && (
-                          <p className="text-slate-550 font-mono py-6 text-center text-xs">O salão não tem colaboradores na equipa ainda.</p>
-                        )}
-                      </div>
+                        ))
+                      )}
                     </div>
+                  </div>
+                  </div>
+              )}
 
-                    {/* Operating hours list block */}
-                    <div className="bg-slate-50 border border-slate-850 p-5 rounded-3xl">
-                      <h4 className="font-extrabold text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 pb-2.5">
-                        Horário de Funcionamento Cadastrado
-                      </h4>
-                      
-                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {(() => {
-                          const weekdaysName = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-                          return [1, 2, 3, 4, 5, 6, 0].map(dayIdx => {
-                            const matchHour = selectedSalonHours.find(h => h.weekday === dayIdx);
-                            const isClosed = !matchHour || matchHour.is_closed;
-                            return (
-                              <div key={dayIdx} className="p-2 bg-white/40 border border-slate-200 rounded-xl flex flex-col items-center">
-                                <span className="text-[9px] text-slate-500 uppercase font-black font-mono">{weekdaysName[dayIdx]}</span>
-                                {isClosed ? (
-                                  <span className="text-[10px] text-rose-500 font-bold mt-1 uppercase">Fechado</span>
-                                ) : (
-                                  <div className="text-[10px] text-slate-350 font-mono font-bold mt-1">
-                                    {matchHour.open_time.substring(0,5)} - {matchHour.close_time.substring(0,5)}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          });
-                        })()}
-                      </div>
+              {eliteTab === 'catalog' && (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-500 bg-white border border-slate-200 rounded-3xl">
+                  <Package className="w-12 h-12 mb-4 text-slate-300" />
+                  <p className="text-sm font-bold text-slate-900">Catálogo Ocultado no Admin</p>
+                  <p className="text-xs mt-1 text-center max-w-xs">Para visualizar serviços e horários desta loja, abra a sua página de perfil.</p>
+                  <a href={`/${selectedSalon.slug}`} target="_blank" rel="noopener noreferrer" className="mt-4 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" /> Abrir Página Pública
+                  </a>
+                </div>
+              )}
+
+              {eliteTab === 'edit' && editingSalon?.id === selectedSalon.id && (
+                <form onSubmit={(e) => { e.preventDefault(); handleSaveEditSalon(e); }} className="space-y-4">
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Nome do Salão</label><input type="text" value={editSalonName} onChange={e => setEditSalonName(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Categoria Principal</label><input type="text" value={editSalonCategory} onChange={e => setEditSalonCategory(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Descrição Curta</label><textarea value={editSalonDescription} onChange={e => setEditSalonDescription(e.target.value)} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 outline-none focus:border-purple-600 resize-none" /></div>
+                  </div>
+                  
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Telefone Contacto</label><input type="text" value={editSalonPhone} onChange={e => setEditSalonPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Distrito</label><input type="text" value={editSalonDistrict} onChange={e => setEditSalonDistrict(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Cidade</label><input type="text" value={editSalonCity} onChange={e => setEditSalonCity(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
                     </div>
-                  </>
-                )}
-
-              </div>
-
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Morada Completa</label><input type="text" value={editSalonAddress} onChange={e => setEditSalonAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                  </div>
+                  
+                  <button type="submit" disabled={isSaving} className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md shadow-purple-900/20 flex items-center justify-center gap-2">
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                    <span>Guardar Alterações</span>
+                  </button>
+                </form>
+              )}
             </div>
-
-            {/* Modal Bottom control panel */}
-            <div className="bg-slate-50 px-6 py-4.5 border-t border-slate-850 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${selectedSalon.is_verified ? 'bg-purple-500' : 'bg-slate-600'}`} />
-                <span className="text-[11px] text-slate-600 font-bold">
-                  Selo de Verificação de Integridade Física: {selectedSalon.is_verified ? 'Atribuído / Aprovado' : 'Não Atribuído / Pendente'}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleStartEditSalon(selectedSalon)}
-                  className="px-4.5 py-2.5 bg-indigo-950/45 hover:bg-indigo-900/45 border border-indigo-900/40 text-indigo-300 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  <Settings className="w-3.5 h-3.5" />
-                  <span>Editar Loja</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteSalon(selectedSalon.id)}
-                  className="px-4.5 py-2.5 bg-rose-950/35 hover:bg-rose-900/45 border border-rose-950 text-rose-455 hover:text-rose-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Eliminar Loja</span>
-                </button>
-                <button
-                  onClick={() => handleToggleSalonVerification(selectedSalon.id, selectedSalon.is_verified)}
-                  className={`px-4.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                    selectedSalon.is_verified 
-                      ? 'bg-white hover:bg-slate-850 text-slate-600 border border-slate-200' 
-                      : 'bg-purple-600 hover:bg-purple-700 text-slate-900'
-                  }`}
-                >
-                  {selectedSalon.is_verified ? 'Retirar Homologação' : 'Homologar & Verificar Canal'}
-                </button>
-                <button 
-                  onClick={() => setSelectedSalon(null)}
-                  className="px-4.5 py-2.5 bg-white hover:bg-slate-850 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-[10px] font-mono tracking-wider font-extrabold uppercase transition-all cursor-pointer"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
       )}
