@@ -24,6 +24,25 @@ export default function GlamzoMessenger() {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Fetch store online status
+  useEffect(() => {
+    if (!businessId) return;
+    const fetchStatus = async () => {
+      const { data } = await supabase.from('businesses').select('profiles:owner_id(last_active)').eq('id', businessId).single();
+      if (data?.profiles?.last_active) {
+        const last = new Date(data.profiles.last_active).getTime();
+        const now = new Date().getTime();
+        setIsStoreOnline((now - last) < 5 * 60 * 1000);
+      } else {
+        setIsStoreOnline(false);
+      }
+    };
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 60000);
+    return () => clearInterval(interval);
+  }, [businessId]);
+
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session?.user) {
@@ -133,21 +152,32 @@ export default function GlamzoMessenger() {
            isStoreOnline = (now - last) < 5 * 60 * 1000;
          }
          
-         // Se a loja não estiver online (neste caso, enviamos sempre se for a primeira mensagem, 
-         // ou se tivéssemos um campo last_active verificávamos aqui)
-         if (toEmail && !isStoreOnline) {
-           await fetch('/api/emails/send', {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({
-               type: 'chat_message',
-               to: toEmail,
-               data: {
-                 customerName: 'Cliente (App)',
-                 message: text.trim()
-               }
-             })
-           }).catch(console.error);
+         // Se a loja não estiver online
+         if (!isStoreOnline) {
+           // Insert auto-reply message
+           const autoReply = {
+             business_id: businessId,
+             customer_id: userId,
+             sender: 'business',
+             content: "Olá! Não estamos online neste momento, mas recebemos a sua mensagem e responderemos com a maior brevidade possível.",
+             is_read: false
+           };
+           await supabase.from('messages').insert([autoReply]);
+           
+           if (toEmail) {
+             await fetch('/api/emails/send', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                 type: 'chat_message',
+                 to: toEmail,
+                 data: {
+                   customerName: 'Cliente (App)',
+                   message: text.trim()
+                 }
+               })
+             }).catch(console.error);
+           }
          }
        }
     } catch(err) {
@@ -182,8 +212,8 @@ export default function GlamzoMessenger() {
               </div>
               <div>
                 <h4 className="text-xs font-black tracking-wide">Falar com a Loja</h4>
-                <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_#34d399]" /> Online
+                <span className={`text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 mt-0.5 ${isStoreOnline ? 'text-emerald-400' : 'text-slate-400'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isStoreOnline ? 'bg-emerald-400 shadow-[0_0_5px_#34d399]' : 'bg-slate-300'}`} /> {isStoreOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
             </div>

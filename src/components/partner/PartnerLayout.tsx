@@ -116,15 +116,15 @@ export default function PartnerLayout() {
         setUnreadCountByCustomer(counts);
         
         // Add a notification for unread messages
-        setNotifications([{
+        setNotifications(prev => { const others = prev.filter(n => n.id !== 999); return [...others, {
           id: 999,
           title: "Novas Mensagens Recebidas",
           desc: `Você tem ${messagesData.length} mensagem(s) não lida(s) de clientes.`,
           time: "Agora"
-        }]);
+        }]; });
       } else {
         setUnreadMessages(0);
-        setNotifications([]);
+        setNotifications(prev => prev.filter(n => n.id !== 999));
       }
 
     } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
@@ -135,10 +135,9 @@ export default function PartnerLayout() {
   useEffect(() => {
     if (!business) return;
     const channel = supabase.channel('partner_layout_messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${business.id}` }, payload => {
-        if (payload.new.sender === 'customer') {
-          loadLayoutData();
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `business_id=eq.${business.id}` }, payload => {
+        // Trigger layout refresh on any message insert/update (like marking as read)
+        loadLayoutData();
       }).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [business]);

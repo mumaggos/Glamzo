@@ -302,7 +302,7 @@ export default function StaffTab() {
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center border border-purple-100 text-purple-600 font-black text-xl shrink-0 overflow-hidden shadow-inner">
                     {st.avatar_url ? (
-                      <img
+                      <img loading="lazy"
                         src={st.avatar_url}
                         alt={st.full_name}
                         className="w-full h-full object-cover"
@@ -524,7 +524,7 @@ export default function StaffTab() {
                 </label>
                 <div className="flex items-center gap-4">
                   {staffForm.avatar_url && (
-                    <img
+                    <img loading="lazy"
                       src={staffForm.avatar_url}
                       alt="Preview"
                       className="w-12 h-12 rounded-full object-cover border border-slate-200"

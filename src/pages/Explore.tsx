@@ -157,7 +157,7 @@ export default function Explore() {
   const [sortBy, setSortBy] = useState<string>("recomendados"); // recomendados, distancia, preco_asc, rating
   const [abertoAgora, setAbertoAgora] = useState(false);
   const [minimo4Estrelas, setMinimo4Estrelas] = useState(false);
-  const [itemsLimit, setItemsLimit] = useState(12);
+  const [queryLimit, setQueryLimit] = useState(12);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function Explore() {
     setErrorMsg(null);
     try {
       const [bizRes, analyticsRes, servRes, realRev, hoursRes, bookingsRes] = await Promise.all([
-        supabase.from("businesses").select("*").eq("status", "active"),
+        supabase.from("businesses").select("*").eq("status", "active").limit(queryLimit),
         supabase.rpc("get_explore_shops_with_analytics"),
         supabase.from("services").select("*").eq("is_active", true),
         fetchAllReviews(),
@@ -235,7 +235,7 @@ export default function Explore() {
 
   useEffect(() => {
     fetchExploreData();
-  }, []);
+  }, [queryLimit]);
 
   useEffect(() => {
     if (user?.id) fetchCustomerFavorites(user.id).then(setUserFavorites);
@@ -332,7 +332,7 @@ export default function Explore() {
     setSortBy("recomendados");
     setAbertoAgora(false);
     setMinimo4Estrelas(false);
-    setItemsLimit(12);
+    setQueryLimit(12);
   };
 
   const processedBusinesses = businesses.map((b) => {
@@ -415,7 +415,7 @@ export default function Explore() {
     return y.rating - x.rating;
   });
 
-  const paginatedBusinesses = sortedBusinesses.slice(0, itemsLimit);
+  const paginatedBusinesses = sortedBusinesses;
   const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   
@@ -580,9 +580,9 @@ export default function Explore() {
                 <div className={viewLayout === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"}>
                   {paginatedBusinesses.map((b) => renderBusinessCard(b, viewLayout))}
                 </div>
-                {sortedBusinesses.length > itemsLimit && (
+                {sortedBusinesses.length === queryLimit && (
                   <div className="text-center pt-8 pb-12">
-                    <button onClick={() => setItemsLimit(itemsLimit + 12)} className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm">
+                    <button onClick={() => setQueryLimit(queryLimit + 12)} className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm">
                       Carregar mais
                     </button>
                   </div>

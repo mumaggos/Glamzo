@@ -403,7 +403,7 @@ const { slug } = useParams<{ slug: string }>();
                       return (
                         <div key={member.id || idx} className="flex flex-col items-center min-w-[72px] snap-start">
                           {member.avatar_url ? (
-                            <img
+                            <img loading="lazy"
                               src={member.avatar_url}
                               alt={nameStr}
                               className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md ring-1 ring-slate-100"
@@ -462,7 +462,7 @@ const { slug } = useParams<{ slug: string }>();
                   <button className="absolute top-4 right-4 p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors">
                     <X className="w-6 h-6" />
                   </button>
-                  <img src={expandedPhoto} className="max-w-full max-h-[90vh] object-contain rounded-xl" alt="Expanded review" onClick={(e) => e.stopPropagation()} />
+                  <img loading="lazy" src={expandedPhoto} className="max-w-full max-h-[90vh] object-contain rounded-xl" alt="Expanded review" onClick={(e) => e.stopPropagation()} />
                 </div>
               )}
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm space-y-6 text-left">
@@ -585,7 +585,7 @@ const { slug } = useParams<{ slug: string }>();
                           {r.image_urls && r.image_urls.length > 0 && (
                             <div className="flex gap-2 mt-3 overflow-x-auto pb-2 custom-scrollbar">
                               {r.image_urls.map((url, i) => (
-                                <img 
+                                <img loading="lazy" 
                                   key={i} 
                                   src={url} 
                                   alt="Review photo" 

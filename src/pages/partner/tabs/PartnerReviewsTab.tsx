@@ -148,7 +148,7 @@ export default function PartnerReviewsTab() {
               {r.image_urls && r.image_urls.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                   {r.image_urls.map((url, i) => (
-                    <img key={i} src={url} alt="Review" className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
+                    <img loading="lazy" key={i} src={url} alt="Review" className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
                   ))}
                 </div>
               )}

@@ -2552,7 +2552,7 @@ create policy "Allow admins full operations on homepage_cards"
                       {/* Preview Image Block */}
                       {cmsImageUrl && (
                         <div className="h-28 rounded-2xl overflow-hidden border border-slate-200 relative bg-slate-50">
-                          <img
+                          <img loading="lazy"
                             src={cmsImageUrl}
                             alt="CMS Preview"
                             className="w-full h-full object-cover opacity-80"
@@ -2632,7 +2632,7 @@ create policy "Allow admins full operations on homepage_cards"
                             <div key={card.id || idx} className="p-3 bg-[#0a0515]/60 border border-slate-200 rounded-2xl flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3.5 min-w-0">
                                 <div className="w-16 h-12 rounded-xl overflow-hidden relative shrink-0 bg-slate-50 border border-slate-200">
-                                  <img
+                                  <img loading="lazy"
                                     src={card.image_url}
                                     alt={card.title}
                                     className="w-full h-full object-cover"

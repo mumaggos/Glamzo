@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 1. Fetch profile from database
       const { data, error: fetchErr } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, full_name, avatar_url, phone, role, created_at')
         .eq('id', userId)
         .single();
 
@@ -61,6 +61,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           // Keep database role and update localStorage to match the database truth!
           localStorage.setItem(`local_role_${userId}`, currentProfile.role);
+        }
+      }
+
+      
+      // Business Ownership Check
+      // Se o utilizador tem o role 'customer', vamos verificar se tem um business_id associado.
+      if (currentProfile && currentProfile.role === 'customer') {
+        try {
+          const { data: businessCheck } = await supabase
+            .from('businesses')
+            .select('id')
+            .eq('owner_id', userId)
+            .maybeSingle();
+            
+          if (businessCheck) {
+            console.log("Found business for user, automatically promoting to business role.");
+            currentProfile.role = 'business';
+            await supabase.from('profiles').update({ role: 'business' }).eq('id', userId);
+            localStorage.setItem(`local_role_${userId}`, 'business');
+          }
+        } catch(e) {
+          console.error("Error checking business ownership:", e);
         }
       }
 

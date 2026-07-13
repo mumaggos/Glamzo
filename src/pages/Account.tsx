@@ -448,7 +448,7 @@ export default function Account() {
                   {favoriteBusinesses.map(biz => (
                     <div key={biz.id} className="border border-slate-200 rounded-2xl p-4 flex gap-4 items-center bg-white hover:border-purple-300 transition-colors">
                       {biz.logo_url ? (
-                        <img src={biz.logo_url} alt={biz.name} className="w-16 h-16 rounded-xl object-cover" />
+                        <img loading="lazy" src={biz.logo_url} alt={biz.name} className="w-16 h-16 rounded-xl object-cover" />
                       ) : (
                         <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center">
                           <ShoppingBag className="w-6 h-6 text-slate-400" />

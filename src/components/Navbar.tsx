@@ -104,7 +104,7 @@ export default function Navbar() {
                     } text-xs transition-all`}
                   >
                     {profile?.avatar_url ? (
-                      <img
+                      <img loading="lazy"
                         src={profile.avatar_url}
                         alt={profile.full_name || 'User'}
                         
