@@ -118,7 +118,11 @@ export default function GlamzoMessenger() {
 
        if (isFirstMessage) {
          // Fetch business email to send notification
-         const { data: businessData } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email, last_active)').eq('id', businessId).single();
+         let { data: businessData, error } = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email, last_active)').eq('id', businessId).single();
+         if (error) {
+           const fallback = await supabase.from('businesses').select('email, profiles!businesses_owner_id_fkey(email)').eq('id', businessId).single();
+           businessData = fallback.data;
+         }
          const toEmail = businessData?.email || (businessData?.profiles as any)?.email;
          const lastActive = (businessData?.profiles as any)?.last_active;
          
