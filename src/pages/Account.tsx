@@ -4,10 +4,12 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
+import GlamzoClubModal from '../components/GlamzoClubModal';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
+import { processBookingPoints } from '../utils/rewardsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
 import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle,  Gift, Sparkles, Copy, Check, Star,  AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
@@ -17,6 +19,7 @@ export default function Account() {
   const { user, profile, updateProfile, loading: authLoading } = useAuth();
   
   // Tabs Navigation State
+  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('reservas');
   const [messageTab, setMessageTab] = useState<'mensagens' | 'disputas'>('mensagens');
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -294,6 +297,10 @@ export default function Account() {
       const { data, error } = await supabase.from('bookings').select(`*, service:services(id, name, price, duration_minutes, image_url), business:businesses(id, name, slug, phone, city, address), staff:staff(id, full_name, role_title)`).eq('customer_id', user.id).order('booking_date', { ascending: false }).order('start_time', { ascending: false });
       if (error) throw error;
       setBookings(data || []);
+      // Auto-process points for fully completed bookings
+      if (data) {
+        data.forEach(b => processBookingPoints(b));
+      }
     } catch (err: any) { setBookingError('Falha ao recuperar reservas.'); } finally { setLoadingBookings(false); }
   };
 
@@ -305,7 +312,12 @@ export default function Account() {
     try {
       const { error } = await supabase.from('bookings').update({ client_completed: true }).eq('id', bookingId).eq('customer_id', user!.id);
       if (error) throw error;
-      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, client_completed: true } : b));
+      setBookings(prev => {
+        const newBookings = prev.map(b => b.id === bookingId ? { ...b, client_completed: true } : b);
+        const completedBooking = newBookings.find(b => b.id === bookingId);
+        if (completedBooking) processBookingPoints(completedBooking);
+        return newBookings;
+      });
       toast.success('Reserva marcada como concluída!');
     } catch (err: any) {
       toast.error('Erro ao concluir reserva.');
@@ -778,6 +790,13 @@ export default function Account() {
         {/* MODAL DE DISPUTAS E REVIEWS MANTIDOS AQUI NO FUNDO INTACTOS! */}
       </div>
 
+            <GlamzoClubModal 
+        isOpen={isClubModalOpen} 
+        onClose={() => setIsClubModalOpen(false)} 
+        user={user} 
+        profile={profile}
+        onPointsUpdate={() => loadUserRewards()} 
+      />
       {reviewModalOpen && reviewBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">

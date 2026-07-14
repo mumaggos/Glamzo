@@ -75,6 +75,8 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 export default function SetupWizard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
   const [searchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(true);
@@ -226,6 +228,22 @@ export default function SetupWizard() {
         
         const { data: newBiz, error: createErr } = await supabase.from('businesses').insert(payload).select().single();
           
+        if (!createErr && newBiz && refCode) {
+          try {
+            // Find referrer
+            const { data: referrer } = await supabase.from('profiles').select('id').eq('referral_code', refCode).maybeSingle();
+            if (referrer) {
+              await supabase.from('affiliate_referrals').insert({
+                referrer_id: referrer.id,
+                referred_business_id: newBiz.id,
+                status: 'pending'
+              });
+            }
+          } catch (e) {
+            console.error('Error recording referral:', e);
+          }
+        }
+
         if (createErr) {
           if (createErr.code === '23505') {
             const { data: existingBiz } = await supabase.from('businesses').select('*').eq('owner_id', user.id).single();

@@ -10,6 +10,8 @@ import {
 export default function PartnerSignup() {
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
 
   // Onboarding frictionless step tracking
   const [step, setStep] = useState<1 | 2>(1);
@@ -116,7 +118,7 @@ export default function PartnerSignup() {
       setSuccessMsg('Autenticação confirmada! A redirecionar...');
       
       setTimeout(() => {
-        navigate('/partner/setup', { replace: true });
+        navigate('/partner/setup' + (refCode ? '?ref=' + refCode : ''), { replace: true });
       }, 1000);
     } catch (err: any) {
       console.error('OTP Verification Error:', err);
@@ -217,7 +219,7 @@ export default function PartnerSignup() {
               
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => navigate('/partner/setup')}
+                  onClick={() => navigate('/partner/setup' + (refCode ? '?ref=' + refCode : ''))}
                   className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                 >
                   <span>Continuar Configuração</span>

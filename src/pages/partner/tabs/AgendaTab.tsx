@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { supabase } from "../../../lib/supabase";
 import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2 } from "lucide-react";
+import { processBookingPoints } from '../../../utils/rewardsHelper';
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 
 export default function AgendaTab() {
@@ -168,7 +169,9 @@ export default function AgendaTab() {
       const { error } = await supabase.from("bookings").update({ business_completed: true }).eq("id", selectedBooking.id);
       if (error) throw error;
       notifyTerminal("✅ Reserva validada!", "Dupla confirmação aplicada.");
-      setSelectedBooking({ ...selectedBooking, business_completed: true });
+      const updatedBooking = { ...selectedBooking, business_completed: true };
+      setSelectedBooking(updatedBooking);
+      processBookingPoints(updatedBooking);
       loadLayoutData();
     } catch (err) {
       console.error(err);
