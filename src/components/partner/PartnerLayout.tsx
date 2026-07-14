@@ -100,18 +100,17 @@ export default function PartnerLayout() {
 
       const { data: messagesData } = await supabase
         .from("messages")
-        .select("id, customer_id, sender, is_read, content")
-        .eq("business_id", bData.id)
-        .eq("sender", "customer")
+        .select("id, sender_id, receiver_id, is_read, content")
+        .eq("receiver_id", user.id)
         .eq("is_read", false);
         
       if (messagesData && messagesData.length > 0) {
         setUnreadMessages(messagesData.length);
         
         // Count by customer (for future use or notifications)
-        const counts = {};
+        const counts: Record<string, number> = {};
         messagesData.forEach(m => {
-           counts[m.customer_id] = (counts[m.customer_id] || 0) + 1;
+           counts[m.sender_id] = (counts[m.sender_id] || 0) + 1;
         });
         setUnreadCountByCustomer(counts);
         
@@ -135,7 +134,7 @@ export default function PartnerLayout() {
   useEffect(() => {
     if (!business) return;
     const channel = supabase.channel('partner_layout_messages')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `business_id=eq.${business.id}` }, payload => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.owner_id}` }, payload => {
         // Trigger layout refresh on any message insert/update (like marking as read)
         loadLayoutData();
       }).subscribe();

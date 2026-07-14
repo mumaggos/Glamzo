@@ -30,15 +30,18 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     if (!businessId) return;
     const fetchStatus = async () => {
-      const { data } = await supabase.from('businesses').select('profiles!businesses_owner_id_fkey(last_active)').eq('id', businessId).single();
-      const p = Array.isArray(data?.profiles) ? data?.profiles[0] : data?.profiles;
-      if (p?.last_active) {
-        const last = new Date(p.last_active).getTime();
-        const now = new Date().getTime();
-        setIsStoreOnline((now - last) < 5 * 60 * 1000);
-      } else {
-        setIsStoreOnline(false);
+      if (!businessId) return;
+      const { data: bData } = await supabase.from('businesses').select('owner_id').eq('id', businessId).single();
+      if (bData?.owner_id) {
+        const { data: pData } = await supabase.from('profiles').select('last_active').eq('id', bData.owner_id).single();
+        if (pData?.last_active) {
+          const last = new Date(pData.last_active).getTime();
+          const now = new Date().getTime();
+          setIsStoreOnline((now - last) < 5 * 60 * 1000);
+          return;
+        }
       }
+      setIsStoreOnline(false);
     };
     fetchStatus();
     const interval = setInterval(fetchStatus, 60000);

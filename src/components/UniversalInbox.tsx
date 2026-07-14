@@ -102,7 +102,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
       // Fetch profiles
       const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', uniqueIds);
       // Fetch businesses
-      const { data: businesses } = await supabase.from('businesses').select('id, name').in('id', uniqueIds);
+      const { data: businesses } = await supabase.from('businesses').select('owner_id, name').in('owner_id', uniqueIds);
       
       sessionMap.forEach((sess, id) => {
         if (id === 'admin') return;
@@ -111,7 +111,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
           sess.otherName = profile.full_name;
           sess.otherType = 'customer';
         } else {
-          const business = businesses?.find(b => b.id === id);
+          const business = businesses?.find(b => b.owner_id === id);
           if (business) {
             sess.otherName = business.name;
             sess.otherType = 'partner';
