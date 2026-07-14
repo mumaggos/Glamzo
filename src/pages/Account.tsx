@@ -320,6 +320,41 @@ export default function Account() {
   if (authLoading) return <div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>;
   if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">Acesso Restrito</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">Fazer Login</a></div>;
 
+
+  const filteredBookings = bookings.filter(bk => {
+    if (dateFilter === 'todos') return true;
+    
+    const bkDate = new Date(bk.booking_date);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if (dateFilter === 'hoje') {
+      const bDate = new Date(bkDate);
+      bDate.setHours(0,0,0,0);
+      return bDate.getTime() === today.getTime();
+    }
+    
+    if (dateFilter === 'semana') {
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      return bkDate >= today && bkDate <= nextWeek;
+    }
+    
+    if (dateFilter === 'mes') {
+      return bkDate.getMonth() === today.getMonth() && bkDate.getFullYear() === today.getFullYear();
+    }
+    
+    if (dateFilter === 'intervalo' && customDate) {
+      const cDate = new Date(customDate);
+      cDate.setHours(0,0,0,0);
+      const bDate = new Date(bkDate);
+      bDate.setHours(0,0,0,0);
+      return bDate.getTime() === cDate.getTime();
+    }
+    
+    return dateFilter === 'intervalo' && !customDate ? true : false;
+  });
+
   return (
     <div id="account-view" className="min-h-[100dvh] bg-[#F8F9FC] font-sans pb-28 lg:pb-12">
       

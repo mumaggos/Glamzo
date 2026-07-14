@@ -23,7 +23,7 @@ export default function MessagesTab() {
       const { count: msgCount } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', business.id)
+        .eq('receiver_id', business.owner_id)
         .eq('is_read', false);
         
       if (msgCount !== null) setUnreadMessages(msgCount);
@@ -41,7 +41,7 @@ export default function MessagesTab() {
     
     import('../../../lib/supabase').then(({ supabase }) => {
       const channelMsg = supabase.channel('partner_msg_changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.id}` }, () => fetchCounts())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.owner_id}` }, () => fetchCounts())
         .subscribe();
         
       const channelDisp = supabase.channel('partner_disp_changes')
@@ -83,7 +83,7 @@ export default function MessagesTab() {
       </div>
       
       <div className="flex-1 w-full relative bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">        
-        {activeTab === 'mensagens' && <UniversalInbox myId={business.id} myType="partner" />}
+        {activeTab === 'mensagens' && <UniversalInbox myId={business.owner_id} myType="partner" />}
         {activeTab === 'disputas' && <UniversalDisputes myId={business.id} myType="partner" />}
       </div>
     </div>

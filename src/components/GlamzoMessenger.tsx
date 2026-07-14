@@ -30,7 +30,7 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     if (!businessId) return;
     const fetchStatus = async () => {
-      const { data } = await supabase.from('businesses').select('profiles:owner_id(last_active)').eq('id', businessId).single();
+      const { data } = await supabase.from('businesses').select('profiles!businesses_owner_id_fkey(last_active)').eq('id', businessId).single();
       const p = Array.isArray(data?.profiles) ? data?.profiles[0] : data?.profiles;
       if (p?.last_active) {
         const last = new Date(p.last_active).getTime();
@@ -75,10 +75,10 @@ export default function GlamzoMessenger() {
   useEffect(() => {
     if (isOpen && businessId && userId) {
        // load messages
+       if (!ownerId) return;
        supabase.from('messages')
          .select('*')
-         .eq('business_id', businessId)
-         .eq('customer_id', userId)
+         .or(`and(sender_id.eq.${userId},receiver_id.eq.${ownerId}),and(sender_id.eq.${ownerId},receiver_id.eq.${userId})`)
          .order('created_at', { ascending: true })
          .then(({data, error}) => {
             if (error) console.error("Error loading messages:", error);
@@ -86,9 +86,10 @@ export default function GlamzoMessenger() {
          });
                 
        // Realtime
+       if (!ownerId) return;
        const channel = supabase.channel('messenger_channel')
-         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `business_id=eq.${businessId}` }, payload => {
-            if (payload.new.customer_id === userId) {
+         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${userId}` }, payload => {
+            if (payload.new.sender_id === ownerId) {
               setMessages(prev => {
                  if (prev?.find(m => m.id === payload.new.id)) return prev;
                  return [...(prev || []), payload.new];
