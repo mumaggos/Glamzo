@@ -1060,7 +1060,19 @@ export default function Admin() {
   };
 
   // Approve or complete payout request
-    const handleResolveDispute = async (disputeId: string, status: 'in_review' | 'resolved' | 'refunded' | 'dismissed') => {
+      const handleDeleteDispute = async (disputeId: string) => {
+    if (!window.confirm("Deseja mesmo apagar esta disputa da base de dados?")) return;
+    try {
+      const { error } = await supabase.from('disputes').delete().eq('id', disputeId);
+      if (error) throw error;
+      setSuccessMsg("Disputa apagada com sucesso.");
+      setDisputes(prev => prev.filter(d => d.id !== disputeId));
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Falha ao apagar disputa.');
+    }
+  };
+
+  const handleResolveDispute = async (disputeId: string, status: 'in_review' | 'resolved' | 'refunded' | 'dismissed') => {
     try {
       const notes = adminNotes[disputeId] || '';
       const updateData: any = { status };
@@ -2091,7 +2103,7 @@ export default function Admin() {
                           <div key={dispute.id} className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm flex flex-col gap-4">
                             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
                               <div>
-                                <h4 className="font-extrabold text-slate-900 flex items-center gap-2">
+                                <h4 className="font-extrabold text-slate-900 flex items-center gap-2 flex-wrap">
                                   <AlertTriangle className={`w-4 h-4 ${dispute.status === 'open' ? 'text-rose-500' : 'text-slate-400'}`} />
                                   <span>Disputa #{dispute.id.split('-')[0]}</span>
                                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest ${
@@ -2102,9 +2114,15 @@ export default function Admin() {
                                   }`}>
                                     {dispute.status}
                                   </span>
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">
+                                    Aberto por: {dispute.initiator_id === dispute.customer_id ? 'Cliente' : 'Parceiro'}
+                                  </span>
                                 </h4>
                                 <p className="text-[10px] font-mono text-slate-500 mt-1">Aberta a: {new Date(dispute.created_at).toLocaleString('pt-PT')}</p>
                               </div>
+                              <button onClick={() => handleDeleteDispute(dispute.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors" title="Apagar Disputa">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

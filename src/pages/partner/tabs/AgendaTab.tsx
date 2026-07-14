@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2 } from "lucide-react";
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 
 export default function AgendaTab() {
@@ -25,6 +25,11 @@ export default function AgendaTab() {
   const [manualNotes, setManualNotes] = useState("");
   const [isSavingManual, setIsSavingManual] = useState(false);
   const [isUpdatingBooking, setIsUpdatingBooking] = useState(false);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('Cliente não compareceu');
+  const [disputeDescription, setDisputeDescription] = useState('');
+  const [submittingDispute, setSubmittingDispute] = useState(false);
+
 
   const [toastNotification, setToastNotification] = useState<{ visible: boolean; title: string; desc: string; } | null>(null);
 
@@ -124,21 +129,32 @@ export default function AgendaTab() {
     } catch (err: any) { alert("Erro ao guardar dados."); } finally { setIsSavingManual(false); }
   };
 
-    const handleOpenDispute = async (bookingId: string) => {
-    const reason = window.prompt("Descreva o motivo da disputa (Ex: Cliente não compareceu, etc):");
-    if (!reason) return;
-    
+    const handleOpenDispute = () => {
+    setDisputeReason('Cliente não compareceu');
+    setDisputeDescription('');
+    setDisputeModalOpen(true);
+  };
+  
+  const submitDispute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBooking) return;
+    setSubmittingDispute(true);
     try {
       const { error } = await supabase.from('disputes').insert({
-        booking_id: bookingId,
-        initiator_id: selectedBooking?.customer_id || business.owner_id,
+        booking_id: selectedBooking.id,
+        customer_id: selectedBooking.customer_id,
         business_id: business.id,
-        reason: reason
+        initiator_id: business.owner_id,
+        title: disputeReason,
+        reason: `${disputeReason} - ${disputeDescription}`
       });
       if (error) throw error;
-      alert("Disputa aberta com sucesso.");
+      setDisputeModalOpen(false);
+      notifyTerminal("🚨 Disputa", "A sua queixa foi registada.");
     } catch (err: any) {
       alert(err.message || "Erro ao abrir disputa.");
+    } finally {
+      setSubmittingDispute(false);
     }
   };
 
@@ -228,7 +244,7 @@ export default function AgendaTab() {
                    <div className="w-full bg-gradient-to-r from-emerald-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-not-allowed opacity-90">
                      <CheckCircle className="w-5 h-5" /> Serviço Concluído
                    </div>
-                   <button onClick={() => handleOpenDispute(selectedBooking.id)} className="w-full bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3 border border-rose-200 rounded-xl flex items-center justify-center gap-2 transition-colors">Abrir Disputa / Problema</button>
+                   <button onClick={handleOpenDispute} className="w-full bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3 border border-rose-200 rounded-xl flex items-center justify-center gap-2 transition-colors">Abrir Disputa / Problema</button>
                  </div>
                ) : (
                  <button onClick={() => handleUpdateBookingStatus('completed')} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>
@@ -238,6 +254,30 @@ export default function AgendaTab() {
                  <button onClick={() => handleUpdateBookingStatus('cancelled')} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors">Cancelar Marcação</button>
                )}
             </div>
+          </div>
+        </div>
+      )}
+
+      
+      {/* MODAL DISPUTA */}
+      {disputeModalOpen && selectedBooking && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border-2 border-rose-100 animate-in zoom-in-95">
+            <button onClick={() => setDisputeModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-rose-100 text-rose-500"><X className="w-4 h-4" /></button>
+            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/> Reportar Problema</h3>
+            <p className="text-sm text-slate-500 mb-6">Esta ação irá abrir uma queixa formal junto da equipa de Suporte Glamzo.</p>
+            <form onSubmit={submitDispute} className="space-y-4">
+              <select required value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 text-sm rounded-xl outline-none focus:border-rose-500">
+                <option value="Cliente não compareceu">Cliente não compareceu (No-show)</option>
+                <option value="Cliente recusou-se a pagar">Cliente recusou-se a pagar</option>
+                <option value="Comportamento inadequado">Comportamento inadequado</option>
+                <option value="Outro problema de cobrança">Outro problema de cobrança</option>
+              </select>
+              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder="Detalhe o que aconteceu..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
+              <button type="submit" disabled={submittingDispute} className="w-full py-4 bg-rose-600 hover:bg-rose-700 transition-colors text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30">
+                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />} Enviar Queixa Oficial
+              </button>
+            </form>
           </div>
         </div>
       )}

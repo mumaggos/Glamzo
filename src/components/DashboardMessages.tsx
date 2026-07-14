@@ -126,6 +126,25 @@ export default function DashboardMessages({ businessId }: { businessId: string }
 
   };
 
+    useEffect(() => {
+    if (selectedSession && messages.length > 0) {
+      const markRead = async () => {
+        const unreadIds = messages.filter(m => m.sender === 'customer' && !m.is_read).map(m => m.id);
+        if (unreadIds.length > 0) {
+          await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
+          setMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, is_read: true } : m));
+          setSessions(prev => prev.map(s => {
+            if (s.id === selectedSession.id) {
+              return { ...s, unread_count: 0 };
+            }
+            return s;
+          }));
+        }
+      };
+      markRead();
+    }
+  }, [selectedSession, messages]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !selectedSession || !user) return;

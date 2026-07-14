@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { Send, ShieldAlert, Sparkles, AlertCircle } from 'lucide-react';
+import { Send, ShieldAlert, Sparkles, AlertCircle, MessageSquare, ChevronLeft, CheckCircle, Trash2 } from 'lucide-react';
 
 export default function SupportChat() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'inbox' | 'chat'>('inbox');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,6 +46,19 @@ export default function SupportChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    if (view === 'chat' && user) {
+      const markRead = async () => {
+        const unreadAdminMsgs = messages.filter(m => m.sender_role === 'admin' && !m.is_read).map(m => m.id);
+        if (unreadAdminMsgs.length > 0) {
+          await supabase.from('support_messages').update({ is_read: true }).in('id', unreadAdminMsgs);
+          setMessages(prev => prev.map(m => unreadAdminMsgs.includes(m.id) ? { ...m, is_read: true } : m));
+        }
+      };
+      markRead();
+    }
+  }, [view, messages, user]);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || !user) return;
@@ -69,21 +83,90 @@ export default function SupportChat() {
     }
   };
 
+    const handleClearChat = async () => {
+    if (!user) return;
+    const { error } = await supabase.from('support_messages').delete().eq('user_id', user.id);
+    if (!error) {
+      setMessages([]);
+      setView('inbox');
+    }
+  };
+
   if (loading) return <div className="flex-1 flex items-center justify-center p-8"><span className="text-sm text-slate-500 font-bold">A carregar chat de suporte...</span></div>;
+
+  if (view === 'inbox') {
+    const unreadCount = messages.filter(m => m.sender_role === 'admin' && !m.is_read).length;
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+
+    return (
+      <div className="flex flex-col h-full bg-[#F8F9FC]">
+        <div className="p-4 bg-white border-b border-slate-200 shrink-0 shadow-sm flex items-center justify-between">
+          <h3 className="font-black text-slate-900 text-lg">Caixa de Entrada</h3>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div 
+            onClick={() => {
+              setView('chat');
+              // Mark as read could go here
+            }}
+            className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:border-purple-300 transition-all"
+          >
+            <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-bold text-slate-900 truncate">Suporte Glamzo</h4>
+                {lastMessage && (
+                  <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-2">
+                    {new Date(lastMessage.created_at).toLocaleDateString('pt-PT')}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-slate-500 truncate">
+                {lastMessage ? lastMessage.content : 'Olá! Como podemos ajudar?'}
+              </p>
+            </div>
+            {unreadCount > 0 && (
+              <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                {unreadCount}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#F8F9FC]">
-      <div className="p-4 bg-white border-b border-slate-200 flex items-center gap-3 shrink-0 shadow-sm">
-        <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-          <Sparkles className="w-5 h-5" />
+      <div className="p-4 bg-white border-b border-slate-200 flex items-center justify-between shrink-0 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setView('inbox')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+            <ChevronLeft className="w-5 h-5 text-slate-600" />
+          </button>
+          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-black text-slate-900">Suporte Glamzo</h3>
+            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Online
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-black text-slate-900">Suporte Glamzo</h3>
-          <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Online
-          </p>
+        <div className="relative group">
+          <button className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600">
+             <AlertCircle className="w-5 h-5" />
+          </button>
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 overflow-hidden">
+             <button onClick={handleClearChat} className="w-full text-left px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+               <Trash2 className="w-4 h-4" /> Apagar Conversa
+             </button>
+          </div>
         </div>
       </div>
+
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <div className="text-center pb-4 opacity-50 pt-8">
