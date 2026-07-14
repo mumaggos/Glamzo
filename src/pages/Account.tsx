@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import ClientMessages from '../components/ClientMessages';
+import ClientDisputes from '../components/ClientDisputes';
 import SupportChat from '../components/SupportChat';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
@@ -17,7 +18,7 @@ export default function Account() {
   
   // Tabs Navigation State
   const [activeTab, setActiveTab] = useState('reservas');
-  const [messageTab, setMessageTab] = useState<'lojas' | 'suporte'>('lojas');
+  const [messageTab, setMessageTab] = useState<'lojas' | 'mensagens' | 'disputas'>('mensagens');
 
   // Favorites management state
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<any[]>([]);
@@ -310,15 +311,14 @@ ${disputeDescription}`
         <div className="hidden lg:flex overflow-x-auto bg-white rounded-2xl shadow-lg border border-slate-100 p-2 gap-2 mb-8 no-scrollbar items-center">
           {[
             { id: 'reservas', icon: Calendar, label: 'Minhas Reservas' },
-            { id: 'mensagens', icon: MessageSquare, label: 'Mensagens' },
+            { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' },
             { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
             { id: 'recompensas', icon: Gift, label: 'Recompensas' },
-            { id: 'favoritos', icon: Heart, label: 'Favoritos' },
-            { id: 'suporte', icon: HelpCircle, label: 'Apoio Técnico' }
+            { id: 'favoritos', icon: Heart, label: 'Favoritos' }
           ].map(tab => (
             <button 
               key={tab.id} 
-              onClick={() => setActiveTab(tab.id as 'reservas' | 'mensagens' | 'perfil' | 'recompensas' | 'favoritos' | 'suporte')} 
+              onClick={() => setActiveTab(tab.id as 'reservas' | 'apoio' | 'perfil' | 'recompensas' | 'favoritos')} 
               className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex-1 justify-center ${activeTab === tab.id ? 'bg-purple-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -410,25 +410,35 @@ ${disputeDescription}`
         )}
 
         
-        {activeTab === 'mensagens' && (
+                {/* CENTRO DE APOIO */}
+        {activeTab === 'apoio' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in flex flex-col h-[70vh]">
-            <h3 className="text-xl font-black text-slate-900 mb-6">A Minha Caixa de Entrada</h3>
-            <div className="flex gap-4 mb-4">
+            <h3 className="text-xl font-black text-slate-900 mb-6">Centro de Apoio</h3>
+            <div className="flex overflow-x-auto no-scrollbar gap-4 mb-4 pb-2">
+              <button 
+                onClick={() => setMessageTab('mensagens')} 
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'mensagens' ? 'bg-slate-900 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                <HelpCircle className="w-4 h-4" /> Suporte Glamzo
+              </button>
+              <button 
+                onClick={() => setMessageTab('disputas')} 
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                <ShieldAlert className="w-4 h-4" /> Disputas
+              </button>
               <button 
                 onClick={() => setMessageTab('lojas')} 
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${messageTab === 'lojas' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'lojas' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <MessageSquare className="w-4 h-4" /> Lojas / Clientes
               </button>
-              <button 
-                onClick={() => setMessageTab('suporte')} 
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${messageTab === 'suporte' ? 'bg-slate-900 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-              >
-                <ShieldAlert className="w-4 h-4" /> Suporte Glamzo
-              </button>
             </div>
+            
             <div className="flex-1 w-full relative bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
-              {messageTab === 'lojas' ? <ClientMessages /> : <SupportChat />}
+              {messageTab === 'lojas' && <ClientMessages />}
+              {messageTab === 'mensagens' && <SupportChat />}
+              {messageTab === 'disputas' && <ClientDisputes />}
             </div>
           </div>
         )}
@@ -547,41 +557,9 @@ ${disputeDescription}`
           </div>
         )}
 
-        {/* 4. SUPORTE E DISPUTAS */}
-        {activeTab === 'suporte' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
-              <h3 className="text-xl font-black text-slate-900 mb-6">Apoio Técnico</h3>
-              <form onSubmit={handleSendSupportMessage} className="space-y-4 max-w-2xl mb-8">
-                <textarea value={supportInput} onChange={(e) => setSupportInput(e.target.value)} required rows={4} placeholder="Como podemos ajudar hoje? Problemas de pagamento, dúvidas na app..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:border-purple-500 focus:outline-none resize-none" />
-                <button type="submit" disabled={sendingSupport} className="px-6 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
-                  {sendingSupport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />} Enviar Mensagem
-                </button>
-              </form>
-
-              {userTickets.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">O Meu Histórico de Contactos</h4>
-                  <div className="space-y-3">
-                    {userTickets.map(tk => (
-                      <div key={tk.id} className="p-4 border border-slate-100 rounded-2xl bg-slate-50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-mono text-xs text-slate-500">#{tk.id.substring(0,8)}</span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${tk.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{tk.status}</span>
-                        </div>
-                        <p className="text-sm text-slate-700 font-medium">{tk.subject || tk.chat_history}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
+        {/* MODAL DE DISPUTAS E REVIEWS MANTIDOS AQUI NO FUNDO INTACTOS! */}
       </div>
 
-      {/* MODAL DE DISPUTAS E REVIEWS MANTIDOS AQUI NO FUNDO INTACTOS! */}
       {reviewModalOpen && reviewBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
@@ -631,8 +609,8 @@ ${disputeDescription}`
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-4 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[
           { id: 'reservas', icon: Calendar, label: 'Reservas' },
-          { id: 'mensagens', icon: MessageSquare, label: 'Mensagens' },
-          { id: 'perfil', icon: UserCircle, label: 'Perfil' }
+          { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' }
+          
         ].map(tab => (
           <button 
             key={tab.id}
@@ -653,7 +631,7 @@ ${disputeDescription}`
 
         {[
           { id: 'favoritos', icon: Heart, label: 'Favoritos' },
-          { id: 'suporte', icon: HelpCircle, label: 'Suporte' }
+          { id: 'perfil', icon: UserCircle, label: 'Perfil' }
         ].map(tab => (
           <button 
             key={tab.id}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import DashboardMessages from "../../../components/DashboardMessages";
 import SupportChat from "../../../components/SupportChat";
+import PartnerDisputes from "../../../components/PartnerDisputes";
 import { Business } from "../../../types";
 import { MessageSquare, ShieldAlert } from "lucide-react";
 
@@ -11,7 +12,7 @@ interface PartnerContextType {
 
 export default function MessagesTab() {
   const { business } = useOutletContext<PartnerContextType>();
-  const [activeTab, setActiveTab] = useState<'clientes' | 'suporte'>('clientes');
+  const [activeTab, setActiveTab] = useState<'clientes' | 'suporte' | 'disputas'>('clientes');
 
   if (!business) return null;
 
@@ -30,14 +31,18 @@ export default function MessagesTab() {
         >
           <ShieldAlert className="w-4 h-4" /> Suporte Glamzo
         </button>
+        <button 
+          onClick={() => setActiveTab('disputas')} 
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+        >
+          <ShieldAlert className="w-4 h-4" /> Disputas
+        </button>
       </div>
       
       <div className="flex-1 w-full relative bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        {activeTab === 'clientes' ? (
-          <DashboardMessages businessId={business.id} />
-        ) : (
-          <SupportChat />
-        )}
+                {activeTab === 'clientes' && <DashboardMessages businessId={business.id} />}
+        {activeTab === 'suporte' && <SupportChat />}
+        {activeTab === 'disputas' && <PartnerDisputes businessId={business.id} />}
       </div>
     </div>
   );
