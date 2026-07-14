@@ -10,7 +10,7 @@ interface Dispute {
   status: string;
   admin_notes: string;
   created_at: string;
-  customer_id: string;
+  user_id: string;
   profiles?: { full_name: string };
 }
 

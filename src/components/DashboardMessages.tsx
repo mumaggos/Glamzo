@@ -126,24 +126,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
     }
   };
 
-  useEffect(() => {
-    if (selectedSession && messages.length > 0) {
-      const markRead = async () => {
-        const unreadIds = messages.filter(m => m.sender === 'customer' && !m.is_read).map(m => m.id);
-        if (unreadIds.length > 0) {
-          await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
-          setMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, is_read: true } : m));
-          setSessions(prev => prev.map(s => {
-            if (s.customer_id === selectedSession.customer_id) {
-              return { ...s, unread_count: 0 };
-            }
-            return s;
-          }));
-        }
-      };
-      markRead();
-    }
-  }, [selectedSession, messages]);
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,7 +243,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
                 onClick={() => setSelectedSession(null)}
                 className="p-1.5 bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 font-bold text-xs pr-3"
               >
-                <ArrowLeft className="w-4 h-4" /> Voltar
+                {"<- Voltar à Lista"}
               </button>
               <div>
                 <span className="block font-black text-slate-900 text-xs uppercase tracking-tight">{selectedSession.customer_name}</span>

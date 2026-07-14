@@ -91,7 +91,7 @@ export default function Account() {
     try {
       const { error } = await supabase.from('disputes').insert({
         booking_id: disputeBooking.id,
-        initiator_id: user.id,
+        user_id: user.id,
         business_id: disputeBooking.business_id,
         title: disputeReason,
         reason: `${disputeReason}

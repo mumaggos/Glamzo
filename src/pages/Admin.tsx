@@ -474,7 +474,7 @@ export default function Admin() {
       try {
         const { data: disputesData, error: disputesErr } = await supabase
           .from('disputes')
-          .select('*, bookings(*), profiles!initiator_id(id, full_name, email, phone), businesses(id, name, phone, email)')
+          .select('*, bookings(*), profiles!user_id(id, full_name, email, phone), businesses(id, name, phone, email)')
           .order('created_at', { ascending: false });
 
         if (!disputesErr && disputesData) {
@@ -2002,9 +2002,9 @@ export default function Admin() {
                             <div className="flex justify-between items-center mb-0.5">
                               <span className="block font-bold text-xs text-slate-900 truncate">{chat.user?.full_name || 'Utilizador Desconhecido'}</span>
                               {chat.user?.role === 'partner' || salons.find((s: any) => s.owner_id === chat.user_id) ? (
-                                <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2 truncate max-w-[50%]">LOJA: {salons.find((s: any) => s.owner_id === chat.user_id)?.name || chat.user?.full_name}</span>
+                                <span className="bg-purple-600 text-white px-2 py-1 text-xs rounded shrink-0 ml-2 truncate max-w-[50%]">LOJA: {salons.find((s: any) => s.owner_id === chat.user_id)?.name || chat.user?.full_name}</span>
                               ) : (
-                                <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2">CLIENTE</span>
+                                <span className="bg-blue-600 text-white px-2 py-1 text-xs rounded shrink-0 ml-2">CLIENTE</span>
                               )}
                             </div>
                             <span className="block text-[10px] text-slate-500 font-mono truncate">{chat.user?.email || 'N/A'}</span>
@@ -2122,7 +2122,7 @@ export default function Admin() {
                                     {dispute.status}
                                   </span>
                                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">
-                                    Aberto por: {dispute.initiator_id === dispute.customer_id ? 'Cliente' : 'Parceiro'}
+                                    Aberto por: {dispute.user_id === dispute.user_id ? 'Cliente' : 'Parceiro'}
                                   </span>
                                 </h4>
                                 <p className="text-[10px] font-mono text-slate-500 mt-1">Aberta a: {new Date(dispute.created_at).toLocaleString('pt-PT')}</p>
