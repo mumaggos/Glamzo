@@ -94,8 +94,8 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
               <div className="flex items-start gap-3">
                 <div className="mt-1">
                   <ShieldAlert className={`w-5 h-5 ${
-                    dispute.status === 'open' ? 'text-rose-500' :
-                    dispute.status === 'in_review' ? 'text-amber-500' : 'text-emerald-500'
+                    dispute.status === 'open' ? 'text-amber-500' :
+                    dispute.status === 'in_review' ? 'text-blue-500' : 'text-emerald-500'
                   }`} />
                 </div>
                 <div>
@@ -119,8 +119,8 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
               </div>
               <div className="shrink-0">
                 <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${
-                  dispute.status === 'open' ? 'bg-rose-100 text-rose-700' :
-                  dispute.status === 'in_review' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                  dispute.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                  dispute.status === 'in_review' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
                 }`}>
                   {dispute.status === 'open' ? 'Pendente' : 
                    dispute.status === 'in_review' ? 'Em Análise' : 
@@ -146,8 +146,8 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
             <div className="p-6 overflow-y-auto">
               <div className="mb-4">
                 <span className={`inline-block px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest mb-3 ${
-                  selectedDispute.status === 'open' ? 'bg-rose-100 text-rose-700' :
-                  selectedDispute.status === 'in_review' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                  selectedDispute.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                  selectedDispute.status === 'in_review' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
                 }`}>
                   Estado: {selectedDispute.status}
                 </span>

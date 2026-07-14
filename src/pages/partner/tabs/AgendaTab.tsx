@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import toast from 'react-hot-toast';
 import { supabase } from "../../../lib/supabase";
 import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2 } from "lucide-react";
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
@@ -145,13 +146,16 @@ export default function AgendaTab() {
         business_id: business.id,
         user_id: business.owner_id,
         title: disputeReason,
-        reason: `${disputeReason} - ${disputeDescription}`
+        reason: `${disputeReason} - ${disputeDescription}`,
+        status: 'open'
       });
       if (error) throw error;
+      toast.success('Queixa registada com sucesso. A equipa vai analisar.');
+      setDisputeReason('');
+      setDisputeDescription('');
       setDisputeModalOpen(false);
-      notifyTerminal("🚨 Disputa", "A sua queixa foi registada.");
     } catch (err: any) {
-      alert(err.message || "Erro ao abrir disputa.");
+      toast.error(err.message || "Erro ao abrir disputa.");
     } finally {
       setSubmittingDispute(false);
     }

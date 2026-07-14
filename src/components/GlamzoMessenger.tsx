@@ -21,6 +21,7 @@ export default function GlamzoMessenger() {
   
   const [messages, setMessages] = useState<any[]>([]);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [ownerId, setOwnerId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,8 +62,11 @@ export default function GlamzoMessenger() {
 
     if (slug) {
        if (slug) {
-         supabase.from('businesses').select('id').eq('slug', slug).single().then(({data}) => {
-            if (data) setBusinessId(data.id);
+         supabase.from('businesses').select('id, owner_id').eq('slug', slug).single().then(({data}) => {
+            if (data) {
+               setBusinessId(data.id);
+               setOwnerId(data.owner_id);
+            }
          });
        }
     }
@@ -109,24 +113,25 @@ export default function GlamzoMessenger() {
         
     try {
        setSending(true);
+       if (!ownerId) return;
        const newMsg = {
-         business_id: businessId,
-         customer_id: userId,
-         sender: 'customer',
+         sender_id: userId,
+         receiver_id: ownerId,
          content: text.trim(),
        };
        
        const { data: insertedMsg, error: insertError } = await supabase.from('messages').insert([newMsg]).select().single();
        if (insertError) {
-         console.error("Insert message error:", insertError);
+         console.error("Erro ao enviar mensagem:", insertError);
+       } else {
+         if (insertedMsg) {
+           setMessages(prev => {
+              if (prev?.find(m => m.id === insertedMsg.id)) return prev;
+              return [...(prev || []), insertedMsg];
+           });
+         }
+         setText('');
        }
-       if (insertedMsg) {
-         setMessages(prev => {
-            if (prev?.find(m => m.id === insertedMsg.id)) return prev;
-            return [...(prev || []), insertedMsg];
-         });
-       }
-       setText('');
 
        // Lógica de Notificações Inteligentes
        // Verificar se é a primeira mensagem nos últimos 30 minutos
@@ -134,8 +139,8 @@ export default function GlamzoMessenger() {
        const { data: recentMsgs } = await supabase
          .from('messages')
          .select('id')
-         .eq('business_id', businessId)
-         .eq('customer_id', userId)
+         .eq('sender_id', userId)
+         .eq('receiver_id', ownerId)
          .gte('created_at', thirtyMinsAgo);
 
        // Se houver mais do que 1 mensagem (a que acabámos de inserir), então não é a primeira
@@ -162,9 +167,8 @@ export default function GlamzoMessenger() {
          if (!isStoreOnline) {
            // Insert auto-reply message
            const autoReply = {
-             business_id: businessId,
-             customer_id: userId,
-             sender: 'business',
+             sender_id: ownerId,
+             receiver_id: userId,
              content: "Olá! Não estamos online neste momento, mas recebemos a sua mensagem e responderemos com a maior brevidade possível.",
              is_read: false
            };
@@ -193,23 +197,11 @@ export default function GlamzoMessenger() {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed bottom-6 right-4 sm:right-6 z-[99999] font-sans">
-      {!isOpen ? (
-        hasInteracted ? (
-        <button 
-           onClick={() => setIsOpen(true)} 
-           className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 hover:bg-black transition-all border-[3px] border-white group"
-        >
-          <MessageSquare className="w-6 h-6 group-hover:animate-pulse" />
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-white"></span>
-          </span>
-        </button>
-        ) : null
-      ) : (
-        <div className="w-[320px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-[420px] animate-in slide-in-from-bottom-8">
+    <div className="fixed inset-0 z-[99999] font-sans flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh] max-h-[600px] animate-in zoom-in-95 duration-200">
           
           <div className="bg-slate-900 text-white p-4 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-3">
@@ -237,7 +229,7 @@ export default function GlamzoMessenger() {
               Olá! 👋 Tem alguma dúvida sobre os nossos serviços, horários ou preços?
             </div>
             {messages?.map((m: any) => (
-              <div key={m.id} className={`p-3.5 rounded-2xl text-xs font-medium leading-relaxed max-w-[85%] ${m.sender === 'customer' ? 'bg-slate-900 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start shadow-sm'}`}>
+              <div key={m.id} className={`p-3.5 rounded-2xl text-xs font-medium leading-relaxed max-w-[85%] ${m.sender_id === userId ? 'bg-slate-900 text-white rounded-tr-none self-end' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none self-start shadow-sm'}`}>
                 {m.content}
               </div>
             ))}
@@ -258,8 +250,7 @@ export default function GlamzoMessenger() {
               </button>
             </div>
           </form>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

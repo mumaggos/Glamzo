@@ -1,36 +1,18 @@
-import re
-
 with open("src/pages/Account.tsx", "r") as f:
-    content = f.read()
+    text = f.read()
 
-# Remove the duplicate `handleOpenDispute` that I added.
-content = re.sub(
-    r"\s+const handleOpenDispute = async \(bookingId: string, businessId: string\) => \{.*?\};\n",
-    "\n",
-    content,
-    flags=re.DOTALL
-)
+# Add react-hot-toast import if missing
+if "import toast from 'react-hot-toast'" not in text:
+    text = text.replace("import { useAuth }", "import toast from 'react-hot-toast';\nimport { useAuth }")
 
-# Also replace the button call back to its original
-content = re.sub(
-    r"onClick=\{.*?handleOpenDispute\(bk\.id, bk\.business_id\).*?\}",
-    "onClick={() => handleOpenDispute(bk)}",
-    content,
-    flags=re.DOTALL
-)
-
-# Update `handleSubmitDispute`
-new_submit = """  const handleSubmitDispute = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !disputeBooking) return;
-    setSubmittingDispute(true);
-    
-    try {
-      const { error } = await supabase.from('disputes').insert({
+# Update dispute submit
+target = """      const { error } = await supabase.from('disputes').insert({
         booking_id: disputeBooking.id,
-        initiator_id: user.id,
+        user_id: user.id,
         business_id: disputeBooking.business_id,
-        reason: `${disputeReason}\\n${disputeDescription}`
+        title: disputeReason,
+        reason: `${disputeReason}
+${disputeDescription}`
       });
       if (error) throw error;
       setRedeemSuccess(`🚨 Reclamação registada. A equipa Glamzo abriu uma disputa. Analisaremos em 24h.`);
@@ -42,12 +24,28 @@ new_submit = """  const handleSubmitDispute = async (e: React.FormEvent) => {
     }
   };"""
 
-content = re.sub(
-    r"const handleSubmitDispute =.*?setSubmittingDispute\(false\);\s+\};",
-    new_submit,
-    content,
-    flags=re.DOTALL
-)
+replacement = """      const { error } = await supabase.from('disputes').insert({
+        booking_id: disputeBooking.id,
+        user_id: user.id,
+        business_id: disputeBooking.business_id,
+        title: disputeReason,
+        reason: `${disputeReason}\\n${disputeDescription}`,
+        status: 'open'
+      });
+      if (error) throw error;
+      toast.success('Queixa registada com sucesso. A equipa vai analisar.');
+      setDisputeReason('');
+      setDisputeDescription('');
+      setDisputeModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao abrir disputa');
+    } finally {
+      setSubmittingDispute(false);
+    }
+  };"""
 
+text = text.replace(target, replacement)
+
+# We should also fetch the unread messages count and pending disputes count to display in badges
 with open("src/pages/Account.tsx", "w") as f:
-    f.write(content)
+    f.write(text)

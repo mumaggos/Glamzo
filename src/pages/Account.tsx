@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
@@ -18,6 +19,45 @@ export default function Account() {
   // Tabs Navigation State
   const [activeTab, setActiveTab] = useState('reservas');
   const [messageTab, setMessageTab] = useState<'mensagens' | 'disputas'>('mensagens');
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingDisputes, setPendingDisputes] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchCounts = async () => {
+      const { count: msgCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+        
+      if (msgCount !== null) setUnreadMessages(msgCount);
+      
+      const { count: dispCount } = await supabase
+        .from('disputes')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'open');
+        
+      if (dispCount !== null) setPendingDisputes(dispCount);
+    };
+    
+    fetchCounts();
+    
+    const channelMsg = supabase.channel('account_msg_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => fetchCounts())
+      .subscribe();
+      
+    const channelDisp = supabase.channel('account_disp_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `user_id=eq.${user.id}` }, () => fetchCounts())
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channelMsg);
+      supabase.removeChannel(channelDisp);
+    };
+  }, [user]);
 
   // Favorites management state
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<any[]>([]);
@@ -52,6 +92,8 @@ export default function Account() {
 
   // Bookings engine
   const [bookings, setBookings] = useState<any[]>([]);
+    const [dateFilter, setDateFilter] = useState<'hoje'|'semana'|'mes'|'intervalo'|'todos'>('hoje');
+  const [customDate, setCustomDate] = useState('');
   const [showAllBookings, setShowAllBookings] = useState(false);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -93,15 +135,17 @@ export default function Account() {
         user_id: user.id,
         business_id: disputeBooking.business_id,
         title: disputeReason,
-        reason: `${disputeReason}
-${disputeDescription}`
+        reason: `${disputeReason}\n${disputeDescription}`,
+        status: 'open'
       });
       if (error) throw error;
-      setRedeemSuccess(`🚨 Reclamação registada. A equipa Glamzo abriu uma disputa. Analisaremos em 24h.`);
+      toast.success('Queixa registada com sucesso. A equipa vai analisar.');
+      setDisputeReason('');
+      setDisputeDescription('');
+      setDisputeModalOpen(false);
     } catch (err: any) {
-      setBookingError(err.message || 'Erro ao abrir disputa');
+      toast.error(err.message || 'Erro ao abrir disputa');
     } finally {
-      setDisputeModalOpen(false); 
       setSubmittingDispute(false);
     }
   };
@@ -315,15 +359,23 @@ ${disputeDescription}`
             { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
             { id: 'recompensas', icon: Gift, label: 'Recompensas' },
             { id: 'favoritos', icon: Heart, label: 'Favoritos' }
-          ].map(tab => (
+          ].map(tab => {
+            const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
+            return (
             <button 
               key={tab.id} 
               onClick={() => setActiveTab(tab.id as 'reservas' | 'apoio' | 'perfil' | 'recompensas' | 'favoritos')} 
-              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex-1 justify-center ${activeTab === tab.id ? 'bg-purple-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`relative flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex-1 justify-center ${activeTab === tab.id ? 'bg-purple-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
             >
-              <tab.icon className="w-4 h-4" /> {tab.label}
+              <div className="relative">
+                <tab.icon className="w-4 h-4" />
+                {hasNotification && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                )}
+              </div>
+              {tab.label}
             </button>
-          ))}
+          )})}
         </div>
 
         {/* ========================================================= */}
@@ -339,9 +391,54 @@ ${disputeDescription}`
               </div>
             </div>
 
+
+            {/* Filtro de Reservas */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <button 
+                onClick={() => setDateFilter('todos')} 
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'todos' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                Todas
+              </button>
+              <button 
+                onClick={() => setDateFilter('hoje')} 
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'hoje' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                Hoje
+              </button>
+              <button 
+                onClick={() => setDateFilter('semana')} 
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'semana' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                Esta Semana
+              </button>
+              <button 
+                onClick={() => setDateFilter('mes')} 
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'mes' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                Este Mês
+              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setDateFilter('intervalo')} 
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'intervalo' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                  Data Específica
+                </button>
+                {dateFilter === 'intervalo' && (
+                  <input 
+                    type="date" 
+                    value={customDate}
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
+                  />
+                )}
+              </div>
+            </div>
+
             {loadingBookings ? (
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>
-            ) : bookings.length === 0 ? (
+            ) : filteredBookings.length === 0 ? (
               <div className="text-center py-16 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                 <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <h4 className="text-lg font-bold text-slate-800 mb-2">Nenhuma marcação</h4>
@@ -350,7 +447,7 @@ ${disputeDescription}`
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
-                {(showAllBookings ? bookings : bookings.slice(0, 5)).map(bk => {
+                {(showAllBookings ? filteredBookings : filteredBookings.slice(0, 5)).map(bk => {
                   const bookingDate = new Date(bk.booking_date);
                   const isPast = bookingDate < new Date();
                   
@@ -419,13 +516,21 @@ ${disputeDescription}`
                 onClick={() => setMessageTab('mensagens')} 
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'mensagens' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
-                <MessageSquare className="w-4 h-4" /> Mensagens
+                <MessageSquare className="w-4 h-4" /> 
+                Mensagens
+                {unreadMessages > 0 && (
+                  <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">{unreadMessages}</span>
+                )}
               </button>
               <button 
                 onClick={() => setMessageTab('disputas')} 
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
-                <ShieldAlert className="w-4 h-4" /> Disputas
+                <ShieldAlert className="w-4 h-4" /> 
+                Disputas
+                {pendingDisputes > 0 && (
+                  <span className="bg-white text-rose-600 text-[10px] px-2 py-0.5 rounded-full">{pendingDisputes}</span>
+                )}
               </button>
             </div>
             
@@ -604,16 +709,23 @@ ${disputeDescription}`
           { id: 'reservas', icon: Calendar, label: 'Reservas' },
           { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' }
           
-        ].map(tab => (
+        ].map(tab => {
+          const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
+          return (
           <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex flex-col items-center p-2 flex-1"
+            className="flex flex-col items-center p-2 flex-1 relative"
           >
-            <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-purple-600' : 'text-slate-400'}`} />
+            <div className="relative">
+              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-purple-600' : 'text-slate-400'}`} />
+              {hasNotification && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+              )}
+            </div>
             <span className={`text-[10px] font-bold mt-1 ${activeTab === tab.id ? 'text-purple-600' : 'text-slate-500'}`}>{tab.label}</span>
           </button>
-        ))}
+        )})}
         
         <Link to="/explore" className="flex flex-col items-center px-4 -mt-6">
           <div className="bg-gradient-to-r from-purple-600 to-rose-500 p-4 rounded-full shadow-lg shadow-purple-500/40 text-white mb-1">
