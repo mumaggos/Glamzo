@@ -1,12 +1,10 @@
-import re
-
 with open("src/pages/Admin.tsx", "r") as f:
-    content = f.read()
+    text = f.read()
 
-content = content.replace(
-    "CheckCircle,   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut",
-    "CheckCircle,   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,  X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut, CreditCard, ArrowRightLeft, Package"
+text = text.replace(
+    "import React,\nimport UniversalInbox from '../components/UniversalInbox';\nimport UniversalDisputes from '../components/UniversalDisputes';\n { useState, useEffect } from 'react';",
+    "import React, { useState, useEffect } from 'react';\nimport UniversalInbox from '../components/UniversalInbox';\nimport UniversalDisputes from '../components/UniversalDisputes';"
 )
 
 with open("src/pages/Admin.tsx", "w") as f:
-    f.write(content)
+    f.write(text)
