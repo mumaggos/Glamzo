@@ -309,7 +309,7 @@ export default function PartnerLayout() {
         </div>
 
         {/* pb-36 garante o scroll dos Insights */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 sm:px-8 py-4 pb-32 lg:pb-12 relative z-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full px-4 sm:px-8 py-4 pb-40 lg:pb-12 relative z-0">
            <motion.div key={location.pathname} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="h-full">
             <Outlet context={{ business, user, profile, tabletOrder, categories, services, staff, bookings, businessHours, loadLayoutData, isLoadingData }} />
           </motion.div>

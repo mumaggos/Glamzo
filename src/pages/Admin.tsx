@@ -1262,7 +1262,12 @@ export default function Admin() {
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span>{tab.label}</span>
+                    <span className="flex items-center gap-2">
+                      {tab.label}
+                      {tab.id === 'support' && disputes.some(d => d.status === 'open' || d.status === 'in_review') && (
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -1338,7 +1343,12 @@ export default function Admin() {
                   }`}
                 >
                   <Icon className="w-4.5 h-4.5 shrink-0" />
-                  <span>{tab.label}</span>
+                  <span className="flex items-center gap-2">
+                    {tab.label}
+                    {tab.id === 'support' && disputes.some(d => d.status === 'open' || d.status === 'in_review') && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    )}
+                  </span>
                 </button>
               );
             })}

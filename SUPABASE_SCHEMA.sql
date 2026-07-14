@@ -126,6 +126,8 @@ CREATE TABLE IF NOT EXISTS public.bookings (
   end_time TEXT NOT NULL,
   total_price NUMERIC NOT NULL,
   payment_method TEXT NOT NULL,
+  client_completed BOOLEAN DEFAULT false,
+  business_completed BOOLEAN DEFAULT false,
   payment_status TEXT NOT NULL,
   booking_status TEXT NOT NULL,
   notes TEXT,
@@ -160,11 +162,21 @@ CREATE TABLE IF NOT EXISTS public.favorites (
 -- 11. Messages / Chat
 CREATE TABLE IF NOT EXISTS public.messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  business_id UUID NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
-  customer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  sender TEXT NOT NULL CHECK (sender IN ('customer', 'business', 'system')),
+  sender_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receiver_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
   is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 12a. Dispute Messages
+CREATE TABLE IF NOT EXISTS public.dispute_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dispute_id UUID NOT NULL REFERENCES public.disputes(id) ON DELETE CASCADE,
+  sender_type TEXT NOT NULL CHECK (sender_type IN ('customer', 'business', 'admin')),
+  sender_id UUID NOT NULL,
+  content TEXT NOT NULL,
+  file_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

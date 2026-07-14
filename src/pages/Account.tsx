@@ -93,7 +93,8 @@ export default function Account() {
   // Bookings engine
   const [bookings, setBookings] = useState<any[]>([]);
     const [dateFilter, setDateFilter] = useState<'hoje'|'semana'|'mes'|'intervalo'|'todos'>('hoje');
-  const [customDate, setCustomDate] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   const [showAllBookings, setShowAllBookings] = useState(false);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -267,6 +268,17 @@ export default function Account() {
 
   
 
+  const handleClientCompleteBooking = async (bookingId: string) => {
+    try {
+      const { error } = await supabase.from('bookings').update({ client_completed: true }).eq('id', bookingId).eq('customer_id', user!.id);
+      if (error) throw error;
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, client_completed: true } : b));
+      toast.success('Reserva marcada como concluída!');
+    } catch (err: any) {
+      toast.error('Erro ao concluir reserva.');
+    }
+  };
+
   const handleCancelBooking = async (bookingId: string) => {
     if (!window.confirm('Deseja mesmo cancelar esta reserva?')) return;
     try {
@@ -344,19 +356,20 @@ export default function Account() {
       return bkDate.getMonth() === today.getMonth() && bkDate.getFullYear() === today.getFullYear();
     }
     
-    if (dateFilter === 'intervalo' && customDate) {
-      const cDate = new Date(customDate);
-      cDate.setHours(0,0,0,0);
+    if (dateFilter === 'intervalo') {
+      if (!customStartDate && !customEndDate) return true;
+      let start = customStartDate ? new Date(customStartDate) : new Date(0);
+      let end = customEndDate ? new Date(customEndDate) : new Date(8640000000000000);
+      start.setHours(0,0,0,0);
+      end.setHours(23,59,59,999);
       const bDate = new Date(bkDate);
-      bDate.setHours(0,0,0,0);
-      return bDate.getTime() === cDate.getTime();
+      return bDate >= start && bDate <= end;
     }
-    
-    return dateFilter === 'intervalo' && !customDate ? true : false;
+    return false;
   });
 
   return (
-    <div id="account-view" className="min-h-[100dvh] bg-[#F8F9FC] font-sans pb-28 lg:pb-12">
+    <div id="account-view" className="min-h-[100dvh] bg-[#F8F9FC] font-sans pb-40 lg:pb-12">
       
       {/* Banner de Topo e Navegação */}
       <div className="bg-slate-900 pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -461,12 +474,21 @@ export default function Account() {
                   Data Específica
                 </button>
                 {dateFilter === 'intervalo' && (
-                  <input 
-                    type="date" 
-                    value={customDate}
-                    onChange={(e) => setCustomDate(e.target.value)}
-                    className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="date" 
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
+                    />
+                    <span className="text-slate-400 text-xs font-bold">até</span>
+                    <input 
+                      type="date" 
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
+                    />
+                  </div>
                 )}
               </div>
             </div>
@@ -485,6 +507,7 @@ export default function Account() {
                 {(showAllBookings ? filteredBookings : filteredBookings.slice(0, 5)).map(bk => {
                   const bookingDate = new Date(bk.booking_date);
                   const isPast = bookingDate < new Date();
+                  const isFullyCompleted = (bk.client_completed && bk.business_completed) || (bk.business_completed && (new Date().getTime() - bookingDate.getTime()) > 48 * 60 * 60 * 1000);
                   
                   return (
                     <div key={bk.id} className="group bg-white border border-slate-200 hover:border-purple-200 p-4 sm:p-5 rounded-2xl transition-all shadow-sm hover:shadow-md flex flex-col md:flex-row gap-5 items-start">
@@ -516,7 +539,10 @@ export default function Account() {
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
                           <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">Ver Loja</a>
                           
-                          {bk.booking_status === 'completed' && (
+                          {isPast && !bk.client_completed && !isFullyCompleted && bk.booking_status !== 'cancelled' && (
+                            <button onClick={() => handleClientCompleteBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">Concluir Reserva</button>
+                          )}
+                          {bk.booking_status === 'completed' && !isFullyCompleted && (
                             <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">Abrir Disputa</button>
                           )}
                           
