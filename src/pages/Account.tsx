@@ -93,6 +93,7 @@ export default function Account() {
         booking_id: disputeBooking.id,
         initiator_id: user.id,
         business_id: disputeBooking.business_id,
+        title: disputeReason,
         reason: `${disputeReason}
 ${disputeDescription}`
       });

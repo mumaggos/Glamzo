@@ -1999,8 +1999,15 @@ export default function Admin() {
                             onClick={() => setSelectedSupportUser(chat.user_id)}
                             className={`w-full text-left p-3 rounded-xl border transition-all ${selectedSupportUser === chat.user_id ? 'bg-purple-50 border-purple-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
                           >
-                            <span className="block font-bold text-xs text-slate-900 truncate">{chat.user?.full_name || 'Utilizador Desconhecido'}</span>
-                            <span className="block text-[10px] text-slate-500 font-mono mt-0.5 truncate">{chat.user?.email || 'N/A'}</span>
+                            <div className="flex justify-between items-center mb-0.5">
+                              <span className="block font-bold text-xs text-slate-900 truncate">{chat.user?.full_name || 'Utilizador Desconhecido'}</span>
+                              {chat.user?.role === 'partner' || salons.find((s: any) => s.owner_id === chat.user_id) ? (
+                                <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2 truncate max-w-[50%]">LOJA: {salons.find((s: any) => s.owner_id === chat.user_id)?.name || chat.user?.full_name}</span>
+                              ) : (
+                                <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ml-2">CLIENTE</span>
+                              )}
+                            </div>
+                            <span className="block text-[10px] text-slate-500 font-mono truncate">{chat.user?.email || 'N/A'}</span>
                           </button>
                         ))}
                         {supportChats.length === 0 && (

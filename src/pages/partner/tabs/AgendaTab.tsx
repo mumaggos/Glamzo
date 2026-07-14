@@ -142,7 +142,6 @@ export default function AgendaTab() {
     try {
       const { error } = await supabase.from('disputes').insert({
         booking_id: selectedBooking.id,
-        customer_id: selectedBooking.customer_id,
         business_id: business.id,
         initiator_id: business.owner_id,
         title: disputeReason,

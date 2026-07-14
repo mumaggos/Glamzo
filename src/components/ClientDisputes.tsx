@@ -26,7 +26,7 @@ export default function ClientDisputes() {
       const { data, error } = await supabase
         .from('disputes')
         .select('*, businesses(name)')
-        .eq('customer_id', user.id)
+        .eq('initiator_id', user.id)
         .order('created_at', { ascending: false });
       
       if (!error && data) {
@@ -38,7 +38,7 @@ export default function ClientDisputes() {
     fetchDisputes();
 
     const channel = supabase.channel('client_disputes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `customer_id=eq.${user.id}` }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `initiator_id=eq.${user.id}` }, () => {
         fetchDisputes();
       })
       .subscribe();

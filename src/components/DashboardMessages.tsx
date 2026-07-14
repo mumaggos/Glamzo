@@ -121,12 +121,12 @@ export default function DashboardMessages({ businessId }: { businessId: string }
       const unreadIds = data.filter(m => m.sender === 'customer' && !m.is_read).map(m => m.id);
       if (unreadIds.length > 0) {
          await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
+         setSessions(prev => prev.map(s => s.customer_id === sess.customer_id ? { ...s, unread_count: 0 } : s));
       }
     }
-
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (selectedSession && messages.length > 0) {
       const markRead = async () => {
         const unreadIds = messages.filter(m => m.sender === 'customer' && !m.is_read).map(m => m.id);
@@ -134,7 +134,7 @@ export default function DashboardMessages({ businessId }: { businessId: string }
           await supabase.from('messages').update({ is_read: true }).in('id', unreadIds);
           setMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, is_read: true } : m));
           setSessions(prev => prev.map(s => {
-            if (s.id === selectedSession.id) {
+            if (s.customer_id === selectedSession.customer_id) {
               return { ...s, unread_count: 0 };
             }
             return s;
@@ -258,9 +258,9 @@ export default function DashboardMessages({ businessId }: { businessId: string }
             <div className="p-4 border-b border-slate-200 flex items-center gap-3 bg-white/40">
               <button 
                 onClick={() => setSelectedSession(null)}
-                className="md:hidden p-1.5 bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900"
+                className="p-1.5 bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 font-bold text-xs pr-3"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" /> Voltar
               </button>
               <div>
                 <span className="block font-black text-slate-900 text-xs uppercase tracking-tight">{selectedSession.customer_name}</span>
