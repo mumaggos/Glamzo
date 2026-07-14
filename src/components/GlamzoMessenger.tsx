@@ -139,13 +139,13 @@ export default function GlamzoMessenger() {
 
        // Lógica de Notificações Inteligentes
        // Verificar se é a primeira mensagem nos últimos 30 minutos
-       const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
        const { data: recentMsgs } = await supabase
          .from('messages')
          .select('id')
          .eq('sender_id', userId)
          .eq('receiver_id', ownerId)
-         .gte('created_at', thirtyMinsAgo);
+         .gte('created_at', twentyFourHoursAgo);
 
        // Se houver mais do que 1 mensagem (a que acabámos de inserir), então não é a primeira
        const isFirstMessage = !recentMsgs || recentMsgs.length <= 1;

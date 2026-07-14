@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, KeyRound } from "lucide-react";
+import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound } from "lucide-react";
 import { Business } from "../../../types";
 import { supabase } from "../../../lib/supabase";
 
@@ -14,6 +14,16 @@ export default function SettingsTab() {
 
   const [savingDados, setSavingDados] = useState(false);
   const [savingSeguranca, setSavingSeguranca] = useState(false);
+  const [providers, setProviders] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.app_metadata?.providers) {
+        setProviders(data.user.app_metadata.providers);
+      }
+    });
+  }, []);
+
   const [savingImagens, setSavingImagens] = useState(false);
   const [savingRegras, setSavingRegras] = useState(false);
 
@@ -252,6 +262,12 @@ export default function SettingsTab() {
           {activeTab === "seguranca" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
               <h4 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-purple-600" /> Alterar Password</h4>
+              {providers.includes('google') ? (
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-purple-600" />
+                  <span className="text-sm font-bold text-purple-800">A sua conta é gerida de forma segura pelo Google.</span>
+                </div>
+              ) : (
               <form onSubmit={handleSaveSeguranca} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password Atual</label><input type="password" value={passwordData.current} onChange={e => setPasswordData({...passwordData, current: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
@@ -264,6 +280,7 @@ export default function SettingsTab() {
                   </button>
                 </div>
               </form>
+              )}
             </div>
           )}
 
