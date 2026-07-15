@@ -2225,6 +2225,33 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
 });
 
 
+
+
+app.post('/api/admin/impersonate', express.json(), async (req, res) => {
+  try {
+    const { adminId, targetEmail } = req.body;
+    const db = getSupabaseAdmin();
+    // Verify admin
+    const { data: adminUser } = await db.from('profiles').select('role').eq('id', adminId).single();
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    // Generate magic link
+    const { data: linkData, error: linkErr } = await db.auth.admin.generateLink({
+      type: 'magiclink',
+      email: targetEmail
+    });
+    
+    if (linkErr) throw linkErr;
+    
+    res.json({ link: linkData.properties.action_link });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 async function startServer() {
   app.get("/api/availability/:businessId", async (req, res) => {
     try {

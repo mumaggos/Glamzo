@@ -34,7 +34,6 @@ export interface Business {
   min_booking_notice?: number | null;
   cancellation_policy?: string | null;
   booking_end_margin?: number | null;
-  welcome_kit_sent?: boolean;
   subscription_status?: string;
   trial_ends_at?: string | null;
   credits?: number; // System credits (default 40 for PRO partner)
@@ -51,6 +50,9 @@ export interface Business {
   onboarding_step?: number | null;
   public_page_enabled?: boolean;
   qr_scans_count?: number;
+  setup_status?: 'pending' | 'completed' | 'self_setup';
+  welcome_kit_sent?: boolean;
+  terminal_sent?: boolean;
   page_views?: number;
   trial_used?: boolean;
   status?: 'setup' | 'active' | 'suspended';
