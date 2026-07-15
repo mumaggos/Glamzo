@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+const fs = require('fs');
+let content = fs.readFileSync('src/components/GlobalImpersonationBanner.tsx', 'utf8');
+
+const newContent = `import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { LogOut, ShieldAlert } from 'lucide-react';
 
@@ -60,3 +63,7 @@ export default function GlobalImpersonationBanner() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/GlobalImpersonationBanner.tsx', newContent);
+console.log("Updated GlobalImpersonationBanner.tsx one last time.");

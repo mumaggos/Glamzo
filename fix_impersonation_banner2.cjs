@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+const fs = require('fs');
+let content = fs.readFileSync('src/components/GlobalImpersonationBanner.tsx', 'utf8');
+
+const newContent = `import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { LogOut, ShieldAlert } from 'lucide-react';
 
 export default function GlobalImpersonationBanner() {
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     const backup = localStorage.getItem('admin_impersonate_backup_session');
@@ -14,30 +18,38 @@ export default function GlobalImpersonationBanner() {
   }, []);
 
   const handleReturnToAdmin = async () => {
-    if (loading) return;
     setLoading(true);
-    
+    setErrorMsg('');
     try {
       const backupStr = localStorage.getItem('admin_impersonate_backup_session');
       
-      if (backupStr) {
-        const backupSession = JSON.parse(backupStr);
-        
-        // Directly set session, overwriting the current one
-        await supabase.auth.setSession({
-          access_token: backupSession.access_token,
-          refresh_token: backupSession.refresh_token,
-        }).catch(err => {
-          console.error("Session restore error:", err);
-        });
+      // Clear from local storage immediately
+      localStorage.removeItem('admin_impersonate_backup_session');
+      
+      if (!backupStr) {
+        window.location.replace('/admin');
+        return;
       }
       
+      const backupSession = JSON.parse(backupStr);
+      
+      // Sign out quietly
+      await supabase.auth.signOut().catch(() => {});
+      
+      // Restore admin session
+      await supabase.auth.setSession({
+        access_token: backupSession.access_token,
+        refresh_token: backupSession.refresh_token,
+      }).catch((err) => {
+        console.error("Session restore error:", err);
+      });
+      
+      // Force reload and redirect
+      window.location.replace('/admin');
     } catch (err: any) {
-      console.error('Error during admin return:', err);
-    } finally {
+      console.error('Fallback error during admin return:', err);
       localStorage.removeItem('admin_impersonate_backup_session');
-      // Hard redirect to admin
-      window.location.href = '/admin';
+      window.location.replace('/admin');
     }
   };
 
@@ -48,6 +60,7 @@ export default function GlobalImpersonationBanner() {
       <div className="flex items-center gap-2">
         <ShieldAlert className="w-4 h-4 animate-pulse" />
         <span>MODO DEUS ATIVO: Está a ver a plataforma como Lojista.</span>
+        {errorMsg && <span className="ml-2 bg-black/20 px-2 py-0.5 rounded text-white">{errorMsg}</span>}
       </div>
       <button 
         onClick={handleReturnToAdmin}
@@ -60,3 +73,7 @@ export default function GlobalImpersonationBanner() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/GlobalImpersonationBanner.tsx', newContent);
+console.log("Updated GlobalImpersonationBanner.tsx to be extra robust.");
