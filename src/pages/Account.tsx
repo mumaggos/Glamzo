@@ -16,7 +16,7 @@ import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Cal
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
-  const { user, profile, updateProfile, loading: authLoading } = useAuth();
+  const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
   
   // Tabs Navigation State
   const [isClubModalOpen, setIsClubModalOpen] = useState(false);
@@ -310,17 +310,18 @@ export default function Account() {
 
   const handleClientCompleteBooking = async (bookingId: string) => {
     try {
-      const { error } = await supabase.from('bookings').update({ client_completed: true }).eq('id', bookingId).eq('customer_id', user!.id);
+      const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: bookingId });
       if (error) throw error;
+      
       setBookings(prev => {
-        const newBookings = prev.map(b => b.id === bookingId ? { ...b, client_completed: true } : b);
-        const completedBooking = newBookings.find(b => b.id === bookingId);
-        if (completedBooking) processBookingPoints(completedBooking);
-        return newBookings;
+        return prev.map(b => b.id === bookingId ? { ...b, client_completed: true, business_completed: true, booking_status: 'completed' } : b);
       });
-      toast.success('Reserva marcada como concluída!');
+      
+      toast.success('Reserva concluída! Pontos creditados com sucesso.');
+      // Refresh user profile to get updated points
+      refreshProfile();
     } catch (err: any) {
-      toast.error('Erro ao concluir reserva.');
+      toast.error('Erro ao concluir reserva: ' + err.message);
     }
   };
 

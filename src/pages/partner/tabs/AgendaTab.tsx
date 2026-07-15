@@ -166,12 +166,11 @@ export default function AgendaTab() {
     if (!selectedBooking) return;
     setIsUpdatingBooking(true);
     try {
-      const { error } = await supabase.from("bookings").update({ business_completed: true }).eq("id", selectedBooking.id);
+      const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
       if (error) throw error;
-      notifyTerminal("✅ Reserva validada!", "Dupla confirmação aplicada.");
-      const updatedBooking = { ...selectedBooking, business_completed: true };
+      notifyTerminal("✅ Reserva validada!", "Dupla confirmação e pontos aplicados.");
+      const updatedBooking = { ...selectedBooking, business_completed: true, client_completed: true, booking_status: 'completed' };
       setSelectedBooking(updatedBooking);
-      processBookingPoints(updatedBooking);
       loadLayoutData();
     } catch (err) {
       console.error(err);
@@ -184,9 +183,14 @@ export default function AgendaTab() {
     if (!selectedBooking) return;
     setIsUpdatingBooking(true);
     try {
-      const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
-      if (error) throw error;
-      if (status === 'completed') notifyTerminal("✅ Concluída!", "Serviço fechado em caixa.");
+      if (status === 'completed') {
+        const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
+        if (error) throw error;
+      }
+      if (status === 'completed') notifyTerminal("✅ Concluída!", "Serviço fechado e pontos atribuídos.");
       setSelectedBooking(null); loadLayoutData();
     } catch (err) { alert("Erro."); } finally { setIsUpdatingBooking(false); }
   };

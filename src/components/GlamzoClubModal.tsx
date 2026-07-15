@@ -28,12 +28,31 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
   const [withdrawMethod, setWithdrawMethod] = useState<'mbway' | 'nib'>('mbway');
   const [withdrawDetail, setWithdrawDetail] = useState('');
   const [copied, setCopied] = useState(false);
+  const [localRefCode, setLocalRefCode] = useState('');
 
   useEffect(() => {
     if (isOpen && user?.id) {
       loadData();
+      checkAndGenerateReferralCode();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, profile]);
+
+  const checkAndGenerateReferralCode = async () => {
+    let code = profile?.referral_code;
+    if (!code) {
+      // Generate a new code
+      const base = profile?.full_name ? profile.full_name.split(' ')[0].toUpperCase() : 'USER';
+      const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+      code = `${base}${randomPart}`;
+      
+      try {
+        await supabase.from('profiles').update({ referral_code: code }).eq('id', user.id);
+      } catch (err) {
+        console.error('Error updating referral code:', err);
+      }
+    }
+    setLocalRefCode(code);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -59,8 +78,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
 
   const currentPoints = profile?.glamzo_points || 0;
   const currentBalance = profile?.affiliate_balance || 0;
-  const referralCode = profile?.referral_code || '';
-  const refLink = `${window.location.origin}/partner-signup?ref=${referralCode}`;
+  const refLink = `${window.location.origin}/partner/signup?ref=${localRefCode}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);

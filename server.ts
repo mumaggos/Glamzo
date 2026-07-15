@@ -2209,8 +2209,15 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
   try {
     const { id, payload } = req.body;
     const db = getSupabaseAdmin();
-    const { error } = await db.from("bookings").update(payload).eq('id', id);
-    if (error) throw error;
+    
+    if (payload.booking_status === 'completed') {
+      const { error } = await db.rpc('complete_booking_and_reward', { booking_id_param: id });
+      if (error) throw error;
+    } else {
+      const { error } = await db.from("bookings").update(payload).eq('id', id);
+      if (error) throw error;
+    }
+    
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
