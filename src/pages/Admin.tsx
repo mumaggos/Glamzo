@@ -14,7 +14,7 @@ import { sendAbandonedCartEmail } from '../utils/communicationHelper';
 import { 
   Shield, Users, Search, MessageSquare, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
-  Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
+  Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Sparkles, Plus,
   X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
 , CreditCard, ArrowRightLeft, Package } from 'lucide-react';
 import { 

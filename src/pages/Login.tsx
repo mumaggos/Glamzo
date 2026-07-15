@@ -48,7 +48,7 @@ export default function Login() {
       
       if (data?.user?.id) {
         // Obter perfil para verificar se é loja
-        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
         if (prof?.role === 'business') {
           await supabase.auth.signOut();
           setErrorMsg('Acesso negado. Por favor, inicie sessão através do Portal do Parceiro.');
