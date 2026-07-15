@@ -45,7 +45,7 @@ export default function Admin() {
   };
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -1241,6 +1241,7 @@ export default function Admin() {
                 { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
                 { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
@@ -1324,6 +1325,7 @@ export default function Admin() {
               { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
               { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
               { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
@@ -1785,7 +1787,9 @@ export default function Admin() {
               {/* ==================================================== */}
               {/* SECTION 3: PAYOUTS & PLANÁRIOS DE PREÇOS             */}
               {/* ==================================================== */}
-              {activeTab === 'payouts' && (
+              {activeTab === 'club' && <SuperAdminClub />}
+        
+        {activeTab === 'payouts' && (
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-200 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>

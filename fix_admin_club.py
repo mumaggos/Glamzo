@@ -1,30 +1,39 @@
-import re
-
 with open("src/pages/Admin.tsx", "r") as f:
     text = f.read()
 
-# Add to state
-state_target = r"const \[activeTab, setActiveTab\] = useState<'users' \| 'payouts' \| 'support' \| 'terminal' \| 'analytics' \| 'cms' \| 'partners' \| 'pages' \| 'funnel'>\('users'\);"
-new_state = """const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club'>('users');"""
-text = text.replace(state_target, new_state)
+# Replace state definition
+target_state = "const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel'>('users');"
+replacement_state = "const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club'>('users');"
+if target_state in text:
+    text = text.replace(target_state, replacement_state)
+    print("State replaced")
+else:
+    print("State not found")
 
-# Add to arrays of tabs (desktop)
-tab_target_desktop = r"\{ id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert \},"
-new_tab_desktop = """{ id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },"""
-text = text.replace(tab_target_desktop, new_tab_desktop)
+# Replace desktop tabs array element
+target_tab1 = "{ id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },"
+replacement_tab1 = "{ id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },\n                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },"
+if target_tab1 in text:
+    text = text.replace(target_tab1, replacement_tab1)
+    print("Tabs replaced")
+else:
+    print("Tabs not found")
 
-# We will need to create the view for `activeTab === 'club'`. I will place it after `{activeTab === 'users' && (`
-import_target = "import { "
-new_import = "import SuperAdminClub from '../components/SuperAdminClub';\nimport { "
+# Insert import
+target_import = "import { "
+replacement_import = "import SuperAdminClub from '../components/SuperAdminClub';\nimport { "
 if "SuperAdminClub" not in text:
-    text = text.replace(import_target, new_import, 1)
-    
-view_target = r"\{activeTab === 'payouts' && \("
-new_view = """{activeTab === 'club' && <SuperAdminClub />}
-        
-        {activeTab === 'payouts' && ("""
-text = text.replace(view_target, new_view)
+    text = text.replace(target_import, replacement_import, 1)
+    print("Import added")
+
+# Insert component render
+target_render = "{activeTab === 'payouts' && ("
+replacement_render = "{activeTab === 'club' && <SuperAdminClub />}\n        \n        {activeTab === 'payouts' && ("
+if target_render in text:
+    text = text.replace(target_render, replacement_render)
+    print("Render added")
+else:
+    print("Render not found")
 
 with open("src/pages/Admin.tsx", "w") as f:
     f.write(text)
