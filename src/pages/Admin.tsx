@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
 import SuperAdminClub from '../components/SuperAdminClub';
+import SalesAgentsTab from '../components/SalesAgentsTab';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -45,7 +46,7 @@ export default function Admin() {
   };
 
   // Active sub-tab configuration
-  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club' | 'sales_teams'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -1242,6 +1243,7 @@ export default function Admin() {
                 { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
                 { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
+                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
@@ -1326,6 +1328,7 @@ export default function Admin() {
               { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
               { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
                 { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
+                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
               { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
@@ -1788,6 +1791,7 @@ export default function Admin() {
               {/* SECTION 3: PAYOUTS & PLANÁRIOS DE PREÇOS             */}
               {/* ==================================================== */}
               {activeTab === 'club' && <SuperAdminClub />}
+              {activeTab === 'sales_teams' && <SalesAgentsTab />}
         
         {activeTab === 'payouts' && (
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">

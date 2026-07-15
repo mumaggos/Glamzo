@@ -241,3 +241,13 @@ export interface TabletOrder {
   updated_at: string;
 }
 
+
+export interface SalesAgent {
+  id: string;
+  name: string;
+  phone?: string;
+  team_name?: string;
+  ref_code: string;
+  clicks_count: number;
+  created_at: string;
+}

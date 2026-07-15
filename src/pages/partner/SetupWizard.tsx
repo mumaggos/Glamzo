@@ -85,6 +85,21 @@ export default function SetupWizard() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  const [salesAgentId, setSalesAgentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const resolveSalesAgent = async () => {
+      const storedRef = localStorage.getItem('sales_agent_ref');
+      if (storedRef) {
+        const { data } = await supabase.from('sales_agents').select('id').eq('ref_code', storedRef).maybeSingle();
+        if (data) {
+          setSalesAgentId(data.id);
+        }
+      }
+    };
+    resolveSalesAgent();
+  }, []);
+
   // Step 1: Data
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -210,7 +225,7 @@ export default function SetupWizard() {
       
       if (!currentBiz) {
         const slug = await generateUniqueSlug(`loja-${user.id.substring(0, 8)}`);
-        const payload = {
+        const payload: any = {
           owner_id: user.id,
           name: '',
           email: user.email || '',
@@ -225,6 +240,11 @@ export default function SetupWizard() {
           slug: slug,
           category: 'Cabelo & Barbearia'
         };
+        
+        if (salesAgentId) {
+          payload.agent_id = salesAgentId;
+        }
+
         
         const { data: newBiz, error: createErr } = await supabase.from('businesses').insert(payload).select().single();
           
