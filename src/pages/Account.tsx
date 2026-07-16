@@ -202,7 +202,8 @@ export default function Account() {
     }
   }, [user]);
 
-  const currentPointsBalance = financeService.getCustomerPoints(user?.id || 'default');
+  const currentPointsBalance = profile?.glamzo_points || 0;
+  const currentAffiliateBalance = profile?.affiliate_balance || 0;
 
   const handleRedeemPoints = (pointsCost: number, voucherValue: number) => {
     setRedeemSuccess(null); setRedeemError(null);

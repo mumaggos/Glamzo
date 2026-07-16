@@ -161,7 +161,7 @@ app.post("/api/business/qr-scan", express.json(), async (req, res) => {
       .from('businesses')
       .select('qr_scans_count')
       .eq('id', businessId)
-      .single();
+      .maybeSingle();
       
     const current = currentData?.qr_scans_count || 0;
     
@@ -2216,7 +2216,7 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
       .from('bookings')
       .select('*')
       .eq('id', bookingId)
-      .single();
+      .maybeSingle();
     if (fetchError || !booking) throw fetchError || new Error("Booking not found");
 
     if (booking.booking_status === 'completed') {
@@ -2233,7 +2233,7 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
     if (updateError) throw updateError;
 
     if (booking.customer_id) {
-      const { data: profile } = await supabaseAdmin.from('profiles').select('glamzo_points').eq('id', booking.customer_id).single();
+      const { data: profile } = await supabaseAdmin.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
       const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
       await supabaseAdmin.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
     }
@@ -2251,13 +2251,13 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
     const db = getSupabaseAdmin();
     
     if (payload.booking_status === 'completed') {
-      const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).single();
+      const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
       if (fetchError || !booking) throw fetchError || new Error("Booking not found");
       const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
       const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed', business_completed: true, client_completed: true }).eq('id', id);
       if (updateError) throw updateError;
       if (booking.customer_id) {
-        const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).single();
+        const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
         const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
         await db.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
       }
@@ -2346,7 +2346,7 @@ app.post('/api/admin/impersonate', express.json(), async (req, res) => {
     const { adminId, targetEmail } = req.body;
     const db = getSupabaseAdmin();
     // Verify admin
-    const { data: adminUser } = await db.from('profiles').select('role').eq('id', adminId).single();
+    const { data: adminUser } = await db.from('profiles').select('role').eq('id', adminId).maybeSingle();
     if (!adminUser || adminUser.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized' });
     }
