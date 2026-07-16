@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 import { X, Sparkles, Gift, Users, CreditCard, Clock, Loader2, Copy, Check, ShieldAlert, ArrowRight, Wallet } from 'lucide-react';
 
 
@@ -88,11 +89,10 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
 
   const handleConvertPoints = async (pts: number, value: number) => {
     if (currentPoints < pts) {
-      setMessage({ type: 'error', text: 'Pontos insuficientes.' });
+      toast.error('Pontos insuficientes.');
       return;
     }
     setActionLoading(true);
-    setMessage(null);
     try {
       // Create random code
       const code = 'GLZ' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -100,12 +100,12 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
       expiresAt.setMonth(expiresAt.getMonth() + 6);
 
       // Insert Coupon
-      const { error: coupErr } = await supabase.from('coupons').insert({
-        user_id: user.id,
+      const { error: coupErr } = await supabase.from('reward_coupons').insert({
+        customer_id: user.id,
         code,
-        discount_value: value,
-        expires_at: expiresAt.toISOString(),
-        status: 'active'
+        value: value,
+        points_cost: pts,
+        expires_at: expiresAt.toISOString()
       });
       if (coupErr) throw coupErr;
 
@@ -119,11 +119,12 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
       // Update Profile
       await supabase.from('profiles').update({ glamzo_points: currentPoints - pts }).eq('id', user.id);
 
-      setMessage({ type: 'success', text: `Cupão de ${value}€ gerado com sucesso!` });
+      toast.success(`Cupão de ${value}€ gerado com sucesso!`);
       onPointsUpdate();
       loadData();
     } catch (err: any) {
-      setMessage({ type: 'error', text: 'Erro ao converter pontos.' });
+      console.error("Erro Resgate:", err);
+      toast.error(err.message || 'Erro ao converter pontos.');
     } finally {
       setActionLoading(false);
     }

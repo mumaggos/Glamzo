@@ -20,7 +20,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
 
   useEffect(() => {
     if (isOpen && client) {
-      setWalletBalance(client.affiliate_balance || 0);
+      setWalletBalance(client.wallet_balance || client.affiliate_balance || 0);
       setGlamzoPoints(client.glamzo_points || 0);
       fetchDetails();
     }
