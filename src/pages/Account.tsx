@@ -268,7 +268,7 @@ export default function Account() {
       const { error: coupErr } = await supabase.from('coupons').insert({
         user_id: user.id,
         code,
-        discount_value: voucherValue,
+        discount_amount: voucherValue,
         expires_at: expiresAt.toISOString(),
         status: 'active'
       });

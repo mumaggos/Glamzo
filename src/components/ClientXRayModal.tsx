@@ -79,7 +79,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: client.id,
-          affiliate_balance: walletBalance,
+          wallet_balance: walletBalance,
           glamzo_points: glamzoPoints
         })
       });

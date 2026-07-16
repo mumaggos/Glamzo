@@ -2293,13 +2293,12 @@ app.post('/api/admin/client-bookings', express.json(), async (req, res) => {
 
 app.post('/api/admin/update-financials', express.json(), async (req, res) => {
   try {
-    const { userId, affiliate_balance, glamzo_points } = req.body;
+    const { userId, wallet_balance, glamzo_points } = req.body;
     if (!userId) return res.status(400).json({ error: 'Missing userId' });
     
     // We assume the caller is admin, but for simplicity we'll just bypass
     const { error } = await getSupabaseAdmin().from('profiles').update({
-      affiliate_balance: Number(affiliate_balance),
-      wallet_balance: Number(affiliate_balance),
+      wallet_balance: Number(wallet_balance),
       glamzo_points: Number(glamzo_points)
     }).eq('id', userId);
     
