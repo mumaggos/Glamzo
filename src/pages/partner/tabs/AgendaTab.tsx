@@ -182,8 +182,8 @@ export default function AgendaTab() {
       if (status === 'completed') notifyTerminal("✅ Concluída!", "Serviço fechado e pontos atribuídos.");
       setSelectedBooking(null); 
       loadLayoutData();
-    } catch (err) { 
-      alert("Erro ao atualizar o estado."); 
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar o estado.");
       console.error(err);
     } finally { 
       setIsUpdatingBooking(false); 
@@ -265,6 +265,9 @@ export default function AgendaTab() {
                  const isFullyCompleted = (selectedBooking.client_completed && selectedBooking.business_completed) || (selectedBooking.business_completed && (new Date().getTime() - bookingDate.getTime()) > 48 * 60 * 60 * 1000);
                  return (
                    <>
+                     {selectedBooking.booking_status === "pending" && (
+                       <button onClick={() => handleUpdateBookingStatus("confirmed")} disabled={isUpdatingBooking} className="w-full bg-blue-500 hover:bg-blue-600 transition-colors text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 mb-2"><CheckCircle className="w-5 h-5" /> Confirmar Marcação</button>
+                     )}
                      {selectedBooking.booking_status === "completed" ? (
                        <div className="space-y-2">
                          <div className="w-full bg-gradient-to-r from-emerald-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-not-allowed opacity-90">

@@ -331,6 +331,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+
+  // Realtime Profile Updates
+  useEffect(() => {
+    if (!user || !isSupabaseConfigured) return;
+    
+    const channel = supabase.channel(`public:profiles:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          if (payload.new) {
+            setProfile((prev) => prev ? { ...prev, ...payload.new } : payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   // Real SQL Auth signup
   const signUp = async (email: string, password: string, fullName: string, role: UserRole) => {
     setError(null);
