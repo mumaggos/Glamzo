@@ -78,8 +78,9 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     }
     
     try {
-      const { error } = await supabase.from('businesses').delete().eq('id', id);
-      if (error) throw error;
+      const res = await fetch('/api/admin/delete-store', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ storeId: id }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       toast.success('Loja apagada com sucesso.');
       onUpdate();
     } catch (err: any) {

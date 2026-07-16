@@ -7,7 +7,7 @@ const supabaseAdmin = createClient(
 );
 
 async function check() {
-  const { data, error } = await supabaseAdmin.from('businesses').select('welcome_kit_sent, terminal_sent').limit(1);
+  const { data, error } = await supabaseAdmin.from('bookings').select('business_completed, client_completed').limit(1);
   if (error) {
     console.log("DB ERROR:", error.message);
   } else {

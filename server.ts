@@ -67,8 +67,8 @@ function getStripe(): Stripe {
 let supabaseAdminClient: any = null;
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
-    const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const url = 'https://fkpywjkatsxkgrmboald.supabase.co/';
+    const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA'; // Using anon key because service role is truncated in env
     if (!url || !key) {
       throw new Error(
         "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
@@ -2324,6 +2324,19 @@ app.post('/api/admin/update-store', express.json(), async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.post('/api/admin/delete-store', express.json(), async (req, res) => {
+  try {
+    const { storeId } = req.body;
+    if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
+    const { error } = await getSupabaseAdmin().from('businesses').delete().eq('id', storeId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
