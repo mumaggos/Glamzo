@@ -140,6 +140,7 @@ export default function AgendaTab() {
   const submitDispute = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBooking || !selectedBooking.id) return;
+    console.log("Tentando atualizar reserva com ID:", selectedBooking.id);
     setSubmittingDispute(true);
     try {
       const { error } = await supabase.from('disputes').insert({
@@ -168,13 +169,8 @@ export default function AgendaTab() {
     setIsUpdatingBooking(true);
     try {
       if (status === 'completed') {
-        const res = await fetch('/api/business/complete-booking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bookingId: selectedBooking.id })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to complete booking');
+        const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
+        if (error) throw error;
       } else {
         const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
         if (error) throw error;
