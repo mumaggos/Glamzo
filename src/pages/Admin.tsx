@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
-import SuperAdminClub from '../components/SuperAdminClub';
-import SalesAgentsTab from '../components/SalesAgentsTab';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import ClientXRayModal from '../components/ClientXRayModal';
-import StoreManagementTab from '../components/StoreManagementTab';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { UserProfile, UserRole, Business } from '../types';
 import { MAIN_CATEGORIES } from '../utils/categoriesData';
@@ -17,7 +13,7 @@ import { sendAbandonedCartEmail } from '../utils/communicationHelper';
 import { 
   Shield, Users, Search, MessageSquare, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
-  Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Sparkles, Plus,
+  Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Plus,
   X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
 , CreditCard, ArrowRightLeft, Package } from 'lucide-react';
 import { 
@@ -48,8 +44,7 @@ export default function Admin() {
   };
 
   // Active sub-tab configuration
-  const [selectedClient, setSelectedClient] = useState<UserProfile | null>(null);
-  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel' | 'club' | 'sales_teams'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'payouts' | 'support' | 'terminal' | 'analytics' | 'cms' | 'partners' | 'pages' | 'funnel'>('users');
 
   // Core database tables states
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -416,7 +411,7 @@ export default function Admin() {
         { data: payData, error: payErr },
         { data: billsData }
       ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('role', 'customer').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').order('created_at', { ascending: false }),
         supabase.from('payouts').select('*, business:businesses(*)').order('created_at', { ascending: false }),
         supabase.from('payments').select('*, business:businesses(*)')
@@ -1114,30 +1109,9 @@ export default function Admin() {
     setPointsAllocUserId(userId);
   };
 
-  const submitCreditAllocation = async () => {
+  const submitCreditAllocation = () => {
     if (!pointsAllocUserId) return;
-    try {
-      const { data: profile } = await supabase.from('profiles').select('glamzo_points, affiliate_balance').eq('id', pointsAllocUserId).single();
-      const currentPoints = profile?.glamzo_points || 0;
-      const currentBalance = profile?.affiliate_balance || 0;
-      
-      const res = await fetch('/api/admin/update-financials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: pointsAllocUserId,
-          affiliate_balance: currentBalance,
-          glamzo_points: currentPoints + pointsAllocVal
-        })
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update');
-      setSuccessMsg(`Crédito de fomento atribuído com sucesso! Alocados +${pointsAllocVal} pontos promocionais à conta do utilizador.`);
-      // Update local state
-      setProfiles(prev => prev.map(p => p.id === pointsAllocUserId ? { ...p, glamzo_points: currentPoints + pointsAllocVal } : p));
-    } catch (err: any) {
-
-    }
+    setSuccessMsg(`Crédito de fomento atribuído com sucesso! Alocados +${pointsAllocVal} pontos promocionais à conta do utilizador.`);
     setPointsAllocUserId(null);
   };
 
@@ -1263,13 +1237,14 @@ export default function Admin() {
             {/* Scrolling Navigation Links */}
             <nav className="flex-1 space-y-1.5">
               {[
-                { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
-                
+                { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
+                { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
-                { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
+                { id: 'terminal', label: 'Painel de Configurações', icon: Settings },
+                { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+                { id: 'pages', label: 'Páginas do Site', icon: FileText }
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1345,12 +1320,14 @@ export default function Admin() {
           {/* Navigation Links inside admin sidebar */}
           <nav className="p-3.5 space-y-1.5">
             {[
-              { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
+              { id: 'users', label: 'Utilizadores & Créditos', icon: Users },
+              { id: 'partners', label: 'Gestão de Parceiros 👑', icon: ShieldAlert },
               { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
-              { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
+              { id: 'terminal', label: 'Glamzo Terminal', icon: Smartphone },
+              { id: 'cms', label: 'Gestão da Homepage', icon: Globe },
+              { id: 'pages', label: 'Páginas da Plataforma', icon: FileText },
               { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -1670,83 +1647,14 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-
-{/* ==================================================== */}
+              {/* ==================================================== */}
               {/* SECTION 1: UTILIZADORES & CRÉDITOS                 */}
               {/* ==================================================== */}
-              
-              
-
               {activeTab === 'users' && (
                 <div id="admin-users" className="space-y-6">
-                  {/* Coupon Generator Migrated */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                    <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
-                      <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
-                      <span>Gerador de Cupões Comerciais</span>
-                    </h4>
-                    <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-                      <div>
-                        <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
-                        <input
-                          type="text"
-                          required
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
-                          placeholder="GLAMZOPRO45"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Trial (Dias)</label>
-                          <input
-                            type="number"
-                            required
-                            value={couponDuration}
-                            onChange={(e) => setCouponDuration(Number(e.target.value))}
-                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Uso Limite</label>
-                          <input
-                            type="number"
-                            required
-                            value={couponLimit}
-                            onChange={(e) => setCouponLimit(Number(e.target.value))}
-                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                          />
-                        </div>
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
-                      >
-                        Criar Cupão Admin
-                      </button>
-                    </form>
-                    <div className="space-y-2 mt-4">
-                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
-                      <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
-                        {couponsList.map((cp) => (
-                          <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
-                            <div className="text-left">
-                              <span className="text-slate-900 font-black">{cp.code}</span>
-                              <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-purple-600 font-bold block">{cp.discount_value}€ desconto</span>
-                              <span className="text-[9px] text-slate-400">{cp.used_count} usos</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                  </div>
-                    </div>
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Clientes Finais (CRM)</h3>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Utilizadores & Atribuição de Créditos</h3>
                       <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
                     </div>
 
@@ -1799,7 +1707,7 @@ export default function Admin() {
                         </thead>
                         <tbody className="divide-y divide-slate-105 divide-slate-900 text-xs">
                           {filteredProfiles.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50/20 transition-colors cursor-pointer" onClick={() => setSelectedClient(p as any)}>
+                            <tr key={p.id} className="hover:bg-slate-50/20 transition-colors">
                               <td className="py-4 px-6 font-bold text-slate-900 flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-full bg-slate-100/80 border border-slate-705 border-slate-700 text-slate-600 font-bold flex items-center justify-center font-mono text-[10px]">
                                   {(p.full_name || p.email).substring(0,2).toUpperCase()}
@@ -1823,7 +1731,7 @@ export default function Admin() {
                                 </span>
                               </td>
 
-                              <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                              <td className="py-4 px-4 text-center">
                                 <button 
                                   onClick={() => handleAllocateCredits(p.id)}
                                   className="px-2.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-purple-600 hover:text-purple-700 border border-slate-200 font-mono text-[10px] font-black cursor-pointer inline-flex items-center gap-1"
@@ -1833,7 +1741,7 @@ export default function Admin() {
                                 </button>
                               </td>
 
-                              <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                              <td className="py-4 px-6 text-right">
                                 <div className="flex items-center justify-end gap-2.5">
                                   <select aria-label="Selecione uma opção"
                                     value={p.role}
@@ -1872,142 +1780,11 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-{/* ==================================================== */}
-              {/* SECTION 4: DISPUTAS & TICKETS DE SUPORTE             */}
-              {/* ==================================================== */}
-              {activeTab === 'support' && (
-                <div id="admin-support" className="space-y-6 animate-fade-in w-full">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
-                    <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Centro de Resolução e Apoio</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">Comunique-se com clientes ou parceiros. Avalie disputas e conflitos.</p>
-                    </div>
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
-                      <button
-                        onClick={() => setSupportSubTab('messages')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${supportSubTab === 'messages' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
-                      >
-                        Mensagens
-                      </button>
-                      <button
-                        onClick={() => setSupportSubTab('disputes')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${supportSubTab === 'disputes' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
-                      >
-                        Disputas
-                        {disputes.filter(d => d.status === 'open' || d.status === 'in_review').length > 0 && (
-                          <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">{disputes.filter(d => d.status === 'open' || d.status === 'in_review').length}</span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {supportSubTab === 'messages' && <UniversalInbox myId="admin" myType="admin" />}
-                  {supportSubTab === 'disputes' && <UniversalDisputes myId="admin" myType="admin" />}
-                </div>
-              )}
 
-
-{/* ==================================================== */}
-              {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}
-              {/* ==================================================== */}
-              {activeTab === 'terminal' && (
-                <StoreManagementTab salons={salons} onUpdate={syncAdminDatasets} adminId={user?.id || ''} />
-              )}
-
-              {activeTab === 'analytics' && (
-                <div id="admin-analytics" className="space-y-6 animate-fade-in">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Volume de Negócios Central (Stripe Integrado)</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
-                  </div>
-
-                  {/* Summary aggregate cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
-                        <Users className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Profissionais PRO</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalActiveSubscriptionsCount}</span>
-                      </div>
-                    </div>
-
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
-                        <Coins className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Volume Transacionado</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalVolumeGrossCalculated.toFixed(2)} €</span>
-                      </div>
-                    </div>
-
-                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
-                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
-                        <Award className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Comissões Plataforma</span>
-                        <span className="text-xl font-black text-slate-900 mt-1 block">{(totalVolumeGrossCalculated * 0.05).toFixed(2)} €</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Chart aggregators */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Platform users breakdown pie chart */}
-                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Distribuição de Contas de Acesso</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RBarChart data={[
-                            { role: 'Clientes', count: profiles.filter(p => p.role === 'customer').length },
-                            { role: 'Lojistas', count: profiles.filter(p => p.role === 'business').length },
-                            { role: 'Admins', count: profiles.filter(p => p.role === 'admin').length }
-                          ]}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis dataKey="role" stroke="#64748b" fontSize={11} />
-                            <YAxis stroke="#64748b" fontSize={11} />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
-                            <Bar dataKey="count" fill="#9333ea" name="Registos Totais" radius={[4, 4, 0, 0]} />
-                          </RBarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* Aggregate Platform Billing line diagram */}
-                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
-                      <div className="h-64 flex items-center justify-center">
-                        {getDynamicChartData().length > 0 ? (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RLineChart data={getDynamicChartData()}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
-                              <YAxis stroke="#64748b" fontSize={11} unit="€" />
-                              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
-                              <Line type="monotone" dataKey="total" stroke="#9333ea" name="Volume" strokeWidth={2.5} />
-                            </RLineChart>
-                          </ResponsiveContainer>
-                        ) : (
-                          <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-50/20">
-                            <BarChart className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
-                            <p className="text-[10px] text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
               {/* ==================================================== */}
               {/* SECTION 3: PAYOUTS & PLANÁRIOS DE PREÇOS             */}
               {/* ==================================================== */}
-              {activeTab === 'sales_teams' && <SalesAgentsTab />}
-        
-        {activeTab === 'payouts' && (
+              {activeTab === 'payouts' && (
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-200 pb-5">
                     <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>
@@ -2096,14 +1873,315 @@ export default function Admin() {
                         </div>
                       </div>
 
+                      {/* Coupon Creator Interactive Console */}
+                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                          <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
+                          <span>Gerador de Cupões Comerciais</span>
+                        </h4>
+
+                        <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                          <div>
+                            <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
+                            <input
+                              type="text"
+                              required
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value)}
+                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
+                              placeholder="GLAMZOPRO45"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Trial (Dias)</label>
+                              <input
+                                type="number"
+                                required
+                                value={couponDuration}
+                                onChange={(e) => setCouponDuration(Number(e.target.value))}
+                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Uso Limite</label>
+                              <input
+                                type="number"
+                                required
+                                value={couponLimit}
+                                onChange={(e) => setCouponLimit(Number(e.target.value))}
+                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
+                          >
+                            Criar Cupão Admin
+                          </button>
+                        </form>
+
+                        {/* List of active created promos */}
+                        <div className="space-y-2 mt-4">
+                          <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
+                          <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
+                            {couponsList.map((cp) => (
+                              <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
+                                <div className="text-left">
+                                  <span className="text-slate-900 font-black">{cp.code}</span>
+                                  <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
+                                </div>
+                                <span className="bg-purple-950 text-purple-600 border border-purple-900 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                  {cp.uses} / {cp.max_uses}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION 4: DISPUTAS & TICKETS DE SUPORTE             */}
+              {/* ==================================================== */}
+              {activeTab === 'support' && (
+                <div id="admin-support" className="space-y-6 animate-fade-in w-full">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Centro de Resolução e Apoio</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Comunique-se com clientes ou parceiros. Avalie disputas e conflitos.</p>
+                    </div>
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                      <button
+                        onClick={() => setSupportSubTab('messages')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${supportSubTab === 'messages' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Mensagens
+                      </button>
+                      <button
+                        onClick={() => setSupportSubTab('disputes')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${supportSubTab === 'disputes' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Disputas
+                        {disputes.filter(d => d.status === 'open' || d.status === 'in_review').length > 0 && (
+                          <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">{disputes.filter(d => d.status === 'open' || d.status === 'in_review').length}</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {supportSubTab === 'messages' && <UniversalInbox myId="admin" myType="admin" />}
+                  {supportSubTab === 'disputes' && <UniversalDisputes myId="admin" myType="admin" />}
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}
+              {/* ==================================================== */}
+              {activeTab === 'terminal' && (
+                <div id="admin-terminal" className="space-y-6 animate-fade-in max-w-2xl">
+                  <div className="border-b border-slate-200 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Logística de CTT Glamzo Terminal</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">Gerenciar pedidos de tablets táteis das lojas, enviar com código de rastreio e conferir cauções.</p>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100">
+                      <h4 className="font-extrabold text-xs uppercase tracking-widest flex items-center gap-1.5">
+                        <Smartphone className="w-5 h-5 text-purple-600 animate-pulse" />
+                        <span>Encomendas e Despachos de Tablets Comodato</span>
+                      </h4>
+
+                      {/* Filters */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setTerminalFilter('all')}
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${terminalFilter === 'all' ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+                        >
+                          Todos os Pedidos
+                        </button>
+                        <button
+                          onClick={() => setTerminalFilter('awaiting_shipment')}
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${terminalFilter === 'awaiting_shipment' ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                          Aguardando Envio
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {terminalRequests
+                        .filter(tr => {
+                          if (terminalFilter === 'awaiting_shipment') {
+                            return tr.deposit_paid === true && tr.status !== 'shipped' && tr.status !== 'delivered';
+                          }
+                          return true;
+                        })
+                        .map((tr, idx) => (
+                          <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col gap-3 text-xs">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="font-black text-slate-900 text-sm">{tr.salon}</span>
+                                <div className="text-slate-600 mt-1 space-y-0.5">
+                                  <p><span className="font-semibold text-slate-800">Destinatário:</span> {tr.shipping_name || 'Desconhecido'}</p>
+                                  <p><span className="font-semibold text-slate-800">Telefone:</span> {tr.shipping_phone || '---'}</p>
+                                  <p><span className="font-semibold text-slate-800">Morada:</span> {tr.shipping_address || '---'}</p>
+                                  <p><span className="font-semibold text-slate-800">CP / Cidade:</span> {tr.shipping_postal_code} - {tr.city}</p>
+                                  <p className="mt-1">
+                                    <span className="font-semibold text-slate-800">Caução Fixa (9,99€):</span>{' '}
+                                    {tr.deposit_paid ? <span className="text-emerald-600 font-bold">Paga via Stripe</span> : <span className="text-amber-600 font-bold">Pendente Pagamento</span>}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-mono uppercase bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">{tr.status}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
+                               <div className="flex items-center gap-2">
+                                 <input 
+                                    type="text" 
+                                    placeholder="Transportadora (e.g., CTT)"
+                                    defaultValue={tr.carrier || ''}
+                                    id={`carrier-${tr.id}`}
+                                    className="w-1/3 px-2 py-1.5 text-xs border border-slate-300 rounded focus:border-purple-500 bg-white"
+                                 />
+                                 <input 
+                                    type="text" 
+                                    placeholder="Tracking Code"
+                                    defaultValue={tr.tracking_code || ''}
+                                    id={`tracking-${tr.id}`}
+                                    className="flex-1 px-2 py-1.5 text-xs border border-slate-300 rounded focus:border-purple-500 bg-white"
+                                 />
+                               </div>
+                               <div className="flex items-center gap-2">
+                                 <button 
+                                   onClick={() => handleConfirmShipment(tr.id)}
+                                   className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded uppercase flex-1 transition-all"
+                                 >
+                                   Confirmar Envio
+                                 </button>
+                                 <button 
+                                   onClick={() => handleMarkDelivered(tr.id)}
+                                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded uppercase flex-1 transition-all"
+                                 >
+                                   Marcar Entregue
+                                 </button>
+                               </div>
+                            </div>
+                          </div>
+                        ))}
+                      {terminalRequests.filter(tr => {
+                        if (terminalFilter === 'awaiting_shipment') {
+                          return tr.deposit_paid === true && tr.status !== 'shipped' && tr.status !== 'delivered';
+                        }
+                        return true;
+                      }).length === 0 && <div className="text-center py-4 text-xs font-mono text-slate-500">Nenhum pedido correspondente ao filtro.</div>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================================================== */}
+              {/* SECTION 6: PLATFORM ANALYTICS DASHBOARD              */}
+              {/* ==================================================== */}
+              {activeTab === 'analytics' && (
+                <div id="admin-analytics" className="space-y-6 animate-fade-in">
+                  <div className="border-b border-slate-200 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Volume de Negócios Central (Stripe Integrado)</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
+                  </div>
+
+                  {/* Summary aggregate cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                        <Users className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Profissionais PRO</span>
+                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalActiveSubscriptionsCount}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                        <Coins className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Volume Transacionado</span>
+                        <span className="text-xl font-black text-slate-900 mt-1 block">{totalVolumeGrossCalculated.toFixed(2)} €</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-slate-200 rounded-3xl p-5 flex items-center gap-4 border-r-4 border-r-purple-650 border-r-purple-600">
+                      <div className="w-12 h-12 bg-purple-950 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-900">
+                        <Award className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Comissões Plataforma</span>
+                        <span className="text-xl font-black text-slate-900 mt-1 block">{(totalVolumeGrossCalculated * 0.05).toFixed(2)} €</span>
                       </div>
                     </div>
                   </div>
 
+                  {/* Chart aggregators */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Platform users breakdown pie chart */}
+                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Distribuição de Contas de Acesso</h4>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RBarChart data={[
+                            { role: 'Clientes', count: profiles.filter(p => p.role === 'customer').length },
+                            { role: 'Lojistas', count: profiles.filter(p => p.role === 'business').length },
+                            { role: 'Admins', count: profiles.filter(p => p.role === 'admin').length }
+                          ]}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                            <XAxis dataKey="role" stroke="#64748b" fontSize={11} />
+                            <YAxis stroke="#64748b" fontSize={11} />
+                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
+                            <Bar dataKey="count" fill="#9333ea" name="Registos Totais" radius={[4, 4, 0, 0]} />
+                          </RBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Aggregate Platform Billing line diagram */}
+                    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
+                      <div className="h-64 flex items-center justify-center">
+                        {getDynamicChartData().length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RLineChart data={getDynamicChartData()}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+                              <YAxis stroke="#64748b" fontSize={11} unit="€" />
+                              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} labelStyle={{ color: '#fff' }} />
+                              <Line type="monotone" dataKey="total" stroke="#9333ea" name="Volume" strokeWidth={2.5} />
+                            </RLineChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-50/20">
+                            <BarChart className="w-8 h-8 text-slate-500 mb-2" />
+                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-[10px] text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
-
-{/* ==================================================== */}
+              {/* ==================================================== */}
               {/* SECTION 7: HOMEPAGE CARDS CMS                      */}
               {/* ==================================================== */}
               {activeTab === 'cms' && (
@@ -2482,8 +2560,7 @@ create policy "Allow admins full operations on homepage_cards"
                 </div>
               )}
 
-
-{/* ==================================================== */}
+              {/* ==================================================== */}
               {/* SECTION 8: PLATFORM PAGES CMS                      */}
               {/* ==================================================== */}
               {activeTab === 'pages' && (
@@ -2655,8 +2732,7 @@ $$;`}
                 </div>
               )}
 
-
-{/* ==================================================== */}
+              {/* ==================================================== */}
               {/* SECTION 9: FUNIL DE CONVERSÃO & ABANDONOS          */}
               {/* ==================================================== */}
               {activeTab === 'funnel' && (() => {
@@ -2962,8 +3038,10 @@ $$;`}
               })()}
             </>
           )}
+
         </div>
       </main>
+
             {/* Detailed Modal to inspect All Salon Data Inserido pela Loja (Painel Elite) */}
       {selectedSalon && (
         <div className="fixed inset-0 z-[100] flex justify-end">
@@ -3424,8 +3502,6 @@ $$;`}
         </div>
       )}
 
-    
-      <ClientXRayModal isOpen={!!selectedClient} onClose={() => setSelectedClient(null)} client={selectedClient} onUpdate={() => { syncAdminDatasets(); }} />
     </div>
   );
 }

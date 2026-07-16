@@ -50,7 +50,6 @@ const FaqParceiro = lazy(() => import('./pages/info/FaqParceiro'));
 const Sobre = lazy(() => import('./pages/info/Sobre'));
 const Contactos = lazy(() => import('./pages/info/Contactos'));
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
-import GlobalImpersonationBanner from './components/GlobalImpersonationBanner';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { Toaster } from 'react-hot-toast';
@@ -248,7 +247,6 @@ export default function App() {
         <ScrollToTop />
           
         <AuthProvider>
-          <GlobalImpersonationBanner />
           <SessionGuard />
           <GlobalRoleEnforcer />
           <GlobalIntentHandler />

@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 1. Fetch profile from database
       const { data, error: fetchErr } = await supabase
         .from('profiles')
-        .select('id, email, full_name, avatar_url, phone, role, created_at, glamzo_points, affiliate_balance')
+        .select('id, email, full_name, avatar_url, phone, role, created_at')
         .eq('id', userId)
         .single();
 
@@ -330,28 +330,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-
-  // Realtime Profile Updates
-  useEffect(() => {
-    if (!user || !isSupabaseConfigured) return;
-    
-    const channel = supabase.channel(`public:profiles:${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        (payload) => {
-          if (payload.new) {
-            setProfile((prev) => prev ? { ...prev, ...payload.new } : payload.new);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
 
   // Real SQL Auth signup
   const signUp = async (email: string, password: string, fullName: string, role: UserRole) => {

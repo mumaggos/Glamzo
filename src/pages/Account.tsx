@@ -4,67 +4,19 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
-import GlamzoClubModal from '../components/GlamzoClubModal';
 import { supabase } from '../lib/supabase';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { Review } from '../types';
 import { fetchReviewsByCustomer, submitReview, deleteReview } from '../utils/reviewsHelper';
-import { processBookingPoints } from '../utils/rewardsHelper';
 import { submitSupportQuery, fetchSupportTickets, createSupportTicket } from '../utils/communicationHelper';
 import { financeService } from '../utils/financeService';
 import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Calendar, Upload, Loader2, Save, CheckCircle,  Gift, Sparkles, Copy, Check, Star,  AlertCircle, X, Shield, Phone, Trash2, HelpCircle, Heart, UserCircle, ShoppingBag, Compass } from 'lucide-react';
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
-  const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
-
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [glamzoPoints, setGlamzoPoints] = useState(0);
-
-  // Realtime subscription & initial fetch for wallet and points
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchBalances = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('glamzo_points, wallet_balance, affiliate_balance')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        if (data) {
-          setGlamzoPoints(data.glamzo_points || 0);
-          setWalletBalance(data.wallet_balance || data.affiliate_balance || 0);
-        }
-      } catch (err) {
-        console.error('Error fetching balances:', err);
-      }
-    };
-
-    fetchBalances();
-
-    const channel = supabase.channel(`account_balances_${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        (payload) => {
-          if (payload.new) {
-            setGlamzoPoints(payload.new.glamzo_points || 0);
-            setWalletBalance(payload.new.wallet_balance || payload.new.affiliate_balance || 0);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
+  const { user, profile, updateProfile, loading: authLoading } = useAuth();
   
   // Tabs Navigation State
-  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('reservas');
   const [messageTab, setMessageTab] = useState<'mensagens' | 'disputas'>('mensagens');
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -247,47 +199,14 @@ export default function Account() {
     }
   }, [user]);
 
-  const currentPointsBalance = profile?.glamzo_points || glamzoPoints || 0;
-  const currentAffiliateBalance = profile?.wallet_balance || profile?.affiliate_balance || walletBalance || 0;
+  const currentPointsBalance = financeService.getCustomerPoints(user?.id || 'default');
 
-  const handleRedeemPoints = async (pointsCost: number, voucherValue: number) => {
+  const handleRedeemPoints = (pointsCost: number, voucherValue: number) => {
     setRedeemSuccess(null); setRedeemError(null);
     if (pointsCost !== 500 && pointsCost !== 1000) return;
-    if (!user || !profile) return;
-    
-    if (currentPointsBalance < pointsCost) {
-      setRedeemError("Pontos insuficientes para este voucher.");
-      return;
-    }
-
-    try {
-      const code = `GLAMZO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 6);
-
-      const { error: coupErr } = await supabase.from('coupons').insert({
-        user_id: user.id,
-        code,
-        discount_value: voucherValue,
-        expires_at: expiresAt.toISOString(),
-        status: 'active'
-      });
-      if (coupErr) throw coupErr;
-
-      const newPoints = currentPointsBalance - pointsCost;
-      const { error: updateErr } = await supabase.from('profiles').update({ glamzo_points: newPoints }).eq('id', user.id);
-      if (updateErr) throw updateErr;
-
-      setRedeemSuccess(`Sucesso! Código ${code} gerado. Válido para desconto de -${voucherValue}.00€.`);
-      
-      // Update local state to feel snappy
-      setGlamzoPoints(newPoints);
-      refreshProfile();
-      loadUserRewards();
-    } catch (err: any) {
-      console.error("Erro ao gerar voucher:", err);
-      setRedeemError("Ocorreu um erro ao gerar o cupão. Tente novamente.");
-    }
+    const result = financeService.redeemPointsForCoupon(user!.id, pointsCost);
+    if (typeof result === 'string') setRedeemError(result);
+    else { setRedeemSuccess(`Sucesso! Código ${result.code} gerado. Válido para desconto de -${voucherValue}.00€.`); loadUserRewards(); }
   };
 
   const handleOpenReviewModal = (bk: any) => { setReviewBooking(bk); setReviewRating(5); setReviewComment(''); setReviewModalOpen(true); };
@@ -375,10 +294,6 @@ export default function Account() {
       const { data, error } = await supabase.from('bookings').select(`*, service:services(id, name, price, duration_minutes, image_url), business:businesses(id, name, slug, phone, city, address), staff:staff(id, full_name, role_title)`).eq('customer_id', user.id).order('booking_date', { ascending: false }).order('start_time', { ascending: false });
       if (error) throw error;
       setBookings(data || []);
-      // Auto-process points for fully completed bookings
-      if (data) {
-        data.forEach(b => processBookingPoints(b));
-      }
     } catch (err: any) { setBookingError('Falha ao recuperar reservas.'); } finally { setLoadingBookings(false); }
   };
 
@@ -388,18 +303,12 @@ export default function Account() {
 
   const handleClientCompleteBooking = async (bookingId: string) => {
     try {
-      const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: bookingId });
+      const { error } = await supabase.from('bookings').update({ client_completed: true }).eq('id', bookingId).eq('customer_id', user!.id);
       if (error) throw error;
-      
-      setBookings(prev => {
-        return prev.map(b => b.id === bookingId ? { ...b, client_completed: true, business_completed: true, booking_status: 'completed' } : b);
-      });
-      
-      toast.success('Reserva concluída! Pontos creditados com sucesso.');
-      // Refresh user profile to get updated points
-      refreshProfile();
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, client_completed: true } : b));
+      toast.success('Reserva marcada como concluída!');
     } catch (err: any) {
-      toast.error('Erro ao concluir reserva: ' + err.message);
+      toast.error('Erro ao concluir reserva.');
     }
   };
 
@@ -512,12 +421,11 @@ export default function Account() {
               <p className="text-purple-300 font-mono mt-1 text-sm">{email}</p>
             </div>
           </div>
-          <button onClick={() => setIsClubModalOpen(true)} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 group relative overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center text-white">
              <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">Glamzo Club</span></div>
              <span className="text-3xl font-black font-mono">{currentPointsBalance}</span>
-             <span className="text-xs text-slate-300 block">Gerir Pontos e Saldo <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
-          </button>
+             <span className="text-xs text-slate-300 block">Pontos Acumulados</span>
+          </div>
         </div>
       </div>
 
@@ -632,7 +540,7 @@ export default function Account() {
                 {(showAllBookings ? filteredBookings : filteredBookings.slice(0, 5)).map(bk => {
                   const bookingDate = new Date(bk.booking_date);
                   const isPast = bookingDate < new Date();
-                  
+                  const isFullyCompleted = (bk.client_completed && bk.business_completed) || (bk.business_completed && (new Date().getTime() - bookingDate.getTime()) > 48 * 60 * 60 * 1000);
                   
                   return (
                     <div key={bk.id} className="group bg-white border border-slate-200 hover:border-purple-200 p-4 sm:p-5 rounded-2xl transition-all shadow-sm hover:shadow-md flex flex-col md:flex-row gap-5 items-start">
@@ -664,8 +572,10 @@ export default function Account() {
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
                           <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">Ver Loja</a>
                           
-                          
-                          {bk.booking_status === 'completed' &&  (
+                          {isPast && !bk.client_completed && !isFullyCompleted && bk.booking_status !== 'cancelled' && (
+                            <button onClick={() => handleClientCompleteBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">Concluir Reserva</button>
+                          )}
+                          {bk.booking_status === 'completed' && !isFullyCompleted && (
                             <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">Abrir Disputa</button>
                           )}
                           
@@ -868,13 +778,6 @@ export default function Account() {
         {/* MODAL DE DISPUTAS E REVIEWS MANTIDOS AQUI NO FUNDO INTACTOS! */}
       </div>
 
-            <GlamzoClubModal 
-        isOpen={isClubModalOpen} 
-        onClose={() => setIsClubModalOpen(false)} 
-        user={user} 
-        profile={profile}
-        onPointsUpdate={() => loadUserRewards()} 
-      />
       {reviewModalOpen && reviewBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
