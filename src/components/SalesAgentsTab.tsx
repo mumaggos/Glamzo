@@ -130,7 +130,7 @@ export default function SalesAgentsTab() {
   };
 
   const copyToClipboard = (code: string, id: string) => {
-    const url = `${window.location.origin}/partner/signup?ref=${code}`;
+    const url = `${window.location.origin}/partner?ref=${code}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);

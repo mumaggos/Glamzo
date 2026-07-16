@@ -37,11 +37,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
       const bkData = bkJson.data;
 
       
-      setBookings((bkData || []).map(bk => ({
-        ...bk,
-        business: bk.businesses || bk.business,
-        service: bk.services || bk.service
-      })));
+      
 
 
       // Fetch coupons
@@ -51,6 +47,30 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
         .eq('customer_id', client.id)
         .order('created_at', { ascending: false });
       setCoupons(coupData || []);
+
+      // Fetch Points History to map to bookings
+      const { data: ptsData } = await supabase
+        .from('points_history')
+        .select('*')
+        .eq('user_id', client.id);
+        
+      if (ptsData && bkData) {
+        setBookings((bkData || []).map(bk => {
+          const pts = ptsData.find(p => p.booking_id === bk.id);
+          return {
+            ...bk,
+            business: bk.businesses || bk.business,
+            service: bk.services || bk.service,
+            points_awarded: pts ? pts.points : 0
+          };
+        }));
+      } else {
+        setBookings((bkData || []).map(bk => ({
+          ...bk,
+          business: bk.businesses || bk.business,
+          service: bk.services || bk.service
+        })));
+      }
 
       // Fetch referrer if exists
       if (client.referred_by) {
@@ -238,6 +258,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                         <th className="py-3 px-4">Loja & Serviço</th>
                         <th className="py-3 px-4">Data e Hora</th>
                         <th className="py-3 px-4">Valor</th>
+                        <th className="py-3 px-4 text-center">Pontos</th>
                         <th className="py-3 px-4 text-right">Status</th>
                       </tr>
                     </thead>
@@ -254,6 +275,9 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                           </td>
                           <td className="py-3 px-4 font-bold text-slate-700">
                             {bk.service?.price ? `${bk.service.price}€` : '-'}
+                          </td>
+                          <td className="py-3 px-4 text-center font-bold text-emerald-600">
+                            {bk.points_awarded > 0 ? `+${bk.points_awarded}` : '-'}
                           </td>
                           <td className="py-3 px-4 text-right">
                             <span className={`inline-block px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-tight ${

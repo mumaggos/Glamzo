@@ -25,12 +25,16 @@ export async function processBookingPoints(booking: any) {
     // if booking.payment_method === 'stripe' or business charges_enabled, let's just assume points logic
     const pointsToAward = booking.payment_method === 'stripe' ? 50 : 25;
 
+    const expiresDate = new Date();
+    expiresDate.setFullYear(expiresDate.getFullYear() + 1);
+
     // Insert history
     const { error: insertError } = await supabase.from('points_history').insert({
       user_id: booking.customer_id,
       points: pointsToAward,
-      description: `Ganho de pontos na reserva #${booking.id.split('-')[0]}`,
-      booking_id: booking.id
+      description: `Reserva #${booking.id.split('-')[0]}`,
+      booking_id: booking.id,
+      expires_at: expiresDate.toISOString()
     });
     
     if (insertError) throw insertError;

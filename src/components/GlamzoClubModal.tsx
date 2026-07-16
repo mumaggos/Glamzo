@@ -79,7 +79,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
 
   const currentPoints = profile?.glamzo_points || 0;
   const currentBalance = profile?.affiliate_balance || 0;
-  const refLink = `${window.location.origin}/partner/signup?ref=${localRefCode}`;
+  const refLink = `${window.location.origin}/partner?ref=${localRefCode}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(refLink);
@@ -197,10 +197,14 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
         glamzo_points: currentPoints + ptsToGain
       }).eq('id', user.id);
 
+      const expDate = new Date();
+      expDate.setFullYear(expDate.getFullYear() + 1);
+      
       await supabase.from('points_history').insert({
         user_id: user.id,
         points: ptsToGain,
-        description: `Conversão de saldo afiliado (${currentBalance}€)`
+        description: `Conversão de saldo afiliado (${currentBalance}€)`,
+        expires_at: expDate.toISOString()
       });
 
       setMessage({ type: 'success', text: `Saldo convertido em ${ptsToGain} Pontos!` });

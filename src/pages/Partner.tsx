@@ -15,6 +15,11 @@ export default function Partner() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const searchParams = new URLSearchParams(window.location.search);
+    const ref = searchParams.get('ref');
+    if (ref) {
+      localStorage.setItem('sales_agent_ref', ref);
+    }
   }, []);
 
   useEffect(() => {
