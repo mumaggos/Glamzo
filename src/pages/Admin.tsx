@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import ClientXRayModal from '../components/ClientXRayModal';
+import AllCouponsTab from '../components/AllCouponsTab';
+import { Gift } from 'lucide-react';
 import StoreManagementTab from '../components/StoreManagementTab';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
 import { UserProfile, UserRole, Business } from '../types';
@@ -1276,6 +1278,7 @@ export default function Admin() {
                 
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
                 { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
+                { id: 'club', label: 'Gestão de Cupões', icon: Gift },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
                 { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
@@ -1916,7 +1919,12 @@ export default function Admin() {
               )}
 
 
-{/* ==================================================== */}
+
+              {activeTab === 'club' && (
+                <AllCouponsTab />
+              )}
+
+              {/* ==================================================== */}
               {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}
               {/* ==================================================== */}
               {activeTab === 'terminal' && (

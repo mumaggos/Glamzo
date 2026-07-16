@@ -84,20 +84,18 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
   const handleSaveFinancials = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/update-financials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: client.id,
-          wallet_balance: walletBalance,
-          glamzo_points: glamzoPoints
-        })
+      const { error } = await supabase.rpc('admin_update_user_balances', {
+        p_user_id: client.id,
+        p_wallet_balance: walletBalance,
+        p_glamzo_points: glamzoPoints,
+        p_affiliate_balance: walletBalance
       });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update');
+      if (error) throw error;
+      
       toast.success('Saldos atualizados com sucesso!');
       onUpdate();
     } catch (err: any) {
+      console.error(err);
       toast.error('Erro ao atualizar saldos: ' + err.message);
     } finally {
       setSaving(false);

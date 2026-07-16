@@ -46,7 +46,8 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
       toast.success('Loja atualizada com sucesso!');
       onUpdate();
     } catch (err: any) {
-      toast.error('Erro ao atualizar: ' + err.message);
+      console.error("Erro no handleUpdateStore:", err);
+      toast.error('Erro ao atualizar: ' + (err.message || JSON.stringify(err)));
     }
   };
 

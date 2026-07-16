@@ -1,11 +1,5 @@
 const fs = require('fs');
-let code = fs.readFileSync('server.ts', 'utf8');
-code = code.replace(
-  /const \{ userId, affiliate_balance, glamzo_points \} = req\.body;/g,
-  `const { userId, wallet_balance, glamzo_points } = req.body;`
-);
-code = code.replace(
-  /affiliate_balance: Number\(affiliate_balance\),\n\s*wallet_balance: Number\(affiliate_balance\)/g,
-  `wallet_balance: Number(wallet_balance)`
-);
-fs.writeFileSync('server.ts', code);
+let lines = fs.readFileSync('server.ts', 'utf8').split('\n');
+// Keep everything except the bad lines. 2334 to 2344 are indices 2333 to 2343.
+lines.splice(2333, 11);
+fs.writeFileSync('server.ts', lines.join('\n'));

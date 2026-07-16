@@ -2321,7 +2321,10 @@ app.post('/api/admin/update-store', express.json(), async (req, res) => {
     
     const { error } = await getSupabaseAdmin().from('businesses').update(updates).eq('id', storeId);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase Error Update Store:", error);
+      throw new Error(error.message || JSON.stringify(error));
+    }
     res.json({ success: true });
   } catch (err) {
     console.error(err);

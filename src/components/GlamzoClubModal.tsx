@@ -104,7 +104,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
         customer_id: user.id,
         code,
         value: value,
-        points_cost: pts,
+        
         expires_at: expiresAt.toISOString()
       });
       if (coupErr) throw coupErr;

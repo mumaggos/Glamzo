@@ -195,7 +195,7 @@ const [step, setStep] = useState(1);
     setValidatingPromo(true);
     setErrorMsg(null);
     try {
-      const { data, error } = await supabase
+      const { data: businessCoupon, error: bError } = await supabase
         .from('business_coupons')
         .select('*')
         .eq('business_id', business.id)
@@ -203,18 +203,40 @@ const [step, setStep] = useState(1);
         .eq('is_active', true)
         .maybeSingle();
         
-      if (error || !data) {
-        setErrorMsg('Código promocional inválido ou expirado.');
-        setAppliedPromo(null);
-      } else {
-        if (data.valid_until && new Date(data.valid_until) < new Date()) {
-          setErrorMsg('Este código promocional já expirou.');
+      if (businessCoupon) {
+        if (businessCoupon.valid_until && new Date(businessCoupon.valid_until) < new Date()) {
+          setErrorMsg('Este código promocional da loja já expirou.');
           setAppliedPromo(null);
         } else {
-          setAppliedPromo(data);
+          setAppliedPromo({ ...businessCoupon, type: 'business' });
           setErrorMsg(null);
         }
+        return;
       }
+
+      // Check Reward Coupons
+      const { data: rewardCoupon, error: rError } = await supabase
+        .from('reward_coupons')
+        .select('*')
+        .eq('customer_id', user.id)
+        .eq('code', promoCode.toUpperCase().trim())
+        .eq('used', false)
+        .maybeSingle();
+
+      if (rewardCoupon) {
+        if (new Date(rewardCoupon.expires_at) < new Date()) {
+          setErrorMsg('Este cupão de fidelidade já expirou.');
+          setAppliedPromo(null);
+        } else {
+          setAppliedPromo({ ...rewardCoupon, type: 'reward', discount_value: rewardCoupon.value });
+          setErrorMsg(null);
+        }
+        return;
+      }
+
+      setErrorMsg('Código promocional inválido, expirado ou já utilizado.');
+      setAppliedPromo(null);
+
     } catch (err) {
       setErrorMsg('Erro ao validar código.');
     } finally {
@@ -297,7 +319,7 @@ const handleConfirmReservation = async () => {
       const dateStr = [selectedDate.getFullYear(), String(selectedDate.getMonth() + 1).padStart(2, '0'), String(selectedDate.getDate()).padStart(2, '0')].join('-');
       const endTimeStr = minutesToTime(timeToMinutes(selectedTime) + totalServicesDuration);
 
-      const finalPriceToPay = Math.max(0, Number((totalServicesPrice - couponDiscount).toFixed(2)));
+      const finalPriceToPay = Math.max(0, Number((totalServicesPrice - getDiscountAmount()).toFixed(2)));
       const servicesText = selectedServices.map(s => `• ${s.name}`).join('\n');
       const finalNotes = notes.trim() ? `${notes.trim()}\n\nServiços:\n${servicesText}` : `Serviços:\n${servicesText}`;
 
@@ -318,6 +340,13 @@ const handleConfirmReservation = async () => {
         throw new Error("A configuração de pagamento Stripe online requer ativação no painel do parceiro.");
       }
 
+      if (appliedPromo && appliedPromo.type === 'reward') {
+        await supabase.from('reward_coupons').update({
+          used: true,
+          used_at: new Date().toISOString()
+        }).eq('id', appliedPromo.id);
+      }
+      
       setSuccessBooking(data);
       setTimeout(() => { onClose(); navigate('/account'); }, 1500);
     } catch (err: any) {
