@@ -225,6 +225,9 @@ app.post("/api/emails/send", async (req, res) => {
       case "abandoned_cart":
         await EmailService.sendAbandonedCartEmail(to);
         break;
+      case "reward_coupon":
+        await EmailService.sendRewardCouponEmail(to, data);
+        break;
       default:
         return res.status(400).json({ error: "Unknown email type" });
     }

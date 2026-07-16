@@ -427,6 +427,15 @@ export default function Admin() {
       if (payErr) throw payErr;
 
       setProfiles(profData || []);
+      
+      // Update selectedClient if it exists
+      if (selectedClient) {
+        const updatedClient = profData?.find(p => p.id === selectedClient.id);
+        if (updatedClient) {
+          setSelectedClient(updatedClient as any);
+        }
+      }
+
       setSalons(salData || []);
       
       // Fetch and map tablet_orders from database

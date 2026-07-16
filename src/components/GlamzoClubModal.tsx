@@ -60,7 +60,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
     try {
       const [histRes, coupRes, refRes, withRes] = await Promise.all([
         supabase.from('points_history').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('coupons').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('reward_coupons').select('*').eq('customer_id', user.id).order('created_at', { ascending: false }),
         supabase.from('affiliate_referrals').select('*, business:businesses(name)').eq('referrer_id', user.id).order('created_at', { ascending: false }),
         supabase.from('withdrawal_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
       ]);
@@ -118,6 +118,25 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
 
       // Update Profile
       await supabase.from('profiles').update({ glamzo_points: currentPoints - pts }).eq('id', user.id);
+
+      try {
+        await fetch('/api/emails/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'reward_coupon',
+            to: user.email,
+            data: {
+              customerName: profile?.full_name || 'Cliente',
+              code: code,
+              value: value,
+              expiresAt: expiresAt.toLocaleDateString()
+            }
+          })
+        });
+      } catch (emailErr) {
+        console.error("Failed to send coupon email", emailErr);
+      }
 
       toast.success(`Cupão de ${value}€ gerado com sucesso!`);
       onPointsUpdate();
@@ -303,18 +322,21 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
                   <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">Ainda não gerou nenhum cupão.</div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {coupons.map(c => (
-                      <div key={c.id} className={`border rounded-2xl p-4 flex justify-between items-center ${c.status === 'active' ? 'bg-white border-purple-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
-                        <div>
-                          <p className="font-black font-mono text-slate-900 tracking-wider">{c.code}</p>
-                          <p className="text-xs text-slate-500 mt-1">Validade: {new Date(c.expires_at).toLocaleDateString()}</p>
+                    {coupons.map(c => {
+                      const isActive = !c.used && new Date(c.expires_at) > new Date();
+                      return (
+                        <div key={c.id} className={`border rounded-2xl p-4 flex justify-between items-center ${isActive ? 'bg-white border-purple-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                          <div>
+                            <p className="font-black font-mono text-slate-900 tracking-wider">{c.code}</p>
+                            <p className="text-xs text-slate-500 mt-1">Validade: {new Date(c.expires_at).toLocaleDateString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="block font-black text-purple-600 text-lg">{c.value}€</span>
+                            <span className="text-[10px] font-bold uppercase text-slate-400">{c.used ? 'Usado' : (!isActive ? 'Expirado' : 'Ativo')}</span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="block font-black text-purple-600 text-lg">{c.discount_value}€</span>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">{c.status}</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

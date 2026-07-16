@@ -191,6 +191,21 @@ export const EmailService = {
     });
   },
 
+  async sendRewardCouponEmail(to: string, data: { customerName: string, code: string, value: string, expiresAt: string }) {
+    const html = `
+      <div style="font-family: sans-serif; padding: 20px;">
+        <h2 style="color: #6d28d9;">Parabéns, ${data.customerName}!</h2>
+        <p>Resgatou os seus pontos por um cupão de desconto.</p>
+        <p><strong>Cupão de ${data.value}€</strong></p>
+        <p>Código: <strong style="font-size: 18px; color: #1e293b;">${data.code}</strong></p>
+        <p>Válido até: ${data.expiresAt}</p>
+        <p>Para usar o cupão, insira o código acima no momento do checkout na sua próxima marcação através da plataforma Glamzo.</p>
+        <p>Com os melhores cumprimentos,<br>A Equipa Glamzo</p>
+      </div>
+    `;
+    return await this.sendEmail(to, `O seu Cupão de ${data.value}€ da Glamzo`, html);
+  },
+
   async sendStaffCredentialsEmail(to: string, data: { shopName: string, email: string, password: string, loginUrl: string }) {
     const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');

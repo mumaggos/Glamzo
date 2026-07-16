@@ -3,6 +3,7 @@ export type UserRole = 'customer' | 'business' | 'admin';
 export interface UserProfile {
   glamzo_points?: number;
   affiliate_balance?: number;
+  wallet_balance?: number;
   id: string;
   email: string;
   full_name: string | null;
