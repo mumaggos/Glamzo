@@ -2226,9 +2226,7 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
     const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
 
     const { error: updateError } = await supabaseAdmin.from('bookings').update({
-      booking_status: 'completed',
-      business_completed: true,
-      client_completed: true
+      booking_status: 'completed'
     }).eq('id', bookingId);
     if (updateError) throw updateError;
 
@@ -2254,7 +2252,7 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
       const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
       if (fetchError || !booking) throw fetchError || new Error("Booking not found");
       const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
-      const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed', business_completed: true, client_completed: true }).eq('id', id);
+      const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed' }).eq('id', id);
       if (updateError) throw updateError;
       if (booking.customer_id) {
         const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
@@ -2301,6 +2299,7 @@ app.post('/api/admin/update-financials', express.json(), async (req, res) => {
     // We assume the caller is admin, but for simplicity we'll just bypass
     const { error } = await getSupabaseAdmin().from('profiles').update({
       affiliate_balance: Number(affiliate_balance),
+      wallet_balance: Number(affiliate_balance),
       glamzo_points: Number(glamzo_points)
     }).eq('id', userId);
     

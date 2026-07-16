@@ -632,7 +632,7 @@ export default function Account() {
                 {(showAllBookings ? filteredBookings : filteredBookings.slice(0, 5)).map(bk => {
                   const bookingDate = new Date(bk.booking_date);
                   const isPast = bookingDate < new Date();
-                  const isFullyCompleted = (bk.client_completed && bk.business_completed) || (bk.business_completed && (new Date().getTime() - bookingDate.getTime()) > 48 * 60 * 60 * 1000);
+                  
                   
                   return (
                     <div key={bk.id} className="group bg-white border border-slate-200 hover:border-purple-200 p-4 sm:p-5 rounded-2xl transition-all shadow-sm hover:shadow-md flex flex-col md:flex-row gap-5 items-start">
@@ -664,10 +664,8 @@ export default function Account() {
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
                           <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">Ver Loja</a>
                           
-                          {isPast && !bk.client_completed && !isFullyCompleted && bk.booking_status !== 'cancelled' && (
-                            <button onClick={() => handleClientCompleteBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition-colors shadow-sm">Concluir Reserva</button>
-                          )}
-                          {bk.booking_status === 'completed' && !isFullyCompleted && (
+                          
+                          {bk.booking_status === 'completed' &&  (
                             <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">Abrir Disputa</button>
                           )}
                           

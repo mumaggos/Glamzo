@@ -258,7 +258,6 @@ export default function AgendaTab() {
             <div className="p-4 bg-slate-50 border-t space-y-2">
                               {(() => {
                  const bookingDate = new Date(selectedBooking.booking_date);
-                 const isFullyCompleted = (selectedBooking.client_completed && selectedBooking.business_completed) || (selectedBooking.business_completed && (new Date().getTime() - bookingDate.getTime()) > 48 * 60 * 60 * 1000);
                  return (
                    <>
                      {selectedBooking.booking_status === "pending" && (
