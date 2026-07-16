@@ -162,37 +162,32 @@ export default function AgendaTab() {
     }
   };
 
-  const handleBusinessCompleteBooking = async () => {
-    if (!selectedBooking) return;
-    setIsUpdatingBooking(true);
-    try {
-      const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
-      if (error) throw error;
-      notifyTerminal("✅ Reserva validada!", "Dupla confirmação e pontos aplicados.");
-      const updatedBooking = { ...selectedBooking, business_completed: true, client_completed: true, booking_status: 'completed' };
-      setSelectedBooking(updatedBooking);
-      loadLayoutData();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsUpdatingBooking(false);
-    }
-  };
 
   const handleUpdateBookingStatus = async (status: string) => {
     if (!selectedBooking) return;
     setIsUpdatingBooking(true);
     try {
       if (status === 'completed') {
-        const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
-        if (error) throw error;
+        const res = await fetch('/api/business/complete-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: selectedBooking.id })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to complete booking');
       } else {
         const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
         if (error) throw error;
       }
       if (status === 'completed') notifyTerminal("✅ Concluída!", "Serviço fechado e pontos atribuídos.");
-      setSelectedBooking(null); loadLayoutData();
-    } catch (err) { alert("Erro."); } finally { setIsUpdatingBooking(false); }
+      setSelectedBooking(null); 
+      loadLayoutData();
+    } catch (err) { 
+      alert("Erro ao atualizar o estado."); 
+      console.error(err);
+    } finally { 
+      setIsUpdatingBooking(false); 
+    }
   };
 
   return (
@@ -275,12 +270,6 @@ export default function AgendaTab() {
                          <div className="w-full bg-gradient-to-r from-emerald-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-not-allowed opacity-90">
                            <CheckCircle className="w-5 h-5" /> Serviço Concluído
                          </div>
-                         {!selectedBooking.business_completed && !isFullyCompleted && (
-                           <button onClick={handleBusinessCompleteBooking} disabled={isUpdatingBooking} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm">Dupla Confirmação (Concluir Reserva)</button>
-                         )}
-                         {!isFullyCompleted && (
-                           <button onClick={handleOpenDispute} className="w-full bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3 border border-rose-200 rounded-xl flex items-center justify-center gap-2 transition-colors">Abrir Disputa / Problema</button>
-                         )}
                        </div>
                      ) : (
                        <button onClick={() => handleUpdateBookingStatus("completed")} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>

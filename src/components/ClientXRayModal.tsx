@@ -32,12 +32,16 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
       // Fetch bookings
       const { data: bkData, error: bkErr } = await supabase
         .from('bookings')
-        .select(`*, business:businesses(name), service:services(name)`)
+        .select(`*, businesses(name), services(name)`)
         .eq('customer_id', client.id)
         .order('booking_date', { ascending: false });
 
       if (bkErr) throw bkErr;
-      setBookings(bkData || []);
+      setBookings((bkData || []).map(bk => ({
+        ...bk,
+        business: bk.businesses || bk.business,
+        service: bk.services || bk.service
+      })));
 
       // Fetch referrer if exists
       if (client.referred_by) {
@@ -71,15 +75,17 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
   const handleSaveFinancials = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      const res = await fetch('/api/admin/update-financials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: client.id,
           affiliate_balance: walletBalance,
           glamzo_points: glamzoPoints
         })
-        .eq('id', client.id);
-
-      if (error) throw error;
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update');
       toast.success('Saldos atualizados com sucesso!');
       onUpdate();
     } catch (err: any) {

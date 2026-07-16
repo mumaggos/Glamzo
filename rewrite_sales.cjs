@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+
+const content = `import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Plus, Copy, Check, Users, Target, Link as LinkIcon, BadgeEuro, X } from 'lucide-react';
 import { SalesAgent } from '../types';
@@ -93,9 +95,9 @@ export default function SalesAgentsTab() {
   };
 
   const generateRefCode = (name: string) => {
-    const base = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const base = name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    return `${base}-${randomSuffix}`;
+    return \`\${base}-\${randomSuffix}\`;
   };
 
   const handleCreateAgent = async (e: React.FormEvent) => {
@@ -130,7 +132,7 @@ export default function SalesAgentsTab() {
   };
 
   const copyToClipboard = (code: string, id: string) => {
-    const url = `${window.location.origin}/partner/signup?ref=${code}`;
+    const url = \`\${window.location.origin}/partner/signup?ref=\${code}\`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -358,3 +360,6 @@ export default function SalesAgentsTab() {
     </div>
   );
 }
+`
+fs.writeFileSync('src/components/SalesAgentsTab.tsx', content);
+console.log("SalesAgentsTab.tsx rewritten successfully.");

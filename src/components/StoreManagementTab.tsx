@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Store, Terminal, CheckCircle2, ShieldAlert, CreditCard, ChevronDown, Package, Edit, Calendar, QrCode, Trash2, Building2, Search, Settings, Monitor, Copy, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Business, UserProfile } from '../types';
-import { Building2, Search, Settings, ShieldAlert, Monitor, CheckCircle2, Copy, LogOut } from 'lucide-react';
+
 import toast from 'react-hot-toast';
 
 interface StoreManagementTabProps {
@@ -35,17 +36,56 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
 
   const handleUpdateStore = async (id: string, updates: Partial<Business>) => {
     try {
-      const { error } = await supabase
-        .from('businesses')
-        .update(updates)
-        .eq('id', id);
-        
-      if (error) throw error;
+      const res = await fetch('/api/admin/update-store', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storeId: id, updates })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update store');
       toast.success('Loja atualizada com sucesso!');
       onUpdate();
     } catch (err: any) {
       toast.error('Erro ao atualizar: ' + err.message);
     }
+  };
+
+  
+  const handleDownloadQR = async (salon: Business) => {
+    const storeUrl = `https://glamzo.pt/${salon.slug}?source=qr`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(storeUrl)}`;
+    try {
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `QR_${salon.name.replace(/\s+/g, '_')}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      window.open(qrUrl, '_blank');
+    }
+  };
+
+  const [storeToDelete, setStoreToDelete] = useState<string | null>(null);
+  const handleDeleteStore = async (id: string) => {
+    if (storeToDelete !== id) {
+      setStoreToDelete(id);
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.from('businesses').delete().eq('id', id);
+      if (error) throw error;
+      toast.success('Loja apagada com sucesso.');
+      onUpdate();
+    } catch (err: any) {
+      toast.error('Erro ao apagar loja: ' + err.message);
+    }
+    setStoreToDelete(null);
   };
 
   const handleImpersonate = async (targetEmail: string) => {
@@ -158,6 +198,27 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     </select>
                   </td>
 
+
+                  <td className="py-4 px-4 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`inline-block px-2 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase tracking-tight ${
+                        salon.subscription_status === 'active' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                        salon.subscription_status === 'trialing' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                        salon.subscription_status === 'past_due' ? 'bg-rose-100 text-rose-700 border-rose-200' :
+                        'bg-slate-100 text-slate-500 border-slate-200'
+                      }`}>
+                        {salon.subscription_status === 'active' ? 'Ativa' :
+                         salon.subscription_status === 'trialing' ? 'Trial' :
+                         salon.subscription_status === 'past_due' ? 'Atrasada' : 'Inativa'}
+                      </span>
+                      {salon.subscription_status === 'active' && (
+                         <span className="text-[9px] text-slate-500 flex items-center gap-0.5" title="Próximo Pagamento">
+                            <Calendar className="w-2.5 h-2.5" /> Automático
+                         </span>
+                      )}
+                    </div>
+                  </td>
+
                   <td className="py-4 px-4 text-center">
                     <button
                       onClick={() => handleUpdateStore(salon.id, { welcome_kit_sent: !salon.welcome_kit_sent })}
@@ -201,6 +262,23 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                       >
                         <Copy className="w-4 h-4" />
                       </button>
+                      
+                      <button 
+                        onClick={() => handleDownloadQR(salon)}
+                        className="w-8 h-8 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors flex items-center justify-center"
+                        title="Download QR Code"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleDeleteStore(salon.id)}
+                        className={`w-8 h-8 rounded-full transition-colors flex items-center justify-center ${storeToDelete === salon.id ? 'bg-rose-600 text-white animate-pulse' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}
+                        title={storeToDelete === salon.id ? "Clique novamente para confirmar" : "Apagar Loja"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
                       <button 
                         onClick={() => handleImpersonate(salon.email)}
                         disabled={loading}

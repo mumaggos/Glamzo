@@ -1114,9 +1114,30 @@ export default function Admin() {
     setPointsAllocUserId(userId);
   };
 
-  const submitCreditAllocation = () => {
+  const submitCreditAllocation = async () => {
     if (!pointsAllocUserId) return;
-    setSuccessMsg(`Crédito de fomento atribuído com sucesso! Alocados +${pointsAllocVal} pontos promocionais à conta do utilizador.`);
+    try {
+      const { data: profile } = await supabase.from('profiles').select('glamzo_points, affiliate_balance').eq('id', pointsAllocUserId).single();
+      const currentPoints = profile?.glamzo_points || 0;
+      const currentBalance = profile?.affiliate_balance || 0;
+      
+      const res = await fetch('/api/admin/update-financials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: pointsAllocUserId,
+          affiliate_balance: currentBalance,
+          glamzo_points: currentPoints + pointsAllocVal
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update');
+      setSuccessMsg(`Crédito de fomento atribuído com sucesso! Alocados +${pointsAllocVal} pontos promocionais à conta do utilizador.`);
+      // Update local state
+      setProfiles(prev => prev.map(p => p.id === pointsAllocUserId ? { ...p, glamzo_points: currentPoints + pointsAllocVal } : p));
+    } catch (err: any) {
+
+    }
     setPointsAllocUserId(null);
   };
 
@@ -1243,8 +1264,8 @@ export default function Admin() {
             <nav className="flex-1 space-y-1.5">
               {[
                 { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
+                
                 { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
                 { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
                 { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
                 { id: 'support', label: 'Disputas & Tickets', icon: Scale },
@@ -1326,7 +1347,6 @@ export default function Admin() {
             {[
               { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
               { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'club', label: 'Glamzo Club & Afiliados', icon: Sparkles },
                 { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
               { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
               { id: 'support', label: 'Disputas & Tickets', icon: Scale },
@@ -1650,11 +1670,79 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-              {/* ==================================================== */}
+
+{/* ==================================================== */}
               {/* SECTION 1: UTILIZADORES & CRÉDITOS                 */}
               {/* ==================================================== */}
+              
+              
+
               {activeTab === 'users' && (
                 <div id="admin-users" className="space-y-6">
+                  {/* Coupon Generator Migrated */}
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+                    <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                      <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
+                      <span>Gerador de Cupões Comerciais</span>
+                    </h4>
+                    <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                      <div>
+                        <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
+                        <input
+                          type="text"
+                          required
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
+                          placeholder="GLAMZOPRO45"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Trial (Dias)</label>
+                          <input
+                            type="number"
+                            required
+                            value={couponDuration}
+                            onChange={(e) => setCouponDuration(Number(e.target.value))}
+                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Uso Limite</label>
+                          <input
+                            type="number"
+                            required
+                            value={couponLimit}
+                            onChange={(e) => setCouponLimit(Number(e.target.value))}
+                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
+                      >
+                        Criar Cupão Admin
+                      </button>
+                    </form>
+                    <div className="space-y-2 mt-4">
+                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
+                      <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
+                        {couponsList.map((cp) => (
+                          <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
+                            <div className="text-left">
+                              <span className="text-slate-900 font-black">{cp.code}</span>
+                              <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-purple-600 font-bold block">{cp.discount_value}€ desconto</span>
+                              <span className="text-[9px] text-slate-400">{cp.used_count} usos</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Clientes Finais (CRM)</h3>
@@ -1783,178 +1871,7 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-
-              {/* ==================================================== */}
-              {/* SECTION 3: PAYOUTS & PLANÁRIOS DE PREÇOS             */}
-              {/* ==================================================== */}
-              {activeTab === 'club' && <SuperAdminClub />}
-              {activeTab === 'sales_teams' && <SalesAgentsTab />}
-        
-        {activeTab === 'payouts' && (
-                <div id="admin-payouts" className="space-y-6 animate-fade-in">
-                  <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
-                  </div>
-
-                  {/* Partition payouts list and parameters definition */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    
-                    {/* Requested payouts list column */}
-                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                      <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                        <Landmark className="w-5 h-5 text-purple-600" />
-                        <span>Pedidos de Transferência Recebidos (BD)</span>
-                      </h4>
-
-                      <div className="space-y-3.5 max-h-[400px] overflow-y-auto scrollbar-thin">
-                        {payoutRequests.map((po, idx) => (
-                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
-                            <div>
-                              <span className="block font-black text-sm text-slate-900 font-mono">{po.amount.toFixed(2)} €</span>
-                              <span className="text-[10px] text-purple-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Lojista: {po.business?.name || 'Pendente'}</span>
-                              <span className="text-[9px] text-slate-550 text-slate-500 font-mono mt-0.5 block">IBAN Registado no Stripe Connect</span>
-                            </div>
-
-                            <div className="flex items-center gap-2 self-end sm:self-auto">
-                              {po.status === 'pending' ? (
-                                <>
-                                  <button 
-                                    onClick={() => handleUpdatePayoutStatus(po.id, 'completed')}
-                                    className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold text-[10px] rounded-lg transition-all cursor-pointer"
-                                  >
-                                    Autorizar
-                                  </button>
-                                  <button 
-                                    onClick={() => handleUpdatePayoutStatus(po.id, 'rejected')}
-                                    className="px-2 py-1 bg-rose-950/20 text-rose-600 hover:bg-rose-955 rounded-lg text-[10px] cursor-pointer"
-                                  >
-                                    Recusar
-                                  </button>
-                                </>
-                              ) : (
-                                <span className={`inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase ${
-                                  po.status === 'completed' ? 'bg-purple-950 border-purple-900 text-purple-600' : 'bg-slate-50 text-slate-500 border-slate-200'
-                                }`}>
-                                  {po.status === 'completed' ? 'Efetuado' : 'Cancelado'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-
-                        {payoutRequests.length === 0 && (
-                          <p className="text-xs text-slate-500 font-mono text-center py-10">Sem ordens de transferência pendentes.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Subscription planes custom configurations */}
-                    <div className="lg:col-span-5 space-y-6">
-                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                          <Tag className="w-4.5 h-4.5 text-purple-600" />
-                          <span>Homologação e Parâmetros</span>
-                        </h4>
-
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3.5 text-xs text-slate-350">
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Período Experimental de Lojas (Dias)</span>
-                            <input type="number" defaultValue={45} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Mensalidade Padrão Plano PRO (€)</span>
-                            <input type="number" defaultValue={19.90} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Taxa de Comissão Marketplace (%)</span>
-                            <input type="number" defaultValue={5} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <button onClick={() => setSuccessMsg("Plano de Preçários, Comissões e Períodos experimentais de novas lojas modificado com sucesso!")} className="w-full py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold rounded-xl hover:text-purple-600 transition-all uppercase tracking-wide text-[10px] cursor-pointer">
-                            Actualizar Parâmetros Comerciais
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Coupon Creator Interactive Console */}
-                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
-                          <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
-                          <span>Gerador de Cupões Comerciais</span>
-                        </h4>
-
-                        <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-                          <div>
-                            <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
-                            <input
-                              type="text"
-                              required
-                              value={couponCode}
-                              onChange={(e) => setCouponCode(e.target.value)}
-                              className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
-                              placeholder="GLAMZOPRO45"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Trial (Dias)</label>
-                              <input
-                                type="number"
-                                required
-                                value={couponDuration}
-                                onChange={(e) => setCouponDuration(Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Uso Limite</label>
-                              <input
-                                type="number"
-                                required
-                                value={couponLimit}
-                                onChange={(e) => setCouponLimit(Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          <button
-                            type="submit"
-                            className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
-                          >
-                            Criar Cupão Admin
-                          </button>
-                        </form>
-
-                        {/* List of active created promos */}
-                        <div className="space-y-2 mt-4">
-                          <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
-                          <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
-                            {couponsList.map((cp) => (
-                              <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
-                                <div className="text-left">
-                                  <span className="text-slate-900 font-black">{cp.code}</span>
-                                  <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
-                                </div>
-                                <span className="bg-purple-950 text-purple-600 border border-purple-900 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                                  {cp.uses} / {cp.max_uses}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-
-              {/* ==================================================== */}
+{/* ==================================================== */}
               {/* SECTION 4: DISPUTAS & TICKETS DE SUPORTE             */}
               {/* ==================================================== */}
               {activeTab === 'support' && (
@@ -1988,7 +1905,8 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* ==================================================== */}
+
+{/* ==================================================== */}
               {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}
               {/* ==================================================== */}
               {activeTab === 'terminal' && (
@@ -2083,8 +2001,108 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-
               {/* ==================================================== */}
+              {/* SECTION 3: PAYOUTS & PLANÁRIOS DE PREÇOS             */}
+              {/* ==================================================== */}
+              {activeTab === 'sales_teams' && <SalesAgentsTab />}
+        
+        {activeTab === 'payouts' && (
+                <div id="admin-payouts" className="space-y-6 animate-fade-in">
+                  <div className="border-b border-slate-200 pb-5">
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
+                  </div>
+
+                  {/* Partition payouts list and parameters definition */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    {/* Requested payouts list column */}
+                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+                      <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                        <Landmark className="w-5 h-5 text-purple-600" />
+                        <span>Pedidos de Transferência Recebidos (BD)</span>
+                      </h4>
+
+                      <div className="space-y-3.5 max-h-[400px] overflow-y-auto scrollbar-thin">
+                        {payoutRequests.map((po, idx) => (
+                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
+                            <div>
+                              <span className="block font-black text-sm text-slate-900 font-mono">{po.amount.toFixed(2)} €</span>
+                              <span className="text-[10px] text-purple-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Lojista: {po.business?.name || 'Pendente'}</span>
+                              <span className="text-[9px] text-slate-550 text-slate-500 font-mono mt-0.5 block">IBAN Registado no Stripe Connect</span>
+                            </div>
+
+                            <div className="flex items-center gap-2 self-end sm:self-auto">
+                              {po.status === 'pending' ? (
+                                <>
+                                  <button 
+                                    onClick={() => handleUpdatePayoutStatus(po.id, 'completed')}
+                                    className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold text-[10px] rounded-lg transition-all cursor-pointer"
+                                  >
+                                    Autorizar
+                                  </button>
+                                  <button 
+                                    onClick={() => handleUpdatePayoutStatus(po.id, 'rejected')}
+                                    className="px-2 py-1 bg-rose-950/20 text-rose-600 hover:bg-rose-955 rounded-lg text-[10px] cursor-pointer"
+                                  >
+                                    Recusar
+                                  </button>
+                                </>
+                              ) : (
+                                <span className={`inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase ${
+                                  po.status === 'completed' ? 'bg-purple-950 border-purple-900 text-purple-600' : 'bg-slate-50 text-slate-500 border-slate-200'
+                                }`}>
+                                  {po.status === 'completed' ? 'Efetuado' : 'Cancelado'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {payoutRequests.length === 0 && (
+                          <p className="text-xs text-slate-500 font-mono text-center py-10">Sem ordens de transferência pendentes.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Subscription planes custom configurations */}
+                    <div className="lg:col-span-5 space-y-6">
+                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                          <Tag className="w-4.5 h-4.5 text-purple-600" />
+                          <span>Homologação e Parâmetros</span>
+                        </h4>
+
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3.5 text-xs text-slate-350">
+                          <div>
+                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Período Experimental de Lojas (Dias)</span>
+                            <input type="number" defaultValue={45} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                          </div>
+
+                          <div>
+                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Mensalidade Padrão Plano PRO (€)</span>
+                            <input type="number" defaultValue={19.90} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                          </div>
+
+                          <div>
+                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Taxa de Comissão Marketplace (%)</span>
+                            <input type="number" defaultValue={5} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
+                          </div>
+
+                          <button onClick={() => setSuccessMsg("Plano de Preçários, Comissões e Períodos experimentais de novas lojas modificado com sucesso!")} className="w-full py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold rounded-xl hover:text-purple-600 transition-all uppercase tracking-wide text-[10px] cursor-pointer">
+                            Actualizar Parâmetros Comerciais
+                          </button>
+                        </div>
+                      </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+              )}
+
+
+{/* ==================================================== */}
               {/* SECTION 7: HOMEPAGE CARDS CMS                      */}
               {/* ==================================================== */}
               {activeTab === 'cms' && (
@@ -2463,7 +2481,8 @@ create policy "Allow admins full operations on homepage_cards"
                 </div>
               )}
 
-              {/* ==================================================== */}
+
+{/* ==================================================== */}
               {/* SECTION 8: PLATFORM PAGES CMS                      */}
               {/* ==================================================== */}
               {activeTab === 'pages' && (
@@ -2635,7 +2654,8 @@ $$;`}
                 </div>
               )}
 
-              {/* ==================================================== */}
+
+{/* ==================================================== */}
               {/* SECTION 9: FUNIL DE CONVERSÃO & ABANDONOS          */}
               {/* ==================================================== */}
               {activeTab === 'funnel' && (() => {
@@ -2941,10 +2961,8 @@ $$;`}
               })()}
             </>
           )}
-
         </div>
       </main>
-
             {/* Detailed Modal to inspect All Salon Data Inserido pela Loja (Painel Elite) */}
       {selectedSalon && (
         <div className="fixed inset-0 z-[100] flex justify-end">
