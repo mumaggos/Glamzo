@@ -36,11 +36,11 @@ export default function AllCouponsTab() {
     
     if (!matchesSearch) return false;
 
-    const isActive = !c.used && new Date(c.expires_at) > new Date();
-    const isExpired = !c.used && new Date(c.expires_at) <= new Date();
+    const isActive = !c.is_used && new Date(c.expires_at) > new Date();
+    const isExpired = !c.is_used && new Date(c.expires_at) <= new Date();
 
     if (filterStatus === 'active') return isActive;
-    if (filterStatus === 'used') return c.used;
+    if (filterStatus === 'used') return c.is_used;
     if (filterStatus === 'expired') return isExpired;
 
     return true;
@@ -110,8 +110,8 @@ export default function AllCouponsTab() {
                 </tr>
               ) : (
                 filteredCoupons.map((c) => {
-                  const isActive = !c.used && new Date(c.expires_at) > new Date();
-                  const isExpired = !c.used && new Date(c.expires_at) <= new Date();
+                  const isActive = !c.is_used && new Date(c.expires_at) > new Date();
+                  const isExpired = !c.is_used && new Date(c.expires_at) <= new Date();
 
                   return (
                     <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
@@ -125,10 +125,10 @@ export default function AllCouponsTab() {
                       <td className="px-6 py-4 text-slate-500">{new Date(c.expires_at).toLocaleDateString()}</td>
                       <td className="px-6 py-4 text-right">
                         <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider \${
-                          c.used ? 'bg-slate-100 text-slate-600' :
+                          c.is_used ? 'bg-slate-100 text-slate-600' :
                           isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
                         }`}>
-                          {c.used ? 'Usado' : (isActive ? 'Ativo' : 'Expirado')}
+                          {c.is_used ? 'Usado' : (isActive ? 'Ativo' : 'Expirado')}
                         </span>
                       </td>
                     </tr>

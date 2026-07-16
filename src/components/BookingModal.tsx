@@ -220,16 +220,17 @@ const [step, setStep] = useState(1);
         .select('*')
         .eq('customer_id', user.id)
         .eq('code', promoCode.toUpperCase().trim())
-        .eq('used', false)
         .maybeSingle();
 
+      console.log("Resultado Reward Coupon:", rewardCoupon, rError);
+
       if (rewardCoupon) {
-        if (new Date(rewardCoupon.expires_at) < new Date()) {
-          setErrorMsg('Este cupão de fidelidade já expirou.');
-          setAppliedPromo(null);
-        } else {
+        if (!rewardCoupon.is_used && new Date(rewardCoupon.expires_at) > new Date()) {
           setAppliedPromo({ ...rewardCoupon, type: 'reward', discount_value: rewardCoupon.value });
           setErrorMsg(null);
+        } else {
+          setErrorMsg('Este cupão de fidelidade já expirou ou foi utilizado.');
+          setAppliedPromo(null);
         }
         return;
       }
@@ -342,7 +343,7 @@ const handleConfirmReservation = async () => {
 
       if (appliedPromo && appliedPromo.type === 'reward') {
         await supabase.from('reward_coupons').update({
-          used: true,
+          is_used: true,
           used_at: new Date().toISOString()
         }).eq('id', appliedPromo.id);
       }
