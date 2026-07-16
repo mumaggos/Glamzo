@@ -139,7 +139,7 @@ export default function AgendaTab() {
   
   const submitDispute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBooking) return;
+    if (!selectedBooking || !selectedBooking.id) return;
     setSubmittingDispute(true);
     try {
       const { error } = await supabase.from('disputes').insert({

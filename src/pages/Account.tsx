@@ -17,6 +17,51 @@ import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
   const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
+
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [glamzoPoints, setGlamzoPoints] = useState(0);
+
+  // Realtime subscription & initial fetch for wallet and points
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchBalances = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('glamzo_points, wallet_balance, affiliate_balance')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (data) {
+          setGlamzoPoints(data.glamzo_points || 0);
+          setWalletBalance(data.wallet_balance || data.affiliate_balance || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching balances:', err);
+      }
+    };
+
+    fetchBalances();
+
+    const channel = supabase.channel(`account_balances_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          if (payload.new) {
+            setGlamzoPoints(payload.new.glamzo_points || 0);
+            setWalletBalance(payload.new.wallet_balance || payload.new.affiliate_balance || 0);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   
   // Tabs Navigation State
   const [isClubModalOpen, setIsClubModalOpen] = useState(false);
@@ -202,8 +247,8 @@ export default function Account() {
     }
   }, [user]);
 
-  const currentPointsBalance = profile?.glamzo_points || 0;
-  const currentAffiliateBalance = profile?.affiliate_balance || 0;
+  const currentPointsBalance = glamzoPoints;
+  const currentAffiliateBalance = walletBalance;
 
   const handleRedeemPoints = (pointsCost: number, voucherValue: number) => {
     setRedeemSuccess(null); setRedeemError(null);
