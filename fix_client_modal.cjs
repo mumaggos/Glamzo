@@ -1,19 +1,12 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/components/ClientXRayModal.tsx', 'utf8');
+let code = fs.readFileSync('src/components/ClientXRayModal.tsx', 'utf8');
 
-// Modify fetch logic to join with businesses
-const oldFetch = `      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('customer_id', client.id)
-        .order('start_time', { ascending: false });`;
+code = code.replace(
+  /const { data: bkData, error: bkErr } = await supabase[\s\S]*?\.order\('booking_date', { ascending: false }\);/,
+  `const bkRes = await fetch('/api/admin/client-bookings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: client.id }) });
+      const bkJson = await bkRes.json();
+      if (!bkRes.ok) throw new Error(bkJson.error);
+      const bkData = bkJson.data;`
+);
 
-const newFetch = `      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*, business:businesses(name)')
-        .eq('customer_id', client.id)
-        .order('start_time', { ascending: false });`;
-
-content = content.replace(oldFetch, newFetch);
-fs.writeFileSync('src/components/ClientXRayModal.tsx', content);
-console.log('Fixed ClientXRayModal bookings fetch');
+fs.writeFileSync('src/components/ClientXRayModal.tsx', code);

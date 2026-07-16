@@ -1742,6 +1742,7 @@ export default function Admin() {
                           </div>
                         ))}
                       </div>
+                  </div>
                     </div>
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>

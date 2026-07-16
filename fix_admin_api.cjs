@@ -1,27 +1,24 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/pages/Admin.tsx', 'utf8');
+let code = fs.readFileSync('server.ts', 'utf8');
 
-const oldCredit = `      const { data: profile } = await supabase.from('profiles').select('glamzo_points').eq('id', pointsAllocUserId).single();
-      const currentPoints = profile?.glamzo_points || 0;
-      const { error } = await supabase.from('profiles').update({ glamzo_points: currentPoints + pointsAllocVal }).eq('id', pointsAllocUserId);
-      if (error) throw error;`;
+const route = `
+app.post('/api/admin/client-bookings', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    const { data, error } = await getSupabaseAdmin()
+      .from('bookings')
+      .select('*, businesses(name), services(name)')
+      .eq('customer_id', userId)
+      .order('booking_date', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+`;
 
-const newCredit = `      const { data: profile } = await supabase.from('profiles').select('glamzo_points, affiliate_balance').eq('id', pointsAllocUserId).single();
-      const currentPoints = profile?.glamzo_points || 0;
-      const currentBalance = profile?.affiliate_balance || 0;
-      
-      const res = await fetch('/api/admin/update-financials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: pointsAllocUserId,
-          affiliate_balance: currentBalance,
-          glamzo_points: currentPoints + pointsAllocVal
-        })
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || 'Failed to update');`;
+code = code.replace(/app\.post\('\/api\/admin\/update-financials'/g, route + "\napp.post('/api/admin/update-financials'");
 
-content = content.replace(oldCredit, newCredit);
-fs.writeFileSync('src/pages/Admin.tsx', content);
-console.log("Admin.tsx credit API call updated.");
+fs.writeFileSync('server.ts', code);

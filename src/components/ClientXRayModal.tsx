@@ -30,13 +30,12 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
     setLoading(true);
     try {
       // Fetch bookings
-      const { data: bkData, error: bkErr } = await supabase
-        .from('bookings')
-        .select(`*, businesses(name), services(name)`)
-        .eq('customer_id', client.id)
-        .order('booking_date', { ascending: false });
+      const bkRes = await fetch('/api/admin/client-bookings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: client.id }) });
+      const bkJson = await bkRes.json();
+      if (!bkRes.ok) throw new Error(bkJson.error);
+      const bkData = bkJson.data;
 
-      if (bkErr) throw bkErr;
+      
       setBookings((bkData || []).map(bk => ({
         ...bk,
         business: bk.businesses || bk.business,

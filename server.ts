@@ -2251,8 +2251,16 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
     const db = getSupabaseAdmin();
     
     if (payload.booking_status === 'completed') {
-      const { error } = await db.rpc('complete_booking_and_reward', { booking_id_param: id });
-      if (error) throw error;
+      const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).single();
+      if (fetchError || !booking) throw fetchError || new Error("Booking not found");
+      const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
+      const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed', business_completed: true, client_completed: true }).eq('id', id);
+      if (updateError) throw updateError;
+      if (booking.customer_id) {
+        const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).single();
+        const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
+        await db.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+      }
     } else {
       const { error } = await db.from("bookings").update(payload).eq('id', id);
       if (error) throw error;
@@ -2267,6 +2275,23 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
 
 
 
+
+
+app.post('/api/admin/client-bookings', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    const { data, error } = await getSupabaseAdmin()
+      .from('bookings')
+      .select('*, businesses(name), services(name)')
+      .eq('customer_id', userId)
+      .order('booking_date', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/api/admin/update-financials', express.json(), async (req, res) => {
   try {
