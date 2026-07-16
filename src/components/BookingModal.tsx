@@ -441,12 +441,20 @@ const handleConfirmReservation = async () => {
                 <div className="space-y-4">
                   <div onClick={() => setPaymentMethod('local')} className={`p-5 rounded-2xl border cursor-pointer bg-white shadow-sm flex items-center gap-4 ${paymentMethod === 'local' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><Smile className="w-6 h-6 text-slate-600" /></div>
-                    <div><h4 className="font-black text-slate-900 text-sm">Pagar no Local</h4><p className="text-xs text-slate-500 mt-1">Dinheiro ou MBWay no balcão.</p></div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagar no Local</h4><div className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-bold border border-emerald-100"><Sparkles className="w-3 h-3" /> +25 PTS</div></div>
+                      <p className="text-xs text-slate-500 mt-1">Dinheiro ou MBWay no balcão.</p>
+
+                    </div>
                   </div>
                   {business?.charges_enabled && (
                     <div onClick={() => setPaymentMethod('stripe')} className={`p-5 rounded-2xl border cursor-pointer bg-white shadow-sm flex items-center gap-4 ${paymentMethod === 'stripe' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                       <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center shrink-0"><CreditCard className="w-6 h-6 text-purple-600" /></div>
-                      <div><h4 className="font-black text-slate-900 text-sm">Pagamento Online Seguro</h4><p className="text-xs text-slate-500 mt-1">Cartão, MBWay ou Apple Pay (Glamzo Pay).</p></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagamento Online Seguro</h4><div className="inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-emerald-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm animate-pulse-soft"><Sparkles className="w-3 h-3" /> +50 PTS</div></div>
+                        <p className="text-xs text-slate-500 mt-1">Cartão, MBWay ou Apple Pay (Glamzo Pay).</p>
+
+                      </div>
                     </div>
                   )}
                 </div>

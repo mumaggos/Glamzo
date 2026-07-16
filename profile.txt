@@ -1,0 +1,8 @@
+1-export type UserRole = 'customer' | 'business' | 'admin';
+2-
+3:export interface UserProfile {
+4-  id: string;
+5-  email: string;
+6-  full_name: string | null;
+7-  avatar_url: string | null;
+8-  phone?: string | null;

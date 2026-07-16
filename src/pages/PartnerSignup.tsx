@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -10,6 +10,8 @@ import {
 export default function PartnerSignup() {
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
 
   // Onboarding frictionless step tracking
   const [step, setStep] = useState<1 | 2>(1);
@@ -21,6 +23,24 @@ export default function PartnerSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (refCode) {
+      // 1. Store in local storage for later when creating the business
+      localStorage.setItem('sales_agent_ref', refCode);
+      
+      // 2. Increment clicks safely via RPC (if not already incremented in this session)
+      if (!sessionStorage.getItem(`tracked_ref_${refCode}`)) {
+        sessionStorage.setItem(`tracked_ref_${refCode}`, 'true');
+        const trackClick = async () => {
+          try {
+            await supabase.rpc('increment_agent_clicks', { agent_ref: refCode });
+          } catch (e) { console.error(e); }
+        };
+        trackClick();
+      }
+    }
+  }, [refCode]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -116,7 +136,7 @@ export default function PartnerSignup() {
       setSuccessMsg('Autenticação confirmada! A redirecionar...');
       
       setTimeout(() => {
-        navigate('/partner/setup', { replace: true });
+        navigate('/partner/setup' + (refCode ? '?ref=' + refCode : ''), { replace: true });
       }, 1000);
     } catch (err: any) {
       console.error('OTP Verification Error:', err);
@@ -217,7 +237,7 @@ export default function PartnerSignup() {
               
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => navigate('/partner/setup')}
+                  onClick={() => navigate('/partner/setup' + (refCode ? '?ref=' + refCode : ''))}
                   className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                 >
                   <span>Continuar Configuração</span>

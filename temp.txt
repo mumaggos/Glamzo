@@ -1,153 +1,42 @@
-1812:          <button onClick={() => { signOut(); navigate('/partner/login'); }} className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase rounded-xl transition-all cursor-pointer">
-1814:          </button>
-2067:                <button
-2079:                </button>
-2082:                  <button
-2088:                  </button>
-2092:              <button
-2100:              </button>
-2115:            <button onClick={() => setToastNotification(null)} className="text-[10px] font-mono tracking-widest text-purple-400 hover:underline uppercase block font-bold pt-1.5 focus:outline-none">
-2117:            </button>
-2143:              <button 
-2149:              </button>
-2177:                  <button
-2202:                  </button>
-2218:              <button 
-2228:              </button>
-2272:                <button
-2294:                </button>
-2311:          <button 
-2317:          </button>
-2332:            <button
-2338:            </button>
-2350:            <button
-2357:            </button>
-2376:              <button 
-2381:              </button>
-2397:              <button 
-2402:              </button>
-2418:              <button 
-2423:              </button>
-2439:              <button 
-2452:              </button>
-2462:              <button onClick={() => setGlobalSuccess(null)} className="text-emerald-400 hover:underline text-[10px]">OK</button>
-2472:              <button onClick={() => setGlobalError(null)} className="text-rose-450 text-rose-400 hover:underline text-[10px]">Limpar</button>
-2499:                      <button
-2514:                      </button>
-2519:                          <button
-2529:                          </button>
-2548:                              <button 
-2549:                                type="button"
-2559:                              </button>
-2580:                              <button 
-2581:                                type="button"
-2591:                              </button>
-2594:                            {/* Back to Today button */}
-2596:                              <button 
-2597:                                type="button"
-2602:                              </button>
-2707:                                                  <button 
-2708:                                                    type="button"
-2713:                                                  </button>
-2714:                                                  <button 
-2715:                                                    type="button"
-2720:                                                  </button>
-2737:                                      /* Quick Book / Block Event placeholder button: Fresha style with premium Dark Look */
-2738:                                      <button
-2739:                                        type="button"
-2757:                                      </button>
-3041:                        <button
-3049:                        </button>
-3129:                                      <button 
-3134:                                      </button>
-3135:                                      <button 
-3140:                                      </button>
-3176:                    <button
-3194:                    </button>
-3215:                            <button
-3233:                            </button>
-3234:                            <button
-3240:                            </button>
-3263:                          <button onClick={() => setShowServiceModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
-3323:                          <button 
-3328:                          </button>
-3348:                    <button
-3364:                    </button>
-3391:                          <button
-3406:                          </button>
-3407:                          <button 
-3412:                          </button>
-3434:                          <button onClick={() => setShowStaffModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
-3478:                                  <button
-3479:                                    type="button"
-3498:                                  </button>
-3518:                          <button 
-3523:                          </button>
-3610:                                {/* Copy hours to all buttons */}
-3612:                                  <button
-3619:                                  </button>
-3623:                                <button
-3632:                                </button>
-3943:                        <button 
-3948:                        </button>
-4154:                          <button
-4160:                          </button>
-4161:                          <button
-4167:                          </button>
-4174:                          <button
-4180:                          </button>
-4236:                                <button
-4242:                                </button>
-4276:                          <button
-4292:                          </button>
-4311:                            <button
-4317:                            </button>
-4430:                                  <button
-4439:                                  </button>
-4445:                              <button
-4451:                              </button>
-4522:                        <button 
-4528:                        </button>
-4543:                    <button 
-4550:                    </button>
-4577:                          <button
-4587:                          </button>
-4634:                          <button
-4635:                            type="button"
-4651:                          </button>
-4699:                          <button
-4705:                          </button>
-4706:                          <button
-4712:                          </button>
-4713:                          <button
-4719:                          </button>
-4720:                          <button
-4726:                          </button>
-4730:                          <button
-4743:                          </button>
-4874:                        <button
-4883:                        </button>
-4912:                                <button
-4921:                                </button>
-4962:                    <button 
-4967:                    </button>
-5052:                    <button
-5053:                      type="button"
-5058:                    </button>
-5059:                    <button
-5060:                      type="button"
-5065:                    </button>
-5085:              <button 
-5086:                type="button"
-5091:              </button>
-5098:                <button
-5099:                  type="button"
-5108:                </button>
-5109:                <button
-5110:                  type="button"
-5119:                </button>
-5243:                <button
-5244:                  type="button"
-5249:                </button>
-5250:                <button
-5256:                </button>
+                  {/* Coupon Creator Interactive Console */}
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
+                    <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                      <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
+                      <span>Gerador de Cupões Comerciais</span>
+                    </h4>
+                    <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                      <div>
+                        <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
+                        <input
+                          type="text"
+                          required
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
+                          placeholder="GLAMZOPRO45"
+                        />
+                      </div>
+
+                </div>
+              )}
+
+              {activeTab === 'users' && (
+                <div id="admin-users" className="space-y-6">
+                  <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Clientes Finais (CRM)</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
+                    </div>
+
+                    <div className="relative w-full sm:max-w-xs">
+                      <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input 
+                        type="text"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        placeholder="Pesquise por e-mail ou nome..."
+                        className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
+                      />
+                    </div>
+                  </div>
+

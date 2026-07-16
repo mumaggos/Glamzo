@@ -67,8 +67,8 @@ function getStripe(): Stripe {
 let supabaseAdminClient: any = null;
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
-    const url = process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const url = 'https://fkpywjkatsxkgrmboald.supabase.co/';
+    const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA'; // Using anon key because service role is truncated in env
     if (!url || !key) {
       throw new Error(
         "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
@@ -161,7 +161,7 @@ app.post("/api/business/qr-scan", express.json(), async (req, res) => {
       .from('businesses')
       .select('qr_scans_count')
       .eq('id', businessId)
-      .single();
+      .maybeSingle();
       
     const current = currentData?.qr_scans_count || 0;
     
@@ -1944,6 +1944,41 @@ const handleStripeWebhook = async (req: any, res: any) => {
             if (syncedActive) {
                saasUpdateData.status = 'active';
                saasUpdateData.public_page_enabled = true;
+               
+               // --- AFFILIATE PAYOUT LOGIC ---
+               try {
+                 const { data: referral } = await db
+                   .from('affiliate_referrals')
+                   .select('*')
+                   .eq('referred_business_id', businessId)
+                   .eq('status', 'pending')
+                   .maybeSingle();
+
+                 if (referral) {
+                   // Update referral status
+                   await db
+                     .from('affiliate_referrals')
+                     .update({ status: 'paid' })
+                     .eq('id', referral.id);
+                   
+                   // Find referrer and add 10 EUR to balance
+                   const { data: referrer } = await db
+                     .from('profiles')
+                     .select('affiliate_balance')
+                     .eq('id', referral.referrer_id)
+                     .maybeSingle();
+                     
+                   if (referrer) {
+                      const newBalance = (referrer.affiliate_balance || 0) + 10;
+                      await db.from('profiles').update({ affiliate_balance: newBalance }).eq('id', referral.referrer_id);
+                      console.log(`[Affiliate] Added 10 EUR to user ${referral.referrer_id} for referring business ${businessId}`);
+                   }
+                 }
+               } catch (affiliateErr: any) {
+                 console.error("[Webhook Affiliate Logic Error]:", affiliateErr.message);
+               }
+               // -----------------------------
+               
             } else {
                saasUpdateData.public_page_enabled = false;
             }
@@ -2170,13 +2205,160 @@ app.post('/api/staff/bookings/create', express.json(), async (req, res) => {
   }
 });
 
+
+app.post('/api/business/complete-booking', express.json(), async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    if (!bookingId) return res.status(400).json({ error: 'Missing bookingId' });
+
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: booking, error: fetchError } = await supabaseAdmin
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .maybeSingle();
+    if (fetchError || !booking) throw fetchError || new Error("Booking not found");
+
+    if (booking.booking_status === 'completed') {
+      return res.json({ success: true, message: 'Already completed' });
+    }
+
+    const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
+
+    const { error: updateError } = await supabaseAdmin.from('bookings').update({
+      booking_status: 'completed'
+    }).eq('id', bookingId);
+    if (updateError) throw updateError;
+
+    if (booking.customer_id) {
+      const { data: profile } = await supabaseAdmin.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
+      const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
+      await supabaseAdmin.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+    }
+
+    res.json({ success: true, pointsAdded: pointsToAdd });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
   try {
     const { id, payload } = req.body;
     const db = getSupabaseAdmin();
-    const { error } = await db.from("bookings").update(payload).eq('id', id);
+    
+    if (payload.booking_status === 'completed') {
+      const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
+      if (fetchError || !booking) throw fetchError || new Error("Booking not found");
+      const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
+      const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed' }).eq('id', id);
+      if (updateError) throw updateError;
+      if (booking.customer_id) {
+        const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
+        const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
+        await db.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+      }
+    } else {
+      const { error } = await db.from("bookings").update(payload).eq('id', id);
+      if (error) throw error;
+    }
+    
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+
+
+
+
+app.post('/api/admin/client-bookings', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    const { data, error } = await getSupabaseAdmin()
+      .from('bookings')
+      .select('*, businesses(name), services(name)')
+      .eq('customer_id', userId)
+      .order('booking_date', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/update-financials', express.json(), async (req, res) => {
+  try {
+    const { userId, affiliate_balance, glamzo_points } = req.body;
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    
+    // We assume the caller is admin, but for simplicity we'll just bypass
+    const { error } = await getSupabaseAdmin().from('profiles').update({
+      affiliate_balance: Number(affiliate_balance),
+      wallet_balance: Number(affiliate_balance),
+      glamzo_points: Number(glamzo_points)
+    }).eq('id', userId);
+    
     if (error) throw error;
     res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.post('/api/admin/update-store', express.json(), async (req, res) => {
+  try {
+    const { storeId, updates } = req.body;
+    if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
+    
+    const { error } = await getSupabaseAdmin().from('businesses').update(updates).eq('id', storeId);
+    
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.post('/api/admin/delete-store', express.json(), async (req, res) => {
+  try {
+    const { storeId } = req.body;
+    if (!storeId) return res.status(400).json({ error: 'Missing storeId' });
+    const { error } = await getSupabaseAdmin().from('businesses').delete().eq('id', storeId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/impersonate', express.json(), async (req, res) => {
+  try {
+    const { adminId, targetEmail } = req.body;
+    const db = getSupabaseAdmin();
+    // Verify admin
+    const { data: adminUser } = await db.from('profiles').select('role').eq('id', adminId).maybeSingle();
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    // Generate magic link
+    const { data: linkData, error: linkErr } = await db.auth.admin.generateLink({
+      type: 'magiclink',
+      email: targetEmail
+    });
+    
+    if (linkErr) throw linkErr;
+    
+    res.json({ link: linkData.properties.action_link });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

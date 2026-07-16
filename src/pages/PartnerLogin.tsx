@@ -62,7 +62,7 @@ export default function PartnerLogin() {
         .from('profiles')
         .select('role')
         .eq('id', activeUser.id)
-        .single();
+        .maybeSingle();
 
       if (profErr) {
         throw new Error('Falha ao validar privilégios do perfil.');

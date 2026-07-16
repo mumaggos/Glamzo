@@ -29,6 +29,31 @@ export default function Login() {
   
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (user && !loading && !authLoading) {
+      if (profile?.role === 'business') {
+        supabase.auth.signOut();
+        setErrorMsg('Acesso negado. Por favor, inicie sessão através do Portal do Parceiro.');
+        return;
+      }
+      const returnTo = localStorage.getItem('returnTo');
+      if (returnTo) {
+        localStorage.removeItem('returnTo');
+        navigate(returnTo, { replace: true });
+        return;
+      }
+      const savedRedirect = sessionStorage.getItem('post_login_redirect');
+      if (savedRedirect) {
+        sessionStorage.removeItem('post_login_redirect');
+        navigate(savedRedirect, { replace: true });
+        return;
+      }
+      navigate('/account', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate]);
+
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -48,7 +73,7 @@ export default function Login() {
       
       if (data?.user?.id) {
         // Obter perfil para verificar se é loja
-        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+        const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
         if (prof?.role === 'business') {
           await supabase.auth.signOut();
           setErrorMsg('Acesso negado. Por favor, inicie sessão através do Portal do Parceiro.');
@@ -70,8 +95,7 @@ export default function Login() {
           return;
         }
       }
-      // Não navegamos aqui manualmente. O useEffect ali de cima (Passo 2) apanha a mudança do `user` 
-      // e envia o utilizador para a loja automaticamente (lendo do sessionStorage)!
+      navigate('/account', { replace: true });
     } catch (err: any) {
       console.error('Login Error:', err.message);
       if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
