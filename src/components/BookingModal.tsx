@@ -373,7 +373,6 @@ const handleConfirmReservation = async () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               bookingId: data.id,
-              amount: finalPriceToPay,
               stripeAccountId: business.stripe_account_id,
               customerEmail: user?.email || '',
               serviceName: selectedServices.map((s: any) => s.name).join(', '),

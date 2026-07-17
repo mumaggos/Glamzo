@@ -591,7 +591,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
   try {
     const {
       bookingId,
-      amount,
+      amount, // We keep this for fallback but use DB value securely
       stripeAccountId,
       customerEmail,
       serviceName,
@@ -600,18 +600,43 @@ app.post("/api/create-checkout-session", async (req, res) => {
       cancelUrl,
     } = req.body;
 
-    if (!bookingId || !amount) {
+    if (!bookingId) {
       res
         .status(400)
         .json({
-          error: "Falta o parâmetro bookingId ou o valor total do agendamento",
+          error: "Falta o parâmetro bookingId",
         });
       return;
     }
 
     const db = getSupabaseAdmin();
     const stripe = getStripe();
-    const amountCents = Math.round(Number(amount) * 100);
+
+    // Securely fetch booking and price from DB
+    const { data: bookingRec, error: bookingErr } = await db
+      .from("bookings")
+      .select("business_id, total_price, original_service_price")
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (bookingErr || !bookingRec) {
+       res.status(404).json({ error: "Reserva não encontrada" });
+       return;
+    }
+
+    // Use total_price (which includes any DB-applied discounts) or original_service_price, fallback to body amount
+    const secureAmount = bookingRec.total_price ?? bookingRec.original_service_price ?? amount;
+
+    if (secureAmount === undefined || secureAmount === null) {
+      res
+        .status(400)
+        .json({
+          error: "Não foi possível determinar o valor total do agendamento",
+        });
+      return;
+    }
+
+    const amountCents = Math.round(Number(secureAmount) * 100);
 
     // Safeguard: Stripe payments require at least 50 cents (0.50 EUR)
     if (amountCents < 50) {
@@ -629,13 +654,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
     // Safe DB Lookup backup: resolve Stripe Connected Account ID from the corresponding business directly
     let resolvedStripeAccountId = stripeAccountId;
     try {
-      const { data: bookingRec } = await db
-        .from("bookings")
-        .select("business_id")
-        .eq("id", bookingId)
-        .maybeSingle();
-
-      if (bookingRec?.business_id) {
+      if (bookingRec.business_id) {
         const { data: bizRec } = await db
           .from("businesses")
           .select("stripe_account_id")
