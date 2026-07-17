@@ -85,8 +85,8 @@ export default function PartnerLayout() {
           return supabase.from("bookings")
             .select(`*, service:services(name, price, duration_minutes), staff:staff(full_name), customer_profile:profiles(full_name, avatar_url, email, phone)`)
             .eq("business_id", bData.id)
-            
-            
+            .neq('booking_status', 'cancelled')
+            .neq('booking_status', 'pending')
             .order("booking_date", { ascending: false })
             .order("start_time", { ascending: false })
             .limit(3000);
