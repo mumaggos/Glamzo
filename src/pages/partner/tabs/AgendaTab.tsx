@@ -169,8 +169,9 @@ export default function AgendaTab() {
     setIsUpdatingBooking(true);
     try {
       if (status === 'completed') {
-        const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: selectedBooking.id });
+        const { error } = await supabase.from('bookings').update({ booking_status: 'completed', business_completed: true, client_completed: true }).eq('id', selectedBooking.id);
         if (error) throw error;
+        await processBookingPoints({ ...selectedBooking, business_completed: true, client_completed: true });
       } else {
         const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
         if (error) throw error;

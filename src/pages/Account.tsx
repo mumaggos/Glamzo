@@ -388,14 +388,19 @@ export default function Account() {
 
   const handleClientCompleteBooking = async (bookingId: string) => {
     try {
-      const { error } = await supabase.rpc('complete_booking_and_reward', { booking_id_param: bookingId });
+      const { error } = await supabase.from('bookings').update({ booking_status: 'completed', business_completed: true, client_completed: true }).eq('id', bookingId);
       if (error) throw error;
+      
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking) {
+        await processBookingPoints({ ...booking, business_completed: true, client_completed: true });
+      }
       
       setBookings(prev => {
         return prev.map(b => b.id === bookingId ? { ...b, client_completed: true, business_completed: true, booking_status: 'completed' } : b);
       });
       
-      toast.success('Reserva concluída! Pontos creditados com sucesso.');
+      toast.success('Reserva concluída! Pontos creditados com sucesso (se aplicável).');
       // Refresh user profile to get updated points
       refreshProfile();
     } catch (err: any) {

@@ -63,7 +63,7 @@ const ClientsTab = React.memo(function ClientsTab() {
     bookings.forEach((bk: any) => {
       if (bk.booking_status !== "completed") return;
       const custId = bk.customer_id || "GUEST";
-      const spentAmount = Number(bk.total_price) || 0;
+      const spentAmount = Number((bk.original_service_price ?? bk.total_price)) || 0;
       let lastV = bk.booking_date;
 
       if (!map.has(custId)) {

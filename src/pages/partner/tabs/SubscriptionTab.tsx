@@ -56,23 +56,23 @@ export default function SubscriptionTab() {
           .select("*")
           .eq("business_id", business.id)
           .order("created_at", { ascending: false }),
-        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id").eq("business_id", business.id).eq("booking_status", "completed")
+        supabase.from("bookings").select("id, created_at, total_price, payment_method, booking_status, staff_id, original_service_price, discount_applied").eq("business_id", business.id).eq("booking_status", "completed")
       ]);
 
       const stripePayments = (pyData || []).filter(p => p.payment_status === 'paid');
       const stripePaymentBookingIds = new Set(stripePayments.map(p => p.booking_id));
 
-      const localCompleted = (bkData || []).filter(b => b.total_price > 0 && b.payment_method === 'local' && !stripePaymentBookingIds.has(b.id)).map(b => ({
+      const localCompleted = (bkData || []).filter(b => (b.original_service_price ?? b.total_price) > 0 && b.payment_method === 'local' && !stripePaymentBookingIds.has(b.id)).map(b => ({
         id: `loc_${b.id}`,
         created_at: b.created_at,
         booking_id: b.id,
         staff_id: b.staff_id,
         payment_method: 'local',
         payment_status: 'paid',
-        amount_total: b.total_price,
-        amount: b.total_price,
+        amount_total: (b.original_service_price ?? b.total_price),
+        amount: (b.original_service_price ?? b.total_price),
         glamzo_fee: 0,
-        business_amount: b.total_price,
+        business_amount: (b.original_service_price ?? b.total_price),
         description: `Serviço de Loja (Ref: ${b.id.substring(0,6)})`
       }));
 

@@ -2229,7 +2229,7 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
       return res.json({ success: true, message: 'Already completed' });
     }
 
-    const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
+    const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 0;
 
     const { error: updateError } = await supabaseAdmin.from('bookings').update({
       booking_status: 'completed'
@@ -2238,8 +2238,19 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
 
     if (booking.customer_id) {
       const { data: profile } = await supabaseAdmin.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
-      const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
-      await supabaseAdmin.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+      if (pointsToAdd > 0) {
+        const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
+        await supabaseAdmin.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+        const expiresDate = new Date();
+        expiresDate.setFullYear(expiresDate.getFullYear() + 1);
+        await supabaseAdmin.from('points_history').insert({
+          user_id: booking.customer_id,
+          points: pointsToAdd,
+          description: `Reserva #${booking.id.split('-')[0]}`,
+          booking_id: booking.id,
+          expires_at: expiresDate.toISOString()
+        });
+      }
     }
 
     res.json({ success: true, pointsAdded: pointsToAdd });
@@ -2257,13 +2268,24 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
     if (payload.booking_status === 'completed') {
       const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
       if (fetchError || !booking) throw fetchError || new Error("Booking not found");
-      const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 25;
+      const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 0;
       const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed' }).eq('id', id);
       if (updateError) throw updateError;
       if (booking.customer_id) {
         const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
+        if (pointsToAdd > 0) {
         const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
         await db.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+        const expiresDate = new Date();
+        expiresDate.setFullYear(expiresDate.getFullYear() + 1);
+        await db.from('points_history').insert({
+          user_id: booking.customer_id,
+          points: pointsToAdd,
+          description: `Reserva #${booking.id.split('-')[0]}`,
+          booking_id: booking.id,
+          expires_at: expiresDate.toISOString()
+        });
+      }
       }
     } else {
       const { error } = await db.from("bookings").update(payload).eq('id', id);

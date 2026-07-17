@@ -49,7 +49,7 @@ export default function OverviewTab() {
       const isPaidOnline = b.payment_status === 'paid';
       if (b.booking_status === 'completed' && b.service) {
         const serviceName = b.service.name;
-        serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + (b.total_price || 0);
+        serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + ((b.original_service_price ?? b.total_price) || 0);
       }
     });
 

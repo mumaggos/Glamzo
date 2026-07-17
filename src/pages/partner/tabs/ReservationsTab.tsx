@@ -52,7 +52,7 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
-                      {Number(booking.total_price).toFixed(2)}€
+                      {Number((booking.original_service_price ?? booking.total_price)).toFixed(2)}€
                     </span>
                   </td>
                 </tr>

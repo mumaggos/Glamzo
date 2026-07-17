@@ -59,7 +59,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
   const filteredRevenue = filteredBookingsList.reduce((sum, b) => {
     if (b.booking_status === 'completed') {
-      return sum + Number(b.total_price || (b.service as any)?.price || 0);
+      return sum + Number((b.original_service_price ?? b.total_price) || (b.service as any)?.price || 0);
     }
     return sum;
   }, 0);

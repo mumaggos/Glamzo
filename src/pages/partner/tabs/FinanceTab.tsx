@@ -136,7 +136,7 @@ export default function FinanceTab() {
         { data: subData },
         { data: bkData, error: bkError }
       ] = await Promise.all([
-        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff:staff(id, full_name))").eq("business_id", business.id),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff:staff(id, full_name)), original_service_price, discount_applied").eq("business_id", business.id),
         supabase
           .from("payouts")
           .select("*")
@@ -159,10 +159,10 @@ export default function FinanceTab() {
 
       const localCompleted = (bkData || []).filter(b => {
         const isLocal = b.payment_method === 'local' || !b.payment_method;
-        const fallbackPrice = Number(b.total_price || 0);
+        const fallbackPrice = Number((b.original_service_price ?? b.total_price) || 0);
         return fallbackPrice >= 0 && isLocal && (b.booking_status === 'completed') && !stripePaymentBookingIds.has(b.id);
       }).map(b => {
-        const fallbackPrice = Number(b.total_price || 0);
+        const fallbackPrice = Number((b.original_service_price ?? b.total_price) || 0);
         return {
           id: `loc_${b.id}`,
           created_at: b.booking_date ? b.booking_date + "T12:00:00Z" : b.created_at,

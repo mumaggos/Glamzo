@@ -442,7 +442,7 @@ export default function StaffTab() {
                                   <td className="py-2 px-3 font-mono text-slate-500">{new Date(b.booking_date).toLocaleDateString('pt-PT')}</td>
                                   <td className="py-2 px-3 font-bold">{b.customer_profile?.full_name || 'Desconhecido'}</td>
                                   <td className="py-2 px-3">{b.service?.name} {b.service?.target_gender === 'male' ? '(H)' : b.service?.target_gender === 'female' ? '(M)' : ''}</td>
-                                  <td className="py-2 px-3 text-right font-black text-slate-800">{Number(b.total_price).toFixed(2)}€</td>
+                                  <td className="py-2 px-3 text-right font-black text-slate-800">{Number((b.original_service_price ?? b.total_price)).toFixed(2)}€</td>
                                 </tr>
                               ))
                             )}
