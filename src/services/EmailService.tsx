@@ -35,6 +35,34 @@ function getEmailFrom() {
 }
 
 export const EmailService = {
+
+  async sendAccountReadyEmail(to: string, data: any) {
+    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+    
+    const subject = "A sua conta Glamzo está pronta!";
+    const html = `
+      <div style="font-family: sans-serif; padding: 20px;">
+        <h2>${subject}</h2>
+        <p>Olá ${data.name},</p>
+        <p>A sua configuração e/ou equipamento foi processado. O seu painel está 100% ativo e pronto a faturar.</p>
+        <p>Pode aceder agora em: <a href="https://glamzo.pt/${data.slug}">https://glamzo.pt/${data.slug}</a></p>
+        <br/>
+        <p>A equipa Glamzo</p>
+      </div>
+    `;
+
+    try {
+      await resend.emails.send({
+        from: 'Glamzo <suporte@glamzo.pt>',
+        to: [to],
+        subject,
+        html
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
   async sendChatMessageEmail(to: string, data: { customerName: string, message: string }) {
     const resend = getResendClient();
     if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');

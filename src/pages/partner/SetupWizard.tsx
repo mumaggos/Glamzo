@@ -125,6 +125,13 @@ export default function SetupWizard() {
   
   const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
   
+  
+  useEffect(() => {
+    if (loading) return;
+    const draft = { name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl };
+    localStorage.setItem('setup_wizard_draft', JSON.stringify(draft));
+  }, [name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, loading]);
+
   const handleHourChange = (weekday: number, field: string, value: any) => {
     setBusinessHours(prev => prev.map(h => h.weekday === weekday ? { ...h, [field]: value } : h));
   };
@@ -293,17 +300,23 @@ export default function SetupWizard() {
           setStep(4);
         }
         
-        setName(currentBiz.name || '');
-        setPhone(currentBiz.phone || '');
-        setEmail(currentBiz.email || '');
-        setAddress(currentBiz.address || '');
-        setDoorNumber(currentBiz.door_number || '');
-        setCity(currentBiz.city || '');
-        setDistrict(currentBiz.district || '');
-        setPostalCode(currentBiz.postal_code || '');
-        setCategory(currentBiz.category || MAIN_CATEGORIES[0].name);
-        setLogoUrl(currentBiz.logo_url || '');
+        
+        const draftStr = localStorage.getItem('setup_wizard_draft');
+        let draft: any = null;
+        try { draft = draftStr ? JSON.parse(draftStr) : null; } catch (e) {}
+
+        setName(currentBiz.name || draft?.name || '');
+        setPhone(currentBiz.phone || draft?.phone || '');
+        setEmail(currentBiz.email || draft?.email || '');
+        setAddress(currentBiz.address || draft?.address || '');
+        setDoorNumber(currentBiz.door_number || draft?.doorNumber || '');
+        setCity(currentBiz.city || draft?.city || '');
+        setDistrict(currentBiz.district || draft?.district || '');
+        setPostalCode(currentBiz.postal_code || draft?.postalCode || '');
+        setCategory(currentBiz.category || draft?.category || MAIN_CATEGORIES[0].name);
+        setLogoUrl(currentBiz.logo_url || draft?.logoUrl || '');
         setCoverUrl(currentBiz.cover_url || '');
+
         
         if (currentBiz.latitude && currentBiz.longitude) {
           setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
@@ -628,7 +641,8 @@ export default function SetupWizard() {
         category, logo_url: logoUrl, cover_url: coverUrl,
         latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
         onboarding_step: 3,
-        setup_step: 4
+        setup_step: 4,
+        manual_setup_requested: true
       });
       setBusiness({ ...business, setup_step: 4 });
       setStep(4);

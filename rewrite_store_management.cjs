@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useState } from 'react';
 import { Store, Terminal, CheckCircle2, ShieldAlert, CreditCard, ChevronDown, Package, Edit, Calendar, QrCode, Trash2, Building2, Search, Settings, Monitor, Copy, LogOut, Check, MapPin, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Business } from '../types';
@@ -47,8 +49,8 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
   };
 
   const handleDownloadQR = async (salon: Business) => {
-    const storeUrl = `https://glamzo.pt/${salon.slug}?source=qr`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(storeUrl)}`;
+    const storeUrl = \`https://glamzo.pt/\${salon.slug}?source=qr\`;
+    const qrUrl = \`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=\${encodeURIComponent(storeUrl)}\`;
     try {
       const response = await fetch(qrUrl);
       const blob = await response.blob();
@@ -56,7 +58,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `QR_${salon.name.replace(/\s+/g, '_')}.png`;
+      a.download = \`QR_\${salon.name.replace(/\\s+/g, '_')}.png\`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -95,7 +97,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
         options: { shouldCreateUser: false }
       });
       if (error) throw error;
-      toast.success(`Magic link enviado para ${targetEmail} para Impersonation`);
+      toast.success(\`Magic link enviado para \${targetEmail} para Impersonation\`);
     } catch (err: any) {
       toast.error(err.message || 'Erro no impersonate');
     } finally {
@@ -139,13 +141,13 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
         <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
           <button 
             onClick={() => setFilter('action_needed')}
-            className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${filter === 'action_needed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={\`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all \${filter === 'action_needed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}\`}
           >
             Ação Necessária
           </button>
           <button 
             onClick={() => setFilter('completed')}
-            className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${filter === 'completed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={\`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all \${filter === 'completed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}\`}
           >
             Concluídas
           </button>
@@ -164,7 +166,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
 
       <div className="space-y-4">
         {filteredSalons.map((salon) => {
-          const fullAddress = `${salon.address || ''} ${salon.door_number || ''}, ${salon.postal_code || ''} ${salon.city || ''}`.trim();
+          const fullAddress = \`\${salon.address || ''} \${salon.door_number || ''}, \${salon.postal_code || ''} \${salon.city || ''}\`.trim();
           
           return (
             <div key={salon.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -174,11 +176,11 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-3">
                     <h4 className="text-lg font-bold text-slate-900">{salon.name}</h4>
-                    <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight ${
+                    <span className={\`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight \${
                       salon.selected_plan === 'pro_terminal' ? 'bg-rose-100 text-rose-700' : 
                       salon.selected_plan === 'pro' ? 'bg-purple-100 text-purple-700' : 
                       'bg-slate-100 text-slate-600'
-                    }`}>
+                    }\`}>
                       {salon.selected_plan === 'pro_terminal' ? 'PRO Terminal' : salon.selected_plan === 'pro' ? 'PRO' : 'Teste'}
                     </span>
                     {(salon as any).manual_setup_requested && (
@@ -248,7 +250,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                 {/* Ações e Conclusão */}
                 <div className="flex flex-col justify-end gap-2 w-full lg:w-auto shrink-0">
                   <a 
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
+                    href={\`https://www.google.com/maps/search/?api=1&query=\${encodeURIComponent(fullAddress)}\`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors"
@@ -284,7 +286,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     </button>
                     <button 
                       onClick={() => handleDeleteStore(salon.id)}
-                      className={`py-1.5 px-3 rounded-lg flex items-center justify-center transition-colors ${storeToDelete === salon.id ? 'bg-rose-600 text-white' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}
+                      className={\`py-1.5 px-3 rounded-lg flex items-center justify-center transition-colors \${storeToDelete === salon.id ? 'bg-rose-600 text-white' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}\`}
                       title="Apagar Loja"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -308,3 +310,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/StoreManagementTab.tsx', code);
+console.log('StoreManagementTab.tsx rewritten successfully!');
