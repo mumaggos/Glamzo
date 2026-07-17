@@ -1210,6 +1210,26 @@ export default function SetupWizard() {
             )}
             
             <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
+            
+            <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
+              <button
+                type="button"
+                onClick={() => updateSetupStep(step - 1)}
+                disabled={loading}
+                className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar</span>
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleNext}
+                className="w-full px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{selectedPlan === 'TERMINAL' ? 'Avançar para Pagamento' : 'Iniciar 14 Dias Grátis'}</span><ArrowRight className="w-4 h-4" /></>}
+              </button>
+            </div>
           </div>
         )}
 
