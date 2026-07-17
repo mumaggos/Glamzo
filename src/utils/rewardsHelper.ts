@@ -22,6 +22,10 @@ export async function processBookingPoints(booking: any) {
     if (existing) return; // Already awarded
 
     // Check payment method to determine points
+    if (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') { 
+      console.log('Pagamento local: Sem pontos'); 
+      return; 
+    }
     // if booking.payment_method === 'stripe' or business charges_enabled, let's just assume points logic
     const pointsToAward = booking.payment_method === 'stripe' ? 50 : 0;
     if (pointsToAward === 0) return;

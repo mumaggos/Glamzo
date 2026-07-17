@@ -28,21 +28,24 @@ BEGIN
     RETURN;
   END IF;
 
-  -- 4. Calculate points (Stripe/Online = 50, otherwise = 25)
-  IF v_booking.payment_method = 'stripe' OR v_booking.payment_method = 'online' THEN
+  -- 4. Calculate points (Stripe/Online = 50, otherwise = 0 for local)
+  IF v_booking.payment_method = 'in_store' OR v_booking.payment_method = 'local' OR v_booking.payment_method = 'dinheiro' THEN
+    v_points_to_award := 0;
+  ELSIF v_booking.payment_method = 'stripe' OR v_booking.payment_method = 'online' THEN
     v_points_to_award := 50;
   ELSE
-    v_points_to_award := 25;
+    v_points_to_award := 0;
   END IF;
 
-  -- 5. Insert history
-  INSERT INTO public.points_history (user_id, points, description, booking_id)
-  VALUES (v_booking.customer_id, v_points_to_award, 'Pontos por concluir reserva', booking_id_param);
+  IF v_points_to_award > 0 THEN
+    -- 5. Insert history
+    INSERT INTO public.points_history (user_id, points, description, booking_id)
+    VALUES (v_booking.customer_id, v_points_to_award, 'Pontos por concluir reserva', booking_id_param);
 
-  -- 6. Update user's total points
-  UPDATE public.profiles
-  SET glamzo_points = COALESCE(glamzo_points, 0) + v_points_to_award
-  WHERE id = v_booking.customer_id;
-
+    -- 6. Update user's total points
+    UPDATE public.profiles
+    SET glamzo_points = COALESCE(glamzo_points, 0) + v_points_to_award
+    WHERE id = v_booking.customer_id;
+  END IF;
 END;
 $$;

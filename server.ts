@@ -2229,7 +2229,10 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
       return res.json({ success: true, message: 'Already completed' });
     }
 
-    const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 0;
+        if (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') {
+      console.log('Pagamento local: Sem pontos');
+    }
+    const pointsToAdd = (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') ? 0 : (booking.payment_method === 'stripe' ? 50 : 0);
 
     const { error: updateError } = await supabaseAdmin.from('bookings').update({
       booking_status: 'completed'
@@ -2268,7 +2271,10 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
     if (payload.booking_status === 'completed') {
       const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
       if (fetchError || !booking) throw fetchError || new Error("Booking not found");
-      const pointsToAdd = booking.payment_method === 'stripe' ? 50 : 0;
+          if (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') {
+      console.log('Pagamento local: Sem pontos');
+    }
+    const pointsToAdd = (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') ? 0 : (booking.payment_method === 'stripe' ? 50 : 0);
       const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed' }).eq('id', id);
       if (updateError) throw updateError;
       if (booking.customer_id) {
