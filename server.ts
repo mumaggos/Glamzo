@@ -9,10 +9,15 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 import { EmailService } from "./src/services/EmailService";
+import { setupCronJobs } from "./cronJobs";
 
 // Configuration helper
 const PORT = 3000;
 const app = express();
+
+// Start background jobs
+setupCronJobs();
+
 
 
 // Security Headers Middleware

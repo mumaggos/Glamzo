@@ -142,11 +142,15 @@ export default function PartnerLayout() {
   }, [business]);
 
 
-  const hasValidSubscription = !business || business.subscription_status === 'active' || (business.subscription_status === 'trialing' && business.trial_ends_at && new Date(business.trial_ends_at) > new Date());
+  const hasValidSubscription = !business || (
+    business.subscription_active !== false && 
+    business.subscription_status !== 'canceled' &&
+    business.subscription_status !== 'expired'
+  );
 
   useEffect(() => {
-    if (business && !hasValidSubscription && !location.pathname.includes('/subscricao')) {
-      navigate('/partner/dashboard/subscricao', { replace: true });
+    if (business && !hasValidSubscription && !location.pathname.includes('/setup')) {
+      navigate('/partner/setup', { replace: true });
     }
   }, [business, hasValidSubscription, location.pathname, navigate]);
 
@@ -250,6 +254,11 @@ export default function PartnerLayout() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
+        {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && (
+          <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
+            ⚠️ Ação Necessária: A sua conta bancária foi desconectada. <Link to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2">Clique aqui para voltar a conectar e receber os seus fundos.</Link>
+          </div>
+        )}
         <div className="relative z-[99999] h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 hidden lg:block">Bom dia, <span className="text-purple-600">{profile?.full_name?.split(" ")[0] || "Profissional"}</span> 👋</h2>

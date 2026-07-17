@@ -279,9 +279,18 @@ export default function SetupWizard() {
 
       if (currentBiz) {
         setBusiness(currentBiz);
-        if (currentBiz.status === 'active' && currentBiz.setup_completed) {
+        const hasValidSubscription = currentBiz.subscription_active !== false && 
+                                     currentBiz.subscription_status !== 'canceled' &&
+                                     currentBiz.subscription_status !== 'expired';
+
+        if (currentBiz.status === 'active' && currentBiz.setup_completed && hasValidSubscription) {
           navigate('/partner/dashboard', { replace: true });
           return;
+        }
+        
+        // If they finished setup but their subscription is canceled/expired, force them to the plans step
+        if (currentBiz.setup_completed && !hasValidSubscription) {
+          setStep(4);
         }
         
         setName(currentBiz.name || '');
