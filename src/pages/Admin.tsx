@@ -1710,70 +1710,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
               {activeTab === 'users' && (
                 <div id="admin-users" className="space-y-6">
                   {/* Coupon Generator Migrated */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                    <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-widest flex items-center gap-1.5 leading-none">
-                      <Plus className="w-4.5 h-4.5 text-purple-600 animate-pulse" />
-                      <span>Gerador de Cupões Comerciais</span>
-                    </h4>
-                    <form onSubmit={handleCreateCoupon} className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-                      <div>
-                        <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Código do Cupão</label>
-                        <input
-                          type="text"
-                          required
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono select-all focus:border-purple-500 outline-none"
-                          placeholder="GLAMZOPRO45"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Trial (Dias)</label>
-                          <input
-                            type="number"
-                            required
-                            value={couponDuration}
-                            onChange={(e) => setCouponDuration(Number(e.target.value))}
-                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1">Uso Limite</label>
-                          <input
-                            type="number"
-                            required
-                            value={couponLimit}
-                            onChange={(e) => setCouponLimit(Number(e.target.value))}
-                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs font-mono outline-none"
-                          />
-                        </div>
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-wider transition hover:from-purple-500 hover:to-purple-700 cursor-pointer"
-                      >
-                        Criar Cupão Admin
-                      </button>
-                    </form>
-                    <div className="space-y-2 mt-4">
-                      <span className="block text-[9px] font-mono text-slate-500 uppercase font-black pl-1">Cupões Ativos no Sistema</span>
-                      <div className="space-y-1.5 max-h-[160px] overflow-y-auto scrollbar-thin">
-                        {couponsList.map((cp) => (
-                          <div key={cp.code} className="p-2.5 bg-slate-50 rounded-xl border border-slate-910 flex items-center justify-between text-[11px] font-mono text-slate-600">
-                            <div className="text-left">
-                              <span className="text-slate-900 font-black">{cp.code}</span>
-                              <span className="block text-[9px] text-slate-500">{cp.trial_days} dias experimental • Max: {cp.max_uses}</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-purple-600 font-bold block">{cp.discount_value}€ desconto</span>
-                              <span className="text-[9px] text-slate-400">{cp.used_count} usos</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                  </div>
-                    </div>
+                  
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Clientes Finais (CRM)</h3>
@@ -2128,36 +2065,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                     </div>
 
                     {/* Subscription planes custom configurations */}
-                    <div className="lg:col-span-5 space-y-6">
-                      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
-                        <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
-                          <Tag className="w-4.5 h-4.5 text-purple-600" />
-                          <span>Homologação e Parâmetros</span>
-                        </h4>
-
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3.5 text-xs text-slate-350">
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Período Experimental de Lojas (Dias)</span>
-                            <input type="number" defaultValue={45} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Mensalidade Padrão Plano PRO (€)</span>
-                            <input type="number" defaultValue={19.90} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <div>
-                            <span className="block text-[9px] font-mono text-slate-500 uppercase font-black mb-1.5">Taxa de Comissão Marketplace (%)</span>
-                            <input type="number" defaultValue={5} className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-900 outline-none focus:border-purple-600 font-mono text-xs" />
-                          </div>
-
-                          <button onClick={() => setSuccessMsg("Plano de Preçários, Comissões e Períodos experimentais de novas lojas modificado com sucesso!")} className="w-full py-2.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-900 font-bold rounded-xl hover:text-purple-600 transition-all uppercase tracking-wide text-[10px] cursor-pointer">
-                            Actualizar Parâmetros Comerciais
-                          </button>
-                        </div>
-                      </div>
-
-                      </div>
+                    
                     </div>
                   </div>
 

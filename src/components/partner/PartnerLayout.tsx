@@ -75,7 +75,7 @@ export default function PartnerLayout() {
       const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }, { data: bhData }] = await Promise.all([
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
-        supabase.from("staff").select("*").eq("business_id", bData.id).order("full_name"),
+        supabase.from("staff").select("*").eq("business_id", bData.id).eq("is_active", true).order("full_name"),
         (() => {
           const now = new Date();
           const start = new Date(now);

@@ -161,7 +161,7 @@ export default function StaffTab() {
   const handleDeleteStaff = async (id: string) => {
     if (!window.confirm("Pretende apagar o registo deste profissional?")) return;
     try {
-      const { error } = await supabase.from("staff").delete().eq("id", id);
+      const { error } = await supabase.from("staff").update({ is_active: false }).eq("id", id);
       if (error) throw error;
       setGlobalSuccess("Profissional removido das escalas.");
       await loadLayoutData();

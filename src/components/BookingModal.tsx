@@ -341,8 +341,8 @@ const handleConfirmReservation = async () => {
 
       if (error) throw error;
 
-      // 1. Immediately update coupon to prevent infinite usage if subsequent steps fail
-      if (appliedPromo && appliedPromo.type === 'reward') {
+      // 1. Update coupon ONLY IF it's not a Stripe payment (e.g. 100% discount, paying local)
+      if (paymentMethod !== 'stripe' && appliedPromo && appliedPromo.type === 'reward') {
         try {
           await supabase.from('reward_coupons').update({
             is_used: true,
@@ -384,6 +384,7 @@ const handleConfirmReservation = async () => {
               businessName: business.name,
               successUrl: `${window.location.origin}/account?status=success`,
               cancelUrl: `${window.location.origin}/account?status=cancelled`,
+              couponCode: (appliedPromo && appliedPromo.type === 'reward') ? appliedPromo.code : null,
             })
           });
 

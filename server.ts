@@ -613,6 +613,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       businessName,
       successUrl,
       cancelUrl,
+      couponCode,
     } = req.body;
 
     console.log("ID Recebido no Backend:", bookingId);
@@ -720,6 +721,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       metadata: {
         bookingId: bookingId,
         type: "booking_payment",
+        couponCode: couponCode || "",
       },
       success_url: calculatedSuccessUrl,
       cancel_url: calculatedCancelUrl,
@@ -1763,6 +1765,18 @@ const handleStripeWebhook = async (req: any, res: any) => {
             console.log(
               `[Webhook Payments Success] Confirmed paid for reservation ID: ${bookingId}`,
             );
+          }
+
+          // Mark coupon as used if one was applied
+          const couponCode = session.metadata?.couponCode;
+          if (couponCode) {
+            const { data: bookingRecForCoupon } = await db.from("bookings").select("customer_id").eq("id", bookingId).maybeSingle();
+            if (bookingRecForCoupon && bookingRecForCoupon.customer_id) {
+               await db.from("reward_coupons").update({ is_used: true, used_at: new Date().toISOString() })
+                 .eq("code", couponCode)
+                 .eq("customer_id", bookingRecForCoupon.customer_id);
+               console.log(`[Webhook] Reward coupon ${couponCode} marked as used for customer ${bookingRecForCoupon.customer_id}`);
+            }
           }
 
           // 3. SECURE LOYALTY DISPATCH: "1€ pago online = 1 GlamPoint"

@@ -108,7 +108,7 @@ const { slug } = useParams<{ slug: string }>();
             if (servicesData) setServices(servicesData);
             
             // Fetch staff
-            const { data: staffData } = await supabase.from('staff').select('*').eq('business_id', data.id);
+            const { data: staffData } = await supabase.from('staff').select('*').eq('business_id', data.id).eq('is_active', true);
             if (staffData) setStaff(staffData);
 
             
