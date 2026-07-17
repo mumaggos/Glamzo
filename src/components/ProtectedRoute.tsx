@@ -14,7 +14,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   const location = useLocation();
 
   // 1. Show dynamic, high-fidelity spinner while authenticating
-  if (loading) {
+  const isCheckingProfile = user && !profile;
+  if (loading || isCheckingProfile) {
     return (
       <div id="loading-page" className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FC] gap-6">
         {/* Premium Glamzo spinner */}
