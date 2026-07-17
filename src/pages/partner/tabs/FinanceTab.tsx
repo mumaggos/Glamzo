@@ -136,7 +136,7 @@ export default function FinanceTab() {
         { data: subData },
         { data: bkData, error: bkError }
       ] = await Promise.all([
-        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff:staff(id, full_name)), original_service_price, discount_applied").eq("business_id", business.id),
+        supabase.from("payments").select("*, booking:bookings(id, created_at, booking_date, total_price, payment_method, booking_status, staff_id, customer_id, profiles!bookings_customer_id_fkey(id, full_name, email), service:services(id, name, price), staff:staff(id, full_name), original_service_price, discount_applied)").eq("business_id", business.id),
         supabase
           .from("payouts")
           .select("*")
