@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/useAuth';
 import { Business, Review } from '../../../types';
@@ -60,15 +62,14 @@ export default function PartnerReviewsTab() {
           reply_text: replyText.trim(),
           replied_at: now
         })
-        .eq('id', reviewId);
-        
+        .eq('id', reviewId).select().single();
       if (error) throw error;
       
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, reply_text: replyText.trim(), replied_at: now } : r));
       setReplyingTo(null);
       setReplyText('');
     } catch (e: any) {
-      alert('Erro ao enviar resposta: ' + e.message);
+      toast.error('Erro ao enviar resposta: ' + e.message);
     } finally {
       setSubmittingReply(false);
     }

@@ -412,15 +412,31 @@ export default function StaffTab() {
 
               {
                 (() => {
+                 const today = new Date();
+                 let startD = new Date();
+                 if (metricsFilter === "day") startD.setDate(today.getDate() - 1);
+                 else if (metricsFilter === "week") startD.setDate(today.getDate() - 7);
+                 else if (metricsFilter === "month") startD.setMonth(today.getMonth() - 1);
+                 else if (metricsFilter === "year") startD.setFullYear(today.getFullYear() - 1);
+                 
+                 const filteredBookings = (bookings || []).filter(b => {
+                    const bDate = new Date(b.booking_date);
+                    return b.staff_id === metricsStaff.id && b.booking_status === 'completed' && bDate >= startD && bDate <= today;
+                 });
+                 const totalServices = filteredBookings.length;
                  const metrics = asyncMetrics;
                  return (
                    <div className="space-y-6">
-                     <div className="grid grid-cols-1 gap-4">
+                     <div className="grid grid-cols-2 gap-4">
                        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-center">
                           <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Serviços Concluídos</p>
-                          <p className="text-3xl font-black text-emerald-700 mt-1">{metrics.totalServices}</p>
+                          <p className="text-3xl font-black text-emerald-700 mt-1">{totalServices}</p>
                        </div>
+                       <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl text-center">
+                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-wider">Receita Gerada</p>
+                          <p className="text-3xl font-black text-purple-700 mt-1">{metrics.totalRevenue}€</p>
                        </div>
+                     </div>
 
                      
                      <div className="w-full mt-4 bg-white border border-slate-100 rounded-2xl overflow-hidden max-h-64 overflow-y-auto custom-scrollbar">
@@ -434,10 +450,10 @@ export default function StaffTab() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-50">
-                            {metrics.filteredBookings.length === 0 ? (
+                            {filteredBookings.length === 0 ? (
                               <tr><td colSpan={4} className="py-4 text-center text-slate-400">Nenhum serviço encontrado.</td></tr>
                             ) : (
-                              metrics.filteredBookings.map((b: any) => (
+                              filteredBookings.map((b: any) => (
                                 <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                                   <td className="py-2 px-3 font-mono text-slate-500">{new Date(b.booking_date).toLocaleDateString('pt-PT')}</td>
                                   <td className="py-2 px-3 font-bold">{b.customer_profile?.full_name || 'Desconhecido'}</td>

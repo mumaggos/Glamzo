@@ -182,17 +182,26 @@ export default function FinanceTab() {
       // Add staff_id to stripe payments if they map to a booking
       const fullBkMap = new Map((bkData || []).map(b => [b.id, b]));
       stripePayments.forEach(p => {
-        if (p.booking) {
-           p.staff_id = p.booking.staff_id;
+        let b = p.booking;
+        if (!b && p.booking_id && fullBkMap.has(p.booking_id)) {
+            b = fullBkMap.get(p.booking_id);
+            p.booking = b;
+        }
+        
+        if (b) {
+           p.staff_id = b.staff_id;
            // ensure customer profile is there if not loaded by join
-           if (!p.booking.customer_profile && fullBkMap.has(p.booking_id)) {
+           if (!b.customer_profile && fullBkMap.has(p.booking_id)) {
               p.booking = fullBkMap.get(p.booking_id);
+              b = p.booking;
            }
-           p.created_at = p.booking.booking_date ? p.booking.booking_date + "T12:00:00Z" : p.created_at;
-        } else if (p.booking_id && fullBkMap.has(p.booking_id)) {
-          p.staff_id = fullBkMap.get(p.booking_id).staff_id;
-          p.booking = fullBkMap.get(p.booking_id);
-          p.created_at = p.booking.booking_date ? p.booking.booking_date + "T12:00:00Z" : p.created_at;
+           p.created_at = b.booking_date ? b.booking_date + "T12:00:00Z" : p.created_at;
+           
+           // Override the amount_total to reflect the true value (ignoring discounts)
+           const actualValue = Number((b.original_service_price ?? b.total_price) || 0);
+           p.amount_total = actualValue;
+           p.amount = actualValue;
+           p.business_amount = actualValue;
         }
       });
 
