@@ -493,6 +493,17 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
 
     let stripeAccountId = business.stripe_account_id;
 
+    if (stripeAccountId) {
+      try {
+        await stripe.accounts.retrieve(stripeAccountId);
+      } catch (err) {
+        if (err.statusCode === 404 || err.code === "resource_missing") {
+           console.warn(`[Ghost Account Onboard] Connect account ${stripeAccountId} not found. Re-creating.`);
+           stripeAccountId = null;
+        }
+      }
+    }
+
     if (!stripeAccountId) {
       // Create a brand-new Stripe Express Account configured for automatic weekly Monday payouts
       const account = await stripe.accounts.create({
@@ -580,7 +591,22 @@ app.get("/api/stripe/account-status", async (req, res) => {
     }
 
     const stripe = getStripe();
-    const account = await stripe.accounts.retrieve(business.stripe_account_id);
+    let account;
+    try {
+      account = await stripe.accounts.retrieve(business.stripe_account_id);
+    } catch (err) {
+      if (err.statusCode === 404 || err.code === "resource_missing") {
+         console.warn(`[Ghost Account] Connect account ${business.stripe_account_id} not found. Clearing from DB.`);
+         await db.from("businesses").update({ 
+           stripe_account_id: null, 
+           charges_enabled: false, 
+           payouts_enabled: false 
+         }).eq("id", businessId);
+         res.json({ connected: false });
+         return;
+      }
+      throw err;
+    }
 
     // Sync other components and consumers by persisting the status back to the database row
     await db
@@ -1236,7 +1262,22 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
     console.log(
       `[Verify Subscription] Retrieving finalized Stripe subscription details for ID: ${subId}`,
     );
-    const stripeSub = await stripe.subscriptions.retrieve(subId);
+    let stripeSub;
+    try {
+       stripeSub = await stripe.subscriptions.retrieve(subId);
+    } catch (err) {
+       if (err.statusCode === 404 || err.code === "resource_missing") {
+          console.warn(`[Ghost Subscription] Subscription ${subId} not found in Stripe. Clearing from DB.`);
+          await db.from("businesses").update({
+             subscription_active: false,
+             subscription_status: 'canceled',
+             stripe_subscription_id: null
+          }).eq("id", resolvedBusinessId);
+          res.status(404).json({ error: "Nenhuma subscrição ativa encontrada no Stripe (Conta Removida)." });
+          return;
+       }
+       throw err;
+    }
     const subStatus = (stripeSub as any).status;
     const expiresAt = new Date(
       (stripeSub as any).current_period_end * 1000,
@@ -1831,6 +1872,19 @@ const handleStripeWebhook = async (req: any, res: any) => {
       }
     }
 
+    // --- EVENT TYPE: customer.deleted ---
+    if (event.type === "customer.deleted") {
+      const customer = event.data.object;
+      const customerId = customer.id;
+      
+      console.log(`[Stripe Webhook customer.deleted] Removing customer ${customerId}`);
+      await db.from("businesses").update({ 
+        subscription_active: false, 
+        subscription_status: 'canceled', 
+        stripe_customer_id: null 
+      }).eq("stripe_customer_id", customerId);
+    }
+
     // --- EVENT TYPE: customer.subscription.updated / customer.subscription.deleted ---
     if (
       event.type === "customer.subscription.updated" ||
@@ -1845,7 +1899,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
           ? "trialing"
           : (liveSubscription as any).status;
       if (event.type === "customer.subscription.deleted") {
-        syncedStatus = "expired";
+        syncedStatus = "canceled";
       }
       const syncedExpiry = new Date(
         (liveSubscription as any).current_period_end * 1000,
@@ -2077,20 +2131,41 @@ const handleStripeWebhook = async (req: any, res: any) => {
       }
     }
 
+    // --- EVENT TYPE: account.application.deauthorized ---
+    if (event.type === "account.application.deauthorized") {
+      const deauthAccount = event.account; // Depending on event structure, it could be event.account
+      if (deauthAccount) {
+         console.log(`[Stripe Webhook account.application.deauthorized] Deauthorizing ${deauthAccount}`);
+         await db.from("businesses").update({ 
+           stripe_account_id: null,
+           charges_enabled: false,
+           payouts_enabled: false 
+         }).eq("stripe_account_id", deauthAccount);
+      }
+    }
+
     // --- EVENT TYPE: account.updated (Connected Accounts operational status changes!) ---
     if (event.type === "account.updated") {
       const activeAccount = event.data.object as Stripe.Account;
       const stripeAccountId = activeAccount.id;
 
-      const verifiedCharges = activeAccount.charges_enabled ? true : false;
-      const verifiedPayouts = activeAccount.payouts_enabled ? true : false;
+      const transfersDisabled = activeAccount.capabilities?.transfers === "inactive" || (activeAccount.capabilities?.transfers as any) === "disabled";
+      
+      let updateData: any = {
+          charges_enabled: activeAccount.charges_enabled ? true : false,
+          payouts_enabled: activeAccount.payouts_enabled ? true : false,
+      };
+      
+      if (transfersDisabled) {
+         updateData.stripe_account_id = null;
+         updateData.charges_enabled = false;
+         updateData.payouts_enabled = false;
+         console.log(`[Stripe Webhook account.updated] Transfers inactive for ${stripeAccountId}. Detaching account.`);
+      }
 
       const { error: bizUpdateErr } = await db
         .from("businesses")
-        .update({
-          charges_enabled: verifiedCharges,
-          payouts_enabled: verifiedPayouts,
-        })
+        .update(updateData)
         .eq("stripe_account_id", stripeAccountId);
 
       if (bizUpdateErr) {
@@ -2100,7 +2175,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
         );
       } else {
         console.log(
-          `[Webhook Connect Sync Completed] Operational capabilities for account ${stripeAccountId}: charges_enabled=${verifiedCharges}, payouts_enabled=${verifiedPayouts}`,
+          `[Webhook Connect Sync Completed] Operational capabilities for account ${stripeAccountId}: charges_enabled=${updateData.charges_enabled}, payouts_enabled=${updateData.payouts_enabled}`,
         );
       }
     }

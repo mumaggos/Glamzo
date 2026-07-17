@@ -408,6 +408,11 @@ export default function FinanceTab() {
       });
       if (!res.ok) {
         const errData = await res.json();
+        if (res.status === 404) {
+           // Ghost subscription detected
+           window.location.reload();
+           return;
+        }
         throw new Error(errData.error || "Failed to create portal session");
       }
       const data = await res.json();
@@ -430,6 +435,11 @@ export default function FinanceTab() {
       });
       if (!res.ok) {
         const errData = await res.json();
+        if (res.status === 404) {
+           // Ghost account detected
+           window.location.reload();
+           return;
+        }
         throw new Error(errData.error || "Failed to create account link");
       }
       const data = await res.json();

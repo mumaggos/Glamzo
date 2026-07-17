@@ -127,6 +127,7 @@ export interface Booking {
   start_time: string; // HH:MM
   end_time: string; // HH:MM
   total_price: number;
+  original_service_price?: number;
   payment_method: string;
   payment_status: PaymentStatus;
   booking_status: BookingStatus;

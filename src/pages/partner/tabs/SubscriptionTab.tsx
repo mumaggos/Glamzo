@@ -282,6 +282,11 @@ export default function SubscriptionTab() {
       });
       if (!res.ok) {
         const errData = await res.json();
+        if (res.status === 404) {
+           // Ghost subscription detected
+           window.location.reload();
+           return;
+        }
         throw new Error(errData.error || "Failed to create portal session");
       }
       const data = await res.json();
@@ -304,6 +309,11 @@ export default function SubscriptionTab() {
       });
       if (!res.ok) {
         const errData = await res.json();
+        if (res.status === 404) {
+           // Ghost account detected
+           window.location.reload();
+           return;
+        }
         throw new Error(errData.error || "Failed to create account link");
       }
       const data = await res.json();
@@ -541,12 +551,12 @@ export default function SubscriptionTab() {
           Glamzo Pay / Levantamentos
         </h4>
         
-        {(!business?.stripe_account_id || (stripeStatus && !stripeStatus.charges_enabled)) ? (
+        {(!business?.stripe_account_id || (stripeStatus && (!stripeStatus.charges_enabled || stripeStatus.connected === false))) ? (
           <div className="bg-white p-5 rounded-2xl border border-slate-200 text-center">
             <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
               <Building2 className="w-6 h-6 text-emerald-600" />
             </div>
-            {business?.stripe_account_id && stripeStatus && !stripeStatus.charges_enabled ? (
+            {business?.stripe_account_id && stripeStatus && stripeStatus.connected !== false && !stripeStatus.charges_enabled ? (
               <>
                 <h5 className="font-bold text-slate-900 mb-1">Concluir Configuração Glamzo Pay</h5>
                 <p className="text-xs text-rose-500 mb-4 max-w-sm mx-auto font-medium">A sua conta foi criada, mas faltam detalhes importantes. Conclua o registo para ativar os pagamentos.</p>
@@ -563,7 +573,7 @@ export default function SubscriptionTab() {
               onClick={handleConnectStripe}
               className="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20 mx-auto"
             >
-              {business?.stripe_account_id ? 'Concluir Registo' : 'Configurar Conta Bancária'}
+              {(business?.stripe_account_id && stripeStatus?.connected !== false) ? 'Concluir Registo' : 'Configurar Conta Bancária'}
             </button>
             <div className="mt-4 pt-4 border-t border-slate-100 max-w-xs mx-auto text-left">
               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ou insira ID Stripe Manual (Se já tiver conta)</label>
