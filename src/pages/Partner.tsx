@@ -209,9 +209,12 @@ export default function Partner() {
                   <span className="text-5xl font-black text-white tracking-tighter">24.90€</span>
                   <span className="text-sm text-slate-400 font-bold mb-1">/mês</span>
                 </div>
-                <div className="mt-3 inline-flex">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-lg">
+                <div className="mt-3 flex flex-col gap-2">
+                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-lg w-max">
                     + 9.90€ Caução Única (Tablet)
+                  </span>
+                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg w-max">
+                    Faturado no momento (Sem Trial)
                   </span>
                 </div>
               </div>
@@ -226,7 +229,7 @@ export default function Partner() {
               </ul>
 
               <Link to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
-                Ativar Terminal & Teste Grátis
+                Ativar Terminal (Envio Imediato)
               </Link>
             </div>
 

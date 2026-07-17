@@ -218,6 +218,43 @@ export const EmailService = {
       subject: `Dados de Acesso - ${data.shopName}`,
       html
     });
+  },
+
+  async sendMagicSetupEmail(to: string, data: { name?: string }) {
+    const resend = getResendClient();
+    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #7c3aed;">Bem-vindo à Glamzo, ${data.name || 'Parceiro'}!</h1>
+        <p>Foi uma excelente escolha deixar a configuração connosco.</p>
+        <p>Para começarmos a montar o seu perfil na plataforma, pedimos que nos envie os seguintes dados:</p>
+        <ul style="line-height: 1.6;">
+          <li><strong>Horários de Funcionamento</strong></li>
+          <li><strong>Lista de Funcionários</strong> (Nomes)</li>
+          <li><strong>Lista de Serviços e Preços</strong></li>
+          <li><strong>Morada Completa</strong> do Estabelecimento</li>
+        </ul>
+        <p>Pode enviar-nos tudo por ficheiro (PDF, Excel, Word) ou até fotos diretamente pelo nosso WhatsApp através do link abaixo:</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="https://wa.me/351913959955" style="display: inline-block; padding: 12px 24px; background-color: #25D366; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+            Enviar no WhatsApp
+          </a>
+        </p>
+        <p>A nossa equipa tratará de tudo rapidamente para que possa começar a receber marcações.</p>
+        <p style="margin-top: 40px; color: #64748b; font-size: 14px;">
+          Obrigado e boas vendas!<br>
+          <strong>A Equipa Glamzo</strong>
+        </p>
+      </div>
+    `;
+
+    return resend.emails.send({
+      from: getEmailFrom(),
+      to,
+      subject: "Vamos configurar a sua loja na Glamzo! 🎁",
+      html
+    });
   }
 };
 

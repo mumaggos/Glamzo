@@ -243,6 +243,9 @@ app.post("/api/emails/send", async (req, res) => {
       case "reward_coupon":
         await EmailService.sendRewardCouponEmail(to, data);
         break;
+      case "magic_setup":
+        await EmailService.sendMagicSetupEmail(to, data);
+        break;
       default:
         return res.status(400).json({ error: "Unknown email type" });
     }
@@ -994,7 +997,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     );
 
     const hasUsedTrial = !!business.trial_started_at;
-    const subscriptionData = (hasUsedTrial || skipTrial) ? {} : { trial_period_days: 14 };
+    const subscriptionData = (hasUsedTrial || skipTrial || isTerminal) ? {} : { trial_period_days: 14 };
 
     console.log(
       `Initiating stripe.checkout.sessions.create... (Trial Used previously: ${hasUsedTrial})`,

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
-import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock } from 'lucide-react';
+import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
+import { toast } from 'react-hot-toast';
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -602,6 +603,40 @@ export default function SetupWizard() {
     }
   };
 
+  const handleMagicSetup = async () => {
+    if (!user || !business) return;
+    if (!name || !phone || !address || !city || !postalCode || !district) {
+      setErrorMsg('Preencha os campos obrigatórios (Nome, Telefone, Morada, Código Postal, Cidade, Distrito).');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await supabase.from('businesses').upsert({
+        id: business.id,
+        owner_id: user.id,
+        name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
+        category, logo_url: logoUrl, cover_url: coverUrl,
+        latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
+        onboarding_step: 3,
+        setup_step: 4
+      });
+      setBusiness({ ...business, setup_step: 4 });
+      setStep(4);
+      toast.success("Excelente escolha! As instruções foram enviadas para o email que configurou no início.", { duration: 5000 });
+      
+      fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'magic_setup', to: email || user.email, data: { name } })
+      }).catch(err => console.warn(err));
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const triggerStripeOnboarding = async () => {
     if (!business) return;
     setLoading(true);
@@ -905,6 +940,35 @@ export default function SetupWizard() {
               </div>
 
             </div>
+
+            <div className="mt-8 border-t border-slate-200 pt-6">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Gift className="w-24 h-24 text-purple-600" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-purple-100 p-2 rounded-lg">
+                      <Gift className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-purple-900">Configuração Mágica (Oferta)</h3>
+                  </div>
+                  <p className="text-sm text-purple-800 mb-5 max-w-xl">
+                    Não quer perder tempo a configurar serviços e horários? Nós tratamos de tudo por si, sem custos adicionais. Preencha apenas os dados acima e clique no botão abaixo.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleMagicSetup}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl shadow-md transition-all uppercase tracking-wider"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Quero que a Glamzo configure a loja para mim
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
@@ -1074,6 +1138,9 @@ export default function SetupWizard() {
                 {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
                 <h3 className="text-lg font-bold text-slate-900">Glamzo PRO</h3>
                 <div className="my-3"><span className="text-3xl font-black">19,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <div className="mb-4">
+                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">14 Dias Grátis</span>
+                </div>
                 <ul className="space-y-2 mt-4 text-sm text-slate-600">
                   <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> App Gestão Completa</li>
                   <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Marketplace Glamzo</li>
@@ -1091,6 +1158,10 @@ export default function SetupWizard() {
                 {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
                 <h3 className="text-lg font-bold text-slate-900">PRO Terminal</h3>
                 <div className="my-3"><span className="text-3xl font-black">24,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <div className="mb-4 flex flex-col gap-1">
+                  <span className="inline-block bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-1 rounded w-max">+ 9,99€ Caução Única (Tablet)</span>
+                  <span className="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded w-max">Faturado no momento (Sem Trial)</span>
+                </div>
                 <ul className="space-y-2 text-sm text-slate-600 mb-4">
                   <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tudo do plano PRO</li>
                   <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tablet configurado</li>
