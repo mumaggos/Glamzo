@@ -1,0 +1,62 @@
+--- RPC: get_explore_shops_with_analytics
+CREATE OR REPLACE FUNCTION public.get_explore_shops_with_analytics()
+ RETURNS TABLE(shop_id uuid, is_new boolean, is_top_rated boolean, is_popular boolean, next_slots text[])
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+  RETURN QUERY
+  WITH booking_counts AS (
+    -- Conta reservas dos últimos 7 dias por loja
+    SELECT 
+      b.shop_id AS b_shop_id, 
+      COUNT(*)::INT AS recent_bookings
+    FROM bookings b
+    WHERE b.created_at >= (NOW() - INTERVAL '7 days')
+    GROUP BY b.shop_id
+  )
+  SELECT 
+    s.id AS shop_id,
+    -- Badge: Nova Loja (< 30 dias)
+    (s.created_at >= (NOW() - INTERVAL '30 days')) AS is_new,
+    -- Badge: Top Rated (Média >= 4.7)
+    (COALESCE(s.rating, 0) >= 4.7) AS is_top_rated,
+    -- Badge: Muito Procurado (> 5 reservas nos últimos 7 dias)
+    (COALESCE(bc.recent_bookings, 0) >= 5) AS is_popular,
+    -- Array com vagas (Retorna array vazio se não houver lógica dinâmica extra, a ser preenchido pela agenda)
+    ARRAY[]::TEXT[] AS next_slots
+  FROM business_profiles s
+  LEFT JOIN booking_counts bc ON bc.b_shop_id = s.id;
+END;
+$function$
+
+--- RPC: get_staff_performance
+CREATE OR REPLACE FUNCTION public.get_staff_performance(p_business_id uuid, p_start_date date, p_end_date date)
+ RETURNS json
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  v_result JSON;
+BEGIN
+  SELECT json_agg(row_to_json(t)) INTO v_result
+  FROM (
+    SELECT 
+      s.id AS staff_id,
+      s.full_name,
+      s.role_title,
+      COUNT(b.id) AS total_bookings,
+      COALESCE(SUM(b.total_price), 0) AS total_revenue
+    FROM staff s
+    LEFT JOIN bookings b ON s.id = b.staff_id 
+      AND b.booking_status = 'completed' 
+      AND b.booking_date >= p_start_date 
+      AND b.booking_date <= p_end_date
+    WHERE s.business_id = p_business_id
+    GROUP BY s.id, s.full_name, s.role_title
+    ORDER BY total_revenue DESC
+  ) t;
+  
+  RETURN COALESCE(v_result, '[]'::json);
+END;
+$function$
+

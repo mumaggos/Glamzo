@@ -1,0 +1,1433 @@
+{
+  "tables": {
+    "staff_services": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "staff_id",
+        "type": "uuid"
+      },
+      {
+        "name": "service_id",
+        "type": "uuid"
+      }
+    ],
+    "business_hours": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "weekday",
+        "type": "integer"
+      },
+      {
+        "name": "open_time",
+        "type": "text"
+      },
+      {
+        "name": "close_time",
+        "type": "text"
+      },
+      {
+        "name": "is_closed",
+        "type": "boolean"
+      }
+    ],
+    "bookings": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "service_id",
+        "type": "uuid"
+      },
+      {
+        "name": "staff_id",
+        "type": "uuid"
+      },
+      {
+        "name": "booking_date",
+        "type": "date"
+      },
+      {
+        "name": "start_time",
+        "type": "text"
+      },
+      {
+        "name": "end_time",
+        "type": "text"
+      },
+      {
+        "name": "total_price",
+        "type": "numeric"
+      },
+      {
+        "name": "payment_method",
+        "type": "text"
+      },
+      {
+        "name": "payment_status",
+        "type": "text"
+      },
+      {
+        "name": "booking_status",
+        "type": "text"
+      },
+      {
+        "name": "notes",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "client_completed",
+        "type": "boolean"
+      },
+      {
+        "name": "business_completed",
+        "type": "boolean"
+      },
+      {
+        "name": "original_service_price",
+        "type": "numeric"
+      },
+      {
+        "name": "discount_applied",
+        "type": "numeric"
+      },
+      {
+        "name": "coupon_code",
+        "type": "text"
+      }
+    ],
+    "subscriptions": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "plan_name",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "monthly_price",
+        "type": "numeric"
+      },
+      {
+        "name": "started_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "expires_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "sales_agents": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "team_name",
+        "type": "text"
+      },
+      {
+        "name": "ref_code",
+        "type": "text"
+      },
+      {
+        "name": "clicks_count",
+        "type": "integer"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "profile_id",
+        "type": "uuid"
+      },
+      {
+        "name": "affiliate_code",
+        "type": "text"
+      },
+      {
+        "name": "commission_rate",
+        "type": "numeric"
+      }
+    ],
+    "payments": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "booking_id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "amount_total",
+        "type": "numeric"
+      },
+      {
+        "name": "glamzo_fee",
+        "type": "numeric"
+      },
+      {
+        "name": "business_amount",
+        "type": "numeric"
+      },
+      {
+        "name": "payment_method",
+        "type": "text"
+      },
+      {
+        "name": "payment_status",
+        "type": "text"
+      },
+      {
+        "name": "stripe_payment_intent",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "payouts": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "amount",
+        "type": "numeric"
+      },
+      {
+        "name": "payout_method",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "requested_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "processed_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "admin_notes",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "reward_coupons": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "code",
+        "type": "text"
+      },
+      {
+        "name": "value",
+        "type": "numeric"
+      },
+      {
+        "name": "points_cost",
+        "type": "integer"
+      },
+      {
+        "name": "is_used",
+        "type": "boolean"
+      },
+      {
+        "name": "expires_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "points_history": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "booking_id",
+        "type": "uuid"
+      },
+      {
+        "name": "points_changed",
+        "type": "integer"
+      },
+      {
+        "name": "reason",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "points",
+        "type": "numeric"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "expires_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "dispute_messages": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "dispute_id",
+        "type": "uuid"
+      },
+      {
+        "name": "sender_id",
+        "type": "uuid"
+      },
+      {
+        "name": "message",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "sender_type",
+        "type": "text"
+      },
+      {
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "name": "file_url",
+        "type": "text"
+      }
+    ],
+    "homepage_cards": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "subtitle",
+        "type": "text"
+      },
+      {
+        "name": "image_url",
+        "type": "text"
+      },
+      {
+        "name": "display_order",
+        "type": "integer"
+      },
+      {
+        "name": "active",
+        "type": "boolean"
+      },
+      {
+        "name": "emoji",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "chat_messages": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "session_id",
+        "type": "uuid"
+      },
+      {
+        "name": "sender_type",
+        "type": "text"
+      },
+      {
+        "name": "sender_name",
+        "type": "text"
+      },
+      {
+        "name": "message",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "chat_sessions": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_name",
+        "type": "text"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_name",
+        "type": "text"
+      },
+      {
+        "name": "last_message",
+        "type": "text"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "business_coupons": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "code",
+        "type": "character varying"
+      },
+      {
+        "name": "discount_percent",
+        "type": "numeric"
+      },
+      {
+        "name": "discount_value",
+        "type": "numeric"
+      },
+      {
+        "name": "valid_until",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "is_active",
+        "type": "boolean"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "disputes": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "reason",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "admin_notes",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "booking_id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "opened_by",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "admin_decision",
+        "type": "text"
+      },
+      {
+        "name": "admin_reply",
+        "type": "text"
+      },
+      {
+        "name": "penalization",
+        "type": "text"
+      }
+    ],
+    "tablet_orders": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "shipping_name",
+        "type": "text"
+      },
+      {
+        "name": "shipping_phone",
+        "type": "text"
+      },
+      {
+        "name": "shipping_address",
+        "type": "text"
+      },
+      {
+        "name": "shipping_postal_code",
+        "type": "text"
+      },
+      {
+        "name": "shipping_city",
+        "type": "text"
+      },
+      {
+        "name": "deposit_paid",
+        "type": "boolean"
+      },
+      {
+        "name": "deposit_amount",
+        "type": "numeric"
+      },
+      {
+        "name": "carrier",
+        "type": "text"
+      },
+      {
+        "name": "tracking_code",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "reviews": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "rating",
+        "type": "integer"
+      },
+      {
+        "name": "comment",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "customer_name",
+        "type": "text"
+      },
+      {
+        "name": "service_name",
+        "type": "text"
+      },
+      {
+        "name": "photo_url",
+        "type": "text"
+      },
+      {
+        "name": "is_reported",
+        "type": "boolean"
+      },
+      {
+        "name": "report_reason",
+        "type": "text"
+      },
+      {
+        "name": "image_urls",
+        "type": "ARRAY"
+      },
+      {
+        "name": "service_id",
+        "type": "uuid"
+      },
+      {
+        "name": "reply_text",
+        "type": "text"
+      },
+      {
+        "name": "replied_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "customer_stats",
+        "type": "jsonb"
+      }
+    ],
+    "businesses": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "owner_id",
+        "type": "uuid"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      },
+      {
+        "name": "slug",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "category",
+        "type": "text"
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "email",
+        "type": "text"
+      },
+      {
+        "name": "district",
+        "type": "text"
+      },
+      {
+        "name": "city",
+        "type": "text"
+      },
+      {
+        "name": "address",
+        "type": "text"
+      },
+      {
+        "name": "postal_code",
+        "type": "text"
+      },
+      {
+        "name": "logo_url",
+        "type": "text"
+      },
+      {
+        "name": "cover_url",
+        "type": "text"
+      },
+      {
+        "name": "whatsapp",
+        "type": "text"
+      },
+      {
+        "name": "instagram",
+        "type": "text"
+      },
+      {
+        "name": "website",
+        "type": "text"
+      },
+      {
+        "name": "is_verified",
+        "type": "boolean"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "stripe_customer_id",
+        "type": "text"
+      },
+      {
+        "name": "stripe_account_id",
+        "type": "text"
+      },
+      {
+        "name": "stripe_subscription_id",
+        "type": "text"
+      },
+      {
+        "name": "subscription_status",
+        "type": "text"
+      },
+      {
+        "name": "trial_ends_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "charges_enabled",
+        "type": "boolean"
+      },
+      {
+        "name": "payouts_enabled",
+        "type": "boolean"
+      },
+      {
+        "name": "subscription_active",
+        "type": "boolean"
+      },
+      {
+        "name": "trial_started_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "qr_scans_count",
+        "type": "integer"
+      },
+      {
+        "name": "public_page_enabled",
+        "type": "boolean"
+      },
+      {
+        "name": "setup_step",
+        "type": "integer"
+      },
+      {
+        "name": "setup_completed",
+        "type": "boolean"
+      },
+      {
+        "name": "selected_plan",
+        "type": "text"
+      },
+      {
+        "name": "selected_plan_price_id",
+        "type": "text"
+      },
+      {
+        "name": "tablet_requested",
+        "type": "boolean"
+      },
+      {
+        "name": "tablet_deposit_amount",
+        "type": "numeric"
+      },
+      {
+        "name": "tablet_deposit_status",
+        "type": "text"
+      },
+      {
+        "name": "accepts_online_payments",
+        "type": "boolean"
+      },
+      {
+        "name": "payments_mode",
+        "type": "text"
+      },
+      {
+        "name": "stripe_connect_status",
+        "type": "text"
+      },
+      {
+        "name": "onboarding_completed_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "last_onboarding_update_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "address_line_1",
+        "type": "text"
+      },
+      {
+        "name": "address_line_2",
+        "type": "text"
+      },
+      {
+        "name": "country",
+        "type": "text"
+      },
+      {
+        "name": "latitude",
+        "type": "numeric"
+      },
+      {
+        "name": "longitude",
+        "type": "numeric"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "selected_plan_code",
+        "type": "text"
+      },
+      {
+        "name": "selected_plan_name",
+        "type": "text"
+      },
+      {
+        "name": "trial_used",
+        "type": "boolean"
+      },
+      {
+        "name": "is_visible_in_marketplace",
+        "type": "boolean"
+      },
+      {
+        "name": "published_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "door_number",
+        "type": "text"
+      },
+      {
+        "name": "credits",
+        "type": "integer"
+      },
+      {
+        "name": "is_promoted",
+        "type": "boolean"
+      },
+      {
+        "name": "promotion_ends_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "is_premium",
+        "type": "boolean"
+      },
+      {
+        "name": "theme_color",
+        "type": "text"
+      },
+      {
+        "name": "rating",
+        "type": "numeric"
+      },
+      {
+        "name": "total_reviews",
+        "type": "integer"
+      },
+      {
+        "name": "discount_active",
+        "type": "boolean"
+      },
+      {
+        "name": "discount_percent",
+        "type": "numeric"
+      },
+      {
+        "name": "locality",
+        "type": "text"
+      },
+      {
+        "name": "onboarding_step",
+        "type": "integer"
+      },
+      {
+        "name": "address_door",
+        "type": "text"
+      },
+      {
+        "name": "address_zip",
+        "type": "text"
+      },
+      {
+        "name": "address_city",
+        "type": "text"
+      },
+      {
+        "name": "welcome_kit_sent",
+        "type": "boolean"
+      },
+      {
+        "name": "min_booking_notice",
+        "type": "integer"
+      },
+      {
+        "name": "cancellation_policy",
+        "type": "text"
+      },
+      {
+        "name": "page_views",
+        "type": "integer"
+      },
+      {
+        "name": "agent_id",
+        "type": "uuid"
+      },
+      {
+        "name": "setup_status",
+        "type": "character varying"
+      },
+      {
+        "name": "terminal_sent",
+        "type": "boolean"
+      },
+      {
+        "name": "sales_agent_id",
+        "type": "uuid"
+      },
+      {
+        "name": "booking_end_margin",
+        "type": "integer"
+      }
+    ],
+    "messages": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "sender_id",
+        "type": "uuid"
+      },
+      {
+        "name": "receiver_id",
+        "type": "uuid"
+      },
+      {
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "name": "is_read",
+        "type": "boolean"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "coupons": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "code",
+        "type": "text"
+      },
+      {
+        "name": "discount_amount",
+        "type": "numeric"
+      },
+      {
+        "name": "is_used",
+        "type": "boolean"
+      },
+      {
+        "name": "expires_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      }
+    ],
+    "staff": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "full_name",
+        "type": "text"
+      },
+      {
+        "name": "avatar_url",
+        "type": "text"
+      },
+      {
+        "name": "role_title",
+        "type": "text"
+      },
+      {
+        "name": "is_active",
+        "type": "boolean"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "email",
+        "type": "text"
+      },
+      {
+        "name": "temp_password",
+        "type": "text"
+      },
+      {
+        "name": "off_days",
+        "type": "text"
+      }
+    ],
+    "affiliate_referrals": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "referrer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "referred_business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "reward_amount",
+        "type": "numeric"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "withdrawal_requests": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "amount",
+        "type": "numeric"
+      },
+      {
+        "name": "method",
+        "type": "text"
+      },
+      {
+        "name": "details",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "favorites": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      }
+    ],
+    "platform_pages": [
+      {
+        "name": "slug",
+        "type": "text"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "glamzo_notifications": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "recipient_id",
+        "type": "uuid"
+      },
+      {
+        "name": "recipient_type",
+        "type": "text"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "content",
+        "type": "text"
+      },
+      {
+        "name": "channel",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "support_tickets": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_id",
+        "type": "uuid"
+      },
+      {
+        "name": "customer_name",
+        "type": "text"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_name",
+        "type": "text"
+      },
+      {
+        "name": "status",
+        "type": "text"
+      },
+      {
+        "name": "priority",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "chat_history",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "profiles": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "email",
+        "type": "text"
+      },
+      {
+        "name": "full_name",
+        "type": "text"
+      },
+      {
+        "name": "avatar_url",
+        "type": "text"
+      },
+      {
+        "name": "role",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "glam_points",
+        "type": "integer"
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "glamzo_points",
+        "type": "integer"
+      },
+      {
+        "name": "affiliate_balance",
+        "type": "numeric"
+      },
+      {
+        "name": "referral_code",
+        "type": "text"
+      },
+      {
+        "name": "wallet_balance",
+        "type": "numeric"
+      },
+      {
+        "name": "reputation",
+        "type": "integer"
+      },
+      {
+        "name": "last_active",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "service_categories": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      },
+      {
+        "name": "icon",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ],
+    "services": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "business_id",
+        "type": "uuid"
+      },
+      {
+        "name": "category_id",
+        "type": "uuid"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "price",
+        "type": "numeric"
+      },
+      {
+        "name": "duration_minutes",
+        "type": "integer"
+      },
+      {
+        "name": "image_url",
+        "type": "text"
+      },
+      {
+        "name": "is_active",
+        "type": "boolean"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      }
+    ]
+  },
+  "rpcs": [
+    "increment_agent_clicks",
+    "admin_delete_user",
+    "check_trial_eligibility",
+    "get_dashboard_stats",
+    "get_staff_performance",
+    "increment_page_views",
+    "handle_new_user",
+    "get_explore_shops_with_analytics",
+    "increment_store_stats",
+    "complete_booking_and_reward",
+    "admin_update_user_balances"
+  ]
+}

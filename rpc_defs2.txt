@@ -1,0 +1,99 @@
+--- RPC: complete_booking_and_reward
+CREATE OR REPLACE FUNCTION public.complete_booking_and_reward(booking_id_param uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  v_booking RECORD;
+  v_points_to_award INT;
+  v_existing_points UUID;
+BEGIN
+  -- 1. Obter reserva
+  SELECT * INTO v_booking FROM public.bookings WHERE id = booking_id_param;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Reserva não encontrada';
+  END IF;
+
+  -- 2. Marcar como concluída para todos
+  UPDATE public.bookings
+  SET 
+    booking_status = 'completed',
+    business_completed = true,
+    client_completed = true
+  WHERE id = booking_id_param;
+
+  -- 3. Verificar se os pontos já foram dados para esta reserva
+  SELECT id INTO v_existing_points FROM public.points_history WHERE booking_id = booking_id_param LIMIT 1;
+  IF v_existing_points IS NOT NULL THEN
+    RETURN;
+  END IF;
+
+  -- 4. Definir pontos consoante o método de pagamento
+  IF v_booking.payment_method = 'stripe' OR v_booking.payment_method = 'online' THEN
+    v_points_to_award := 50;
+  ELSE
+    v_points_to_award := 25;
+  END IF;
+
+  -- 5. Inserir no histórico
+  INSERT INTO public.points_history (user_id, points, description, booking_id)
+  VALUES (v_booking.customer_id, v_points_to_award, 'Pontos por concluir reserva', booking_id_param);
+
+  -- 6. Adicionar ao saldo geral de pontos do perfil do cliente
+  UPDATE public.profiles
+  SET glamzo_points = COALESCE(glamzo_points, 0) + v_points_to_award
+  WHERE id = v_booking.customer_id;
+
+END;
+$function$
+
+--- RPC: get_dashboard_stats
+CREATE OR REPLACE FUNCTION public.get_dashboard_stats(p_business_id uuid, p_start_date date, p_end_date date)
+ RETURNS json
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  v_revenue NUMERIC;
+  v_bookings_count BIGINT;
+  v_pending_count BIGINT;
+  v_top_service TEXT;
+BEGIN
+  -- Resumo de Receitas e Contagem
+  SELECT 
+    COALESCE(SUM(total_price), 0),
+    COUNT(*),
+    SUM(CASE WHEN booking_status = 'pending' THEN 1 ELSE 0 END)
+  INTO 
+    v_revenue, 
+    v_bookings_count,
+    v_pending_count
+  FROM bookings
+  WHERE business_id = p_business_id
+    AND booking_status != 'cancelled'
+    AND booking_date >= p_start_date
+    AND booking_date <= p_end_date;
+
+  -- Obter Top Service
+  SELECT s.name INTO v_top_service
+  FROM bookings b
+  JOIN services s ON b.service_id = s.id
+  WHERE b.business_id = p_business_id
+    AND b.booking_status != 'cancelled'
+    AND b.booking_date >= p_start_date
+    AND b.booking_date <= p_end_date
+  GROUP BY s.name
+  ORDER BY SUM(b.total_price) DESC
+  LIMIT 1;
+
+  RETURN json_build_object(
+    'revenue', v_revenue,
+    'total_bookings', v_bookings_count,
+    'pending_bookings', v_pending_count,
+    'top_service', v_top_service,
+    'average_ticket', CASE WHEN v_bookings_count > 0 THEN ROUND(v_revenue / v_bookings_count, 2) ELSE 0 END
+  );
+END;
+$function$
+
