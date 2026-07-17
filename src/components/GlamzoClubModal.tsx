@@ -299,11 +299,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
               <div>
                 <h3 className="font-black text-slate-900 text-lg mb-4">Opções de Conversão</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    { pts: 500, val: 5 },
-                    { pts: 1000, val: 10 },
-                    { pts: 2000, val: 20 }
-                  ].map(opt => (
+                  {[ { pts: 500, val: 5 }, { pts: 1000, val: 10 } ].map(opt => (
                     <div key={opt.pts} className="bg-white border border-slate-200 rounded-2xl p-5 text-center flex flex-col items-center">
                       <Gift className="w-8 h-8 text-purple-600 mb-2" />
                       <h4 className="font-black text-slate-900 text-xl">{opt.val}€</h4>

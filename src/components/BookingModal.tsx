@@ -321,6 +321,13 @@ const handleConfirmReservation = async () => {
       const endTimeStr = minutesToTime(timeToMinutes(selectedTime) + totalServicesDuration);
 
       const finalPriceToPay = Math.max(0, Number((totalServicesPrice - getDiscountAmount()).toFixed(2)));
+      
+      // Calculate Business Amount (Task 3)
+      // If reward coupon, platform pays so business base is totalServicesPrice. If business coupon, business base is finalPriceToPay.
+      const baseBusinessAmount = appliedPromo?.type === 'business' ? finalPriceToPay : totalServicesPrice;
+      const stripeFee = paymentMethod === 'stripe' ? (baseBusinessAmount * 0.02) + 0.75 : 0;
+      const finalBusinessAmount = Math.max(0, Number((baseBusinessAmount - stripeFee).toFixed(2)));
+
       const servicesText = selectedServices.map(s => `• ${s.name}`).join('\n');
       const finalNotes = notes.trim() ? `${notes.trim()}\n\nServiços:\n${servicesText}` : `Serviços:\n${servicesText}`;
 
@@ -334,7 +341,7 @@ const handleConfirmReservation = async () => {
 
       await supabase.from('payments').insert({
         booking_id: data.id, customer_id: user.id, business_id: business.id, amount_total: finalPriceToPay,
-        business_amount: finalPriceToPay, payment_method: paymentMethod, payment_status: 'unpaid'
+        business_amount: finalBusinessAmount, payment_method: paymentMethod, payment_status: 'unpaid'
       });
 
       if (paymentMethod === 'stripe') {
@@ -345,7 +352,7 @@ const handleConfirmReservation = async () => {
         await supabase.from('reward_coupons').update({
           is_used: true,
           used_at: new Date().toISOString()
-        }).eq('id', appliedPromo.id);
+        }).eq('code', appliedPromo.code).eq('customer_id', user.id);
       }
       
       setSuccessBooking(data);
@@ -472,7 +479,7 @@ const handleConfirmReservation = async () => {
                   <div onClick={() => setPaymentMethod('local')} className={`p-5 rounded-2xl border cursor-pointer bg-white shadow-sm flex items-center gap-4 ${paymentMethod === 'local' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><Smile className="w-6 h-6 text-slate-600" /></div>
                     <div className="flex-1">
-                      <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagar no Local</h4><div className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-bold border border-emerald-100"><Sparkles className="w-3 h-3" /> +25 PTS</div></div>
+                      <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagar no Local</h4></div>
                       <p className="text-xs text-slate-500 mt-1">Dinheiro ou MBWay no balcão.</p>
 
                     </div>

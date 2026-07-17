@@ -23,7 +23,8 @@ export async function processBookingPoints(booking: any) {
 
     // Check payment method to determine points
     // if booking.payment_method === 'stripe' or business charges_enabled, let's just assume points logic
-    const pointsToAward = booking.payment_method === 'stripe' ? 50 : 25;
+    const pointsToAward = booking.payment_method === 'stripe' ? 50 : 0;
+    if (pointsToAward === 0) return;
 
     const expiresDate = new Date();
     expiresDate.setFullYear(expiresDate.getFullYear() + 1);

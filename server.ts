@@ -624,7 +624,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       return;
     }
 
-    const appFeeCents = Math.round((amountCents * 0.02) + 25); // 2% platform fee + 25 cents fixed
+    const appFeeCents = Math.round((amountCents * 0.02) + 75); // 2% platform fee + 75 cents fixed (0.50 extras for points)
 
     // Safe DB Lookup backup: resolve Stripe Connected Account ID from the corresponding business directly
     let resolvedStripeAccountId = stripeAccountId;
