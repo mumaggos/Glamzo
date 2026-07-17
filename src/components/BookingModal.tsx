@@ -368,9 +368,14 @@ const handleConfirmReservation = async () => {
           if (!business.stripe_account_id) {
             throw new Error("A loja não tem pagamentos online configurados.");
           }
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData?.session?.access_token;
           const checkoutRes = await fetch("/api/create-checkout-session", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({
               bookingId: data.id,
               stripeAccountId: business.stripe_account_id,

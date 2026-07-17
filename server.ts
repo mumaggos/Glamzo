@@ -65,10 +65,25 @@ function getStripe(): Stripe {
 
 // Lazy Supabase service client setup to update database from backend (e.g., webhook)
 let supabaseAdminClient: any = null;
+function getSupabaseAuthClient(req: any): any {
+  const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
+  const key = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.replace('Bearer ', '');
+    return createClient(url, key, {
+      global: {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    });
+  }
+  return getSupabaseAdmin();
+}
+
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
-    const url = 'https://fkpywjkatsxkgrmboald.supabase.co/';
-    const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA'; // Using anon key because service role is truncated in env
+    const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
     if (!url || !key) {
       throw new Error(
         "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
@@ -600,6 +615,8 @@ app.post("/api/create-checkout-session", async (req, res) => {
       cancelUrl,
     } = req.body;
 
+    console.log("ID Recebido no Backend:", bookingId);
+
     if (!bookingId) {
       res
         .status(400)
@@ -609,7 +626,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       return;
     }
 
-    const db = getSupabaseAdmin();
+    const db = getSupabaseAuthClient(req);
     const stripe = getStripe();
 
     // Securely fetch booking and price from DB
