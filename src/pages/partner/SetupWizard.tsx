@@ -218,9 +218,12 @@ export default function SetupWizard() {
          }).catch(() => {});
       }
       navigate('/partner/setup', { replace: true });
-    } else if (status === 'stripe_cancelled') {
-      setErrorMsg('Pagamento cancelado ou não concluído.');
-      window.history.replaceState({}, document.title, '/partner/setup');
+    } else if (status === 'stripe_cancelled' || searchParams.get('checkout_canceled') === 'true') {
+      toast.error('O pagamento não foi concluído ou foi cancelado. Por favor, tente novamente ou escolha outro plano.');
+      if (business && business.setup_step === 4) {
+         setStep(4);
+      }
+      navigate('/partner/setup', { replace: true });
     } else if (status === 'connect_success') {
       setSuccessMsg('Conta de pagamentos associada com sucesso.');
       if (stepParam) {
@@ -602,7 +605,7 @@ export default function SetupWizard() {
             businessId: business.id,
             planName: selectedPlan,
             successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled',
+            cancelUrl: window.location.origin + '/partner/setup?checkout_canceled=true',
             force_no_trial: trialUsed
           })
         });
