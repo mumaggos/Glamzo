@@ -196,13 +196,15 @@ export default function SetupWizard() {
   }, [user]);
 
   useEffect(() => {
+    if (!business) return;
     const status = searchParams.get('status');
     const stepParam = searchParams.get('step');
     const checkoutSuccess = searchParams.get('checkout_success');
     const sessionId = searchParams.get('session_id');
 
-    // Wait until business is loaded before processing
-    if (checkoutSuccess === 'true' && business) {
+    if (!status && !stepParam && !checkoutSuccess && !searchParams.get('checkout_canceled')) return;
+
+    if (checkoutSuccess === 'true') {
       setSuccessMsg('Confirmado! O seu plano foi subscrito com sucesso.');
       setStep(5);
       if (business.setup_step !== 5) {
@@ -225,7 +227,9 @@ export default function SetupWizard() {
       }
       navigate('/partner/setup', { replace: true });
     } else if (status === 'connect_success') {
-      setSuccessMsg('Conta de pagamentos associada com sucesso.');
+      if (business && business.stripe_account_id) {
+        setSuccessMsg('Conta de pagamentos associada com sucesso.');
+      }
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
@@ -1265,11 +1269,18 @@ export default function SetupWizard() {
               Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
             </p>
             
-            {business?.charges_enabled ? (
-               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8">
+            {(business?.charges_enabled || business?.stripe_account_id) ? (
+               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
                  <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
                  <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
-                 <p className="text-xs text-emerald-700 mt-2">A sua conta bancária está conectada.</p>
+                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta bancária está associada.</p>
+                 <button
+                    onClick={() => updateSetupStep(6)}
+                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
+                  >
+                    <span>Prosseguir</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                </div>
             ) : (
                 <div className="flex flex-col items-center gap-4 mb-8">
@@ -1280,7 +1291,7 @@ export default function SetupWizard() {
                     <span>Conectar Stripe Glamzo Pay</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => updateSetupStep(5)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+                  <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
                     Configurar mais tarde
                   </button>
                 </div>
