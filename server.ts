@@ -88,7 +88,9 @@ function getSupabaseAuthClient(req: any): any {
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
     const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
+    let envKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (envKey && envKey.length < 50) envKey = undefined; // Ignore truncated/invalid keys
+    const key = envKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
     if (!url || !key) {
       throw new Error(
         "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
@@ -873,7 +875,8 @@ async function getOrCreatePriceIdFallback(stripe: Stripe): Promise<string> {
 const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
   console.log("Creating Stripe Checkout...");
   try {
-    const { businessId, planName, successUrl, cancelUrl, skipTrial } = req.body;
+    const { businessId, planName, successUrl, cancelUrl, skipTrial, force_no_trial } = req.body;
+    const finalSkipTrial = skipTrial || force_no_trial;
 
     // Validate request parameters
     if (!businessId) {
@@ -934,19 +937,28 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
       }
     }
 
-    // Verify Subscription Price ID exists
-    let priceId = process.env.STRIPE_PRO_PRICE_ID;
-    if (!priceId || priceId.trim() === "") {
-      priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem";
+    // Resolve price ID dynamically from product IDs in environment
+    let isTerminal = planName === "TERMINAL";
+    let targetProductId = isTerminal ? process.env.STRIPE_TERMINAL_PRODUCT_ID : process.env.STRIPE_PRO_PRICE_ID;
+    let priceId = targetProductId; // By default assume it might be a price ID if it doesn't start with prod_
+
+    if (targetProductId && targetProductId.startsWith("prod_")) {
+      const pricesList = await stripe.prices.list({ product: targetProductId, active: true, limit: 1 });
+      if (pricesList.data.length > 0) {
+        priceId = pricesList.data[0].id;
+      } else {
+        console.warn("[Stripe] No active price found for product " + targetProductId);
+        priceId = ""; // Force fallback
+      }
     }
 
-    const isTerminal = planName === "TERMINAL";
-    const terminalProductId =
-      process.env.STRIPE_TERMINAL_PRODUCT_ID || "prod_Uk3zSeOffcShqq";
+    if (!priceId) {
+      priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem"; // ultimate hardcoded fallback
+    }
 
     console.log(
-      "Using Resolved price/product for Stripe Checkout. IsTerminal:",
-      isTerminal,
+      "Using Resolved price for Stripe Checkout. IsTerminal:",
+      isTerminal, "Price ID:", priceId
     );
 
     const db = getSupabaseAdmin();
@@ -1031,7 +1043,13 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     );
 
     const hasUsedTrial = !!business.trial_started_at;
-    const subscriptionData = (hasUsedTrial || skipTrial || isTerminal) ? {} : { trial_period_days: 14 };
+    const isTrialing = !(hasUsedTrial || finalSkipTrial || isTerminal);
+    const subscriptionData = isTrialing ? { 
+      trial_period_days: 14, 
+      trial_settings: { end_behavior: { missing_payment_method: 'cancel' } } 
+    } : undefined;
+    console.log("hasUsedTrial:", hasUsedTrial, "finalSkipTrial:", finalSkipTrial, "isTerminal:", isTerminal);
+    console.log("Calculated subscriptionData:", subscriptionData);
 
     console.log(
       `Initiating stripe.checkout.sessions.create... (Trial Used previously: ${hasUsedTrial})`,
@@ -1044,44 +1062,18 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         );
       }
 
-      let lineItems: any[] = [];
+      let lineItems: any[] = [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ];
 
-      if (isTerminal) {
-        lineItems = [
-          {
-            price_data: {
-              currency: "eur",
-              product: terminalProductId,
-              recurring: { interval: "month" },
-              unit_amount: 2490,
-            },
-            quantity: 1,
-          },
-          {
-            price_data: {
-              currency: "eur",
-              product: terminalProductId,
-              unit_amount: 990,
-            },
-            quantity: 1,
-          },
-        ];
-      } else {
-        lineItems = [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ];
-      }
-
-      console.log(
-        `Attempting Stripe session creation for ${planName || "PRO"} plan`,
-      );
-      session = await stripe.checkout.sessions.create({
+      const sessionPayload = {
         customer: customerId,
         mode: "subscription",
         allow_promotion_codes: true,
+        payment_method_collection: isTrialing ? "if_required" : "always",
         line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
@@ -1093,7 +1085,10 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         },
         success_url: calculatedSuccessUrl,
         cancel_url: calculatedCancelUrl,
-      });
+      };
+      console.log("Attempting Stripe session creation for", planName || "PRO", "plan");
+      console.log("Stripe payload:", JSON.stringify(sessionPayload, null, 2));
+      session = await stripe.checkout.sessions.create(sessionPayload);
     } catch (checkoutErr: any) {
       const errMsg = checkoutErr.message || "";
       const isNoSuchPrice =
@@ -1116,6 +1111,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             customer: customerId,
             mode: "subscription",
             allow_promotion_codes: true,
+            payment_method_collection: isTrialing ? "if_required" : "always",
             line_items: [
               {
                 price: fallbackPriceId,

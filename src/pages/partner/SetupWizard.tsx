@@ -473,19 +473,18 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
-          id: business.id,
-          owner_id: user.id,
           name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
         };
-        const { error } = await supabase.from('businesses').upsert(updateData);
+        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
             delete (updateData as any).setup_step;
-            await supabase.from('businesses').upsert(updateData);
+            const { error: retryError } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+            if (retryError) throw retryError;
           } else {
             throw error;
           }
