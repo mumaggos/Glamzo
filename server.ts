@@ -1894,9 +1894,12 @@ const handleStripeWebhook = async (req: any, res: any) => {
     }
 
     // --- EVENT TYPE: customer.subscription.updated / customer.subscription.deleted ---
+    // --- EVENT TYPE: customer.subscription.created / updated / deleted / trial_will_end ---
     if (
+      event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted"
+      event.type === "customer.subscription.deleted" ||
+      event.type === "customer.subscription.trial_will_end"
     ) {
       const liveSubscription = event.data.object as Stripe.Subscription;
       const stripeSubId = liveSubscription.id;
@@ -2023,6 +2026,13 @@ const handleStripeWebhook = async (req: any, res: any) => {
           `[Webhook SaaS Sync Completed] SUBSCRIPTION UPDATED SUCCESSFULLY for Stripe Sub: ${stripeSubId}`,
         );
       }
+    }
+
+    // --- EVENT TYPE: payment_intent.payment_failed ---
+    if (event.type === "payment_intent.payment_failed") {
+      const paymentIntent = event.data.object;
+      console.log(`[Stripe Webhook payment_intent.payment_failed] Payment failed for intent ${paymentIntent.id}`);
+      // Optional: Notify the user or update specific logs
     }
 
     // --- EVENT TYPE: invoice.paid / invoice.payment_failed ---

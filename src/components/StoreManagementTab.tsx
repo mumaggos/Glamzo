@@ -23,9 +23,9 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     if (!matchesSearch) return false;
     
     if (filter === 'action_needed') {
-      return s.admin_verified !== true;
+      return s.is_verified !== true;
     } else {
-      return s.admin_verified === true;
+      return s.is_verified === true;
     }
   });
 
@@ -107,7 +107,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     setLoading(true);
     try {
       // 1. Atualizar DB
-      await handleUpdateStore(salon.id, { admin_verified: true });
+      await handleUpdateStore(salon.id, { is_verified: true });
       
       // 2. Enviar email de notificação
       await fetch('/api/emails/send', {
@@ -266,7 +266,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     </button>
                   ) : (
                     <button 
-                      onClick={() => handleUpdateStore(salon.id, { admin_verified: false })}
+                      onClick={() => handleUpdateStore(salon.id, { is_verified: false })}
                       disabled={loading}
                       className="flex items-center justify-center gap-2 py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-bold transition-colors"
                     >

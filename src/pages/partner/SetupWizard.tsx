@@ -198,8 +198,27 @@ export default function SetupWizard() {
   useEffect(() => {
     const status = searchParams.get('status');
     const stepParam = searchParams.get('step');
+    const checkoutSuccess = searchParams.get('checkout_success');
+    const sessionId = searchParams.get('session_id');
 
-    if (status === 'stripe_cancelled') {
+    // Wait until business is loaded before processing
+    if (checkoutSuccess === 'true' && business) {
+      setSuccessMsg('Confirmado! O seu plano foi subscrito com sucesso.');
+      setStep(5);
+      if (business.setup_step !== 5) {
+         supabase.from('businesses').update({ setup_step: 5 }).eq('id', business.id).then();
+         business.setup_step = 5;
+      }
+      if (sessionId) {
+         // Verify subscription in background
+         fetch("/api/stripe/verify-subscription", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({ businessId: business.id, sessionId }),
+         }).catch(() => {});
+      }
+      navigate('/partner/setup', { replace: true });
+    } else if (status === 'stripe_cancelled') {
       setErrorMsg('Pagamento cancelado ou não concluído.');
       window.history.replaceState({}, document.title, '/partner/setup');
     } else if (status === 'connect_success') {
@@ -582,7 +601,7 @@ export default function SetupWizard() {
           body: JSON.stringify({
             businessId: business.id,
             planName: selectedPlan,
-            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
+            successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
             cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled',
             force_no_trial: trialUsed
           })
