@@ -240,7 +240,7 @@ export default function SubscriptionTab() {
     if (!business) return;
     const confirmCancel = window.confirm(
       `Tem a certeza absoluta de que deseja cancelar o seu plano ${
-        business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested ? "PRO Terminal" : "Glamzo PRO"
+        business?.selected_plan === "app_tablet" ? "PRO Terminal" : "Glamzo PRO"
       }?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;
@@ -307,28 +307,19 @@ export default function SubscriptionTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessId: business.id }),
       });
-      
-      let data;
-      try {
-        data = await res.json();
-      } catch (e) {
-        throw new Error("Invalid JSON response from server");
-      }
-
       if (!res.ok) {
+        const errData = await res.json();
         if (res.status === 404) {
+           // Ghost account detected
            window.location.reload();
            return;
         }
-        throw new Error(data.error || "Failed to create account link");
+        throw new Error(errData.error || "Failed to create account link");
       }
-      
-      if (data && data.url) {
+      const data = await res.json();
+      if (data.url) {
         window.location.href = data.url;
-        return;
       }
-      
-      throw new Error("No URL returned from server");
     } catch (err: any) {
       console.error(err);
       notifyTerminal("❌ Erro Técnico", "Falha na ligação à gateway Stripe.");
@@ -421,13 +412,13 @@ export default function SubscriptionTab() {
         
         {/* PLANO GLAMZO PRO */}
         <div className={`p-8 rounded-3xl border transition-all flex flex-col ${
-            (business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested)
+            business?.selected_plan !== "app_tablet"
               ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
               : "bg-white border-slate-200 hover:border-purple-300"
           }`}>
           <div className="flex justify-between items-start mb-2">
             <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
-            {business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
+            {business?.selected_plan !== "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
           <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
           <div className="mt-4 mb-6 flex flex-wrap items-center gap-3">
@@ -456,7 +447,7 @@ export default function SubscriptionTab() {
             >
               {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
             </button>
-          ) : (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) ? (
+          ) : business?.selected_plan === "app_tablet" ? (
             <button 
               onClick={() => handleSubscribePro("PRO")}
               disabled={isVerifyingSub}
@@ -473,7 +464,7 @@ export default function SubscriptionTab() {
         
         {/* PLANO GLAMZO PRO TERMINAL */}
         <div className={`p-8 rounded-3xl border transition-all flex flex-col relative overflow-hidden group ${
-            (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested)
+            business?.selected_plan === "app_tablet"
               ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-2xl ring-2 ring-purple-500/30 text-white" 
               : "bg-slate-900 text-white border-purple-500 shadow-2xl"
           }`}>
@@ -482,7 +473,7 @@ export default function SubscriptionTab() {
           
           <div className="flex justify-between items-start mb-2 relative z-10">
             <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
-            { (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
+            {business?.selected_plan === "app_tablet" && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
           <h4 className="text-xl font-black relative z-10 mt-2">Glamzo PRO Terminal</h4>
           <div className="mt-4 mb-6 relative z-10">
@@ -516,7 +507,7 @@ export default function SubscriptionTab() {
             >
               {isVerifyingSub ? "A carregar..." : "Reativar com Terminal"}
             </button>
-          ) : (business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested) ? (
+          ) : business?.selected_plan !== "app_tablet" ? (
             <button 
               onClick={() => handleSubscribePro("TERMINAL")}
               disabled={isVerifyingSub}
