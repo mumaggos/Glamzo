@@ -112,6 +112,7 @@ export default function SetupWizard() {
   const [postalCode, setPostalCode] = useState('');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
+  const [setupByGlamzo, setSetupByGlamzo] = useState(false);
   const DEFAULT_HOURS = [
     { weekday: 1, open_time: '09:00', close_time: '19:00', is_closed: false },
     { weekday: 2, open_time: '09:00', close_time: '19:00', is_closed: false },
@@ -182,7 +183,7 @@ export default function SetupWizard() {
 
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
-  const [setupByGlamzo, setSetupByGlamzo] = useState(false);
+
 
   // Step 3: Plan
   const [selectedPlan, setSelectedPlan] = useState<'PRO' | 'TERMINAL'>('PRO');
