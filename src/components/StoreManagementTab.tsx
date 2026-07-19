@@ -175,11 +175,11 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                   <div className="flex items-center gap-3">
                     <h4 className="text-lg font-bold text-slate-900">{salon.name}</h4>
                     <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                      salon.selected_plan === 'pro_terminal' ? 'bg-rose-500 text-white' : 
-                      salon.selected_plan === 'pro' ? 'bg-purple-100 text-purple-700' : 
+                      salon.selected_plan === 'app_tablet' ? 'bg-rose-100 text-rose-700' : 
+                      (salon.selected_plan === 'app' || salon.selected_plan === 'pro') ? 'bg-purple-100 text-purple-700' : 
                       'bg-slate-100 text-slate-600'
                     }`}>
-                      {salon.selected_plan === 'pro_terminal' ? 'PRO TERMINAL' : salon.selected_plan === 'pro' ? 'PRO' : 'Teste'}
+                      {salon.selected_plan === 'app_tablet' ? 'PRO TERMINAL' : (salon.selected_plan === 'app' || salon.selected_plan === 'pro') ? 'PRO' : 'Teste'}
                     </span>
                     {(salon as any).manual_setup_requested && (
                       <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
@@ -226,7 +226,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                   </div>
 
                   {/* Terminal (Apenas PRO Terminal) */}
-                  {salon.selected_plan === 'pro_terminal' && (
+                  {salon.selected_plan === 'app_tablet' && (
                     <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                       <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
                         <Terminal className="w-4 h-4 text-rose-600" />
