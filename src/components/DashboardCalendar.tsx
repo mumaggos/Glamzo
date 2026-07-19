@@ -4,11 +4,22 @@ import { CreditCard, Banknote, User } from 'lucide-react';
 export function DashboardCalendar({ business, bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
   
   const columns = useMemo(() => {
-    const baseDate = new Date(selectedAgendaDate || new Date());
+    const baseDate = selectedAgendaDate ? new Date(selectedAgendaDate) : new Date();
+    
+    const getLocalDateStr = (d: Date) => {
+      return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    };
+
     if (agendaMode === 'day' && selectedStaffFilter === 'all') {
-      return staff.map((s: any) => ({
-        id: s.id, title: s.full_name.split(' ')[0], avatar: s.avatar_url, dateStr: baseDate.toISOString().split('T')[0], isStaff: true, weekday: baseDate.getDay()
-      }));
+      if (staff && staff.length > 0) {
+        return staff.map((s: any) => ({
+          id: s.id, title: s.full_name.split(' ')[0], avatar: s.avatar_url, dateStr: getLocalDateStr(baseDate), isStaff: true, weekday: baseDate.getDay()
+        }));
+      } else {
+        return [{
+          id: 'all', title: business?.name || 'Geral', avatar: null, dateStr: getLocalDateStr(baseDate), isStaff: false, weekday: baseDate.getDay()
+        }];
+      }
     }
     const dates = [];
     if (agendaMode === '3days') {
@@ -16,15 +27,16 @@ export function DashboardCalendar({ business, bookings, staff, businessHours, se
     } else if (agendaMode === 'week') {
       const day = baseDate.getDay();
       const diff = baseDate.getDate() - day + (day === 0 ? -6 : 1); 
-      const monday = new Date(baseDate.setDate(diff));
+      const monday = new Date(baseDate);
+      monday.setDate(diff);
       for (let i = 0; i < 7; i++) { const wd = new Date(monday); wd.setDate(wd.getDate() + i); dates.push(wd); }
     } else {
       dates.push(baseDate);
     }
     return dates.map(d => ({
-      id: d.toISOString().split('T')[0], title: d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' }), dateStr: d.toISOString().split('T')[0], isStaff: false, weekday: d.getDay()
+      id: getLocalDateStr(d), title: d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' }), dateStr: getLocalDateStr(d), isStaff: false, weekday: d.getDay()
     }));
-  }, [agendaMode, selectedAgendaDate, staff, selectedStaffFilter]);
+  }, [agendaMode, selectedAgendaDate, staff, selectedStaffFilter, business]);
 
     const hours = useMemo(() => {
     let minH = 8;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
-import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift } from 'lucide-react';
+import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
@@ -112,6 +112,7 @@ export default function SetupWizard() {
   const [postalCode, setPostalCode] = useState('');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
+  const [setupByGlamzo, setSetupByGlamzo] = useState(false);
   const DEFAULT_HOURS = [
     { weekday: 1, open_time: '09:00', close_time: '19:00', is_closed: false },
     { weekday: 2, open_time: '09:00', close_time: '19:00', is_closed: false },
@@ -128,9 +129,9 @@ export default function SetupWizard() {
   
   useEffect(() => {
     if (loading) return;
-    const draft = { name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl };
+    const draft = { step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo };
     localStorage.setItem('setup_wizard_draft', JSON.stringify(draft));
-  }, [name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, loading]);
+  }, [step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo, loading]);
 
   const handleHourChange = (weekday: number, field: string, value: any) => {
     setBusinessHours(prev => prev.map(h => h.weekday === weekday ? { ...h, [field]: value } : h));
@@ -183,6 +184,7 @@ export default function SetupWizard() {
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
 
+
   // Step 3: Plan
   const [selectedPlan, setSelectedPlan] = useState<'PRO' | 'TERMINAL'>('PRO');
   const [shippingName, setShippingName] = useState('');
@@ -196,14 +198,40 @@ export default function SetupWizard() {
   }, [user]);
 
   useEffect(() => {
+    if (!business) return;
     const status = searchParams.get('status');
     const stepParam = searchParams.get('step');
+    const checkoutSuccess = searchParams.get('checkout_success');
+    const sessionId = searchParams.get('session_id');
 
-    if (status === 'stripe_cancelled') {
-      setErrorMsg('Pagamento cancelado ou não concluído.');
-      window.history.replaceState({}, document.title, '/partner/setup');
+    if (!status && !stepParam && !checkoutSuccess && !searchParams.get('checkout_canceled')) return;
+
+    if (checkoutSuccess === 'true') {
+      setSuccessMsg('Confirmado! O seu plano foi subscrito com sucesso.');
+      setStep(5);
+      if (business.setup_step !== 5) {
+         supabase.from('businesses').update({ setup_step: 5 }).eq('id', business.id).then();
+         business.setup_step = 5;
+      }
+      if (sessionId) {
+         // Verify subscription in background
+         fetch("/api/stripe/verify-subscription", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({ businessId: business.id, sessionId }),
+         }).catch(() => {});
+      }
+      navigate('/partner/setup', { replace: true });
+    } else if (status === 'stripe_cancelled' || searchParams.get('checkout_canceled') === 'true') {
+      toast.error('O pagamento não foi concluído ou foi cancelado. Por favor, tente novamente ou escolha outro plano.');
+      if (business && business.setup_step === 4) {
+         setStep(4);
+      }
+      navigate('/partner/setup', { replace: true });
     } else if (status === 'connect_success') {
-      setSuccessMsg('Conta de pagamentos associada com sucesso.');
+      if (business && business.stripe_account_id) {
+        setSuccessMsg('Conta de pagamentos associada com sucesso.');
+      }
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
@@ -322,6 +350,13 @@ export default function SetupWizard() {
           setCoordinates({ lat: currentBiz.latitude, lng: currentBiz.longitude });
         }
         
+        if (draft?.businessHours && draft.businessHours.length > 0) {
+          setBusinessHours(draft.businessHours);
+        }
+        if (draft?.setupByGlamzo !== undefined) {
+          setSetupByGlamzo(draft.setupByGlamzo);
+        }
+        
         const stepParam = searchParams.get('step');
         if (stepParam) {
            const parsedStep = parseInt(stepParam);
@@ -334,8 +369,13 @@ export default function SetupWizard() {
                  } catch (e) {}
               }
            }
-        } else if (!searchParams.get('status') && currentBiz.setup_step) {
-          let targetStep = currentBiz.setup_step;
+        } else if (!searchParams.get('status')) {
+          let targetStep = currentBiz.setup_step || 1;
+          
+          if (draft?.step && draft.step > targetStep && draft.step <= 4) {
+             targetStep = draft.step;
+          }
+          
           if (targetStep === 3 && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
             targetStep = 4;
           }
@@ -447,19 +487,18 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
-          id: business.id,
-          owner_id: user.id,
           name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
         };
-        const { error } = await supabase.from('businesses').upsert(updateData);
+        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
             delete (updateData as any).setup_step;
-            await supabase.from('businesses').upsert(updateData);
+            const { error: retryError } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+            if (retryError) throw retryError;
           } else {
             throw error;
           }
@@ -487,7 +526,7 @@ export default function SetupWizard() {
         const { error: hoursErr } = await supabase.from('business_hours').insert(hoursToSave);
         if (hoursErr) throw hoursErr;
         
-        const updateData = { setup_step: 4, onboarding_step: 3 };
+        const updateData = { setup_step: 3, onboarding_step: 2 };
         await supabase.from('businesses').update(updateData).eq('id', business.id);
         
         setBusiness({ ...business, ...updateData });
@@ -499,24 +538,22 @@ export default function SetupWizard() {
       }
 
     } else if (step === 3) {
-      if (services.length === 0) {
-        setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
+      if (services.length === 0 && !setupByGlamzo) {
+        setErrorMsg('Adicione pelo menos um serviço ou selecione "A Glamzo configura por mim" para prosseguir.');
         return;
       }
       try {
-        await supabase.from('businesses').upsert({
-          id: business.id,
-          owner_id: user.id,
-          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
-          category, logo_url: logoUrl, cover_url: coverUrl,
-          latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
+        const updateData = {
           onboarding_step: 3,
-          setup_step: 4
-        });
+          setup_step: 4,
+          manual_setup_requested: setupByGlamzo || business.manual_setup_requested
+        };
+        await supabase.from('businesses').update(updateData).eq('id', business.id);
+        setBusiness({ ...business, ...updateData });
+        setStep(4);
       } catch (err) {
-        console.warn('Autosave step 2 failed:', err);
+        console.warn('Autosave step 3 failed:', err);
       }
-      await updateSetupStep(3);
     } else if (step === 4) {
       if (selectedPlan === 'TERMINAL') {
         if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
@@ -582,8 +619,8 @@ export default function SetupWizard() {
           body: JSON.stringify({
             businessId: business.id,
             planName: selectedPlan,
-            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled',
+            successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: window.location.origin + '/partner/setup?checkout_canceled=true',
             force_no_trial: trialUsed
           })
         });
@@ -1054,7 +1091,23 @@ export default function SetupWizard() {
                     <h4 className="font-bold text-sm text-slate-900">{s.name}</h4>
                     <p className="text-xs text-slate-500">{s.duration_minutes} min</p>
                   </div>
-                  <div className="font-black text-slate-900">{s.price}€</div>
+                  <div className="flex items-center gap-4">
+                    <div className="font-black text-slate-900">{s.price}€</div>
+                    <button 
+                      onClick={async () => {
+                        const { error } = await supabase.from('services').delete().eq('id', s.id);
+                        if (!error) {
+                           setServices(services.filter(svc => svc.id !== s.id));
+                        } else {
+                           setErrorMsg('Erro ao remover serviço: ' + error.message);
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title="Remover serviço"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1146,6 +1199,16 @@ export default function SetupWizard() {
                 Adicionar Serviço
               </button>
             </div>
+            
+            <div className="mt-6 p-4 border border-purple-200 bg-purple-50 rounded-xl flex items-center gap-3 cursor-pointer" onClick={() => setSetupByGlamzo(!setupByGlamzo)}>
+              <div className={`w-5 h-5 rounded border flex items-center justify-center ${setupByGlamzo ? 'bg-purple-600 border-purple-600' : 'bg-white border-slate-300'}`}>
+                {setupByGlamzo && <Check className="w-3 h-3 text-white" />}
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-sm font-bold text-purple-900">A Glamzo configura por mim</span>
+                 <span className="text-xs text-purple-700">Não quer perder tempo? Nós adicionamos os seus serviços gratuitamente.</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1160,7 +1223,7 @@ export default function SetupWizard() {
               >
                 {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
                 <h3 className="text-lg font-bold text-slate-900">Glamzo PRO</h3>
-                <div className="my-3"><span className="text-3xl font-black">19,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">/mês</span></div>
                 <div className="mb-4">
                   <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">14 Dias Grátis</span>
                 </div>
@@ -1180,7 +1243,7 @@ export default function SetupWizard() {
                 </div>
                 {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
                 <h3 className="text-lg font-bold text-slate-900">PRO Terminal</h3>
-                <div className="my-3"><span className="text-3xl font-black">24,99€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <div className="my-3"><span className="text-3xl font-black">24,90€</span><span className="text-slate-500 text-sm">/mês</span></div>
                 <div className="mb-4 flex flex-col gap-1">
                   <span className="inline-block bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-1 rounded w-max">+ 9,99€ Caução Única (Tablet)</span>
                   <span className="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded w-max">Faturado no momento (Sem Trial)</span>
@@ -1243,11 +1306,18 @@ export default function SetupWizard() {
               Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
             </p>
             
-            {business?.charges_enabled ? (
-               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8">
+            {(business?.charges_enabled || business?.stripe_account_id) ? (
+               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
                  <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
                  <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
-                 <p className="text-xs text-emerald-700 mt-2">A sua conta bancária está conectada.</p>
+                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta bancária está associada.</p>
+                 <button
+                    onClick={() => updateSetupStep(6)}
+                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
+                  >
+                    <span>Prosseguir</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                </div>
             ) : (
                 <div className="flex flex-col items-center gap-4 mb-8">
@@ -1258,7 +1328,7 @@ export default function SetupWizard() {
                     <span>Conectar Stripe Glamzo Pay</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => updateSetupStep(5)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+                  <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
                     Configurar mais tarde
                   </button>
                 </div>

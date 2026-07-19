@@ -107,6 +107,27 @@ export async function submitReview(reviewInput: Omit<Review, 'id' | 'created_at'
       throw error;
     }
     
+    // Update the business table's average rating and count
+    if (finalInput.business_id) {
+      const { data: allReviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('business_id', finalInput.business_id);
+        
+      if (allReviews && allReviews.length > 0) {
+        const newCount = allReviews.length;
+        const newRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / newCount;
+        
+        await supabase
+          .from('businesses')
+          .update({ 
+            rating: parseFloat(newRating.toFixed(1)), 
+            reviews_count: newCount 
+          })
+          .eq('id', finalInput.business_id);
+      }
+    }
+    
     return data as Review;
   } catch (err) {
     console.error('Exception submitting review:', err);

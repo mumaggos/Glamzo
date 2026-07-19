@@ -488,8 +488,8 @@ export default function StaffTab() {
       )}
 
       {showStaffModal && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-6 text-slate-800">
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-6 text-slate-800 my-8">
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
               <h4 className="font-extrabold text-base text-slate-900">
                 {editingStaff

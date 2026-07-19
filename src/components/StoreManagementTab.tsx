@@ -23,9 +23,9 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     if (!matchesSearch) return false;
     
     if (filter === 'action_needed') {
-      return s.admin_verified !== true;
+      return s.is_verified !== true;
     } else {
-      return s.admin_verified === true;
+      return s.is_verified === true;
     }
   });
 
@@ -107,7 +107,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
     setLoading(true);
     try {
       // 1. Atualizar DB
-      await handleUpdateStore(salon.id, { admin_verified: true });
+      await handleUpdateStore(salon.id, { is_verified: true });
       
       // 2. Enviar email de notificação
       await fetch('/api/emails/send', {
@@ -175,11 +175,11 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                   <div className="flex items-center gap-3">
                     <h4 className="text-lg font-bold text-slate-900">{salon.name}</h4>
                     <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                      salon.selected_plan === 'pro_terminal' ? 'bg-rose-100 text-rose-700' : 
-                      salon.selected_plan === 'pro' ? 'bg-purple-100 text-purple-700' : 
+                      (salon.selected_plan === 'app_tablet' || salon.selected_plan === 'pro_terminal' || salon.tablet_requested) ? 'bg-rose-100 text-rose-700' : 
+                      (salon.selected_plan === 'app' || salon.selected_plan === 'pro') ? 'bg-purple-100 text-purple-700' : 
                       'bg-slate-100 text-slate-600'
                     }`}>
-                      {salon.selected_plan === 'pro_terminal' ? 'PRO Terminal' : salon.selected_plan === 'pro' ? 'PRO' : 'Teste'}
+                      {(salon.selected_plan === 'app_tablet' || salon.selected_plan === 'pro_terminal' || salon.tablet_requested) ? 'PRO TERMINAL' : (salon.selected_plan === 'app' || salon.selected_plan === 'pro') ? 'PRO' : 'Teste'}
                     </span>
                     {(salon as any).manual_setup_requested && (
                       <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
@@ -226,7 +226,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                   </div>
 
                   {/* Terminal (Apenas PRO Terminal) */}
-                  {salon.selected_plan === 'pro_terminal' && (
+                  {(salon.selected_plan === 'app_tablet' || salon.selected_plan === 'pro_terminal' || salon.tablet_requested) && (
                     <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                       <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
                         <Terminal className="w-4 h-4 text-rose-600" />
@@ -239,7 +239,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                           onChange={(e) => handleUpdateStore(salon.id, { terminal_sent: e.target.checked })}
                           className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                         />
-                        <span>Equipamento Enviado</span>
+                        <span>Terminal Configurado / Enviado</span>
                       </label>
                     </div>
                   )}
@@ -266,7 +266,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     </button>
                   ) : (
                     <button 
-                      onClick={() => handleUpdateStore(salon.id, { admin_verified: false })}
+                      onClick={() => handleUpdateStore(salon.id, { is_verified: false })}
                       disabled={loading}
                       className="flex items-center justify-center gap-2 py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-bold transition-colors"
                     >

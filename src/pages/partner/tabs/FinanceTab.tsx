@@ -236,24 +236,38 @@ export default function FinanceTab() {
   
   const getFilteredLedgers = () => {
     const now = new Date();
+    
+    const getLocalDateStr = (d: Date) => {
+      return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    };
+    const todayStr = getLocalDateStr(now);
+
     return ledgers.filter(item => {
       const itemDate = new Date(item.created_at);
+      const itemDateStr = getLocalDateStr(itemDate);
+      
       if (ledgerFilter === 'today') {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        return itemDate >= today;
+        return itemDateStr === todayStr;
       }
+      
+      // For week/month/year we want to include anything up to the end of today
+      const endOfToday = new Date(now);
+      endOfToday.setHours(23, 59, 59, 999);
+
       if (ledgerFilter === 'week') {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return itemDate >= weekAgo;
+        weekAgo.setHours(0, 0, 0, 0);
+        return itemDate >= weekAgo && itemDate <= endOfToday;
       }
       if (ledgerFilter === 'month') {
         const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        return itemDate >= monthAgo;
+        monthAgo.setHours(0, 0, 0, 0);
+        return itemDate >= monthAgo && itemDate <= endOfToday;
       }
       if (ledgerFilter === 'year') {
         const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        return itemDate >= yearAgo;
+        yearAgo.setHours(0, 0, 0, 0);
+        return itemDate >= yearAgo && itemDate <= endOfToday;
       }
       if (ledgerFilter === 'custom') {
         const start = new Date(customStartDate);
@@ -366,7 +380,7 @@ export default function FinanceTab() {
     if (!business) return;
     const confirmCancel = window.confirm(
       `Tem a certeza absoluta de que deseja cancelar o seu plano ${
-        business?.selected_plan === "app_tablet" ? "PRO Terminal" : "Glamzo PRO"
+        (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) ? "PRO Terminal" : "Glamzo PRO"
       }?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;

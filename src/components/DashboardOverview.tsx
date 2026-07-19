@@ -195,7 +195,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
               <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase mb-1">Plano Atual</p>
-                  <p className="font-black text-slate-900">{business?.selected_plan === 'app_tablet' ? 'PRO + TERMINAL' : 'PRO'}</p>
+                  <p className="font-black text-slate-900">{(business?.selected_plan === 'app_tablet' || business?.selected_plan === 'pro_terminal' || business?.tablet_requested) ? 'PRO + TERMINAL' : 'PRO'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${resolvedSubscriptionStatus === 'trialing' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}`}>
                   {resolvedSubscriptionStatus === 'trialing' ? `Trial (${trialDaysRemaining} dias)` : 'Ativo'}

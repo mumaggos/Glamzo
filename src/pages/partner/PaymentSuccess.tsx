@@ -41,7 +41,7 @@ export default function PaymentSuccess() {
         if (res.ok && data.success) {
           setStatus("success");
           setTimeout(() => {
-             navigate("/partner/setup?step=4", { replace: true });
+             navigate("/partner/setup?step=5", { replace: true });
           }, 3000);
         } else {
            // Maybe still processing webhook or failed
@@ -73,7 +73,7 @@ export default function PaymentSuccess() {
             <CheckCircle className="w-16 h-16 text-emerald-500 mb-6" />
             <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Subscrição Ativada!</h1>
             <p className="text-sm text-slate-500 font-medium mb-6">O seu pagamento foi processado com sucesso. Pode agora concluir a configuração da sua loja.</p>
-            <button onClick={() => navigate("/partner/setup?step=4", { replace: true })} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-wider text-xs">Continuar Configuração</button>
+            <button onClick={() => navigate("/partner/setup?step=5", { replace: true })} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-wider text-xs">Continuar Configuração</button>
           </div>
         )}
 

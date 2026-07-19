@@ -46,6 +46,14 @@ export default function PartnerLayout() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [businessHours, setBusinessHours] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showStripeWarning, setShowStripeWarning] = useState(true);
+
+  useEffect(() => {
+    if (showStripeWarning) {
+      const t = setTimeout(() => setShowStripeWarning(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [showStripeWarning]);
 
   // ESTADO DAS NOTIFICAÇÕES (Fixo por agora, mas depois ligamos à DB)
   const [notifications, setNotifications] = useState([
@@ -58,7 +66,24 @@ export default function PartnerLayout() {
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/partner/login");
-    if (user) loadLayoutData();
+    if (user) {
+      loadLayoutData();
+
+      const channel = supabase.channel('partner_layout_msg_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
+          // Re-fetch only messages count to stay lightweight
+          supabase.from("messages").select("id", { count: 'exact', head: true })
+            .eq("receiver_id", user.id).eq("is_read", false)
+            .then(({ count }) => {
+              if (count !== null) setUnreadMessages(count);
+            });
+        })
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user, authLoading]);
 
   const loadLayoutData = async () => {
@@ -254,7 +279,7 @@ export default function PartnerLayout() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
-        {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && (
+        {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && showStripeWarning && (
           <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
             ⚠️ Ação Necessária: A sua conta bancária foi desconectada. <Link to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2">Clique aqui para voltar a conectar e receber os seus fundos.</Link>
           </div>
