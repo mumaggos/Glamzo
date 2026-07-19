@@ -1,4 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+const fs = require('fs');
+let code = fs.readFileSync('src/lib/supabase.ts', 'utf8');
+
+const replacementStr = `import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
 let envAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -10,4 +13,7 @@ export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey
-);
+);`;
+
+fs.writeFileSync('src/lib/supabase.ts', replacementStr);
+console.log('src/lib/supabase.ts patched');

@@ -307,19 +307,28 @@ export default function SubscriptionTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessId: business.id }),
       });
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Invalid JSON response from server");
+      }
+
       if (!res.ok) {
-        const errData = await res.json();
         if (res.status === 404) {
-           // Ghost account detected
            window.location.reload();
            return;
         }
-        throw new Error(errData.error || "Failed to create account link");
+        throw new Error(data.error || "Failed to create account link");
       }
-      const data = await res.json();
-      if (data.url) {
+      
+      if (data && data.url) {
         window.location.href = data.url;
+        return;
       }
+      
+      throw new Error("No URL returned from server");
     } catch (err: any) {
       console.error(err);
       notifyTerminal("❌ Erro Técnico", "Falha na ligação à gateway Stripe.");
