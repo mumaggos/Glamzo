@@ -196,40 +196,14 @@ export default function SetupWizard() {
   }, [user]);
 
   useEffect(() => {
-    if (!business) return;
     const status = searchParams.get('status');
     const stepParam = searchParams.get('step');
-    const checkoutSuccess = searchParams.get('checkout_success');
-    const sessionId = searchParams.get('session_id');
 
-    if (!status && !stepParam && !checkoutSuccess && !searchParams.get('checkout_canceled')) return;
-
-    if (checkoutSuccess === 'true') {
-      setSuccessMsg('Confirmado! O seu plano foi subscrito com sucesso.');
-      setStep(5);
-      if (business.setup_step !== 5) {
-         supabase.from('businesses').update({ setup_step: 5 }).eq('id', business.id).then();
-         business.setup_step = 5;
-      }
-      if (sessionId) {
-         // Verify subscription in background
-         fetch("/api/stripe/verify-subscription", {
-           method: "POST",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ businessId: business.id, sessionId }),
-         }).catch(() => {});
-      }
-      navigate('/partner/setup', { replace: true });
-    } else if (status === 'stripe_cancelled' || searchParams.get('checkout_canceled') === 'true') {
-      toast.error('O pagamento não foi concluído ou foi cancelado. Por favor, tente novamente ou escolha outro plano.');
-      if (business && business.setup_step === 4) {
-         setStep(4);
-      }
-      navigate('/partner/setup', { replace: true });
+    if (status === 'stripe_cancelled') {
+      setErrorMsg('Pagamento cancelado ou não concluído.');
+      window.history.replaceState({}, document.title, '/partner/setup');
     } else if (status === 'connect_success') {
-      if (business && business.stripe_account_id) {
-        setSuccessMsg('Conta de pagamentos associada com sucesso.');
-      }
+      setSuccessMsg('Conta de pagamentos associada com sucesso.');
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
@@ -473,18 +447,19 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
+          id: business.id,
+          owner_id: user.id,
           name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
         };
-        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+        const { error } = await supabase.from('businesses').upsert(updateData);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {
             delete (updateData as any).setup_step;
-            const { error: retryError } = await supabase.from('businesses').update(updateData).eq('id', business.id);
-            if (retryError) throw retryError;
+            await supabase.from('businesses').upsert(updateData);
           } else {
             throw error;
           }
@@ -607,8 +582,8 @@ export default function SetupWizard() {
           body: JSON.stringify({
             businessId: business.id,
             planName: selectedPlan,
-            successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: window.location.origin + '/partner/setup?checkout_canceled=true',
+            successUrl: window.location.origin + '/setup/payment-success?session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: window.location.origin + '/partner/setup?status=stripe_cancelled',
             force_no_trial: trialUsed
           })
         });
@@ -1268,18 +1243,11 @@ export default function SetupWizard() {
               Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
             </p>
             
-            {(business?.charges_enabled || business?.stripe_account_id) ? (
-               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
+            {business?.charges_enabled ? (
+               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8">
                  <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
                  <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
-                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta bancária está associada.</p>
-                 <button
-                    onClick={() => updateSetupStep(6)}
-                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
-                  >
-                    <span>Prosseguir</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                 <p className="text-xs text-emerald-700 mt-2">A sua conta bancária está conectada.</p>
                </div>
             ) : (
                 <div className="flex flex-col items-center gap-4 mb-8">
@@ -1290,7 +1258,7 @@ export default function SetupWizard() {
                     <span>Conectar Stripe Glamzo Pay</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+                  <button onClick={() => updateSetupStep(5)} className="text-sm text-slate-500 hover:text-slate-800 underline">
                     Configurar mais tarde
                   </button>
                 </div>

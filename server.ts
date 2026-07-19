@@ -72,9 +72,7 @@ function getStripe(): Stripe {
 let supabaseAdminClient: any = null;
 function getSupabaseAuthClient(req: any): any {
   const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
-  let envAnon = process.env.VITE_SUPABASE_ANON_KEY;
-  if (envAnon && envAnon.length < 50) envAnon = undefined;
-  const key = envAnon || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
+  const key = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
   const authHeader = req.headers.authorization;
   if (authHeader) {
     const token = authHeader.replace('Bearer ', '');
@@ -90,9 +88,7 @@ function getSupabaseAuthClient(req: any): any {
 function getSupabaseAdmin(): any {
   if (!supabaseAdminClient) {
     const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
-    let envKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (envKey && envKey.length < 50) envKey = undefined; // Ignore truncated/invalid keys
-    const key = envKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
     if (!url || !key) {
       throw new Error(
         "Supabase environment details are missing in backend (VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
@@ -877,8 +873,7 @@ async function getOrCreatePriceIdFallback(stripe: Stripe): Promise<string> {
 const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
   console.log("Creating Stripe Checkout...");
   try {
-    const { businessId, planName, successUrl, cancelUrl, skipTrial, force_no_trial } = req.body;
-    const finalSkipTrial = skipTrial || force_no_trial;
+    const { businessId, planName, successUrl, cancelUrl, skipTrial } = req.body;
 
     // Validate request parameters
     if (!businessId) {
@@ -939,28 +934,19 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
       }
     }
 
-    // Resolve price ID dynamically from product IDs in environment
-    let isTerminal = planName === "TERMINAL";
-    let targetProductId = isTerminal ? process.env.STRIPE_TERMINAL_PRODUCT_ID : process.env.STRIPE_PRO_PRICE_ID;
-    let priceId = targetProductId; // By default assume it might be a price ID if it doesn't start with prod_
-
-    if (targetProductId && targetProductId.startsWith("prod_")) {
-      const pricesList = await stripe.prices.list({ product: targetProductId, active: true, limit: 1 });
-      if (pricesList.data.length > 0) {
-        priceId = pricesList.data[0].id;
-      } else {
-        console.warn("[Stripe] No active price found for product " + targetProductId);
-        priceId = ""; // Force fallback
-      }
+    // Verify Subscription Price ID exists
+    let priceId = process.env.STRIPE_PRO_PRICE_ID;
+    if (!priceId || priceId.trim() === "") {
+      priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem";
     }
 
-    if (!priceId) {
-      priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem"; // ultimate hardcoded fallback
-    }
+    const isTerminal = planName === "TERMINAL";
+    const terminalProductId =
+      process.env.STRIPE_TERMINAL_PRODUCT_ID || "prod_Uk3zSeOffcShqq";
 
     console.log(
-      "Using Resolved price for Stripe Checkout. IsTerminal:",
-      isTerminal, "Price ID:", priceId
+      "Using Resolved price/product for Stripe Checkout. IsTerminal:",
+      isTerminal,
     );
 
     const db = getSupabaseAdmin();
@@ -1045,13 +1031,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     );
 
     const hasUsedTrial = !!business.trial_started_at;
-    const isTrialing = !(hasUsedTrial || finalSkipTrial || isTerminal);
-    const subscriptionData = isTrialing ? { 
-      trial_period_days: 14, 
-      trial_settings: { end_behavior: { missing_payment_method: 'cancel' } } 
-    } : undefined;
-    console.log("hasUsedTrial:", hasUsedTrial, "finalSkipTrial:", finalSkipTrial, "isTerminal:", isTerminal);
-    console.log("Calculated subscriptionData:", subscriptionData);
+    const subscriptionData = (hasUsedTrial || skipTrial || isTerminal) ? {} : { trial_period_days: 14 };
 
     console.log(
       `Initiating stripe.checkout.sessions.create... (Trial Used previously: ${hasUsedTrial})`,
@@ -1064,18 +1044,44 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         );
       }
 
-      let lineItems: any[] = [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ];
+      let lineItems: any[] = [];
 
-      const sessionPayload = {
+      if (isTerminal) {
+        lineItems = [
+          {
+            price_data: {
+              currency: "eur",
+              product: terminalProductId,
+              recurring: { interval: "month" },
+              unit_amount: 2490,
+            },
+            quantity: 1,
+          },
+          {
+            price_data: {
+              currency: "eur",
+              product: terminalProductId,
+              unit_amount: 990,
+            },
+            quantity: 1,
+          },
+        ];
+      } else {
+        lineItems = [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ];
+      }
+
+      console.log(
+        `Attempting Stripe session creation for ${planName || "PRO"} plan`,
+      );
+      session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: "subscription",
         allow_promotion_codes: true,
-        payment_method_collection: isTrialing ? "if_required" : "always",
         line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
@@ -1087,10 +1093,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         },
         success_url: calculatedSuccessUrl,
         cancel_url: calculatedCancelUrl,
-      };
-      console.log("Attempting Stripe session creation for", planName || "PRO", "plan");
-      console.log("Stripe payload:", JSON.stringify(sessionPayload, null, 2));
-      session = await stripe.checkout.sessions.create(sessionPayload);
+      });
     } catch (checkoutErr: any) {
       const errMsg = checkoutErr.message || "";
       const isNoSuchPrice =
@@ -1113,7 +1116,6 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             customer: customerId,
             mode: "subscription",
             allow_promotion_codes: true,
-            payment_method_collection: isTrialing ? "if_required" : "always",
             line_items: [
               {
                 price: fallbackPriceId,
@@ -1892,12 +1894,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
     }
 
     // --- EVENT TYPE: customer.subscription.updated / customer.subscription.deleted ---
-    // --- EVENT TYPE: customer.subscription.created / updated / deleted / trial_will_end ---
     if (
-      event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted" ||
-      event.type === "customer.subscription.trial_will_end"
+      event.type === "customer.subscription.deleted"
     ) {
       const liveSubscription = event.data.object as Stripe.Subscription;
       const stripeSubId = liveSubscription.id;
@@ -2024,13 +2023,6 @@ const handleStripeWebhook = async (req: any, res: any) => {
           `[Webhook SaaS Sync Completed] SUBSCRIPTION UPDATED SUCCESSFULLY for Stripe Sub: ${stripeSubId}`,
         );
       }
-    }
-
-    // --- EVENT TYPE: payment_intent.payment_failed ---
-    if (event.type === "payment_intent.payment_failed") {
-      const paymentIntent = event.data.object;
-      console.log(`[Stripe Webhook payment_intent.payment_failed] Payment failed for intent ${paymentIntent.id}`);
-      // Optional: Notify the user or update specific logs
     }
 
     // --- EVENT TYPE: invoice.paid / invoice.payment_failed ---
