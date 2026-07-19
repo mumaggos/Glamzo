@@ -1070,18 +1070,6 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
           quantity: 1,
         },
       ];
-      if (isTerminal) {
-        lineItems.push({
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'Taxa de Ativação / Caução Equipamento'
-            },
-            unit_amount: 999
-          },
-          quantity: 1
-        });
-      }
 
       const sessionPayload = {
         customer: customerId,
