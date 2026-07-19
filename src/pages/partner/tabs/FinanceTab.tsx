@@ -366,7 +366,7 @@ export default function FinanceTab() {
     if (!business) return;
     const confirmCancel = window.confirm(
       `Tem a certeza absoluta de que deseja cancelar o seu plano ${
-        business?.selected_plan === "app_tablet" ? "PRO Terminal" : "Glamzo PRO"
+        (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) ? "PRO Terminal" : "Glamzo PRO"
       }?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;
