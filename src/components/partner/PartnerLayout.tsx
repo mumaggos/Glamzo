@@ -46,22 +46,36 @@ export default function PartnerLayout() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [businessHours, setBusinessHours] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [showStripeWarning, setShowStripeWarning] = useState(true);
+  const [showStripeWarning, setShowStripeWarning] = useState(() => {
+    return sessionStorage.getItem('stripeWarningShown') !== 'true';
+  });
 
   useEffect(() => {
     if (showStripeWarning) {
-      const t = setTimeout(() => setShowStripeWarning(false), 5000);
+      sessionStorage.setItem('stripeWarningShown', 'true');
+      const t = setTimeout(() => setShowStripeWarning(false), 8000);
       return () => clearTimeout(t);
     }
   }, [showStripeWarning]);
 
   // ESTADO DAS NOTIFICAÇÕES (Fixo por agora, mas depois ligamos à DB)
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Sistema Atualizado', desc: 'O teu terminal Glamzo Elite está online e otimizado.', time: 'Agora' }
-  ]);
+  const [notifications, setNotifications] = useState(() => {
+    const notifs = [];
+    if (sessionStorage.getItem('dismissed_welcome') !== 'true') {
+      notifs.push({ id: 1, title: 'Sistema Atualizado', desc: 'O teu terminal Glamzo Elite está online e otimizado.', time: 'Agora' });
+    }
+    return notifs;
+  });
 
   const dismissNotification = (id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+    if (id === 999) {
+      sessionStorage.setItem('dismissed_messages_count', unreadMessages.toString());
+    } else if (id === 888) {
+      sessionStorage.setItem('dismissed_disputes_count', notifications.find(n => n.id === 888)?.desc?.match(/\d+/)?.[0] || '1');
+    } else if (id === 1) {
+      sessionStorage.setItem('dismissed_welcome', 'true');
+    }
   };
 
   useEffect(() => {
@@ -140,15 +154,19 @@ export default function PartnerLayout() {
         setUnreadCountByCustomer(counts);
         
         // Add a notification for unread messages
-        setNotifications(prev => { const others = prev.filter(n => n.id !== 999); return [...others, {
-          id: 999,
-          title: "Novas Mensagens Recebidas",
-          desc: `Você tem ${messagesData.length} mensagem(s) não lida(s) de clientes.`,
-          time: "Agora"
-        }]; });
+        const dismissedMsgCount = parseInt(sessionStorage.getItem('dismissed_messages_count') || '0');
+        if (messagesData.length > dismissedMsgCount) {
+          setNotifications(prev => { const others = prev.filter(n => n.id !== 999); return [...others, {
+            id: 999,
+            title: "Novas Mensagens Recebidas",
+            desc: `Você tem ${messagesData.length} mensagem(s) não lida(s) de clientes.`,
+            time: "Agora"
+          }]; });
+        }
       } else {
         setUnreadMessages(0);
         setNotifications(prev => prev.filter(n => n.id !== 999));
+        sessionStorage.removeItem('dismissed_messages_count');
       }
 
       const { data: disputesData } = await supabase
@@ -157,14 +175,17 @@ export default function PartnerLayout() {
         .eq("business_id", bData.id)
         .in("status", ["open", "in_review"]);
       if (disputesData && disputesData.length > 0) {
-        setNotifications(prev => { const others = prev.filter(n => n.id !== 888); return [...others, {
-          id: 888,
-          title: "Disputas Abertas",
-          desc: `Existem ${disputesData.length} disputa(s) em aberto que requerem a sua atenção.`,
-          time: "Agora"
-        }]; });
+        if (sessionStorage.getItem('dismissed_disputes_count') !== disputesData.length.toString()) {
+          setNotifications(prev => { const others = prev.filter(n => n.id !== 888); return [...others, {
+            id: 888,
+            title: "Disputas Abertas",
+            desc: `Existem ${disputesData.length} disputa(s) em aberto que requerem a sua atenção.`,
+            time: "Agora"
+          }]; });
+        }
       } else {
         setNotifications(prev => prev.filter(n => n.id !== 888));
+        sessionStorage.removeItem('dismissed_disputes_count');
       }
 
     } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
