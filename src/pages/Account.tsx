@@ -47,7 +47,7 @@ export default function Account() {
                 .from('reward_coupons')
                 .select('id, used_at')
                 .eq('customer_id', user.id)
-                .eq('is_used', true)
+                .eq('used', true)
                 .order('used_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -55,7 +55,7 @@ export default function Account() {
               if (recentCoupon && recentCoupon.used_at) {
                  const usedAt = new Date(recentCoupon.used_at).getTime();
                  if (Date.now() - usedAt < 30 * 60 * 1000) {
-                   await supabase.from('reward_coupons').update({ is_used: false, used_at: null }).eq('id', recentCoupon.id);
+                   await supabase.from('reward_coupons').update({ used: false, used_at: null }).eq('id', recentCoupon.id);
                  }
               }
               toast.error("Pagamento cancelado. Reserva anulada e cupão devolvido.");
@@ -311,12 +311,11 @@ export default function Account() {
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + 6);
 
-      const { error: coupErr } = await supabase.from('coupons').insert({
-        user_id: user.id,
+      const { error: coupErr } = await supabase.from('reward_coupons').insert({
+        customer_id: user.id,
         code,
-        discount_amount: voucherValue,
-        expires_at: expiresAt.toISOString(),
-        status: 'active'
+        value: voucherValue,
+        expires_at: expiresAt.toISOString()
       });
       if (coupErr) throw coupErr;
 

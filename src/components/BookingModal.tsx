@@ -225,7 +225,7 @@ const [step, setStep] = useState(1);
       console.log("Resultado Reward Coupon:", rewardCoupon, rError);
 
       if (rewardCoupon) {
-        if (!rewardCoupon.is_used && new Date(rewardCoupon.expires_at) > new Date()) {
+        if (!rewardCoupon.used && new Date(rewardCoupon.expires_at) > new Date()) {
           setAppliedPromo({ ...rewardCoupon, type: 'reward', discount_value: rewardCoupon.value });
           setErrorMsg(null);
         } else {
@@ -345,7 +345,7 @@ const handleConfirmReservation = async () => {
       if (paymentMethod !== 'stripe' && appliedPromo && appliedPromo.type === 'reward') {
         try {
           await supabase.from('reward_coupons').update({
-            is_used: true,
+            used: true,
             used_at: new Date().toISOString()
           }).eq('code', appliedPromo.code).eq('customer_id', user.id);
         } catch (couponErr) {
@@ -405,7 +405,7 @@ const handleConfirmReservation = async () => {
           await supabase.from('bookings').delete().eq('id', data.id);
           if (appliedPromo && appliedPromo.type === 'reward') {
             await supabase.from('reward_coupons').update({
-              is_used: false,
+              used: false,
               used_at: null
             }).eq('code', appliedPromo.code).eq('customer_id', user.id);
           }

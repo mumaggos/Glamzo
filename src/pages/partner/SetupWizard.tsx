@@ -591,7 +591,7 @@ export default function SetupWizard() {
             name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
             category, logo_url: logoUrl, cover_url: coverUrl,
             latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
-            onboarding_step: 6, setup_step: 6
+            onboarding_step: 4, setup_step: 4
           });
         } catch (err) {
           console.warn('Autosave step 3 failed:', err);

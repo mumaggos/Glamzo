@@ -321,7 +321,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
                       {coupons.map((c) => {
-                        const isActive = !c.is_used && new Date(c.expires_at) > new Date();
+                        const isActive = !c.used && new Date(c.expires_at) > new Date();
                         return (
                           <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="py-3 px-4 font-mono font-bold text-slate-900">{c.code}</td>
@@ -329,10 +329,10 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                             <td className="py-3 px-4 text-slate-500">{new Date(c.expires_at).toLocaleDateString()}</td>
                             <td className="py-3 px-4 text-right">
                               <span className={`inline-block px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-tight ${
-                                c.is_used ? 'bg-slate-100 text-slate-500' : 
+                                c.used ? 'bg-slate-100 text-slate-500' : 
                                 (!isActive ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700')
                               }`}>
-                                {c.is_used ? 'Usado' : (!isActive ? 'Expirado' : 'Ativo')}
+                                {c.used ? 'Usado' : (!isActive ? 'Expirado' : 'Ativo')}
                               </span>
                             </td>
                           </tr>

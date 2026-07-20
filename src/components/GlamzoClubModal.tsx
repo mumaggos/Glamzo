@@ -325,7 +325,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {coupons.map(c => {
-                      const isActive = !c.is_used && new Date(c.expires_at) > new Date();
+                      const isActive = !c.used && new Date(c.expires_at) > new Date();
                       return (
                         <div key={c.id} className={`border rounded-2xl p-4 flex justify-between items-center ${isActive ? 'bg-white border-purple-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
                           <div>
@@ -334,7 +334,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
                           </div>
                           <div className="text-right">
                             <span className="block font-black text-purple-600 text-lg">{c.value}€</span>
-                            <span className="text-[10px] font-bold uppercase text-slate-400">{c.is_used ? 'Usado' : (!isActive ? 'Expirado' : 'Ativo')}</span>
+                            <span className="text-[10px] font-bold uppercase text-slate-400">{c.used ? 'Usado' : (!isActive ? 'Expirado' : 'Ativo')}</span>
                           </div>
                         </div>
                       );
