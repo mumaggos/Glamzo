@@ -1047,8 +1047,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     const hasUsedTrial = !!business.trial_started_at;
     const isTrialing = !(hasUsedTrial || finalSkipTrial || isTerminal);
     const subscriptionData = isTrialing ? { 
-      trial_period_days: 14, 
-      trial_settings: { end_behavior: { missing_payment_method: 'cancel' } } 
+       trial_period_days: 14
     } : undefined;
     console.log("hasUsedTrial:", hasUsedTrial, "finalSkipTrial:", finalSkipTrial, "isTerminal:", isTerminal);
     console.log("Calculated subscriptionData:", subscriptionData);
@@ -1087,7 +1086,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         customer: customerId,
         mode: "subscription",
         allow_promotion_codes: true,
-        payment_method_collection: isTrialing ? "if_required" : "always",
+        payment_method_collection: "always",
         line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
@@ -1125,7 +1124,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             customer: customerId,
             mode: "subscription",
             allow_promotion_codes: true,
-            payment_method_collection: isTrialing ? "if_required" : "always",
+            payment_method_collection: "always",
             line_items: [
               {
                 price: fallbackPriceId,
@@ -2086,7 +2085,8 @@ const handleStripeWebhook = async (req: any, res: any) => {
                // --- AFFILIATE PAYOUT LOGIC ---
                try {
                  const invoiceAmountPaid = (invoice as any).amount_paid || 0;
-                 if (invoiceAmountPaid > 0) {
+                 const billingReason = (invoice as any).billing_reason;
+                 if (invoiceAmountPaid > 0 && billingReason !== 'subscription_create') {
                    const { data: referral } = await db
                      .from('affiliate_referrals')
                      .select('*')

@@ -474,7 +474,13 @@ export default function Account() {
   };
 
   useEffect(() => {
-    if (profile) { setFullName(profile.full_name || ''); setAvatarUrl(profile.avatar_url || ''); setPhone(profile.phone || ''); }
+    if (profile) { 
+      setFullName(profile.full_name || ''); 
+      setAvatarUrl(profile.avatar_url || ''); 
+      setPhone(profile.phone || ''); 
+      setGlamzoPoints(profile.glamzo_points || 0);
+      setWalletBalance(profile.wallet_balance || profile.affiliate_balance || 0);
+    }
     if (user) setEmail(user.email || '');
   }, [profile, user]);
 
@@ -925,7 +931,7 @@ export default function Account() {
               profile={profile}
               currentPoints={currentPointsBalance}
               currentBalance={currentAffiliateBalance}
-              onPointsUpdate={() => loadUserRewards()} 
+              onPointsUpdate={() => { loadUserRewards(); refreshProfile(); }} 
             />
       {reviewModalOpen && reviewBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
