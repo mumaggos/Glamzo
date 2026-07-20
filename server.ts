@@ -2577,6 +2577,62 @@ app.post('/api/admin/impersonate', express.json(), async (req, res) => {
   }
 });
 
+// Admin Lead Management Endpoints
+app.post('/api/admin/leads/import', express.json({ limit: '10mb' }), async (req, res) => {
+  try {
+    const { leads } = req.body;
+    if (!leads || !Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'Invalid leads payload' });
+    }
+    
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('leads').upsert(leads, { onConflict: 'telefone', ignoreDuplicates: true }).select();
+    
+    if (error) throw error;
+    res.json({ success: true, count: data?.length || 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/leads/distribute', express.json(), async (req, res) => {
+  try {
+    const { agentId, count, senhaAcesso } = req.body;
+    if (!agentId || !count || !senhaAcesso) {
+      return res.status(400).json({ error: 'Missing parameters' });
+    }
+    
+    const db = getSupabaseAdmin();
+    
+    const { data: leadsToAssign, error: fetchError } = await db
+      .from('leads')
+      .select('id')
+      .is('vendedor_id', null)
+      .limit(count);
+      
+    if (fetchError) throw fetchError;
+    
+    if (!leadsToAssign || leadsToAssign.length === 0) {
+      return res.status(400).json({ error: 'No available leads found' });
+    }
+
+    const leadIds = leadsToAssign.map(l => l.id);
+
+    const { data: updatedLeads, error: updateError } = await db
+      .from('leads')
+      .update({ vendedor_id: agentId, senha_acesso: senhaAcesso })
+      .in('id', leadIds)
+      .select();
+      
+    if (updateError) throw updateError;
+    
+    res.json({ success: true, count: updatedLeads?.length || 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 async function startServer() {
   app.get("/api/availability/:businessId", async (req, res) => {

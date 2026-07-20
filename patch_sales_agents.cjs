@@ -2,19 +2,15 @@ const fs = require('fs');
 let content = fs.readFileSync('src/components/SalesAgentsTab.tsx', 'utf8');
 
 content = content.replace(
-  /\.select\('agent_id, selected_plan'\);/,
-  `.select('agent_id, selected_plan, tablet_requested');`
+  /import \{ SalesAgent \} from '\.\.\/types';/,
+  `import { SalesAgent } from '../types';\nimport GestaoLeads from './GestaoLeads';`
 );
 
 content = content.replace(
-  /if \(business\.selected_plan === 'pro' \|\| business\.selected_plan === 'app_tablet'\) \{[\s\S]*?\} else if \(business\.selected_plan === 'pro_terminal' \|\| business\.selected_plan\?\.includes\('terminal'\)\) \{[\s\S]*?\}/,
-  `if (business.selected_plan === 'app_tablet' || business.selected_plan === 'pro_terminal' || business.selected_plan?.includes('terminal') || business.tablet_requested) {
-              p.terminalStores += 1;
-              commission = 5;
-            } else {
-              p.proStores += 1;
-              commission = 2.5;
-            }`
+  /<div className="space-y-6 animate-fade-in">\s*<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">/,
+  `<div className="space-y-6 animate-fade-in">
+      <GestaoLeads agents={agents} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 pt-8">`
 );
 
 fs.writeFileSync('src/components/SalesAgentsTab.tsx', content);

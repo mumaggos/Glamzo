@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Plus, Copy, Check, Users, Target, Link as LinkIcon, BadgeEuro, X, Trash2 } from 'lucide-react';
 import { SalesAgent } from '../types';
+import GestaoLeads from './GestaoLeads';
 
 export default function SalesAgentsTab() {
   const [agents, setAgents] = useState<SalesAgent[]>([]);
@@ -173,7 +174,8 @@ export default function SalesAgentsTab() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <GestaoLeads agents={agents} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 pt-8">
         <div>
           <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Equipas de Vendas</h3>
           <p className="text-xs text-slate-600 mt-0.5">Crie equipas e adicione comerciais para monitorizar as inscrições.</p>

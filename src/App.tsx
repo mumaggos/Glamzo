@@ -35,6 +35,7 @@ const MarketingTab = lazy(() => import('./pages/partner/tabs/MarketingTab'));
 const MessagesTab = lazy(() => import('./pages/partner/tabs/MessagesTab'));
 const TabletTab = lazy(() => import('./pages/partner/tabs/TabletTab'));
 const Admin = lazy(() => import('./pages/Admin'));
+const ChamadasCRM = lazy(() => import('./pages/ChamadasCRM'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const SuperAdminLogistics = lazy(() => import('./pages/admin/SuperAdminLogistics'));
 const StaffLogin = lazy(() => import('./pages/staff/StaffLogin'));
