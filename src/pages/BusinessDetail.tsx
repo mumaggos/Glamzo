@@ -295,7 +295,7 @@ const { slug } = useParams<{ slug: string }>();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>;
   if (errorMsg || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC] font-bold text-slate-500">{errorMsg || "Loja não encontrada"}</div>;
 
-  let finalRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 5.0;
+  let finalRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length : 5.0;
   let finalReviewsCount = reviews.length;
 
   const now = new Date();
@@ -556,11 +556,11 @@ const { slug } = useParams<{ slug: string }>();
                   <>
                     <div className="divide-y divide-slate-100">
                       {reviews
-                        .filter(r => reviewFilterRating === null || r.rating === reviewFilterRating)
+                        .filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating)
                         .sort((a, b) => {
                           if (reviewSortOrder === 'recent') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-                          if (reviewSortOrder === 'highest') return b.rating - a.rating;
-                          if (reviewSortOrder === 'lowest') return a.rating - b.rating;
+                          if (reviewSortOrder === 'highest') return Number(b.rating) - Number(a.rating);
+                          if (reviewSortOrder === 'lowest') return Number(a.rating) - Number(b.rating);
                           return 0;
                         })
                         .slice(0, showAllReviews ? undefined : 3)
@@ -577,7 +577,7 @@ const { slug } = useParams<{ slug: string }>();
                               </div>
                             </div>
                             <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className={`w-3.5 h-3.5 ${star <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />))}
+                              {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className={`w-3.5 h-3.5 ${star <= Number(r.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />))}
                             </div>
                           </div>
                           {r.comment && <p className="text-slate-600 mt-3 text-xs leading-relaxed">{r.comment}</p>}
@@ -607,13 +607,13 @@ const { slug } = useParams<{ slug: string }>();
                         </div>
                       ))}
                     </div>
-                    {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length === 0 && (
+                    {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length === 0 && (
                        <div className="text-center py-6 text-slate-500 text-xs">Nenhuma avaliação encontrada com este filtro.</div>
                     )}
-                    {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length > 3 && !showAllReviews && (
+                    {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length > 3 && !showAllReviews && (
                       <div className="mt-2 pt-4 border-t border-slate-100 flex justify-center">
                         <button onClick={() => setShowAllReviews(true)} className="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-xl transition-colors">
-                          Ver todas as {(reviews || []).filter(r => reviewFilterRating === null || r.rating === reviewFilterRating).length} avaliações
+                          Ver todas as {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length} avaliações
                         </button>
                       </div>
                     )}

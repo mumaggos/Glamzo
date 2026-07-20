@@ -712,10 +712,6 @@ export default function StaffTab() {
                     </div>
                   </div>
                 )}
-
-                <p className="text-[10px] text-slate-400 mt-1 font-normal font-sans">
-                  Separe os índices por vírgula. 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado.
-                </p>
               </div>
 
               <div className="flex items-center gap-3 pt-2">

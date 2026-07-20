@@ -76,14 +76,14 @@ export default function PartnerReviewsTab() {
   };
 
   const filteredReviews = reviews.filter(r => {
-    if (filterRating && r.rating !== filterRating) return false;
+    if (filterRating && Number(r.rating) !== filterRating) return false;
     if (filterReplied === 'replied' && !r.reply_text) return false;
     if (filterReplied === 'pending' && r.reply_text) return false;
     return true;
   }).sort((a, b) => {
     if (sortOrder === 'recent') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    if (sortOrder === 'highest') return b.rating - a.rating;
-    if (sortOrder === 'lowest') return a.rating - b.rating;
+    if (sortOrder === 'highest') return Number(b.rating) - Number(a.rating);
+    if (sortOrder === 'lowest') return Number(a.rating) - Number(b.rating);
     return 0;
   });
 
@@ -135,7 +135,7 @@ export default function PartnerReviewsTab() {
                 </div>
                 <div className="flex items-center gap-1">
                   {[1,2,3,4,5].map(s => (
-                    <Star key={s} className={`w-4 h-4 ${s <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />
+                    <Star key={s} className={`w-4 h-4 ${s <= Number(r.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />
                   ))}
                 </div>
               </div>

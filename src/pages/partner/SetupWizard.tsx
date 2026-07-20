@@ -538,15 +538,15 @@ export default function SetupWizard() {
       }
 
     } else if (step === 3) {
-      if (services.length === 0 && !setupByGlamzo) {
-        setErrorMsg('Adicione pelo menos um serviço ou selecione "A Glamzo configura por mim" para prosseguir.');
+      if (services.length === 0) {
+        setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
         return;
       }
       try {
         const updateData = {
           onboarding_step: 3,
           setup_step: 4,
-          manual_setup_requested: setupByGlamzo || business.manual_setup_requested
+          manual_setup_requested: business.manual_setup_requested
         };
         await supabase.from('businesses').update(updateData).eq('id', business.id);
         setBusiness({ ...business, ...updateData });
@@ -1198,16 +1198,6 @@ export default function SetupWizard() {
               >
                 Adicionar Serviço
               </button>
-            </div>
-            
-            <div className="mt-6 p-4 border border-purple-200 bg-purple-50 rounded-xl flex items-center gap-3 cursor-pointer" onClick={() => setSetupByGlamzo(!setupByGlamzo)}>
-              <div className={`w-5 h-5 rounded border flex items-center justify-center ${setupByGlamzo ? 'bg-purple-600 border-purple-600' : 'bg-white border-slate-300'}`}>
-                {setupByGlamzo && <Check className="w-3 h-3 text-white" />}
-              </div>
-              <div className="flex flex-col">
-                 <span className="text-sm font-bold text-purple-900">A Glamzo configura por mim</span>
-                 <span className="text-xs text-purple-700">Não quer perder tempo? Nós adicionamos os seus serviços gratuitamente.</span>
-              </div>
             </div>
           </div>
         )}

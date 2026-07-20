@@ -1782,7 +1782,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                   await EmailService.sendSubscriptionActivatedEmail(
                     ownerEmail,
                     {
-                      planName: "Glamzo PRO",
+                      planName: planDbName,
                       activationDate: new Intl.DateTimeFormat("pt-PT").format(
                         new Date(),
                       ),

@@ -199,7 +199,7 @@ export default function Home() {
          
         const processed = loadedBiz.map(b => { 
           const bReviews = revDataFinal.filter((r: any) => r.business_id === b.id); 
-          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / bReviews.length : 0; 
+          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / bReviews.length : 0; 
            
           const bServices = srvData.filter((s: any) => s.business_id === b.id); 
           let realStartPrice = 0; 

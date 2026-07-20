@@ -116,7 +116,7 @@ export async function submitReview(reviewInput: Omit<Review, 'id' | 'created_at'
         
       if (allReviews && allReviews.length > 0) {
         const newCount = allReviews.length;
-        const newRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / newCount;
+        const newRating = allReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / newCount;
         
         await supabase
           .from('businesses')

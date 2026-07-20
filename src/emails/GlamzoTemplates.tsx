@@ -226,10 +226,10 @@ export const NewBookingEmail = ({ customerName, serviceName, date, time, price }
 export const SubscriptionActivatedEmail = ({ planName, activationDate, nextBillingDate, dashboardUrl }: any) => (
   <Html>
     <Head />
-    <Preview>Bem-vindo ao Glamzo PRO!</Preview>
+    <Preview>Bem-vindo ao {planName}!</Preview>
     <Body style={mainStyles}>
       <Container style={containerStyles}>
-        <Heading style={{...headingStyles, color: PRIMARY_COLOR}}>Glamzo PRO</Heading>
+        <Heading style={{...headingStyles, color: PRIMARY_COLOR}}>{planName}</Heading>
         <Heading style={headingStyles}>Subscrição Ativa 🚀</Heading>
         <Text style={textStyles}>A sua subscrição ao <strong>{planName}</strong> foi ativada com sucesso!</Text>
         
@@ -248,13 +248,13 @@ export const SubscriptionActivatedEmail = ({ planName, activationDate, nextBilli
 );
 
 // 7. Fatura da Subscrição (Parceiro)
-export const InvoiceEmail = ({ amount, date, invoiceNumber, downloadUrl }: any) => (
+export const InvoiceEmail = ({ planName = "Glamzo PRO", amount, date, invoiceNumber, downloadUrl }: any) => (
   <Html>
     <Head />
     <Preview>Fatura da Subscrição Glamzo: {invoiceNumber}</Preview>
     <Body style={mainStyles}>
       <Container style={containerStyles}>
-        <Heading style={{...headingStyles, color: PRIMARY_COLOR}}>Glamzo PRO</Heading>
+        <Heading style={{...headingStyles, color: PRIMARY_COLOR}}>{planName}</Heading>
         <Heading style={headingStyles}>Acesso à sua Fatura</Heading>
         <Text style={textStyles}>O pagamento da sua subscrição foi processado com sucesso. A fatura já se encontra disponível.</Text>
         
@@ -273,21 +273,21 @@ export const InvoiceEmail = ({ amount, date, invoiceNumber, downloadUrl }: any) 
 );
 
 // 8. Falha de Pagamento (Parceiro)
-export const PaymentFailedEmail = ({ explanation, updatePaymentUrl, suspensionDate }: any) => (
+export const PaymentFailedEmail = ({ planName = "Glamzo PRO", explanation, updatePaymentUrl, suspensionDate }: any) => (
   <Html>
     <Head />
     <Preview>Aviso: Falha no pagamento da subscrição</Preview>
     <Body style={mainStyles}>
       <Container style={containerStyles}>
-        <Heading style={{...headingStyles, color: '#ef4444'}}>Glamzo PRO</Heading>
+        <Heading style={{...headingStyles, color: '#ef4444'}}>{planName}</Heading>
         <Heading style={headingStyles}>Método de Pagamento Recusado ⚠️</Heading>
-        <Text style={textStyles}>Não conseguimos processar a renovação da sua subscrição Glamzo PRO.</Text>
+        <Text style={textStyles}>Não conseguimos processar a renovação da sua subscrição {planName}.</Text>
         <Text style={{...textStyles, backgroundColor: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '6px' }}>
           {explanation}
         </Text>
         
         <Text style={textStyles}>
-          Por favor, atualize os seus dados de pagamento antes de <strong>{suspensionDate}</strong> para evitar a suspensão do acesso às funcionalidades PRO do seu salão.
+          Por favor, atualize os seus dados de pagamento antes de <strong>{suspensionDate}</strong> para evitar a suspensão do acesso às funcionalidades do seu salão.
         </Text>
         
         <Button href={updatePaymentUrl} style={buttonStyles}>Atualizar Pagamento</Button>

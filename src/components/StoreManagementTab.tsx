@@ -90,12 +90,22 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
       if (session) {
         localStorage.setItem('admin_impersonate_backup_session', JSON.stringify(session));
       }
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: targetEmail,
-        options: { shouldCreateUser: false }
+      
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId, targetEmail })
       });
-      if (error) throw error;
-      toast.success(`Magic link enviado para ${targetEmail} para Impersonation`);
+      
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.error || 'Falha ao obter link de impersonate');
+      
+      if (payload.link) {
+        toast.success(`Entrando como ${targetEmail}...`);
+        window.location.href = payload.link;
+      } else {
+        throw new Error('Link não retornado');
+      }
     } catch (err: any) {
       toast.error(err.message || 'Erro no impersonate');
     } finally {

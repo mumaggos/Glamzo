@@ -183,7 +183,16 @@ export default function SubscriptionTab() {
     0
   );
 
-  const totalReceivedVolumeOnline = ledgers
+  const totalReceivedVolumeOnline = filteredLedgers
+    .filter((item) => item.payment_method === "stripe")
+    .reduce(
+      (sum, item) =>
+        sum +
+        Number(item.business_amount || item.amount_total || item.amount || 0),
+      0
+    );
+
+  const totalReceivedVolumeOnlineLifetime = ledgers
     .filter((item) => item.payment_method === "stripe")
     .reduce(
       (sum, item) =>
@@ -198,7 +207,7 @@ export default function SubscriptionTab() {
 
   const availableBalanceToWithdraw = Math.max(
     0,
-    totalReceivedVolumeOnline - totalPayoutTransferred
+    totalReceivedVolumeOnlineLifetime - totalPayoutTransferred
   );
 
   const notifyTerminal = (title: string, msg: string) => {

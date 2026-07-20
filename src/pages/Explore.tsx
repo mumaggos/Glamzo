@@ -343,7 +343,7 @@ export default function Explore() {
       distance = calculateDistanceInKm(userCoords.latitude, userCoords.longitude, lat, lng);
     }
     const bizReviews = reviews.filter((r) => r.business_id === b.id);
-    let rating = bizReviews.length > 0 ? bizReviews.reduce((sum, r) => sum + r.rating, 0) / bizReviews.length : 0;
+    let rating = bizReviews.length > 0 ? bizReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / bizReviews.length : 0;
     let reviewsCount = bizReviews.length;
     const bServices = services.filter((s) => s.business_id === b.id);
     let realStartPrice = 0;

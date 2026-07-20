@@ -169,7 +169,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           </div>
           {reviews.length > 0 ? (
             <>
-              <h3 className="text-3xl font-black text-slate-900 mt-1">{(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}</h3>
+              <h3 className="text-3xl font-black text-slate-900 mt-1">{(reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1)}</h3>
               <p className="text-xs font-medium text-slate-500 mt-2">Média de {reviews.length} avaliações</p>
             </>
           ) : (
