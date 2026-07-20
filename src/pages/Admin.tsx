@@ -22,7 +22,7 @@ import {
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
   Trash2, Award, Coins, Scale, Briefcase, BarChart, Settings, Mail, BadgeAlert, Sparkles, Plus,
   X, Calendar, Clock, MapPin, Globe, ExternalLink, Menu, FileText, LogOut
-, CreditCard, ArrowRightLeft, Package } from 'lucide-react';
+, CreditCard, ArrowRightLeft, Package, Bell } from 'lucide-react';
 import { 
   BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart as RLineChart, Line, AreaChart, Area, PieChart, Pie, Cell, Legend
@@ -63,6 +63,7 @@ const [walletWithdrawals, setWalletWithdrawals] = useState<any[]>([]);
   
   // Custom operational state extensions (local state backup for unrepresented databases features)
   const [disputes, setDisputes] = useState<any[]>([]);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [adminNotes, setAdminNotes] = useState<{[key: string]: string}>({});
   const [couponsList, setCouponsList] = useState<any[]>(() => financeService.getAdminCoupons());
 
@@ -503,6 +504,9 @@ const [walletWithdrawals, setWalletWithdrawals] = useState<any[]>([]);
           .order('created_at', { ascending: false });
 
         if (!disputesErr && disputesData) {
+        const { count, error: msgErr } = await supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", "admin").eq("is_read", false);
+        if (!msgErr && count !== null) { setUnreadMessagesCount(count); }
+
           setDisputes(disputesData);
         }
       } catch (err) {
@@ -1450,8 +1454,17 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
               </h2>
             </div>
           </div>
-
-          <button
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab("support")}
+              className="relative p-2 text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+              {(unreadMessagesCount > 0 || disputes.filter(d => d.status === "open" || d.status === "in_review").length > 0) && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-50 animate-pulse"></span>
+              )}
+            </button>
+            <button
             onClick={syncAdminDatasets}
             disabled={loading}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-600 rounded-xl text-xs font-bold font-mono transition-all border border-slate-200 cursor-pointer"
@@ -1459,6 +1472,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Sincronizar Produção</span>
           </button>
+          </div>
         </header>
 
         {/* View container with spacing to avoid overlaps */}

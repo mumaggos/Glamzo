@@ -151,6 +151,22 @@ export default function PartnerLayout() {
         setNotifications(prev => prev.filter(n => n.id !== 999));
       }
 
+      const { data: disputesData } = await supabase
+        .from("disputes")
+        .select("id")
+        .eq("business_id", bData.id)
+        .in("status", ["open", "in_review"]);
+      if (disputesData && disputesData.length > 0) {
+        setNotifications(prev => { const others = prev.filter(n => n.id !== 888); return [...others, {
+          id: 888,
+          title: "Disputas Abertas",
+          desc: `Existem ${disputesData.length} disputa(s) em aberto que requerem a sua atenção.`,
+          time: "Agora"
+        }]; });
+      } else {
+        setNotifications(prev => prev.filter(n => n.id !== 888));
+      }
+
     } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
   };
 
@@ -161,6 +177,10 @@ export default function PartnerLayout() {
     const channel = supabase.channel('partner_layout_messages')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.owner_id}` }, payload => {
         // Trigger layout refresh on any message insert/update (like marking as read)
+        loadLayoutData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `business_id=eq.${business.id}` }, payload => {
+        // Trigger layout refresh on any dispute update
         loadLayoutData();
       }).subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -280,8 +300,8 @@ export default function PartnerLayout() {
 
       <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
         {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && showStripeWarning && (
-          <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
-            ⚠️ Ação Necessária: A sua conta bancária foi desconectada. <Link to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2">Clique aqui para voltar a conectar e receber os seus fundos.</Link>
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
+            🚀 Deixe os seus clientes pagar online! <Link to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2 hover:text-rose-100 transition-colors">Configure hoje a sua conta Stripe Connect e receba com segurança.</Link>
           </div>
         )}
         <div className="relative z-[99999] h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">

@@ -303,6 +303,9 @@ export default function AgendaTab() {
                      {selectedBooking.booking_status !== "completed" && selectedBooking.booking_status !== "cancelled" && (
                        <button onClick={() => handleUpdateBookingStatus("cancelled")} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">Cancelar Marcação</button>
                      )}
+                     <button onClick={() => setDisputeModalOpen(true)} className="w-full bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">
+                       <ShieldAlert className="w-4 h-4" /> Abrir Disputa / Problema
+                     </button>
                    </>
                  );
                })()}

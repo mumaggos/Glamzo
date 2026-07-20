@@ -1,20 +1,21 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/pages/Admin.tsx', 'utf8');
-
-// Add Import
-code = code.replace("import ClientXRayModal from '../components/ClientXRayModal';", "import ClientXRayModal from '../components/ClientXRayModal';\nimport AllCouponsTab from '../components/AllCouponsTab';\nimport { Gift } from 'lucide-react';");
-
-// Add Tab
-const tabString = `                { id: 'club', label: 'Gestão de Cupões', icon: Gift },`;
-code = code.replace("{ id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },", "{ id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },\n" + tabString);
-
-// Add Tab Component Render
-const tabRender = `
-              {activeTab === 'club' && (
-                <AllCouponsTab />
+let content = fs.readFileSync('src/pages/Admin.tsx', 'utf8');
+content = content.replace(
+  /<\/div>\s*<\/div>\s*<button\s*onClick=\{syncAdminDatasets\}\s*disabled=\{loading\}/g,
+  `</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab("support")}
+              className="relative p-2 text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+              {(unreadMessagesCount > 0 || disputes.filter(d => d.status === "open" || d.status === "in_review").length > 0) && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-slate-50 animate-pulse"></span>
               )}
-`;
-
-code = code.replace("{/* ==================================================== */}\n              {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}", tabRender + "\n              {/* ==================================================== */}\n              {/* SECTION 5: GLAMZO TERMINAL LOGISTICS                 */}");
-
-fs.writeFileSync('src/pages/Admin.tsx', code);
+            </button>
+            <button
+            onClick={syncAdminDatasets}
+            disabled={loading}`
+);
+fs.writeFileSync('src/pages/Admin.tsx', content);
