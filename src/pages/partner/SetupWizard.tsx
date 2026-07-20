@@ -130,7 +130,7 @@ export default function SetupWizard() {
   useEffect(() => {
     if (loading) return;
     const draft = { step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo };
-    localStorage.setItem('setup_wizard_draft', JSON.stringify(draft));
+    // localStorage removed
   }, [step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo, loading]);
 
   const handleHourChange = (weekday: number, field: string, value: any) => {
@@ -329,9 +329,7 @@ export default function SetupWizard() {
         }
         
         
-        const draftStr = localStorage.getItem('setup_wizard_draft');
-        let draft: any = null;
-        try { draft = draftStr ? JSON.parse(draftStr) : null; } catch (e) {}
+        const draft: any = null;
 
         setName(currentBiz.name || draft?.name || '');
         setPhone(currentBiz.phone || draft?.phone || '');

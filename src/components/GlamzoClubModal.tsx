@@ -119,7 +119,8 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
       });
 
       // Update Profile
-      await supabase.from('profiles').update({ glamzo_points: currentPoints - pts }).eq('id', user.id);
+      const { error: profErr } = await supabase.from('profiles').update({ glamzo_points: currentPoints - pts }).eq('id', user.id);
+      if (profErr) throw profErr;
 
       try {
         await fetch('/api/emails/send', {
@@ -175,7 +176,8 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
       if (error) throw error;
 
       // Reset balance
-      await supabase.from('profiles').update({ affiliate_balance: 0 }).eq('id', user.id);
+      const { error: resetErr } = await supabase.from('profiles').update({ affiliate_balance: 0, wallet_balance: 0 }).eq('id', user.id);
+      if (resetErr) throw resetErr;
       
       setMessage({ type: 'success', text: 'Pedido de levantamento registado com sucesso.' });
       setWithdrawDetail('');
@@ -194,10 +196,11 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
     setMessage(null);
     try {
       const ptsToGain = currentBalance * 100;
-      await supabase.from('profiles').update({ 
-        affiliate_balance: 0,
+      const { error: ptsUpdateErr } = await supabase.from('profiles').update({ 
+        affiliate_balance: 0, wallet_balance: 0,
         glamzo_points: currentPoints + ptsToGain
       }).eq('id', user.id);
+      if (ptsUpdateErr) throw ptsUpdateErr;
 
       const expDate = new Date();
       expDate.setFullYear(expDate.getFullYear() + 1);

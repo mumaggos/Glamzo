@@ -6,10 +6,11 @@ import { supabase } from "../../../lib/supabase";
 
 interface PartnerContextType {
   business: Business | null;
+  loadLayoutData: () => void;
 }
 
 export default function SettingsTab() {
-  const { business } = useOutletContext<PartnerContextType>();
+  const { business, loadLayoutData } = useOutletContext<PartnerContextType>();
   const [activeTab, setActiveTab] = useState("dados");
 
   const [savingDados, setSavingDados] = useState(false);
@@ -39,6 +40,20 @@ export default function SettingsTab() {
     phone: business?.phone || "",
     email: business?.email || "",
   });
+
+  useEffect(() => {
+    if (business) {
+      setFormData({
+        name: business.name || "",
+        address: business.address || "",
+        door_number: business.door_number || "",
+        postal_code: business.postal_code || "",
+        city: business.city || "",
+        phone: business.phone || "",
+        email: business.email || "",
+      });
+    }
+  }, [business]);
 
   const [passwordData, setPasswordData] = useState({
     current: "",
@@ -75,7 +90,7 @@ export default function SettingsTab() {
     try {
       const { error } = await supabase.from('businesses').update(formData).eq('id', business.id);
       if (error) throw error;
-      showMessage('success', 'Dados da loja atualizados com sucesso.');
+      showMessage('success', 'Dados da loja atualizados com sucesso.'); loadLayoutData();
     } catch (err) {
       showMessage('error', 'Erro ao atualizar dados da loja.');
     } finally {
