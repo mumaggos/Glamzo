@@ -45,7 +45,7 @@ export default function SalesAgentsTab() {
 
       const { data: businessesData, error: businessesError } = await supabase
         .from('businesses')
-        .select('agent_id, selected_plan');
+        .select('agent_id, selected_plan, tablet_requested');
         
       if (!businessesError && businessesData) {
         const perfData: Record<string, any> = {};
@@ -60,12 +60,12 @@ export default function SalesAgentsTab() {
             p.totalStores += 1;
             
             let commission = 2; 
-            if (business.selected_plan === 'pro' || business.selected_plan === 'app_tablet') {
-              p.proStores += 1;
-              commission = 2.5;
-            } else if (business.selected_plan === 'pro_terminal' || business.selected_plan?.includes('terminal')) {
+            if (business.selected_plan === 'app_tablet' || business.selected_plan === 'pro_terminal' || business.selected_plan?.includes('terminal') || business.tablet_requested) {
               p.terminalStores += 1;
               commission = 5;
+            } else {
+              p.proStores += 1;
+              commission = 2.5;
             }
             
             p.totalCommission += commission;
@@ -235,9 +235,9 @@ export default function SalesAgentsTab() {
                         <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           <th className="p-4">Comercial</th>
                           <th className="p-4 text-center">Cliques</th>
-                          <th className="p-4 text-center">Lojas</th>
-                          <th className="p-4 text-center">Pro</th>
-                          <th className="p-4 text-center">Terminal</th>
+                          <th className="p-4 text-center">Inscrições</th>
+                          <th className="p-4 text-center">Plano PRO</th>
+                          <th className="p-4 text-center">PRO + Terminal</th>
                           <th className="p-4 text-right">Faturado</th>
                           <th className="p-4 text-right">Link</th>
                         </tr>
@@ -248,7 +248,12 @@ export default function SalesAgentsTab() {
                           return (
                             <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="p-4 font-bold text-slate-900">{agent.name}</td>
-                              <td className="p-4 text-center font-bold text-blue-600">{agent.clicks_count}</td>
+                              <td className="p-4 text-center font-bold text-blue-600">
+    <div className="flex flex-col items-center">
+      <span>{agent.clicks_count}</span>
+      <span className="text-[9px] text-slate-400 font-normal">cliques</span>
+    </div>
+  </td>
                               <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
                               <td className="p-4 text-center font-bold text-slate-700">{perf.proStores}</td>
                               <td className="p-4 text-center font-bold text-slate-700">{perf.terminalStores}</td>
@@ -294,7 +299,12 @@ export default function SalesAgentsTab() {
                       return (
                         <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-bold text-slate-900">{agent.name}</td>
-                          <td className="p-4 text-center font-bold text-blue-600">{agent.clicks_count}</td>
+                          <td className="p-4 text-center font-bold text-blue-600">
+    <div className="flex flex-col items-center">
+      <span>{agent.clicks_count}</span>
+      <span className="text-[9px] text-slate-400 font-normal">cliques</span>
+    </div>
+  </td>
                           <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
                           <td className="p-4 text-center font-bold text-slate-700">{perf.proStores}</td>
                           <td className="p-4 text-center font-bold text-slate-700">{perf.terminalStores}</td>
