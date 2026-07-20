@@ -1260,7 +1260,11 @@ export default function SetupWizard() {
               </div>
             )}
             
-            <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
+            {selectedPlan === 'PRO' ? (
+    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
+  ) : (
+    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e concluir a adesão.</p>
+  )}
             
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
               <button

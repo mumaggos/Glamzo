@@ -63,7 +63,11 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
       const [histRes, coupRes, refRes, withRes] = await Promise.all([
         supabase.from('points_history').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('reward_coupons').select('*').eq('customer_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('affiliate_referrals').select('*, business:businesses(name)').eq('referrer_id', user.id).order('created_at', { ascending: false }),
+        fetch('/api/user/affiliate-referrals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] })),
         supabase.from('withdrawal_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
       ]);
       setPointsHistory(histRes.data || []);
