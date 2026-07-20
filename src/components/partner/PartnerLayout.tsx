@@ -7,6 +7,33 @@ import { Business } from "../../types";
 import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 
+
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
+    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  } catch (err) {
+    console.error("Audio play failed:", err);
+  }
+};
+
 export default function PartnerLayout() {
   const { user, profile, signOut, loading: authLoading } = useAuth();
 
@@ -197,7 +224,16 @@ export default function PartnerLayout() {
     if (!business) return;
     const channel = supabase.channel('partner_layout_messages')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.owner_id}` }, payload => {
+        if (payload.eventType === 'INSERT') {
+          playNotificationSound();
+        }
         // Trigger layout refresh on any message insert/update (like marking as read)
+        loadLayoutData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `business_id=eq.${business.id}` }, payload => {
+        if (payload.eventType === 'INSERT') {
+          playNotificationSound();
+        }
         loadLayoutData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `business_id=eq.${business.id}` }, payload => {

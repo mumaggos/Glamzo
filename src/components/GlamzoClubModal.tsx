@@ -5,6 +5,8 @@ import { X, Sparkles, Gift, Users, CreditCard, Clock, Loader2, Copy, Check, Shie
 
 
 interface Props {
+  currentPoints?: number;
+  currentBalance?: number;
   isOpen: boolean;
   onClose: () => void;
   user: any;
@@ -12,7 +14,7 @@ interface Props {
   onPointsUpdate: () => void;
 }
 
-export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPointsUpdate }: Props) {
+export default function GlamzoClubModal({ isOpen, onClose, user, profile, currentPoints: propCurrentPoints, currentBalance: propCurrentBalance, onPointsUpdate }: Props) {
   const [activeTab, setActiveTab] = useState<'pontos' | 'trocar' | 'afiliados' | 'levantamentos'>('pontos');
   
   // Data States
@@ -77,8 +79,8 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, onPoin
 
   if (!isOpen) return null;
 
-  const currentPoints = profile?.glamzo_points || 0;
-  const currentBalance = profile?.affiliate_balance || 0;
+  const currentPoints = propCurrentPoints !== undefined ? propCurrentPoints : (profile?.glamzo_points || 0);
+  const currentBalance = propCurrentBalance !== undefined ? propCurrentBalance : (profile?.affiliate_balance || 0);
   const refLink = `${window.location.origin}/partner?ref=${localRefCode}`;
 
   const copyLink = () => {

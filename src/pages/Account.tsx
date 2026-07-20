@@ -18,8 +18,8 @@ import { toggleFavorite } from '../utils/marketingHelper';
 export default function Account() {
   const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
 
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [glamzoPoints, setGlamzoPoints] = useState(0);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [glamzoPoints, setGlamzoPoints] = useState<number | null>(null);
 
   // Realtime subscription & initial fetch for wallet and points
   useEffect(() => {
@@ -293,8 +293,8 @@ export default function Account() {
     }
   }, [user]);
 
-  const currentPointsBalance = profile?.glamzo_points || glamzoPoints || 0;
-  const currentAffiliateBalance = profile?.wallet_balance || profile?.affiliate_balance || walletBalance || 0;
+  const currentPointsBalance = glamzoPoints !== null ? glamzoPoints : (profile?.glamzo_points || 0);
+  const currentAffiliateBalance = walletBalance !== null ? walletBalance : (profile?.wallet_balance || profile?.affiliate_balance || 0);
 
   const handleRedeemPoints = async (pointsCost: number, voucherValue: number) => {
     setRedeemSuccess(null); setRedeemError(null);
@@ -920,12 +920,14 @@ export default function Account() {
       </div>
 
             <GlamzoClubModal 
-        isOpen={isClubModalOpen} 
-        onClose={() => setIsClubModalOpen(false)} 
-        user={user} 
-        profile={profile}
-        onPointsUpdate={() => loadUserRewards()} 
-      />
+              isOpen={isClubModalOpen} 
+              onClose={() => setIsClubModalOpen(false)} 
+              user={user} 
+              profile={profile}
+              currentPoints={currentPointsBalance}
+              currentBalance={currentAffiliateBalance}
+              onPointsUpdate={() => loadUserRewards()} 
+            />
       {reviewModalOpen && reviewBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
