@@ -2589,7 +2589,7 @@ app.post('/api/admin/leads/import', express.json({ limit: '10mb' }), async (req,
     const { data, error } = await db.from('leads').upsert(leads, { onConflict: 'telefone', ignoreDuplicates: true }).select();
     
     if (error) throw error;
-    res.json({ success: true, count: data?.length || 0 });
+    res.json({ success: true, count: data?.length || 0, total: leads.length, duplicates: leads.length - (data?.length || 0) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

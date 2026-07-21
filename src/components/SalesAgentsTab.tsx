@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Plus, Copy, Check, Users, Target, Link as LinkIcon, BadgeEuro, X, Trash2 } from 'lucide-react';
 import { SalesAgent } from '../types';
+import { Phone } from 'lucide-react';
 import GestaoLeads from './GestaoLeads';
+import AgentLeadsModal from './AgentLeadsModal';
 
 export default function SalesAgentsTab() {
   const [agents, setAgents] = useState<SalesAgent[]>([]);
@@ -21,6 +23,7 @@ export default function SalesAgentsTab() {
   
   // Empty teams stored in state (to allow creating teams before adding agents)
   const [emptyTeams, setEmptyTeams] = useState<string[]>([]);
+  const [viewAgentLeads, setViewAgentLeads] = useState<SalesAgent | null>(null);
   
   // Performance metrics state
   const [performance, setPerformance] = useState<Record<string, { totalStores: number, proStores: number, terminalStores: number, totalCommission: number }>>({});
@@ -107,8 +110,15 @@ export default function SalesAgentsTab() {
   };
 
   const handleDeleteAgent = async (agentId: string, agentName: string) => {
-    if (confirm(`Tem a certeza que deseja apagar o comercial "${agentName}"?`)) {
+    if (confirm(`Tem a certeza que deseja apagar o comercial "${agentName}"? As leads pendentes voltarão para distribuição.`)) {
       try {
+        // Unassign pending leads
+        await supabase
+          .from('leads')
+          .update({ vendedor_id: null, senha_acesso: null })
+          .eq('vendedor_id', agentId)
+          .eq('estado_chamada', 'pendente');
+          
         const { error } = await supabase.from('sales_agents').delete().eq('id', agentId);
         if (error) throw error;
         setAgents(agents.filter(a => a.id !== agentId));
@@ -249,7 +259,9 @@ export default function SalesAgentsTab() {
                           const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0 };
                           return (
                             <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="p-4 font-bold text-slate-900">{agent.name}</td>
+                              <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
+                                {agent.name}
+                              </td>
                               <td className="p-4 text-center font-bold text-blue-600">
     <div className="flex flex-col items-center">
       <span>{agent.clicks_count}</span>
@@ -262,12 +274,24 @@ export default function SalesAgentsTab() {
                               <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
                               <td className="p-4 text-right">
                                 <button
-                                  onClick={() => copyToClipboard(agent.ref_code, agent.id)}
-                                  className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-                                  title="Copiar Link de Afiliado"
-                                >
-                                  {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
-                                </button>
+    onClick={() => copyToClipboard(agent.ref_code, agent.id)}
+    className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+    title="Copiar Link de Afiliado"
+  >
+    {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
+  </button>
+  <button
+    onClick={() => {
+      const link = `${window.location.origin}/chamadas/${agent.id}`;
+      navigator.clipboard.writeText(link);
+      setCopiedId('crm_' + agent.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }}
+    className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+    title="Copiar Link do CRM de Chamadas"
+  >
+    {copiedId === 'crm_' + agent.id ? <Check className="w-3 h-3 text-blue-600" /> : <Phone className="w-3 h-3" />}
+  </button>
                                 <button
                                   onClick={() => handleDeleteAgent(agent.id, agent.name)}
                                   className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
@@ -300,7 +324,9 @@ export default function SalesAgentsTab() {
                       const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0 };
                       return (
                         <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4 font-bold text-slate-900">{agent.name}</td>
+                          <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
+                                {agent.name}
+                              </td>
                           <td className="p-4 text-center font-bold text-blue-600">
     <div className="flex flex-col items-center">
       <span>{agent.clicks_count}</span>
@@ -313,12 +339,24 @@ export default function SalesAgentsTab() {
                           <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
                           <td className="p-4 text-right">
                             <button
-                              onClick={() => copyToClipboard(agent.ref_code, agent.id)}
-                              className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-                              title="Copiar Link de Afiliado"
-                            >
-                              {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
-                            </button>
+    onClick={() => copyToClipboard(agent.ref_code, agent.id)}
+    className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+    title="Copiar Link de Afiliado"
+  >
+    {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
+  </button>
+  <button
+    onClick={() => {
+      const link = `${window.location.origin}/chamadas/${agent.id}`;
+      navigator.clipboard.writeText(link);
+      setCopiedId('crm_' + agent.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }}
+    className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+    title="Copiar Link do CRM de Chamadas"
+  >
+    {copiedId === 'crm_' + agent.id ? <Check className="w-3 h-3 text-blue-600" /> : <Phone className="w-3 h-3" />}
+  </button>
                             <button
                               onClick={() => handleDeleteAgent(agent.id, agent.name)}
                               className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
@@ -414,6 +452,10 @@ export default function SalesAgentsTab() {
             </form>
           </div>
         </div>
+      )}
+    
+      {viewAgentLeads && (
+        <AgentLeadsModal agent={viewAgentLeads} onClose={() => setViewAgentLeads(null)} />
       )}
     </div>
   );

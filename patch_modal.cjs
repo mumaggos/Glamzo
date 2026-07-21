@@ -1,19 +1,34 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/components/GlamzoClubModal.tsx', 'utf8');
+let content = fs.readFileSync('src/components/SalesAgentsTab.tsx', 'utf8');
 
 content = content.replace(
-  /await supabase\.from\('profiles'\)\.update\(\{ affiliate_balance: 0 \}\)\.eq\('id', user\.id\);/g,
-  `const { error: resetErr } = await supabase.from('profiles').update({ affiliate_balance: 0 }).eq('id', user.id);
-      if (resetErr) throw resetErr;`
+  /import GestaoLeads from '\.\/GestaoLeads';/,
+  `import GestaoLeads from './GestaoLeads';\nimport AgentLeadsModal from './AgentLeadsModal';`
 );
 
 content = content.replace(
-  /await supabase\.from\('profiles'\)\.update\(\{\s+affiliate_balance: 0,\s+glamzo_points: currentPoints \+ ptsToGain\s+\}\)\.eq\('id', user\.id\);/g,
-  `const { error: ptsUpdateErr } = await supabase.from('profiles').update({ 
-        affiliate_balance: 0,
-        glamzo_points: currentPoints + ptsToGain
-      }).eq('id', user.id);
-      if (ptsUpdateErr) throw ptsUpdateErr;`
+  /const \[emptyTeams, setEmptyTeams\] = useState<string\[\]>\(\[\]\);/,
+  `const [emptyTeams, setEmptyTeams] = useState<string[]>([]);\n  const [viewAgentLeads, setViewAgentLeads] = useState<SalesAgent | null>(null);`
 );
 
-fs.writeFileSync('src/components/GlamzoClubModal.tsx', content);
+content = content.replace(
+  /<td className="p-4 font-bold text-slate-900">\{agent\.name\}<\/td>/g,
+  `<td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
+                                {agent.name}
+                              </td>`
+);
+
+// also let's make sure the modal is rendered at the end
+content = content.replace(
+  /(\s*)<\/div>\s*\)\;\s*\}\s*$/,
+  `$1
+      {viewAgentLeads && (
+        <AgentLeadsModal agent={viewAgentLeads} onClose={() => setViewAgentLeads(null)} />
+      )}
+    </div>
+  );
+}
+`
+);
+
+fs.writeFileSync('src/components/SalesAgentsTab.tsx', content);

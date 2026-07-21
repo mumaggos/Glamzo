@@ -281,6 +281,7 @@ export default function App() {
                   <Route path="/contactos" element={<Contactos />} />
 
                   <Route path="/partner" element={<Partner />} />
+                  <Route path="/chamadas/:vendedorId" element={<ChamadasCRM />} />
                   <Route path="/partner/login" element={<PartnerLogin />} />
                   <Route path="/partner/signup" element={<PartnerSignup />} />
                   

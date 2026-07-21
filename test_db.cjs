@@ -1,10 +1,8 @@
-require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const url = process.env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
-const key = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrcHl3amthdHN4a2dybWJvYWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjY1NzEsImV4cCI6MjA5NDgwMjU3MX0.6tkKlKXwoCPxeCI0yi-uRwYkN-nt41kAcJtr4uBuoMA';
-const supabase = createClient(url, key);
+require('dotenv').config();
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 async function test() {
-  const { data, error } = await supabase.from('businesses').select('id, name, trial_started_at').limit(3);
-  console.log(data, error);
+  const { error } = await supabase.from('leads').select('id').limit(1);
+  console.log('Error:', error);
 }
 test();
