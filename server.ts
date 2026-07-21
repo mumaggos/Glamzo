@@ -1118,7 +1118,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
 
       const sessionPayload = {
         customer: customerId,
-        mode: "subscription",
+        mode: "subscription" as const,
         allow_promotion_codes: true,
         payment_method_collection: "always",
         line_items: lineItems,
@@ -1156,7 +1156,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
           );
           session = await stripe.checkout.sessions.create({
             customer: customerId,
-            mode: "subscription",
+            mode: "subscription" as const,
             allow_promotion_codes: true,
             payment_method_collection: "always",
             line_items: [

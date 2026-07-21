@@ -15,7 +15,6 @@ export function setupCronJobs() {
   // Run every day at midnight (0 0 * * *)
   cron.schedule('0 0 * * *', async () => {
     console.log("[CRON] Starting midnight routine...");
-
     try {
       await autoCompleteBookings();
       await auditSubscriptions();
@@ -24,6 +23,66 @@ export function setupCronJobs() {
       console.error("[CRON] Error running midnight routine:", error);
     }
   });
+
+  // Start the SMS Queue Processor loop
+  processSmsQueue();
+}
+
+async function processSmsQueue() {
+  const token = process.env.TRACCAR_SMS_TOKEN || "db04_CflQoC5MZ0-9tVkrS:APA91bFORleaNKqyNwH00La9RGA9WzUts8ctwiUNNq9GY3rjRABbhGbN2SPdQYUJ8dWBeXtfSBeg8oSNiHLslXi6amgw9LLZb8KrVnZT-JhU5T75_DMjwYo";
+
+  try {
+    // Fetch the first pending SMS
+    const { data: messages, error: fetchError } = await supabaseAdmin
+      .from('sms_queue')
+      .select('*')
+      .eq('status', 'pendente')
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (fetchError) {
+      console.error("[SMS Worker] Error fetching queue:", fetchError);
+    } else if (messages && messages.length > 0) {
+      const msg = messages[0];
+      console.log(`[SMS Worker] Processing SMS ${msg.id} to ${msg.phone_number}`);
+
+      // Update status to processando
+      await supabaseAdmin.from('sms_queue').update({ status: 'processando' }).eq('id', msg.id);
+
+      try {
+        // Call Traccar API
+        const response = await fetch("https://www.traccar.org/sms/", {
+          method: "POST",
+          headers: {
+            "Authorization": token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ to: msg.phone_number, message: msg.message })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errText}`);
+        }
+
+        // Update status to enviado
+        await supabaseAdmin.from('sms_queue').update({ status: 'enviado' }).eq('id', msg.id);
+        console.log(`[SMS Worker] Sent SMS ${msg.id} successfully.`);
+      } catch (sendError: any) {
+        console.error(`[SMS Worker] Error sending SMS ${msg.id}:`, sendError.message);
+        // Mark as erro
+        await supabaseAdmin.from('sms_queue').update({ status: 'erro' }).eq('id', msg.id);
+      }
+
+      // Delay 4 seconds explicitly as requested before next loop
+      await new Promise(resolve => setTimeout(resolve, 4000));
+    }
+  } catch (err) {
+    console.error("[SMS Worker] Unhandled exception:", err);
+  } finally {
+    // If we processed a message, wait 4s was already done, but if queue is empty, wait 5s to check again
+    setTimeout(processSmsQueue, 5000);
+  }
 }
 
 async function autoCompleteBookings() {

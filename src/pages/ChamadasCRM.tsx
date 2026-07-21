@@ -36,6 +36,8 @@ export default function ChamadasCRM() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [sendingSmsId, setSendingSmsId] = useState<string | null>(null);
 
+  const [queuedSms, setQueuedSms] = useState<Record<string, boolean>>({});
+
   const handleSendSms = async (lead: Lead) => {
     try {
       setSendingSmsId(lead.id);
@@ -46,27 +48,26 @@ export default function ChamadasCRM() {
         ? "Olá, tentámos contactar da equipa Glamzo mas não foi possível. Deixo aqui o link para poder verificar os nossos serviços: https://www.glamzo.pt/partner Cumprimentos, Glamzo"
         : "Olá, daqui a equipa Glamzo. Após o contacto telefónico, deixo aqui o link para poder verificar os nossos serviços: https://www.glamzo.pt/partner Cumprimentos, Glamzo";
 
-      const response = await fetch('/api/sms/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          to: lead.telefone,
-          message
-        })
-      });
+      const { error } = await supabase
+        .from('sms_queue')
+        .insert({
+          lead_id: lead.id,
+          phone_number: lead.telefone,
+          message: message,
+          status: 'pendente'
+        });
 
-      if (!response.ok) {
-        throw new Error('Falha ao enviar SMS');
+      if (error) {
+        throw error;
       }
 
-      // Mark as sent
+      // Mark as queued locally
+      setQueuedSms(prev => ({ ...prev, [lead.id]: true }));
       handleEdit(lead.id, 'sms_enviado', true);
-      alert('SMS enviada com sucesso!');
+      
     } catch (err) {
       console.error(err);
-      alert('Erro ao enviar SMS. Verifique as configurações.');
+      alert('Erro ao colocar SMS na fila.');
     } finally {
       setSendingSmsId(null);
     }
@@ -414,7 +415,13 @@ export default function ChamadasCRM() {
                           </select>
                         </td>
                         <td className="p-4 text-center">
-                          {lead.sms_enviado ? (
+                          {queuedSms[lead.id] ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">
+                                <Clock className="w-3 h-3" /> Na fila...
+                              </span>
+                            </div>
+                          ) : lead.sms_enviado ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
                                 <CheckCircle className="w-3 h-3" /> Enviada
