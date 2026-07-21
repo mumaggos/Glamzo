@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 
 export default function Footer() {
   const location = useLocation();
-  const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard');
+  const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/chamadas');
   
   if (isDashboardOrAdmin) return null;
   return (

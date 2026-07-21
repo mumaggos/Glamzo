@@ -3,6 +3,11 @@ import { supabase } from '../lib/supabase';
 import { X, Loader2, Phone, CheckCircle, Copy, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { SalesAgent } from '../types';
 
+interface CallLog {
+  id: string;
+  estado_chamada: string;
+}
+
 interface Lead {
   id: string;
   nome_loja: string;
@@ -15,6 +20,7 @@ interface Lead {
 
 export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent, onClose: () => void }) {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -33,6 +39,15 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
         
       if (error) throw error;
       setLeads(data || []);
+
+      const { data: logsData, error: logsError } = await supabase
+        .from('call_logs')
+        .select('id, estado_chamada')
+        .eq('agent_id', agent.id);
+
+      if (!logsError && logsData) {
+        setCallLogs(logsData);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -69,9 +84,9 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
       case 'pendente': return 'A Contactar';
       case 'contactado': return 'Contactado';
       case 'nao_atendeu': return 'Não Atendeu';
-      case 'desligou': return 'Desligou Chamada';
-      case 'invalido': return 'Número Inválido/Desligado';
-      case 'nao_contactar': return 'Não Contactar Mais';
+      case 'desligou': return 'Desligou';
+      case 'invalido': return 'Inválido';
+      case 'nao_contactar': return 'Não Ligar';
       case 'recusou': return 'Recusou';
       case 'fechou_pro': return 'Fechou (PRO)';
       case 'fechou_terminal': return 'Fechou (Terminal)';
@@ -148,9 +163,24 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
                  <span className="block text-2xl font-black text-amber-600">{pendentes.length}</span>
                  <span className="text-[10px] uppercase font-bold text-slate-400">Pendentes</span>
                </div>
-               <div className="text-center px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-                 <span className="block text-2xl font-black text-emerald-600">{contactados.length}</span>
-                 <span className="text-[10px] uppercase font-bold text-slate-400">Contactados</span>
+               <div className="flex gap-2">
+                 {Object.entries(
+                   callLogs.reduce((acc, log) => {
+                     acc[log.estado_chamada] = (acc[log.estado_chamada] || 0) + 1;
+                     return acc;
+                   }, {} as Record<string, number>)
+                 ).sort((a: any, b: any) => b[1] - a[1]).map(([status, count]) => (
+                   <div key={status} className="text-center px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 shadow-sm flex-1 min-w-[80px]">
+                     <span className="block text-lg font-black text-slate-700 leading-none">{count}</span>
+                     <span className="text-[9px] uppercase font-bold text-slate-500 whitespace-nowrap">{getStatusLabel(status)}</span>
+                   </div>
+                 ))}
+                 {callLogs.length === 0 && (
+                   <div className="text-center px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                     <span className="block text-2xl font-black text-slate-300">0</span>
+                     <span className="text-[10px] uppercase font-bold text-slate-400">Chamadas Feitas</span>
+                   </div>
+                 )}
                </div>
              </div>
            </div>

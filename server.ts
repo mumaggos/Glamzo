@@ -1120,7 +1120,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         customer: customerId,
         mode: "subscription" as const,
         allow_promotion_codes: true,
-        payment_method_collection: "always",
+        payment_method_collection: "always" as const,
         line_items: lineItems,
         subscription_data: subscriptionData,
         metadata: {
@@ -1158,7 +1158,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
             customer: customerId,
             mode: "subscription" as const,
             allow_promotion_codes: true,
-            payment_method_collection: "always",
+            payment_method_collection: "always" as const,
             line_items: [
               {
                 price: fallbackPriceId,

@@ -171,12 +171,24 @@ export default function ChamadasCRM() {
     }
     
     try {
+      const statusChanged = updates.estado_chamada && updates.estado_chamada !== lead?.estado_chamada;
+      const actualOutcome = updates.estado_chamada;
+
       const { error } = await supabase
         .from('leads')
         .update(finalUpdates)
         .eq('id', id);
         
       if (error) throw error;
+
+      if (statusChanged && actualOutcome !== 'pendente' && vendedorId) {
+        // Log the call
+        await supabase.from('call_logs').insert({
+          lead_id: id,
+          agent_id: vendedorId,
+          estado_chamada: actualOutcome
+        });
+      }
       
       if (finalUpdates.vendedor_id === null) {
         setLeads(prev => prev.filter(l => l.id !== id));
@@ -410,8 +422,6 @@ export default function ChamadasCRM() {
                             <option value="invalido">Número Inválido/Desligado</option>
                             <option value="nao_contactar">Não Contactar Mais</option>
                             <option value="recusou">Recusou</option>
-                            <option value="fechou_pro">Fechou PRO</option>
-                            <option value="fechou_terminal">Fechou PRO+Terminal</option>
                           </select>
                         </td>
                         <td className="p-4 text-center">

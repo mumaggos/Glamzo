@@ -265,7 +265,7 @@ export const EmailService = {
         </ul>
         <p>Pode enviar-nos tudo por ficheiro (PDF, Excel, Word) ou até fotos diretamente pelo nosso WhatsApp através do link abaixo:</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="https://wa.me/351913959955" style="display: inline-block; padding: 12px 24px; background-color: #25D366; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+          <a href="https://wa.me/351918691149" style="display: inline-block; padding: 12px 24px; background-color: #25D366; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
             Enviar no WhatsApp
           </a>
         </p>

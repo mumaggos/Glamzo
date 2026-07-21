@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import Papa from 'papaparse';
-import { Upload, Users, Key, Link as LinkIcon, Check, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, Users, Trash2, Key, Link as LinkIcon, Check, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SalesAgent } from '../types';
 
 interface GestaoLeadsProps {
@@ -125,6 +125,19 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
         setUploading(false);
       }
     });
+  };
+
+  const handleDeleteLead = async (id: string) => {
+    if (!confirm('Tem a certeza que deseja apagar esta lead?')) return;
+    try {
+      const { error } = await supabase.from('leads').delete().eq('id', id);
+      if (error) throw error;
+      setAllLeads(prev => prev.filter(l => l.id !== id));
+      setUploadMessage({ type: 'success', text: 'Lead apagada com sucesso.' });
+    } catch (err: any) {
+      console.error(err);
+      setUploadMessage({ type: 'error', text: 'Erro ao apagar lead.' });
+    }
   };
 
   const handleDistribute = async (e: React.FormEvent) => {
@@ -420,6 +433,11 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                         </td>
                         <td className="p-4 text-center font-bold text-slate-700">{lead.estado_chamada !== 'pendente' ? lead.potencial_fecho : '-'}</td>
                         <td className="p-4 text-xs text-slate-500 max-w-[200px] truncate" title={lead.notas}>{lead.notas || '-'}</td>
+                        <td className="p-4 text-center">
+                          <button onClick={() => handleDeleteLead(lead.id)} className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors" title="Apagar Lead">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </>

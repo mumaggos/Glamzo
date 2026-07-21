@@ -85,9 +85,15 @@ export default function SalesAgentsTab() {
           leadsData.forEach(lead => {
             if (perfData[lead.vendedor_id]) {
               perfData[lead.vendedor_id].assignedLeads++;
-              if (lead.estado_chamada !== 'pendente') {
-                perfData[lead.vendedor_id].contactedLeads++;
-              }
+            }
+          });
+        }
+
+        const { data: logsData } = await supabase.from('call_logs').select('agent_id');
+        if (logsData) {
+          logsData.forEach(log => {
+            if (perfData[log.agent_id]) {
+              perfData[log.agent_id].contactedLeads++;
             }
           });
         }
