@@ -396,6 +396,40 @@ app.post("/api/auth/verify-partner-otp", async (req, res) => {
   }
 });
 
+// Traccar SMS Gateway Proxy
+app.post("/api/sms/send", express.json(), async (req, res) => {
+  try {
+    const { to, message } = req.body;
+    if (!to || !message) {
+      return res.status(400).json({ error: "Missing 'to' or 'message' parameters" });
+    }
+
+    const token = process.env.TRACCAR_SMS_TOKEN || "db04_CflQoC5MZ0-9tVkrS:APA91bFORleaNKqyNwH00La9RGA9WzUts8ctwiUNNq9GY3rjRABbhGbN2SPdQYUJ8dWBeXtfSBeg8oSNiHLslXi6amgw9LLZb8KrVnZT-JhU5T75_DMjwYo";
+    
+    // We fetch the cloud proxy of Traccar to send SMS
+    const response = await fetch("https://www.traccar.org/sms/", {
+      method: "POST",
+      headers: {
+        "Authorization": token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ to, message })
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("[SMS Gateway] Error:", response.status, text);
+      return res.status(response.status).json({ error: "Failed to send SMS", details: text });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, data });
+  } catch (err: any) {
+    console.error("[SMS Gateway] Error:", err);
+    res.status(500).json({ error: "Internal server error: " + err.message });
+  }
+});
+
 // Real-Time Secure Server-Side Gemini API Proxy Route
 app.post("/api/gemini/generate", async (req, res) => {
   try {

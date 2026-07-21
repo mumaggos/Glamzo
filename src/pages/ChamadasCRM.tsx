@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Phone, CheckCircle, Clock, XCircle, AlertCircle, Save, Loader2, Search, ArrowRight, Lock, Key, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, CheckCircle, Clock, XCircle, AlertCircle, Save, Loader2, Search, ArrowRight, Lock, Key, ChevronLeft, ChevronRight, MessageSquare, Send } from 'lucide-react';
 
 interface Lead {
   id: string;
@@ -34,6 +34,43 @@ export default function ChamadasCRM() {
   // Local edits before saving
   const [edits, setEdits] = useState<Record<string, Partial<Lead>>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [sendingSmsId, setSendingSmsId] = useState<string | null>(null);
+
+  const handleSendSms = async (lead: Lead) => {
+    try {
+      setSendingSmsId(lead.id);
+      
+      const isNaoAtendeu = (edits[lead.id]?.estado_chamada || lead.estado_chamada) === 'nao_atendeu';
+      
+      const message = isNaoAtendeu 
+        ? "Olá, tentámos contactar da equipa Glamzo mas não foi possível. Deixo aqui o link para poder verificar os nossos serviços: https://www.glamzo.pt/partner Cumprimentos, Glamzo"
+        : "Olá, daqui a equipa Glamzo. Após o contacto telefónico, deixo aqui o link para poder verificar os nossos serviços: https://www.glamzo.pt/partner Cumprimentos, Glamzo";
+
+      const response = await fetch('/api/sms/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to: lead.telefone,
+          message
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao enviar SMS');
+      }
+
+      // Mark as sent
+      handleEdit(lead.id, 'sms_enviado', true);
+      alert('SMS enviada com sucesso!');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao enviar SMS. Verifique as configurações.');
+    } finally {
+      setSendingSmsId(null);
+    }
+  };
 
   useEffect(() => {
     const storedAuth = sessionStorage.getItem(`crm_auth_${vendedorId}`);
@@ -122,11 +159,7 @@ export default function ChamadasCRM() {
     let finalUpdates = { ...updates };
     const lead = leads.find(l => l.id === id);
     
-    // Auto-check SMS if nao_atendeu
     if (finalUpdates.estado_chamada === 'nao_atendeu') {
-      if (lead && !lead.sms_enviado) {
-        finalUpdates.sms_enviado = true;
-      }
       
       // Devolve para a lista a atribuir
       finalUpdates.vendedor_id = null;
@@ -381,12 +414,26 @@ export default function ChamadasCRM() {
                           </select>
                         </td>
                         <td className="p-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={lead.sms_enviado}
-                            onChange={(e) => handleEdit(lead.id, 'sms_enviado', e.target.checked)}
-                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                          />
+                          {lead.sms_enviado ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                <CheckCircle className="w-3 h-3" /> Enviada
+                              </span>
+                            </div>
+                          ) : (
+                            ['contactado', 'nao_atendeu'].includes(edits[lead.id]?.estado_chamada || lead.estado_chamada) ? (
+                              <button
+                                onClick={() => handleSendSms(lead)}
+                                disabled={sendingSmsId === lead.id}
+                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 mx-auto"
+                              >
+                                {sendingSmsId === lead.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                                Enviar SMS
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400">-</span>
+                            )
+                          )}
                         </td>
                         <td className="p-4 text-center">
                           <div className="flex justify-center">
