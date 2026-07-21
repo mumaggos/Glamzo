@@ -45,6 +45,7 @@ export interface Business {
   is_premium?: boolean; // 👑 Premium tag based on rating, bookings, etc.
   stripe_account_id?: string | null;
   charges_enabled?: boolean;
+  tablet_requested?: boolean;
   payouts_enabled?: boolean;
   stripe_customer_id?: string | null;
   stripe_subscription_id?: string | null;

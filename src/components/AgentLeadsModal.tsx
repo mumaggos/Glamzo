@@ -9,7 +9,7 @@ interface Lead {
   telefone: string;
   estado_chamada: string;
   sms_enviado: boolean;
-  potencial_fecho: number;
+  potencial_fecho: string | number;
   notas: string;
 }
 

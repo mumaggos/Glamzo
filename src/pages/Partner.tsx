@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import { 
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, 
@@ -10,15 +11,26 @@ import {
 export default function Partner() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const searchParams = new URLSearchParams(window.location.search);
     const ref = searchParams.get('ref');
     if (ref) {
       localStorage.setItem('sales_agent_ref', ref);
+      
+      // Increment clicks safely via RPC (if not already incremented in this session)
+      if (!sessionStorage.getItem(`tracked_ref_${ref}`)) {
+        sessionStorage.setItem(`tracked_ref_${ref}`, 'true');
+        const trackClick = async () => {
+          try {
+            await supabase.rpc('increment_agent_clicks', { agent_ref: ref });
+          } catch (e) { console.error(e); }
+        };
+        trackClick();
+      }
     }
   }, []);
 

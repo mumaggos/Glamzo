@@ -9,7 +9,7 @@ interface Lead {
   telefone: string;
   estado_chamada: string;
   sms_enviado: boolean;
-  potencial_fecho: number;
+  potencial_fecho: string | number;
   notas: string;
   vendedor_id?: string | null;
   senha_acesso?: string | null;
@@ -390,14 +390,17 @@ export default function ChamadasCRM() {
                         </td>
                         <td className="p-4 text-center">
                           <div className="flex justify-center">
-                            <input
-                              type="number"
-                              min="0"
-                              max="10"
+                            <select
                               value={lead.potencial_fecho}
-                              onChange={(e) => handleEdit(lead.id, 'potencial_fecho', parseInt(e.target.value) || 0)}
-                              className="w-16 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 focus:bg-white"
-                            />
+                              onChange={(e) => handleEdit(lead.id, 'potencial_fecho', e.target.value)}
+                              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 focus:bg-white cursor-pointer"
+                            >
+                              <option value=""></option>
+                              <option value="Muito recetivo">Muito recetivo</option>
+                              <option value="Recetivo">Recetivo</option>
+                              <option value="Pouco receptivo">Pouco receptivo</option>
+                              <option value="Nada receptivo">Nada receptivo</option>
+                            </select>
                           </div>
                         </td>
                         <td className="p-4">

@@ -76,9 +76,8 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 export default function SetupWizard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const refCode = urlParams.get('ref');
   const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref');
   
   const [loading, setLoading] = useState(true);
   const [business, setBusiness] = useState<any>(null);
@@ -90,7 +89,22 @@ export default function SetupWizard() {
 
   useEffect(() => {
     const resolveSalesAgent = async () => {
-      const storedRef = localStorage.getItem('sales_agent_ref');
+      let storedRef = localStorage.getItem('sales_agent_ref');
+      
+      // If we have a ref in the URL, prefer it and save it
+      if (refCode) {
+        storedRef = refCode;
+        localStorage.setItem('sales_agent_ref', refCode);
+        
+        // Also track click if we haven't
+        if (!sessionStorage.getItem(`tracked_ref_${refCode}`)) {
+          sessionStorage.setItem(`tracked_ref_${refCode}`, 'true');
+          try {
+             await supabase.rpc('increment_agent_clicks', { agent_ref: refCode });
+          } catch (e) {}
+        }
+      }
+
       if (storedRef) {
         const { data } = await supabase.from('sales_agents').select('id').eq('ref_code', storedRef).maybeSingle();
         if (data) {
@@ -99,7 +113,7 @@ export default function SetupWizard() {
       }
     };
     resolveSalesAgent();
-  }, []);
+  }, [refCode]);
 
   // Step 1: Data
   const [name, setName] = useState('');

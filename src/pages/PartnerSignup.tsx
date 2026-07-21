@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { 
@@ -10,8 +10,8 @@ import {
 export default function PartnerSignup() {
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const refCode = urlParams.get('ref');
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref');
 
   // Onboarding frictionless step tracking
   const [step, setStep] = useState<1 | 2>(1);
