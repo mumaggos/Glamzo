@@ -5,6 +5,7 @@ import { SalesAgent } from '../types';
 import { Phone } from 'lucide-react';
 import GestaoLeads from './GestaoLeads';
 import AgentLeadsModal from './AgentLeadsModal';
+import AgentStoresModal from './AgentStoresModal';
 
 export default function SalesAgentsTab() {
   const [agents, setAgents] = useState<SalesAgent[]>([]);
@@ -24,6 +25,7 @@ export default function SalesAgentsTab() {
   // Empty teams stored in state (to allow creating teams before adding agents)
   const [emptyTeams, setEmptyTeams] = useState<string[]>([]);
   const [viewAgentLeads, setViewAgentLeads] = useState<SalesAgent | null>(null);
+  const [viewAgentStores, setViewAgentStores] = useState<SalesAgent | null>(null);
   
   // Performance metrics state
   const [performance, setPerformance] = useState<Record<string, { totalStores: number, proStores: number, terminalStores: number, totalCommission: number, assignedLeads: number, contactedLeads: number }>>({});
@@ -63,11 +65,11 @@ export default function SalesAgentsTab() {
             const p = perfData[business.agent_id];
             p.totalStores += 1;
             
-            let commission = 2; 
+            let commission = 0; 
             if (business.selected_plan === 'app_tablet' || business.selected_plan === 'pro_terminal' || business.selected_plan?.includes('terminal') || business.tablet_requested) {
               p.terminalStores += 1;
               commission = 5;
-            } else {
+            } else if (business.selected_plan === 'app' || business.selected_plan === 'pro' || business.selected_plan?.includes('pro') || business.selected_plan === 'monthly' || business.selected_plan === 'yearly') {
               p.proStores += 1;
               commission = 2.5;
             }
@@ -261,6 +263,7 @@ export default function SalesAgentsTab() {
                         <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           <th className="p-4">Comercial</th>
                           <th className="p-4 text-center">Cliques</th>
+                          <th className="p-4 text-center">Leads CRM</th>
                           <th className="p-4 text-center">Inscrições</th>
                           <th className="p-4 text-center">Plano PRO</th>
                           <th className="p-4 text-center">PRO + Terminal</th>
@@ -282,21 +285,15 @@ export default function SalesAgentsTab() {
       <span className="text-[9px] text-slate-400 font-normal">cliques</span>
     </div>
   </td>
-                              <td className="p-4 text-center font-bold text-slate-700">
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)}>
      <div className="flex flex-col items-center">
        <span>{perf.assignedLeads}</span>
        <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
      </div>
    </td>
-   <td className="p-4 text-center font-bold text-slate-700">
-     <div className="flex flex-col items-center">
-       <span>{perf.assignedLeads}</span>
-       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
-     </div>
-   </td>
-   <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700">{perf.proStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700">{perf.terminalStores}</td>
+   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.totalStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.proStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.terminalStores}</td>
                               <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
                               <td className="p-4 text-right">
                                 <button
@@ -353,17 +350,23 @@ export default function SalesAgentsTab() {
                           <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
                                 {agent.name}
                               </td>
-                          <td className="p-4 text-center font-bold text-blue-600">
+                              <td className="p-4 text-center font-bold text-blue-600">
     <div className="flex flex-col items-center">
       <span>{agent.clicks_count}</span>
       <span className="text-[9px] text-slate-400 font-normal">cliques</span>
     </div>
   </td>
-                          <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
-                          <td className="p-4 text-center font-bold text-slate-700">{perf.proStores}</td>
-                          <td className="p-4 text-center font-bold text-slate-700">{perf.terminalStores}</td>
-                          <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
-                          <td className="p-4 text-right">
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)}>
+     <div className="flex flex-col items-center">
+       <span>{perf.assignedLeads}</span>
+       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
+     </div>
+   </td>
+   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.totalStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.proStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.terminalStores}</td>
+                              <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
+                              <td className="p-4 text-right">
                             <button
     onClick={() => copyToClipboard(agent.ref_code, agent.id)}
     className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
@@ -480,6 +483,13 @@ export default function SalesAgentsTab() {
         </div>
       )}
     
+      {viewAgentStores && (
+        <AgentStoresModal
+          agent={viewAgentStores}
+          onClose={() => setViewAgentStores(null)}
+        />
+      )}
+
       {viewAgentLeads && (
         <AgentLeadsModal agent={viewAgentLeads} onClose={() => setViewAgentLeads(null)} />
       )}

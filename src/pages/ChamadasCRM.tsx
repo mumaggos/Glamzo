@@ -240,11 +240,14 @@ export default function ChamadasCRM() {
   }
 
   // Filter based on tab and search
-  // Combine edits with base leads for display
-  const currentData = leads.map(l => ({ ...l, ...(edits[l.id] || {}) }));
+  // Use original leads array for determining which tab a lead belongs to,
+  // so it doesn't disappear from the tab before clicking 'Guardar'.
   
-  const pendentes = currentData.filter(l => l.estado_chamada === 'pendente' && (l.nome_loja.toLowerCase().includes(searchTerm.toLowerCase()) || l.telefone.includes(searchTerm)));
-  const contactados = currentData.filter(l => l.estado_chamada !== 'pendente' && (l.nome_loja.toLowerCase().includes(searchTerm.toLowerCase()) || l.telefone.includes(searchTerm)));
+  const pendentes = leads.filter(l => l.estado_chamada === 'pendente' && (l.nome_loja.toLowerCase().includes(searchTerm.toLowerCase()) || l.telefone.includes(searchTerm)))
+                         .map(l => ({ ...l, ...(edits[l.id] || {}) }));
+                         
+  const contactados = leads.filter(l => l.estado_chamada !== 'pendente' && (l.nome_loja.toLowerCase().includes(searchTerm.toLowerCase()) || l.telefone.includes(searchTerm)))
+                           .map(l => ({ ...l, ...(edits[l.id] || {}) }));
   
   const activeList = activeTab === 'pendentes' ? pendentes : contactados;
   const totalPages = Math.ceil(activeList.length / itemsPerPage);
