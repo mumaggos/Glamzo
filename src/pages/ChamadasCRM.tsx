@@ -297,7 +297,7 @@ export default function ChamadasCRM() {
           >
             A Contactar
             <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'pendentes' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-              {leads.filter(l => (edits[l.id]?.estado_chamada || l.estado_chamada) === 'pendente').length}
+              {leads.filter(l => l.estado_chamada === 'pendente').length}
             </span>
           </button>
           <button 
@@ -306,7 +306,7 @@ export default function ChamadasCRM() {
           >
             Já Contactados
             <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'contactados' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-              {leads.filter(l => (edits[l.id]?.estado_chamada || l.estado_chamada) !== 'pendente').length}
+              {leads.filter(l => l.estado_chamada !== 'pendente').length}
             </span>
           </button>
         </div>
