@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+
+const content = `import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, Loader2, Phone, CheckCircle, Copy, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { SalesAgent } from '../types';
@@ -70,7 +72,6 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
       case 'contactado': return 'Contactado';
       case 'nao_atendeu': return 'Não Atendeu';
       case 'desligou': return 'Desligou Chamada';
-      case 'invalido': return 'Número Inválido/Desligado';
       case 'nao_contactar': return 'Não Contactar Mais';
       case 'recusou': return 'Recusou';
       case 'fechou_pro': return 'Fechou (PRO)';
@@ -85,7 +86,6 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
       case 'contactado': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'nao_atendeu': return 'bg-slate-100 text-slate-600 border-slate-200';
       case 'desligou': return 'bg-rose-50 text-rose-600 border-rose-200';
-      case 'invalido': return 'bg-slate-200 text-slate-700 border-slate-300';
       case 'nao_contactar': return 'bg-slate-800 text-white border-slate-900';
       case 'recusou': return 'bg-rose-100 text-rose-700 border-rose-200';
       case 'fechou_pro': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
@@ -98,7 +98,7 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
   const contactados = leads.filter(l => l.estado_chamada !== 'pendente');
 
   const copyLink = () => {
-    const link = `${window.location.origin}/chamadas/${agent.id}`;
+    const link = \`\${window.location.origin}/chamadas/\${agent.id}\`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -183,7 +183,7 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
                     <td className="p-4 font-bold text-slate-900">{lead.nome_loja}</td>
                     <td className="p-4 font-mono text-slate-600">{lead.telefone}</td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(lead.estado_chamada)}`}>
+                      <span className={\`px-2 py-1 rounded-full text-[10px] font-bold border \${getStatusColor(lead.estado_chamada)}\`}>
                         {getStatusLabel(lead.estado_chamada)}
                       </span>
                     </td>
@@ -203,3 +203,6 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
     </div>
   );
 }
+`
+
+fs.writeFileSync('src/components/AgentLeadsModal.tsx', content);

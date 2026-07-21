@@ -26,7 +26,7 @@ export default function SalesAgentsTab() {
   const [viewAgentLeads, setViewAgentLeads] = useState<SalesAgent | null>(null);
   
   // Performance metrics state
-  const [performance, setPerformance] = useState<Record<string, { totalStores: number, proStores: number, terminalStores: number, totalCommission: number }>>({});
+  const [performance, setPerformance] = useState<Record<string, { totalStores: number, proStores: number, terminalStores: number, totalCommission: number, assignedLeads: number, contactedLeads: number }>>({});
 
   useEffect(() => {
     fetchAgents();
@@ -55,7 +55,7 @@ export default function SalesAgentsTab() {
         const perfData: Record<string, any> = {};
         
         agentsData?.forEach(agent => {
-          perfData[agent.id] = { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0 };
+          perfData[agent.id] = { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0, assignedLeads: 0, contactedLeads: 0 };
         });
 
         businessesData.forEach(business => {
@@ -75,6 +75,20 @@ export default function SalesAgentsTab() {
             p.totalCommission += commission;
           }
         });
+        
+        
+        // Fetch leads statistics
+        const { data: leadsData } = await supabase.from('leads').select('vendedor_id, estado_chamada').not('vendedor_id', 'is', null);
+        if (leadsData) {
+          leadsData.forEach(lead => {
+            if (perfData[lead.vendedor_id]) {
+              perfData[lead.vendedor_id].assignedLeads++;
+              if (lead.estado_chamada !== 'pendente') {
+                perfData[lead.vendedor_id].contactedLeads++;
+              }
+            }
+          });
+        }
         
         setPerformance(perfData);
       }
@@ -256,7 +270,7 @@ export default function SalesAgentsTab() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
                         {teamAgents.map(agent => {
-                          const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0 };
+                          const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0, assignedLeads: 0, contactedLeads: 0 };
                           return (
                             <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
@@ -268,7 +282,19 @@ export default function SalesAgentsTab() {
       <span className="text-[9px] text-slate-400 font-normal">cliques</span>
     </div>
   </td>
-                              <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700">
+     <div className="flex flex-col items-center">
+       <span>{perf.assignedLeads}</span>
+       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
+     </div>
+   </td>
+   <td className="p-4 text-center font-bold text-slate-700">
+     <div className="flex flex-col items-center">
+       <span>{perf.assignedLeads}</span>
+       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
+     </div>
+   </td>
+   <td className="p-4 text-center font-bold text-slate-700">{perf.totalStores}</td>
                               <td className="p-4 text-center font-bold text-slate-700">{perf.proStores}</td>
                               <td className="p-4 text-center font-bold text-slate-700">{perf.terminalStores}</td>
                               <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
@@ -321,7 +347,7 @@ export default function SalesAgentsTab() {
                 <table className="w-full text-left border-collapse">
                   <tbody className="divide-y divide-slate-100 text-xs">
                     {agentsWithoutTeam.map(agent => {
-                      const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0 };
+                      const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0, assignedLeads: 0, contactedLeads: 0 };
                       return (
                         <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">

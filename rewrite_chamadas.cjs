@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+const fs = require('fs');
+
+const content = `import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Phone, CheckCircle, Clock, XCircle, AlertCircle, Save, Loader2, Search, ArrowRight, Lock, Key, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -11,8 +13,6 @@ interface Lead {
   sms_enviado: boolean;
   potencial_fecho: number;
   notas: string;
-  vendedor_id?: string | null;
-  senha_acesso?: string | null;
 }
 
 export default function ChamadasCRM() {
@@ -36,7 +36,7 @@ export default function ChamadasCRM() {
   const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedAuth = sessionStorage.getItem(`crm_auth_${vendedorId}`);
+    const storedAuth = sessionStorage.getItem(\`crm_auth_\${vendedorId}\`);
     if (storedAuth) {
       setSenha(storedAuth);
       validateAccess(storedAuth);
@@ -66,7 +66,7 @@ export default function ChamadasCRM() {
       
       if (data && data.length > 0) {
         setAuthenticated(true);
-        sessionStorage.setItem(`crm_auth_${vendedorId}`, password);
+        sessionStorage.setItem(\`crm_auth_\${vendedorId}\`, password);
         fetchLeads(password);
       } else {
         setAuthError('Senha incorreta ou nenhuma lead atribuída com esta senha.');
@@ -119,36 +119,23 @@ export default function ChamadasCRM() {
 
     setSavingId(id);
     
-    let finalUpdates = { ...updates };
-    const lead = leads.find(l => l.id === id);
-    
     // Auto-check SMS if nao_atendeu
-    if (finalUpdates.estado_chamada === 'nao_atendeu') {
+    if (updates.estado_chamada === 'nao_atendeu' && updates.sms_enviado === undefined) {
+      const lead = leads.find(l => l.id === id);
       if (lead && !lead.sms_enviado) {
-        finalUpdates.sms_enviado = true;
+        updates.sms_enviado = true;
       }
-      
-      // Devolve para a lista a atribuir
-      finalUpdates.vendedor_id = null;
-      finalUpdates.senha_acesso = null;
-      finalUpdates.estado_chamada = 'pendente';
-      const existingNotas = finalUpdates.notas !== undefined ? finalUpdates.notas : (lead?.notas || '');
-      finalUpdates.notas = existingNotas + (existingNotas ? ' | ' : '') + 'Não Atendeu';
     }
     
     try {
       const { error } = await supabase
         .from('leads')
-        .update(finalUpdates)
+        .update(updates)
         .eq('id', id);
         
       if (error) throw error;
       
-      if (finalUpdates.vendedor_id === null) {
-        setLeads(prev => prev.filter(l => l.id !== id));
-      } else {
-        setLeads(prev => prev.map(l => l.id === id ? { ...l, ...finalUpdates } : l));
-      }
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
       setEdits(prev => {
         const newEdits = { ...prev };
         delete newEdits[id];
@@ -168,7 +155,6 @@ export default function ChamadasCRM() {
       case 'contactado': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'nao_atendeu': return 'bg-slate-100 text-slate-600 border-slate-200';
       case 'desligou': return 'bg-rose-50 text-rose-600 border-rose-200';
-      case 'invalido': return 'bg-slate-200 text-slate-700 border-slate-300';
       case 'nao_contactar': return 'bg-slate-800 text-white border-slate-900';
       case 'recusou': return 'bg-rose-100 text-rose-700 border-rose-200';
       case 'fechou_pro': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
@@ -183,7 +169,6 @@ export default function ChamadasCRM() {
       case 'contactado': return 'Contactado';
       case 'nao_atendeu': return 'Não Atendeu';
       case 'desligou': return 'Desligou Chamada';
-      case 'invalido': return 'Número Inválido/Desligado';
       case 'nao_contactar': return 'Não Contactar Mais';
       case 'recusou': return 'Recusou';
       case 'fechou_pro': return 'Fechou (PRO)';
@@ -275,7 +260,7 @@ export default function ChamadasCRM() {
             </div>
             <button 
               onClick={() => {
-                sessionStorage.removeItem(`crm_auth_${vendedorId}`);
+                sessionStorage.removeItem(\`crm_auth_\${vendedorId}\`);
                 setAuthenticated(false);
                 setSenha('');
               }}
@@ -290,19 +275,19 @@ export default function ChamadasCRM() {
         <div className="max-w-7xl mx-auto px-4 flex gap-6">
           <button 
             onClick={() => setActiveTab('pendentes')}
-            className={`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'pendentes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            className={\`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 \${activeTab === 'pendentes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}\`}
           >
             A Contactar
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'pendentes' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+            <span className={\`px-2 py-0.5 rounded-full text-[10px] \${activeTab === 'pendentes' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}\`}>
               {leads.filter(l => (edits[l.id]?.estado_chamada || l.estado_chamada) === 'pendente').length}
             </span>
           </button>
           <button 
             onClick={() => setActiveTab('contactados')}
-            className={`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'contactados' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            className={\`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 \${activeTab === 'contactados' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}\`}
           >
             Já Contactados
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'contactados' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+            <span className={\`px-2 py-0.5 rounded-full text-[10px] \${activeTab === 'contactados' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}\`}>
               {leads.filter(l => (edits[l.id]?.estado_chamada || l.estado_chamada) !== 'pendente').length}
             </span>
           </button>
@@ -353,24 +338,23 @@ export default function ChamadasCRM() {
                     const hasEdits = edits[lead.id] !== undefined;
                     const isSaving = savingId === lead.id;
                     return (
-                      <tr key={lead.id} className={`transition-colors ${hasEdits ? 'bg-blue-50/30' : 'hover:bg-slate-50'}`}>
+                      <tr key={lead.id} className={\`transition-colors \${hasEdits ? 'bg-blue-50/30' : 'hover:bg-slate-50'}\`}>
                         <td className="p-4 font-bold text-slate-900">
                           {lead.nome_loja}
                         </td>
                         <td className="p-4 font-mono font-medium text-slate-700">
-                          <a href={`tel:${lead.telefone}`} className="hover:text-blue-600 hover:underline">{lead.telefone}</a>
+                          <a href={\`tel:\${lead.telefone}\`} className="hover:text-blue-600 hover:underline">{lead.telefone}</a>
                         </td>
                         <td className="p-4">
                           <select
                             value={lead.estado_chamada}
                             onChange={(e) => handleEdit(lead.id, 'estado_chamada', e.target.value)}
-                            className={`w-full text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer border focus:ring-2 focus:ring-blue-500/30 ${getStatusColor(lead.estado_chamada)}`}
+                            className={\`w-full text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer border focus:ring-2 focus:ring-blue-500/30 \${getStatusColor(lead.estado_chamada)}\`}
                           >
                             <option value="pendente">A Contactar</option>
                             <option value="contactado">Contactado</option>
-                            <option value="nao_atendeu">Não Atendeu (Avisa SMS e Devolve)</option>
+                            <option value="nao_atendeu">Não Atendeu (Avisa SMS)</option>
                             <option value="desligou">Desligou Chamada</option>
-                            <option value="invalido">Número Inválido/Desligado</option>
                             <option value="nao_contactar">Não Contactar Mais</option>
                             <option value="recusou">Recusou</option>
                             <option value="fechou_pro">Fechou PRO</option>
@@ -410,11 +394,11 @@ export default function ChamadasCRM() {
                           <button
                             onClick={() => saveLead(lead.id)}
                             disabled={!hasEdits || isSaving}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 mx-auto transition-colors ${
+                            className={\`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 mx-auto transition-colors \${
                               hasEdits 
                                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                                 : 'bg-slate-100 text-slate-400'
-                            }`}
+                            }\`}
                           >
                             {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                             {isSaving ? 'A Guardar' : 'Guardar'}
@@ -458,3 +442,6 @@ export default function ChamadasCRM() {
     </div>
   );
 }
+`
+
+fs.writeFileSync('src/pages/ChamadasCRM.tsx', content);
