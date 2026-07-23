@@ -197,6 +197,14 @@ export default function Home() {
           let realStartPrice = 0; 
           let hasRealPromotion = b.is_promoted || false; 
 
+          let simCurrency = b.currency || 'EUR';
+          if (!b.currency) {
+            const c = b.city?.toLowerCase() || '';
+            if (c.includes('nova iorque') || c.includes('new york') || c.includes('los angeles')) {
+              simCurrency = 'USD';
+            }
+          }
+          
           if (bServices.length > 0) { 
             const prices = bServices.map((s: any) => { 
               const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0); 
@@ -215,7 +223,7 @@ export default function Home() {
           } 
 
           return {  
-            ...b, rating, reviewsCount: bReviews.length, startPrice: realStartPrice,  
+            ...b, currency: simCurrency, rating, reviewsCount: bReviews.length, startPrice: realStartPrice,  
             lat, lng, distance, isNew: (now.getTime() - new Date(b.created_at).getTime()) < 15 * 24 * 60 * 60 * 1000,  
             services: bServices, is_promoted: hasRealPromotion  
           };  
@@ -336,7 +344,7 @@ export default function Home() {
       </div> 
        
       <div className="mt-1 flex items-baseline gap-1"> 
-        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? formatPrice(b.startPrice) : 'Grátis'}</span> 
+        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? formatPrice(b.startPrice, b.currency) : 'Grátis'}</span> 
         <span className="text-sm text-slate-500">preço base</span> 
       </div> 
     </Link> 

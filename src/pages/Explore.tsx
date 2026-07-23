@@ -196,8 +196,18 @@ export default function Explore() {
       
       let loadedBiz = baseBiz.map(b => {
         const stats = analyticsData.find((a: any) => a.shop_id === b.id) || {};
+        
+        let simCurrency = b.currency || 'EUR';
+        if (!b.currency) {
+          const c = b.city?.toLowerCase() || '';
+          if (c.includes('nova iorque') || c.includes('new york') || c.includes('los angeles')) {
+            simCurrency = 'USD';
+          }
+        }
+        
         return {
            ...b,
+           currency: simCurrency,
            is_new: stats.is_new || false,
            is_popular: stats.is_popular || false,
            is_top_rated: stats.is_top_rated || false,

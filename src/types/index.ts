@@ -38,6 +38,7 @@ export interface Business {
   cancellation_policy?: string | null;
   booking_end_margin?: number | null;
   subscription_status?: string;
+  currency?: string;
   trial_ends_at?: string | null;
   credits?: number; // System credits (default 40 for PRO partner)
   is_promoted?: boolean; // Currently active marketing campaign

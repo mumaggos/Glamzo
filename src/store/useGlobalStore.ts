@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import i18n from '../i18n';
 
 interface GlobalState {
   language: 'pt' | 'en';
@@ -13,7 +14,10 @@ export const useGlobalStore = create<GlobalState>((set) => ({
   language: 'pt',
   currency: 'EUR',
   userLocation: null,
-  setLanguage: (lang) => set({ language: lang }),
+  setLanguage: (lang) => {
+    i18n.changeLanguage(lang);
+    set({ language: lang });
+  },
   setCurrency: (currency) => set({ currency: currency }),
   setUserLocation: (loc) => set({ userLocation: loc }),
 }));

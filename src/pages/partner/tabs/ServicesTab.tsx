@@ -5,6 +5,7 @@ import { SUBCATEGORIES_BY_MAIN } from "../../../utils/categoriesData";
 import { Scissors, Plus, Pencil, Trash2, X, GripVertical } from "lucide-react";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { Business, Service, ServiceCategory } from "../../../types";
+import { useFormatPrice } from "../../../utils/formatPrice";
 
 interface PartnerContextType {
   business: Business | null;
@@ -16,6 +17,7 @@ interface PartnerContextType {
 
 export default function ServicesTab() {
   const { business, categories, services, loadLayoutData, isLoadingData } = useOutletContext<PartnerContextType>();
+  const formatPrice = useFormatPrice();
 
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -212,7 +214,7 @@ export default function ServicesTab() {
                       {svc.name}
                     </h5>
                     <p className="text-[10px] text-slate-500 font-mono mt-1">
-                      {svc.duration_minutes} min • {svc.price}€
+                      {svc.duration_minutes} min • {formatPrice(Number(svc.price), business?.currency)}
                     </p>
                   </div>
                 </div>

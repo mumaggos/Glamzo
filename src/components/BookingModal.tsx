@@ -6,6 +6,8 @@ import {
   X, Calendar, Clock, User, CreditCard, Check, 
   ChevronRight, ArrowLeft, Loader2, Sparkles, Smile, ShieldCheck, AlertCircle 
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useFormatPrice } from '../utils/formatPrice';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -20,6 +22,8 @@ interface BookingModalProps {
 const BookingModal = React.memo(function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
+  const { t } = useTranslation();
+  const formatPrice = useFormatPrice();
   const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
@@ -434,12 +438,12 @@ const handleConfirmReservation = async () => {
               Sessão: {profile?.full_name?.split(' ')[0] || "Cliente"}
             </span>
             <h3 className="text-xl font-black tracking-tight mt-2">
-              {step === 1 && 'Selecionar Serviços'}
-              {step === 2 && 'Escolher Profissional'}
-              {step === 3 && 'Data de Atendimento'}
-              {step === 4 && 'Horários Disponíveis'}
-              {step === 5 && 'Método de Pagamento'}
-              {step === 6 && 'Confirmar Reserva'}
+              {step === 1 && (t('step_service') || 'Selecionar Serviços')}
+              {step === 2 && (t('step_staff') || 'Escolher Profissional')}
+              {step === 3 && (t('step_datetime') || 'Data de Atendimento')}
+              {step === 4 && (t('step_datetime') || 'Horários Disponíveis')}
+              {step === 5 && (t('step_payment') || 'Método de Pagamento')}
+              {step === 6 && (t('step_confirm') || 'Confirmar Reserva')}
             </h3>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"><X className="w-5 h-5" /></button>
@@ -478,7 +482,7 @@ const handleConfirmReservation = async () => {
                           <p className="text-xs text-slate-500 mt-1 line-clamp-1">{srv.description}</p>
                         </div>
                         <div className="text-right">
-                          <span className="font-black text-slate-900">{Number(srv.price).toFixed(2)}€</span>
+                          <span className="font-black text-slate-900">{formatPrice(Number(srv.price), business?.currency)}</span>
                           <span className="block text-[10px] font-bold text-slate-400 uppercase mt-1">{srv.duration_minutes} min</span>
                         </div>
                       </div>
@@ -491,7 +495,7 @@ const handleConfirmReservation = async () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div onClick={() => { setSelectedStaff('any'); setSelectedTime(null); }} className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center justify-center text-center gap-2 h-32 bg-white shadow-sm ${selectedStaff === 'any' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center"><Sparkles className="w-6 h-6 text-purple-500" /></div>
-                    <span className="font-bold text-sm">Qualquer Profissional</span>
+                    <span className="font-bold text-sm">{t('any_professional') || 'Qualquer Profissional'}</span>
                   </div>
                   {(staff || []).map(s => (
                     <div key={s.id} onClick={() => { setSelectedStaff(s); setSelectedTime(null); }} className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center justify-center text-center gap-2 h-32 bg-white shadow-sm ${selectedStaff?.id === s.id ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
@@ -537,8 +541,8 @@ const handleConfirmReservation = async () => {
                   <div onClick={() => setPaymentMethod('local')} className={`p-5 rounded-2xl border cursor-pointer bg-white shadow-sm flex items-center gap-4 ${paymentMethod === 'local' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><Smile className="w-6 h-6 text-slate-600" /></div>
                     <div className="flex-1">
-                      <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagar no Local</h4></div>
-                      <p className="text-xs text-slate-500 mt-1">Dinheiro ou MBWay no balcão.</p>
+                      <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">{t('pay_local') || 'Pagar no Local'}</h4></div>
+                      <p className="text-xs text-slate-500 mt-1">{t('pay_local_desc') || 'Dinheiro ou MBWay no balcão.'}</p>
 
                     </div>
                   </div>
@@ -546,8 +550,8 @@ const handleConfirmReservation = async () => {
                     <div onClick={() => setPaymentMethod('stripe')} className={`p-5 rounded-2xl border cursor-pointer bg-white shadow-sm flex items-center gap-4 ${paymentMethod === 'stripe' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 hover:border-purple-300'}`}>
                       <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center shrink-0"><CreditCard className="w-6 h-6 text-purple-600" /></div>
                       <div className="flex-1">
-                        <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">Pagamento Online Seguro</h4><div className="inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-emerald-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm animate-pulse-soft"><Sparkles className="w-3 h-3" /> +50 PTS</div></div>
-                        <p className="text-xs text-slate-500 mt-1">Cartão, MBWay ou Apple Pay (Glamzo Pay).</p>
+                        <div className="flex justify-between items-center"><h4 className="font-black text-slate-900 text-sm">{t('pay_online') || 'Pagamento Online Seguro'}</h4><div className="inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-emerald-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm animate-pulse-soft"><Sparkles className="w-3 h-3" /> +50 PTS</div></div>
+                        <p className="text-xs text-slate-500 mt-1">{t('pay_online_desc') || 'Cartão, MBWay ou Apple Pay (Glamzo Pay).'}</p>
 
                       </div>
                     </div>
@@ -564,34 +568,34 @@ const handleConfirmReservation = async () => {
                       <p className="text-xs text-slate-500">{selectedDate?.toLocaleDateString()} às {selectedTime}</p>
                     </div>
                     <div className="text-right">
-                      <span className="block text-xs font-bold text-slate-400 uppercase">Total a Pagar</span>
+                      <span className="block text-xs font-bold text-slate-400 uppercase">{t('total_to_pay') || 'Total a Pagar'}</span>
                       {appliedPromo ? (
                         <>
-                          <span className="text-sm font-bold text-slate-400 line-through mr-2">{totalServicesPrice.toFixed(2)}€</span>
-                          <span className="text-2xl font-black text-emerald-600">{finalPrice.toFixed(2)}€</span>
+                          <span className="text-sm font-bold text-slate-400 line-through mr-2">{formatPrice(totalServicesPrice, business?.currency)}</span>
+                          <span className="text-2xl font-black text-emerald-600">{formatPrice(finalPrice, business?.currency)}</span>
                         </>
                       ) : (
-                        <span className="text-2xl font-black text-purple-600">{totalServicesPrice.toFixed(2)}€</span>
+                        <span className="text-2xl font-black text-purple-600">{formatPrice(totalServicesPrice, business?.currency)}</span>
                       )}
                     </div>
                   </div>
                   <div className="pt-2 pb-4 border-b border-slate-100">
-                     <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Código Promocional</label>
+                     <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">{t('promo_code') || 'Código Promocional'}</label>
                      <div className="flex gap-2">
                        <input value={promoCode} onChange={e => setPromoCode(e.target.value)} disabled={!!appliedPromo} placeholder="Insira o código" className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold uppercase outline-none focus:border-purple-500 disabled:opacity-50" />
                        {!appliedPromo ? (
-                         <button onClick={handleApplyPromo} disabled={validatingPromo || !promoCode.trim()} className="bg-slate-900 hover:bg-black text-white px-4 rounded-xl font-bold text-sm transition-colors disabled:opacity-50">{validatingPromo ? 'A verificar...' : 'Aplicar'}</button>
+                         <button onClick={handleApplyPromo} disabled={validatingPromo || !promoCode.trim()} className="bg-slate-900 hover:bg-black text-white px-4 rounded-xl font-bold text-sm transition-colors disabled:opacity-50">{validatingPromo ? 'A verificar...' : (t('apply') || 'Aplicar')}</button>
                        ) : (
-                         <button onClick={() => { setAppliedPromo(null); setPromoCode(''); }} className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 rounded-xl font-bold text-sm transition-colors border border-rose-200">Remover</button>
+                         <button onClick={() => { setAppliedPromo(null); setPromoCode(''); }} className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 rounded-xl font-bold text-sm transition-colors border border-rose-200">{t('remove') || 'Remover'}</button>
                        )}
                      </div>
                      {appliedPromo && (
-                       <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Desconto de {appliedPromo.discount_percent ? `${appliedPromo.discount_percent}%` : `${appliedPromo.discount_value}€`} aplicado com sucesso!</p>
+                       <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Desconto de {appliedPromo.discount_percent ? `${appliedPromo.discount_percent}%` : formatPrice(appliedPromo.discount_value, business?.currency)} aplicado com sucesso!</p>
                      )}
                   </div>
                   <div className="space-y-2 pt-2">
 
-                    <label className="text-xs font-bold text-slate-500 uppercase">Observações para o salão</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase">{t('notes_salon') || 'Observações para o salão'}</label>
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Preciso de sair rápido..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:border-purple-500" rows={2} />
                   </div>
                 </div>
@@ -600,7 +604,7 @@ const handleConfirmReservation = async () => {
 
             <div className="bg-white border-t border-slate-200 p-4 sm:p-6 flex gap-3 shrink-0">
               {step > 1 ? <button onClick={() => setStep(step - 1)} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">Voltar</button> : <button onClick={onClose} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">Cancelar</button>}
-              {step < 6 ? <button onClick={() => { if (step === 1 && selectedServices.length === 0) return setErrorMsg('Selecione serviços'); if (step === 3 && !selectedDate) return setErrorMsg('Selecione uma data'); if (step === 4 && !selectedTime) return setErrorMsg('Selecione uma hora'); setStep(step + 1); setErrorMsg(null); }} className="flex-1 bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">Continuar <ChevronRight className="w-4 h-4" /></button> : <button onClick={handleConfirmReservation} disabled={submitting} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl shadow-xl shadow-purple-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50">{submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />} Confirmar Reserva</button>}
+              {step < 6 ? <button onClick={() => { if (step === 1 && selectedServices.length === 0) return setErrorMsg('Selecione serviços'); if (step === 3 && !selectedDate) return setErrorMsg('Selecione uma data'); if (step === 4 && !selectedTime) return setErrorMsg('Selecione uma hora'); setStep(step + 1); setErrorMsg(null); }} className="flex-1 bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">Continuar <ChevronRight className="w-4 h-4" /></button> : <button onClick={handleConfirmReservation} disabled={submitting} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl shadow-xl shadow-purple-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50">{submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />} {t('confirm_booking') || 'Confirmar Reserva'}</button>}
             </div>
           </>
         )}

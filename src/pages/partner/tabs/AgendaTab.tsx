@@ -6,8 +6,12 @@ import { useStripeTerminal } from "../../../hooks/useStripeTerminal";
 import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2, Smartphone, CreditCard } from "lucide-react";
 import { processBookingPoints } from '../../../utils/rewardsHelper';
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
+import { useTranslation } from "react-i18next";
+import { useFormatPrice } from "../../../utils/formatPrice";
 
 export default function AgendaTab() {
+  const { t } = useTranslation();
+  const formatPrice = useFormatPrice();
   const { business, user, services, staff, bookings, businessHours, loadLayoutData } = useOutletContext<any>();
 
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
@@ -280,7 +284,7 @@ export default function AgendaTab() {
                      </div>
                      <div className="text-right">
                         <p className="text-[10px] uppercase font-bold text-slate-400">Valor</p>
-                        <p className="text-lg font-black text-slate-900">{Number(price || 0).toFixed(2)}€</p>
+                        <p className="text-lg font-black text-slate-900">{formatPrice(Number(price || 0), business?.currency)}</p>
                      </div>
                    </div>
                  );

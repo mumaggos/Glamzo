@@ -20,7 +20,7 @@ export default function DeveloperPanel() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-[99999] bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 w-[calc(100vw-32px)] sm:w-80 max-h-[85vh] overflow-y-auto overscroll-contain font-sans">
+    <div className="fixed bottom-4 left-4 z-[99999] bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 w-[calc(100vw-32px)] sm:w-80 max-h-[85vh] overflow-y-auto overscroll-contain pb-6 pointer-events-auto font-sans" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2 border-b border-slate-100">
         <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
           <Settings className="w-5 h-5 text-purple-600" />
@@ -87,22 +87,28 @@ export default function DeveloperPanel() {
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
             <MapPin className="w-4 h-4" /> Simular Local
           </label>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 pb-12">
             <button
               onClick={() => setUserLocation({ lat: 38.7223, lng: -9.1393 })} // Lisbon
-              className="w-full text-left px-4 py-3 text-sm font-bold bg-slate-50 text-slate-700 active:bg-slate-200 sm:hover:bg-slate-100 rounded-lg touch-manipulation"
+              className="w-full text-left px-4 py-3 text-sm font-bold bg-slate-50 text-slate-700 active:bg-slate-200 sm:hover:bg-slate-100 rounded-lg touch-manipulation cursor-pointer"
             >
               📍 Lisboa
             </button>
             <button
               onClick={() => setUserLocation({ lat: 41.1579, lng: -8.6291 })} // Porto
-              className="w-full text-left px-4 py-3 text-sm font-bold bg-slate-50 text-slate-700 active:bg-slate-200 sm:hover:bg-slate-100 rounded-lg touch-manipulation"
+              className="w-full text-left px-4 py-3 text-sm font-bold bg-slate-50 text-slate-700 active:bg-slate-200 sm:hover:bg-slate-100 rounded-lg touch-manipulation cursor-pointer"
             >
               📍 Porto
             </button>
+            <button
+              onClick={() => setUserLocation({ lat: 40.7128, lng: -74.0060 })} // New York
+              className="w-full text-left px-4 py-3 text-sm font-bold bg-slate-50 text-slate-700 active:bg-slate-200 sm:hover:bg-slate-100 rounded-lg touch-manipulation cursor-pointer"
+            >
+              📍 Nova Iorque
+            </button>
              <button
               onClick={() => setUserLocation(null)}
-              className="w-full text-left px-4 py-3 text-sm font-bold bg-rose-50 text-rose-700 active:bg-rose-200 sm:hover:bg-rose-100 rounded-lg mt-1 touch-manipulation"
+              className="w-full text-left px-4 py-3 text-sm font-bold bg-rose-50 text-rose-700 active:bg-rose-200 sm:hover:bg-rose-100 rounded-lg mt-1 touch-manipulation cursor-pointer"
             >
               Limpar Localização
             </button>
