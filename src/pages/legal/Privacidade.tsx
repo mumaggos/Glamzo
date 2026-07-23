@@ -1,11 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Privacidade() {
+  const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="politica-de-privacidade"
-      defaultTitle="Política de Privacidade" 
+      defaultTitle={t('Política de Privacidade') || 'Política de Privacidade'} 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>

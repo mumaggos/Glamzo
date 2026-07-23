@@ -1762,7 +1762,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold px-4 py-2 rounded-xl cursor-pointer">
                           Acrescentar Pontos à Conta
                         </button>
-                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">Cancelar</button>
+                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">{t('cancel') || 'Cancelar'}</button>
                       </div>
                     </div>
                   )}
@@ -1834,7 +1834,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                     title="Editar Informações"
                                   >
                                     <Settings className="w-3.5 h-3.5 text-purple-450" />
-                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">Editar</span>
+                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">{t('edit') || 'Editar'}</span>
                                   </button>
 
                                   <button
@@ -2353,9 +2353,7 @@ create policy "Allow admins full operations on homepage_cards"
                               setCmsEmoji('✨');
                             }}
                             className="px-3 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
-                          >
-                            Cancelar
-                          </button>
+                          >{t('cancel') || 'Cancelar'}</button>
                         )}
                       </div>
                     </form>
@@ -2444,9 +2442,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     type="button"
                                     className="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-900/40 text-purple-700 text-[10px] font-bold cursor-pointer transition-all"
                                     title="Editar Cartão"
-                                  >
-                                    Editar
-                                  </button>
+                                  >{t('edit') || 'Editar'}</button>
                                   <button
                                     onClick={() => handleDeleteCmsCard(card.id)}
                                     type="button"
@@ -2623,9 +2619,7 @@ $$;`}
                               type="button"
                               onClick={() => setEditingPageSlug(null)}
                               className="px-4 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
-                            >
-                              Fechar
-                            </button>
+                            >{t('close') || 'Fechar'}</button>
                           </div>
                         </form>
                       </div>
@@ -3197,9 +3191,7 @@ $$;`}
                   type="button" 
                   onClick={() => setEditingUser(null)}
                   className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >
-                  Cancelar
-                </button>
+                >{t('cancel') || 'Cancelar'}</button>
               </div>
             </form>
           </div>
@@ -3324,9 +3316,7 @@ $$;`}
                   type="button" 
                   onClick={() => setEditingSalon(null)}
                   className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >
-                  Cancelar
-                </button>
+                >{t('cancel') || 'Cancelar'}</button>
               </div>
             </form>
           </div>
@@ -3400,9 +3390,7 @@ $$;`}
                     setDeleteAccountDoubleConfirmText('');
                   }}
                   className="flex-1 bg-slate-50 text-slate-600 hover:text-slate-900 py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >
-                  Cancelar
-                </button>
+                >{t('cancel') || 'Cancelar'}</button>
               </div>
             </div>
           </div>

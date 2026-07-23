@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Sparkles, Check, CheckCircle, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
@@ -11,6 +12,7 @@ interface PartnerContextType {
 
 
 const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSelectedInvoice: any }> = ({ staffMember, staffLedgers, setSelectedInvoice }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
   
@@ -46,7 +48,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
                 <th className="py-2 px-3">Serviço</th>
                 <th className="py-2 px-3">Método</th>
                 <th className="py-2 px-3 text-right">Valor</th>
-                <th className="py-2 px-3 text-center">Detalhes</th>
+                <th className="py-2 px-3 text-center">{t('details') || 'Detalhes'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -75,6 +77,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
 }
 
 export default function FinanceTab() {
+  const { t } = useTranslation();
   const { business, staff } = useOutletContext<PartnerContextType>();
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);

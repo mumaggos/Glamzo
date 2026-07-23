@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { SUBCATEGORIES_BY_MAIN } from "../../../utils/categoriesData";
@@ -16,6 +17,7 @@ interface PartnerContextType {
 }
 
 export default function ServicesTab() {
+  const { t } = useTranslation();
   const { business, categories, services, loadLayoutData, isLoadingData } = useOutletContext<PartnerContextType>();
   const formatPrice = useFormatPrice();
 
@@ -376,9 +378,7 @@ export default function ServicesTab() {
                         setCustomCategoryName("");
                       }}
                       className="bg-slate-100 text-slate-500 px-4 rounded-xl font-bold hover:bg-slate-200 transition"
-                    >
-                      Cancelar
-                    </button>
+                    >{t('cancel') || 'Cancelar'}</button>
                   </div>
                 )}
               </div>

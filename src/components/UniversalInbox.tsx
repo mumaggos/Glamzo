@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { Search, Send, ArrowLeft, MessageSquare, ShieldAlert } from 'lucide-react';
 
@@ -26,6 +27,7 @@ interface UniversalInboxProps {
 }
 
 export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
@@ -256,8 +258,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
                 onClick={() => setSelectedSession(null)}
                 className="p-1.5 bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1 font-bold text-xs pr-3"
               >
-                <ArrowLeft className="w-4 h-4" /> Voltar
-              </button>
+                <ArrowLeft className="w-4 h-4" />{t('back') || 'Voltar'}</button>
               <div>
                 <span className="block font-black text-slate-900 text-xs uppercase tracking-tight flex items-center gap-1">
                   {selectedSession.otherType === 'admin' && <ShieldAlert className="w-3 h-3 text-rose-500" />}

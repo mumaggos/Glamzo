@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { DashboardCalendar } from "../../components/DashboardCalendar";
@@ -7,6 +8,7 @@ import { optimizeImageBeforeUpload } from "../../utils/imageOptimizer";
 import { Staff, Booking, Service } from "../../types";
 
 export default function StaffDashboard() {
+  const { t } = useTranslation();
   const [staff, setStaff] = useState<Staff | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -418,7 +420,7 @@ export default function StaffDashboard() {
                )}
                {selectedBooking.booking_status !== 'completed' && !selectedBooking.notes?.includes('🛑 BLOQUEIO') && (
                  <div className="pt-4 flex gap-2">
-                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="flex-1 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">Cancelar</button>
+                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="flex-1 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">{t('cancel') || 'Cancelar'}</button>
                    <button onClick={() => handleUpdateBookingStatus('completed')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition shadow-md">Concluir</button>
                  </div>
                )}

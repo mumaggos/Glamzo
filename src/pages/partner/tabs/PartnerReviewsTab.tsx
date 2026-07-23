@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 import { supabase } from '../../../lib/supabase';
@@ -8,6 +9,7 @@ import { Star, MessageSquare, Reply, Loader2, Send } from 'lucide-react';
 import { fetchReviewsForBusiness } from '../../../utils/reviewsHelper';
 
 export default function PartnerReviewsTab() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [business, setBusiness] = useState<Business | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -176,7 +178,7 @@ export default function PartnerReviewsTab() {
                       className="w-full text-sm p-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-purple-500 mb-3"
                     />
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => setReplyingTo(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+                      <button onClick={() => setReplyingTo(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">{t('cancel') || 'Cancelar'}</button>
                       <button onClick={() => submitReply(r.id)} disabled={submittingReply || !replyText.trim()} className="px-4 py-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2">
                         {submittingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         Publicar Resposta

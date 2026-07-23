@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -25,6 +26,7 @@ const defaultDraft = {
 };
 
 export default function Onboarding() {
+  const { t } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -355,7 +357,7 @@ export default function Onboarding() {
                     (document.getElementById('newServiceName') as HTMLInputElement).value = '';
                     (document.getElementById('newServicePrice') as HTMLInputElement).value = '';
                   }
-                }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Adicionar</button>
+                }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">{t('add') || 'Adicionar'}</button>
               </div>
               <ul className="space-y-2">
                 {draft.step5.services.map((s: any, idx: number) => (
@@ -488,8 +490,7 @@ export default function Onboarding() {
               <div className="mt-10 pt-6 border-t border-slate-100 flex justify-between items-center">
                 {currentStep > 1 ? (
                   <button onClick={handleBack} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 px-4 py-2">
-                    <ArrowLeft className="w-4 h-4" /> Voltar
-                  </button>
+                    <ArrowLeft className="w-4 h-4" />{t('back') || 'Voltar'}</button>
                 ) : <div />}
                 
                 <button onClick={handleNext} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-sm transition-all">

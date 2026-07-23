@@ -912,7 +912,7 @@ export default function Account() {
                         <p className="text-xs text-slate-500">{biz.city || 'Portugal'}</p>
                         <div className="mt-2 flex gap-2">
                           <a href={`/salao/${biz.id}`} className="text-[10px] font-bold bg-purple-50 hover:bg-purple-600 hover:text-white transition-colors text-purple-700 px-3 py-1.5 rounded-lg">Reservar</a>
-                          <button onClick={() => handleRemoveFavorite(biz.id)} className="text-[10px] font-bold bg-rose-50 hover:bg-rose-500 hover:text-white transition-colors text-rose-600 px-3 py-1.5 rounded-lg">Remover</button>
+                          <button onClick={() => handleRemoveFavorite(biz.id)} className="text-[10px] font-bold bg-rose-50 hover:bg-rose-500 hover:text-white transition-colors text-rose-600 px-3 py-1.5 rounded-lg">{t('remove') || 'Remover'}</button>
                         </div>
                       </div>
                     </div>

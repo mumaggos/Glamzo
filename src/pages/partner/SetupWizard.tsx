@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -74,6 +75,7 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 };
 
 export default function SetupWizard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -1288,7 +1290,7 @@ export default function SetupWizard() {
                 className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Voltar</span>
+                <span>{t('back') || 'Voltar'}</span>
               </button>
               <button
                 type="button"
@@ -1387,7 +1389,7 @@ export default function SetupWizard() {
                   className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2 w-full max-w-[200px]"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
+                  <span>{t('back') || 'Voltar'}</span>
                 </button>
              )}
             

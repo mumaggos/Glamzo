@@ -354,7 +354,7 @@ const { slug } = useParams<{ slug: string }>();
           {/* Top Actions */}
           <div className="absolute top-6 left-4 sm:left-8 z-10">
             <Link to="/explore" className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">
-              <ArrowLeft className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">Voltar</span>
+              <ArrowLeft className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">{t('back') || 'Voltar'}</span>
             </Link>
           </div>
           <div className="absolute top-6 right-4 sm:right-8 z-10 flex gap-2">

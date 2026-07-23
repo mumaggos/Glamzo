@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
 interface GlobalState {
-  language: 'pt' | 'en';
+  language: 'pt' | 'en' | 'es' | 'fr' | 'de';
   currency: 'EUR' | 'USD';
   userLocation: { lat: number; lng: number } | null;
-  setLanguage: (lang: 'pt' | 'en') => void;
+  setLanguage: (lang: 'pt' | 'en' | 'es' | 'fr' | 'de') => void;
   setCurrency: (currency: 'EUR' | 'USD') => void;
   setUserLocation: (loc: { lat: number; lng: number } | null) => void;
 }

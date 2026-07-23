@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { ShieldAlert, Send, Paperclip, Loader2, Image as ImageIcon, AlertCircle, CheckCircle, Clock, Trash2, Check, ArrowLeft } from 'lucide-react';
 
@@ -21,6 +22,7 @@ interface UniversalDisputesProps {
 }
 
 export default function UniversalDisputes({ myId, myType }: UniversalDisputesProps) {
+  const { t } = useTranslation();
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);
@@ -155,7 +157,7 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
       {/* List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading ? (
-          <div className="flex justify-center p-8 text-slate-400">A carregar...</div>
+          <div className="flex justify-center p-8 text-slate-400">{t('loading') || 'A carregar...'}</div>
         ) : disputes.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-slate-400">
             <CheckCircle className="w-12 h-12 mb-2 text-emerald-400" />
@@ -318,8 +320,7 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
                       onClick={() => handleDelete(selectedDispute.id)}
                       className="bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-1"
                     >
-                      <Trash2 className="w-3 h-3" /> Apagar
-                    </button>
+                      <Trash2 className="w-3 h-3" />{t('delete') || 'Apagar'}</button>
                   </div>
                 </div>
               )}

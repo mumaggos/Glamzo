@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Heart, Search, MapPin, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Favorites() {
+  const { t } = useTranslation();
   const { user, authLoading } = useAuth();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<any[]>([]);
@@ -70,7 +72,7 @@ export default function Favorites() {
     <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold mb-6 transition-colors">
         <ArrowLeft className="w-5 h-5" />
-        <span>Voltar</span>
+        <span>{t('back') || 'Voltar'}</span>
       </button>
 
       <div className="flex items-center gap-3 mb-8">

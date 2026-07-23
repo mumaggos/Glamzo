@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Scissors, Share, PlusSquare, Download } from "lucide-react";
 
 export default function StaffLogin() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +157,7 @@ export default function StaffLogin() {
                   <ol className="list-decimal pl-4 space-y-1">
                     <li>Clica no ícone de partilha <Share className="w-3 h-3 inline mx-1" /> na barra inferior</li>
                     <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> <PlusSquare className="w-3 h-3 inline mx-1" /></li>
-                    <li>Clica em <strong>Adicionar</strong> no canto superior direito</li>
+                    <li>Clica em <strong>{t('add') || 'Adicionar'}</strong> no canto superior direito</li>
                   </ol>
                 </div>
 
@@ -164,16 +166,14 @@ export default function StaffLogin() {
                   <ol className="list-decimal pl-4 space-y-1">
                     <li>Clica nos 3 pontinhos no canto superior direito</li>
                     <li>Escolhe <strong>"Adicionar ao ecrã principal"</strong></li>
-                    <li>Clica em <strong>Adicionar</strong></li>
+                    <li>Clica em <strong>{t('add') || 'Adicionar'}</strong></li>
                   </ol>
                 </div>
                 
                 <button 
                   onClick={() => setShowInstallHelp(false)}
                   className="w-full mt-2 py-2 text-center font-bold text-slate-500 hover:text-slate-700 transition"
-                >
-                  Fechar
-                </button>
+                >{t('close') || 'Fechar'}</button>
               </div>
             )}
           </div>

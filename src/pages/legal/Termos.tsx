@@ -1,11 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Termos() {
+  const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="termos-e-condicoes"
-      defaultTitle="Termos e Condições" 
+      defaultTitle={t('Termos e Condições') || 'Termos e Condições'} 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>

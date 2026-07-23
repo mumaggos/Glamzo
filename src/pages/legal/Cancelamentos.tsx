@@ -1,11 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Cancelamentos() {
+  const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="politica-de-cancelamentos"
-      defaultTitle="Política de Cancelamentos e Reembolsos" 
+      defaultTitle={t('Política de Cancelamentos e Reembolsos') || 'Política de Cancelamentos e Reembolsos'} 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>

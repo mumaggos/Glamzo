@@ -1,11 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Cookies() {
+  const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="politica-de-cookies"
-      defaultTitle="Política de Cookies" 
+      defaultTitle={t('Política de Cookies') || 'Política de Cookies'} 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>

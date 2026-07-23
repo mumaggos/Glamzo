@@ -1,11 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Seguranca() {
+  const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="seguranca-e-protecao-de-dados"
-      defaultTitle="Segurança e Proteção de Dados" 
+      defaultTitle={t('Segurança e Proteção de Dados') || 'Segurança e Proteção de Dados'} 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>
