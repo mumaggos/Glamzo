@@ -252,16 +252,18 @@ export default function StaffDashboard() {
         <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 shadow-sm">
           <svg className="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
-        <h2 className="text-xl font-black text-slate-900 mb-2">Sistema em Pausa</h2>
+        <h2 className="text-xl font-black text-slate-900 mb-2">{t('txt_sistema_em_pausa') || 'Sistema em Pausa'}</h2>
         <p className="text-sm text-slate-500 max-w-sm mb-8 leading-relaxed">
-          O acesso à plataforma do seu espaço encontra-se temporariamente suspenso. Por favor, contacte a gerência para restabelecer a ligação.
-        </p>
+          
+                          {t('txt_o_acesso_plataforma_do_seu_esp') || 'O acesso à plataforma do seu espaço encontra-se temporariamente suspenso. Por favor, contacte a gerência para restabelecer a ligação.'}
+                        </p>
         <button 
           onClick={async () => { await supabase.auth.signOut(); navigate('/staff/login'); }} 
           className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-100 transition shadow-sm"
         >
-          Terminar Sessão
-        </button>
+          
+                          {t('txt_terminar_sess_o') || 'Terminar Sessão'}
+                        </button>
       </div>
     );
   }
@@ -300,18 +302,19 @@ export default function StaffDashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-purple-600" />
-                A Minha Agenda
-              </h2>
+                
+                                              {t('txt_a_minha_agenda') || 'A Minha Agenda'}
+                                            </h2>
               <div className="flex gap-2">
-                 <button onClick={() => { setAgendaMode('day'); setSelectedAgendaDate(new Date().toISOString().split('T')[0]) }} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200">Hoje</button>
+                 <button onClick={() => { setAgendaMode('day'); setSelectedAgendaDate(new Date().toISOString().split('T')[0]) }} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200">{t('txt_hoje_157') || 'Hoje'}</button>
                  <select value={agendaMode} onChange={(e: any) => setAgendaMode(e.target.value)} className="text-xs px-3 py-1.5 rounded-full bg-slate-100 font-bold hover:bg-slate-200 outline-none">
-                    <option value="day">1 Dia</option>
-                    <option value="3days">3 Dias</option>
-                    <option value="week">Semana</option>
+                    <option value="day">{t('txt_1_dia') || '1 Dia'}</option>
+                    <option value="3days">{t('txt_3_dias') || '3 Dias'}</option>
+                    <option value="week">{t('txt_semana_158') || 'Semana'}</option>
                  </select>
                  <button onClick={() => setIsManualBookingOpen(true)} className="text-xs px-3 py-1.5 rounded-full bg-purple-600 text-white font-bold hover:bg-purple-700 flex items-center gap-1">
-                    <Plus className="w-3 h-3"/> Nova
-                 </button>
+                    <Plus className="w-3 h-3"/>  {t('txt_nova_159') || 'Nova'}
+                                                   </button>
               </div>
             </div>
             
@@ -336,8 +339,9 @@ export default function StaffDashboard() {
           <div className="space-y-4">
             <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
               <Settings className="w-5 h-5 text-purple-600" />
-              Configurações
-            </h2>
+              
+                                            {t('txt_configura_es') || 'Configurações'}
+                                          </h2>
             
             <form onSubmit={handleSaveSettings} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
               <div className="flex flex-col items-center justify-center py-4 border-b border-slate-100 mb-4">
@@ -359,11 +363,12 @@ export default function StaffDashboard() {
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider">Tocar para alterar foto</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider">{t('txt_tocar_para_alterar_foto') || 'Tocar para alterar foto'}</p>
                 {/* Mobile tap helper */}
                 <label className="sm:hidden mt-2 px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">
-                  Alterar Foto
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  
+                                                        {t('txt_alterar_foto') || 'Alterar Foto'}
+                                                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                 </label>
               </div>
               {settingsError && (
@@ -378,13 +383,14 @@ export default function StaffDashboard() {
               )}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Nova Password
-                </label>
+                  
+                                                        {t('txt_nova_password') || 'Nova Password'}
+                                                      </label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Nova password (min 6 caracteres)"
+                  placeholder={t('txt_nova_password_min_6_caracteres') || 'Nova password (min 6 caracteres)'}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500"
                 />
               </div>
@@ -392,8 +398,9 @@ export default function StaffDashboard() {
                 type="submit"
                 className="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl transition"
               >
-                Atualizar Password
-              </button>
+                
+                                                  {t('txt_atualizar_password') || 'Atualizar Password'}
+                                                </button>
             </form>
           </div>
         )}
@@ -412,8 +419,8 @@ export default function StaffDashboard() {
             </div>
             <div className="p-6 space-y-4 text-slate-700">
                <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                 <div><p className="text-[10px] font-bold text-slate-400 uppercase">Data</p><p className="font-bold">{new Date(selectedBooking.booking_date).toLocaleDateString('pt-PT')}</p></div>
-                 <div className="text-right"><p className="text-[10px] font-bold text-slate-400 uppercase">Horário</p><p className="font-bold">{selectedBooking.start_time.substring(0,5)} - {selectedBooking.end_time.substring(0,5)}</p></div>
+                 <div><p className="text-[10px] font-bold text-slate-400 uppercase">{t('txt_data_160') || 'Data'}</p><p className="font-bold">{new Date(selectedBooking.booking_date).toLocaleDateString('pt-PT')}</p></div>
+                 <div className="text-right"><p className="text-[10px] font-bold text-slate-400 uppercase">{t('txt_hor_rio') || 'Horário'}</p><p className="font-bold">{selectedBooking.start_time.substring(0,5)} - {selectedBooking.end_time.substring(0,5)}</p></div>
                </div>
                {selectedBooking.notes && (
                  <div className="p-3 bg-slate-50 rounded-2xl text-xs font-mono">{selectedBooking.notes}</div>
@@ -421,12 +428,12 @@ export default function StaffDashboard() {
                {selectedBooking.booking_status !== 'completed' && !selectedBooking.notes?.includes('🛑 BLOQUEIO') && (
                  <div className="pt-4 flex gap-2">
                    <button onClick={() => handleUpdateBookingStatus('cancelled')} className="flex-1 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">{t('cancel') || 'Cancelar'}</button>
-                   <button onClick={() => handleUpdateBookingStatus('completed')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition shadow-md">Concluir</button>
+                   <button onClick={() => handleUpdateBookingStatus('completed')} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition shadow-md">{t('txt_concluir_161') || 'Concluir'}</button>
                  </div>
                )}
                {selectedBooking.notes?.includes('🛑 BLOQUEIO') && (
                  <div className="pt-4 flex gap-2">
-                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="w-full border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">Remover Bloqueio</button>
+                   <button onClick={() => handleUpdateBookingStatus('cancelled')} className="w-full border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl py-3 text-sm font-bold transition">{t('txt_remover_bloqueio') || 'Remover Bloqueio'}</button>
                  </div>
                )}
             </div>
@@ -439,25 +446,25 @@ export default function StaffDashboard() {
       {isManualBookingOpen && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center"><h3 className="font-extrabold text-xl">Nova Marcação</h3><button onClick={() => setIsManualBookingOpen(false)}><X className="w-5 h-5"/></button></div>
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center"><h3 className="font-extrabold text-xl">{t('txt_nova_marca_o') || 'Nova Marcação'}</h3><button onClick={() => setIsManualBookingOpen(false)}><X className="w-5 h-5"/></button></div>
             <form onSubmit={handleSaveManualBooking} className="p-6 overflow-y-auto space-y-5">
                <div className="flex p-1 bg-slate-100 rounded-2xl">
-                 <button type="button" onClick={() => setManualBookingType("booking")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "booking" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>Cliente</button>
-                 <button type="button" onClick={() => setManualBookingType("block")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "block" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500"}`}>Bloqueio</button>
+                 <button type="button" onClick={() => setManualBookingType("booking")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "booking" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>{t('txt_cliente_162') || 'Cliente'}</button>
+                 <button type="button" onClick={() => setManualBookingType("block")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "block" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500"}`}>{t('txt_bloqueio_163') || 'Bloqueio'}</button>
                </div>
                
                {manualBookingType === "booking" ? (
                  <>
-                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Nome do Cliente</label><input type="text" required value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
-                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Serviço</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_nome_do_cliente') || 'Nome do Cliente'}</label><input type="text" required value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                   <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_servi_o_33') || 'Serviço'}</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
                  </>
                ) : (
-                 <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Motivo</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Duração</label><select value={manualBlockDuration} onChange={(e) => setManualBlockDuration(Number(e.target.value))} className="w-full bg-slate-50 border p-3 rounded-xl"><option value={15}>15 min</option><option value={30}>30 min</option><option value={45}>45 min</option><option value={60}>1h</option><option value={90}>1h 30m</option><option value={120}>2h</option><option value={180}>3h</option><option value={240}>4h</option><option value={300}>5h</option><option value={480}>8h</option></select></div></div>
+                 <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_motivo_164') || 'Motivo'}</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl" /></div><div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_dura_o') || 'Duração'}</label><select value={manualBlockDuration} onChange={(e) => setManualBlockDuration(Number(e.target.value))} className="w-full bg-slate-50 border p-3 rounded-xl"><option value={15}>{t('txt_15_min') || '15 min'}</option><option value={30}>{t('txt_30_min') || '30 min'}</option><option value={45}>{t('txt_45_min') || '45 min'}</option><option value={60}>{t('txt_1h_165') || '1h'}</option><option value={90}>{t('txt_1h_30m') || '1h 30m'}</option><option value={120}>{t('txt_2h_166') || '2h'}</option><option value={180}>{t('txt_3h_167') || '3h'}</option><option value={240}>{t('txt_4h_168') || '4h'}</option><option value={300}>{t('txt_5h_169') || '5h'}</option><option value={480}>{t('txt_8h_170') || '8h'}</option></select></div></div>
                )}
 
                <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Data</label><input type="date" required value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
-                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">Hora</label><input type="time" required value={manualStartTime} onChange={(e) => setManualStartTime(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_data_171') || 'Data'}</label><input type="date" required value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
+                 <div className="space-y-1.5"><label className="text-xs font-bold text-slate-500">{t('txt_hora_172') || 'Hora'}</label><input type="time" required value={manualStartTime} onChange={(e) => setManualStartTime(e.target.value)} className="w-full bg-slate-50 border p-3 rounded-xl"/></div>
                </div>
                
                <button type="submit" disabled={isSavingManual} className="w-full bg-purple-600 text-white font-bold p-4 rounded-xl">{isSavingManual ? "A Guardar..." : "Confirmar"}</button>
@@ -473,14 +480,14 @@ export default function StaffDashboard() {
           className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 \${view === "agenda" ? "text-purple-600" : "text-slate-400"}`}
         >
           <Calendar className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Agenda</span>
+          <span className="text-[10px] font-bold">{t('txt_agenda_173') || 'Agenda'}</span>
         </button>
         <button 
           onClick={() => setView("settings")}
           className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 \${view === "settings" ? "text-purple-600" : "text-slate-400"}`}
         >
           <User className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Perfil</span>
+          <span className="text-[10px] font-bold">{t('txt_perfil_174') || 'Perfil'}</span>
         </button>
       </nav>
     </div>

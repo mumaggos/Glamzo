@@ -559,7 +559,7 @@ export default function Account() {
         <div className="max-w-5xl mx-auto relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
           <div className="flex items-center gap-6">
             <div className="relative group w-24 h-24">
-              {avatarUrl ? <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
+              {avatarUrl ? <img loading="lazy" src={avatarUrl} alt={t('txt_avatar_77') || 'Avatar'} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
               <label className="absolute bottom-0 right-0 p-2 bg-purple-600 text-white rounded-full cursor-pointer hover:bg-purple-700 shadow-md">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} className="hidden" />
@@ -572,7 +572,7 @@ export default function Account() {
           </div>
           <button onClick={() => setIsClubModalOpen(true)} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 group relative overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-             <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">Glamzo Club</span></div>
+             <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">{t('txt_glamzo_club') || 'Glamzo Club'}</span></div>
              <span className="text-3xl font-black font-mono">{currentPointsBalance}</span>
              <span className="text-xs text-slate-300 block">{t('manage_points') || 'Gerir Pontos e Saldo'}  <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
           </button>
@@ -629,33 +629,38 @@ export default function Account() {
                 onClick={() => setDateFilter('todos')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'todos' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                Todas
-              </button>
+                
+                                              {t('txt_todas_69') || 'Todas'}
+                                            </button>
               <button 
                 onClick={() => setDateFilter('hoje')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'hoje' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                Hoje
-              </button>
+                
+                                              {t('txt_hoje_70') || 'Hoje'}
+                                            </button>
               <button 
                 onClick={() => setDateFilter('semana')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'semana' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                Esta Semana
-              </button>
+                
+                                              {t('txt_esta_semana') || 'Esta Semana'}
+                                            </button>
               <button 
                 onClick={() => setDateFilter('mes')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'mes' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                Este Mês
-              </button>
+                
+                                              {t('txt_este_m_s') || 'Este Mês'}
+                                            </button>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setDateFilter('intervalo')} 
                   className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'intervalo' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Data Específica
-                </button>
+                  
+                                                    {t('txt_data_espec_fica') || 'Data Específica'}
+                                                  </button>
                 {dateFilter === 'intervalo' && (
                   <div className="flex items-center gap-2">
                     <input 
@@ -664,7 +669,7 @@ export default function Account() {
                       onChange={(e) => setCustomStartDate(e.target.value)}
                       className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
                     />
-                    <span className="text-slate-400 text-xs font-bold">até</span>
+                    <span className="text-slate-400 text-xs font-bold">{t('txt_at') || 'até'}</span>
                     <input 
                       type="date" 
                       value={customEndDate}
@@ -683,7 +688,7 @@ export default function Account() {
                 <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <h4 className="text-lg font-bold text-slate-800 mb-2">{t('no_bookings') || 'Nenhuma marcação'}</h4>
                 <p className="text-slate-500 mb-6 text-sm">{t('no_bookings_desc') || 'Ainda não fez nenhuma reserva no Glamzo.'}</p>
-                <a href="/explore" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all"><Search className="w-4 h-4" /> Explorar Salões</a>
+                <a href="/explore" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all"><Search className="w-4 h-4" />  {t('txt_explorar_sal_es') || 'Explorar Salões'}</a>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
@@ -697,7 +702,7 @@ export default function Account() {
                       <div className="w-full md:w-auto flex items-center gap-4 flex-1">
                         <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
                           {bk.service?.image_url ? (
-                            <img loading="lazy" referrerPolicy="no-referrer" src={bk.service.image_url} alt="Serviço" className="w-full h-full object-cover" />
+                            <img loading="lazy" referrerPolicy="no-referrer" src={bk.service.image_url} alt={t('txt_servi_o_4') || 'Serviço'} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-300"><Scissors className="w-6 h-6" /></div>
                           )}
@@ -710,13 +715,13 @@ export default function Account() {
                             <h4 className="font-bold text-slate-900 truncate">{bk.service?.name || 'Serviço Personalizado'}</h4>
                           </div>
                           <p className="text-sm font-bold text-slate-700 truncate">{bk.business?.name || 'Salão Parceiro'}</p>
-                          <p className="text-xs text-slate-500 mt-1 font-mono">{new Date(bk.booking_date).toLocaleDateString('pt')} • {bk.start_time} às {bk.end_time}</p>
+                          <p className="text-xs text-slate-500 mt-1 font-mono">{new Date(bk.booking_date).toLocaleDateString('pt')} • {bk.start_time}  {t('txt_s') || 'às'} {bk.end_time}</p>
                         </div>
                       </div>
                       
                       <div className="w-full md:w-auto flex flex-col md:items-end gap-3 shrink-0 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
                         <div className="text-right">
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total</p>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('txt_total_71') || 'Total'}</p>
                           <p className="text-lg font-black text-slate-900">{bk.service?.price ? `${bk.service.price}€` : '--'}</p>
                         </div>
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
@@ -759,8 +764,9 @@ export default function Account() {
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'mensagens' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <MessageSquare className="w-4 h-4" /> 
-                Mensagens
-                {unreadMessages > 0 && (
+                 
+                                              {t('txt_mensagens_72') || 'Mensagens'}
+                                              {unreadMessages > 0 && (
                   <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">{unreadMessages}</span>
                 )}
               </button>
@@ -769,8 +775,9 @@ export default function Account() {
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <ShieldAlert className="w-4 h-4" /> 
-                Disputas
-                {pendingDisputes > 0 && (
+                 
+                                              {t('txt_disputas_73') || 'Disputas'}
+                                              {pendingDisputes > 0 && (
                   <span className="bg-white text-rose-600 text-[10px] px-2 py-0.5 rounded-full">{pendingDisputes}</span>
                 )}
               </button>
@@ -793,29 +800,29 @@ export default function Account() {
             <form className="space-y-5 max-w-2xl" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_nome_completo') || 'Nome Completo'}</label>
                   <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Telemóvel</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder="Ex: 912345678" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_telem_vel') || 'Telemóvel'}</label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder={t('txt_ex_912345678') || 'Ex: 912345678'} />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">E-mail de Acesso</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_e_mail_de_acesso') || 'E-mail de Acesso'}</label>
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" />
               </div>
               <button type="submit" disabled={submitting} className="px-8 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition-all shadow-md disabled:opacity-50 flex items-center gap-2">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Salvar Alterações
-              </button>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}  {t('txt_salvar_altera_es') || 'Salvar Alterações'}
+                                            </button>
             </form>
             
             <div className="mt-12 pt-8 border-t border-slate-200/60">
-              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><KeyRound className="w-5 h-5 text-purple-600" /> Segurança e Autenticação</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><KeyRound className="w-5 h-5 text-purple-600" />  {t('txt_seguran_a_e_autentica_o') || 'Segurança e Autenticação'}</h3>
               {providers.includes('google') ? (
                 <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
                   <Shield className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-bold text-purple-800">A sua conta é gerida de forma segura pelo Google.</span>
+                  <span className="text-sm font-bold text-purple-800">{t('txt_a_sua_conta_gerida_de_forma_se') || 'A sua conta é gerida de forma segura pelo Google.'}</span>
                 </div>
               ) : (
                 <form onSubmit={handleUpdatePassword} className="space-y-5 max-w-sm">
@@ -826,12 +833,12 @@ export default function Account() {
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nova Password</label>
-                    <input type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder="••••••••" />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_nova_password') || 'Nova Password'}</label>
+                    <input type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder={t('txt_text_5') || '••••••••'} />
                   </div>
                   <button type="submit" disabled={savingPassword} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-md">
-                    {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Atualizar Password
-                  </button>
+                    {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}  {t('txt_atualizar_password') || 'Atualizar Password'}
+                                                            </button>
                 </form>
               )}
             </div>
@@ -847,22 +854,22 @@ export default function Account() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
                 <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4"><Gift className="w-6 h-6" /></div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">Trocar Pontos por Vouchers</h3>
-                <p className="text-sm text-slate-500 leading-relaxed mb-6">Por cada 100 pontos acumula 1€ de desconto real para gastar em qualquer espaço Glamzo.</p>
+                <h3 className="text-xl font-black text-slate-900 mb-2">{t('txt_trocar_pontos_por_vouchers') || 'Trocar Pontos por Vouchers'}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed mb-6">{t('txt_por_cada_100_pontos_acumula_1') || 'Por cada 100 pontos acumula 1€ de desconto real para gastar em qualquer espaço Glamzo.'}</p>
                 <div className="space-y-3">
                   <button onClick={() => handleRedeemPoints(500, 5)} disabled={currentPointsBalance < 500} className="w-full py-4 bg-slate-900 hover:bg-black disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-black transition-colors flex justify-between px-6 items-center">
-                    <span>Resgatar 5.00€</span> <span className="font-mono text-xs opacity-70">500 PTS</span>
+                    <span>{t('txt_resgatar_5_00') || 'Resgatar 5.00€'}</span> <span className="font-mono text-xs opacity-70">{t('txt_500_pts') || '500 PTS'}</span>
                   </button>
                   <button onClick={() => handleRedeemPoints(1000, 10)} disabled={currentPointsBalance < 1000} className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 text-white rounded-xl font-black transition-colors flex justify-between px-6 items-center shadow-lg">
-                    <span>Resgatar 10.00€</span> <span className="font-mono text-xs opacity-70">1000 PTS</span>
+                    <span>{t('txt_resgatar_10_00') || 'Resgatar 10.00€'}</span> <span className="font-mono text-xs opacity-70">{t('txt_1000_pts') || '1000 PTS'}</span>
                   </button>
                 </div>
               </div>
 
               <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-800 text-white">
-                <h3 className="text-lg font-black mb-4">Meus Códigos Ativos</h3>
+                <h3 className="text-lg font-black mb-4">{t('txt_meus_c_digos_ativos') || 'Meus Códigos Ativos'}</h3>
                 {rewardsList.length === 0 ? (
-                  <p className="text-sm text-slate-400">Nenhum voucher disponível.</p>
+                  <p className="text-sm text-slate-400">{t('txt_nenhum_voucher_dispon_vel') || 'Nenhum voucher disponível.'}</p>
                 ) : (
                   <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                     {rewardsList.map((rw, i) => (
@@ -871,7 +878,7 @@ export default function Account() {
                           <span className="font-mono text-amber-400 font-black tracking-widest bg-black/40 px-2 py-1 rounded">{rw.code}</span>
                           <span className={`text-[10px] font-bold uppercase ${rw.used ? 'text-slate-400' : 'text-emerald-400'}`}>{rw.used ? 'Utilizado' : 'Disponível'}</span>
                         </div>
-                        <p className="text-xs text-slate-300">Vale {rw.value}.00€ • Expira: {new Date(rw.expires_at).toLocaleDateString('pt')}</p>
+                        <p className="text-xs text-slate-300">{t('txt_vale_74') || 'Vale'} {rw.value}{t('txt_00_expira') || '.00€ • Expira:'} {new Date(rw.expires_at).toLocaleDateString('pt')}</p>
                       </div>
                     ))}
                   </div>
@@ -886,14 +893,14 @@ export default function Account() {
         {activeTab === 'favoritos' && (
           <div className="space-y-6 animate-fade-in">
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
-              <h3 className="text-xl font-black text-slate-900 mb-6">Salões Guardados</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6">{t('txt_sal_es_guardados') || 'Salões Guardados'}</h3>
               {loadingFavorites ? (
                 <div className="py-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>
               ) : favoriteBusinesses.length === 0 ? (
                 <div className="py-12 text-center bg-slate-50 rounded-2xl border border-slate-100">
                   <Heart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <h4 className="text-base font-bold text-slate-800">Sem favoritos</h4>
-                  <p className="text-xs text-slate-500 mt-2 mb-4">Ainda não guardou nenhum salão.</p>
+                  <h4 className="text-base font-bold text-slate-800">{t('txt_sem_favoritos') || 'Sem favoritos'}</h4>
+                  <p className="text-xs text-slate-500 mt-2 mb-4">{t('txt_ainda_n_o_guardou_nenhum_sal_o') || 'Ainda não guardou nenhum salão.'}</p>
                   <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">{t('explore_salons') || 'Explorar Salões'}</a>
                 </div>
               ) : (
@@ -911,7 +918,7 @@ export default function Account() {
                         <h4 className="font-bold text-slate-900 text-sm">{biz.name}</h4>
                         <p className="text-xs text-slate-500">{biz.city || 'Portugal'}</p>
                         <div className="mt-2 flex gap-2">
-                          <a href={`/salao/${biz.id}`} className="text-[10px] font-bold bg-purple-50 hover:bg-purple-600 hover:text-white transition-colors text-purple-700 px-3 py-1.5 rounded-lg">Reservar</a>
+                          <a href={`/salao/${biz.id}`} className="text-[10px] font-bold bg-purple-50 hover:bg-purple-600 hover:text-white transition-colors text-purple-700 px-3 py-1.5 rounded-lg">{t('txt_reservar_75') || 'Reservar'}</a>
                           <button onClick={() => handleRemoveFavorite(biz.id)} className="text-[10px] font-bold bg-rose-50 hover:bg-rose-500 hover:text-white transition-colors text-rose-600 px-3 py-1.5 rounded-lg">{t('remove') || 'Remover'}</button>
                         </div>
                       </div>
@@ -939,18 +946,18 @@ export default function Account() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
             <button onClick={() => setReviewModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-slate-200"><X className="w-4 h-4" /></button>
-            <h3 className="text-xl font-black text-slate-900 mb-2">Avaliar Serviço</h3>
-            <p className="text-sm text-slate-500 mb-6">Como correu com <strong className="text-purple-600">{reviewBooking?.business?.name}</strong>?</p>
+            <h3 className="text-xl font-black text-slate-900 mb-2">{t('txt_avaliar_servi_o') || 'Avaliar Serviço'}</h3>
+            <p className="text-sm text-slate-500 mb-6">{t('txt_como_correu_com') || 'Como correu com'} <strong className="text-purple-600">{reviewBooking?.business?.name}</strong>?</p>
             <form onSubmit={handleSubmitReview} className="space-y-5">
               <div className="flex items-center gap-2 justify-center py-4 bg-slate-50 rounded-2xl border border-slate-100">
                 {[1, 2, 3, 4, 5].map((score) => (
                   <Star key={score} onClick={() => setReviewRating(score)} className={`w-10 h-10 cursor-pointer transition-transform hover:scale-110 ${score <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                 ))}
               </div>
-              <textarea required rows={4} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="Deixe um comentário detalhado para ajudar outros clientes..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-purple-500 outline-none text-sm rounded-2xl resize-none" />
+              <textarea required rows={4} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder={t('txt_deixe_um_coment_rio_detalhado') || 'Deixe um comentário detalhado para ajudar outros clientes...'} className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-purple-500 outline-none text-sm rounded-2xl resize-none" />
               <button type="submit" disabled={submittingReview} className="w-full py-4 bg-purple-600 text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30">
-                {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />} Submeter Avaliação
-              </button>
+                {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}  {t('txt_submeter_avalia_o') || 'Submeter Avaliação'}
+                                            </button>
             </form>
           </div>
         </div>
@@ -960,18 +967,18 @@ export default function Account() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border-2 border-rose-100">
             <button onClick={() => setDisputeModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-rose-100 text-rose-500"><X className="w-4 h-4" /></button>
-            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/> Abrir Disputa</h3>
-            <p className="text-sm text-slate-500 mb-6">Reportar problema com a reserva em <strong>{disputeBooking?.business?.name}</strong>.</p>
+            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/>  {t('txt_abrir_disputa') || 'Abrir Disputa'}</h3>
+            <p className="text-sm text-slate-500 mb-6">{t('txt_reportar_problema_com_a_reserv') || 'Reportar problema com a reserva em'} <strong>{disputeBooking?.business?.name}</strong>.</p>
             <form onSubmit={handleSubmitDispute} className="space-y-4">
               <select required value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 text-sm rounded-xl outline-none focus:border-rose-500">
-                <option value="Qualidade do serviço insatisfatória">Serviço de má qualidade</option>
-                <option value="Profissional ausente (No-show do parceiro)">O profissional/salão não apareceu</option>
-                <option value="Preço cobrado diferente do anunciado">Fui cobrado a mais no local</option>
+                <option value="Qualidade do serviço insatisfatória">{t('txt_servi_o_de_m_qualidade') || 'Serviço de má qualidade'}</option>
+                <option value="Profissional ausente (No-show do parceiro)">{t('txt_o_profissional_sal_o_n_o_apare') || 'O profissional/salão não apareceu'}</option>
+                <option value="Preço cobrado diferente do anunciado">{t('txt_fui_cobrado_a_mais_no_local') || 'Fui cobrado a mais no local'}</option>
               </select>
-              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder="Detalhe o que aconteceu..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
+              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder={t('txt_detalhe_o_que_aconteceu') || 'Detalhe o que aconteceu...'} className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
               <button type="submit" disabled={submittingDispute} className="w-full py-4 bg-rose-600 text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30">
-                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />} Formalizar Reclamação
-              </button>
+                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />}  {t('txt_formalizar_reclama_o') || 'Formalizar Reclamação'}
+                                            </button>
             </form>
           </div>
         </div>
@@ -1008,7 +1015,7 @@ export default function Account() {
           <div className="bg-gradient-to-r from-purple-600 to-rose-500 p-4 rounded-full shadow-lg shadow-purple-500/40 text-white mb-1">
             <Compass className="w-6 h-6" />
           </div>
-          <span className="text-[10px] font-black text-slate-800">Explorar</span>
+          <span className="text-[10px] font-black text-slate-800">{t('txt_explorar_76') || 'Explorar'}</span>
         </Link>
 
         {[

@@ -3,6 +3,7 @@ import { Store, Terminal, CheckCircle2, ShieldAlert, CreditCard, ChevronDown, Pa
 import { supabase } from '../lib/supabase';
 import { Business } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from "react-i18next";
 
 interface StoreManagementTabProps {
   salons: Business[];
@@ -11,6 +12,7 @@ interface StoreManagementTabProps {
 }
 
 export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreManagementTabProps) {
+    const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'action_needed' | 'completed'>('action_needed');
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,8 +143,8 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
   return (
     <div id="admin-terminal" className="space-y-6 animate-fade-in">
       <div className="border-b border-slate-200 pb-5">
-        <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Gestão de Lojas & Logística</h3>
-        <p className="text-xs text-slate-600 mt-0.5">Associe terminais de pagamento físicos, valide lojas e verifique on-boardings.</p>
+        <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_gest_o_de_lojas_log_stica') || 'Gestão de Lojas & Logística'}</h3>
+        <p className="text-xs text-slate-600 mt-0.5">{t('txt_associe_terminais_de_pagamento') || 'Associe terminais de pagamento físicos, valide lojas e verifique on-boardings.'}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-2 rounded-2xl border border-slate-200">
@@ -151,20 +153,22 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
             onClick={() => setFilter('action_needed')}
             className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${filter === 'action_needed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >
-            Ação Necessária
-          </button>
+            
+                                  {t('txt_a_o_necess_ria') || 'Ação Necessária'}
+                                </button>
           <button 
             onClick={() => setFilter('completed')}
             className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${filter === 'completed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >
-            Concluídas
-          </button>
+            
+                                  {t('txt_conclu_das') || 'Concluídas'}
+                                </button>
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
-            placeholder="Procurar loja..." 
+            placeholder={t('txt_procurar_loja') || 'Procurar loja...'} 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-purple-500"
@@ -193,8 +197,9 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     </span>
                     {(salon as any).manual_setup_requested && (
                       <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
-                        Configuração Solicitada
-                      </span>
+                        
+                                                              {t('txt_configura_o_solicitada') || 'Configuração Solicitada'}
+                                                            </span>
                     )}
                   </div>
                   
@@ -216,7 +221,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                   <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                     <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
                       <QrCode className="w-4 h-4 text-purple-600" />
-                      <span>Carta QR Code</span>
+                      <span>{t('txt_carta_qr_code') || 'Carta QR Code'}</span>
                     </div>
                     <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
                       <input 
@@ -225,14 +230,14 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                         onChange={(e) => handleUpdateStore(salon.id, { welcome_kit_sent: e.target.checked })}
                         className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                       />
-                      <span>Kit QR Produzido / Enviado</span>
+                      <span>{t('txt_kit_qr_produzido_enviado') || 'Kit QR Produzido / Enviado'}</span>
                     </label>
                     <button 
                       onClick={() => handleDownloadQR(salon)}
                       className="w-full flex justify-center items-center gap-2 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition-colors"
                     >
-                      <QrCode className="w-3.5 h-3.5" /> Download Digital
-                    </button>
+                      <QrCode className="w-3.5 h-3.5" />  {t('txt_download_digital') || 'Download Digital'}
+                                                      </button>
                   </div>
 
                   {/* Terminal (Apenas PRO Terminal) */}
@@ -240,7 +245,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                       <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
                         <Terminal className="w-4 h-4 text-rose-600" />
-                        <span>Terminal Físico</span>
+                        <span>{t('txt_terminal_f_sico') || 'Terminal Físico'}</span>
                       </div>
                       <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
                         <input 
@@ -249,7 +254,7 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                           onChange={(e) => handleUpdateStore(salon.id, { terminal_sent: e.target.checked })}
                           className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                         />
-                        <span>Terminal Configurado / Enviado</span>
+                        <span>{t('txt_terminal_configurado_enviado') || 'Terminal Configurado / Enviado'}</span>
                       </label>
                     </div>
                   )}
@@ -263,8 +268,8 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors"
                   >
-                    <MapPin className="w-4 h-4" /> Ver Morada
-                  </a>
+                    <MapPin className="w-4 h-4" />  {t('txt_ver_morada') || 'Ver Morada'}
+                                                </a>
                   
                   {filter === 'action_needed' ? (
                     <button 
@@ -272,30 +277,30 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
                       disabled={loading}
                       className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
                     >
-                      <CheckCircle2 className="w-4 h-4" /> Concluir Conta / Enviar
-                    </button>
+                      <CheckCircle2 className="w-4 h-4" />  {t('txt_concluir_conta_enviar') || 'Concluir Conta / Enviar'}
+                                                      </button>
                   ) : (
                     <button 
                       onClick={() => handleUpdateStore(salon.id, { is_verified: false })}
                       disabled={loading}
                       className="flex items-center justify-center gap-2 py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-bold transition-colors"
                     >
-                      <Edit className="w-4 h-4" /> Reverter para Pendente
-                    </button>
+                      <Edit className="w-4 h-4" />  {t('txt_reverter_para_pendente') || 'Reverter para Pendente'}
+                                                          </button>
                   )}
 
                   <div className="flex gap-2 mt-2">
                     <button 
                       onClick={() => handleImpersonate(salon.email)}
                       className="flex-1 py-1.5 px-2 bg-purple-950 hover:bg-purple-900 text-purple-400 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-colors"
-                      title="Impersonate"
+                      title={t('txt_impersonate_51') || 'Impersonate'}
                     >
-                      <ShieldAlert className="w-3 h-3" /> Entrar
-                    </button>
+                      <ShieldAlert className="w-3 h-3" />  {t('txt_entrar_50') || 'Entrar'}
+                                                      </button>
                     <button 
                       onClick={() => handleDeleteStore(salon.id)}
                       className={`py-1.5 px-3 rounded-lg flex items-center justify-center transition-colors ${storeToDelete === salon.id ? 'bg-rose-600 text-white' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}
-                      title="Apagar Loja"
+                      title={t('txt_apagar_loja') || 'Apagar Loja'}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -310,8 +315,8 @@ export default function StoreManagementTab({ salons, onUpdate, adminId }: StoreM
         {filteredSalons.length === 0 && (
           <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl">
             <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-slate-900">Tudo em dia!</h3>
-            <p className="text-sm text-slate-500">Não existem lojas pendentes nesta secção.</p>
+            <h3 className="text-lg font-bold text-slate-900">{t('txt_tudo_em_dia') || 'Tudo em dia!'}</h3>
+            <p className="text-sm text-slate-500">{t('txt_n_o_existem_lojas_pendentes_ne') || 'Não existem lojas pendentes nesta secção.'}</p>
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, Loader2, Phone, CheckCircle, Copy, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { SalesAgent } from '../types';
+import { useTranslation } from "react-i18next";
 
 interface CallLog {
   id: string;
@@ -19,6 +20,7 @@ interface Lead {
 }
 
 export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent, onClose: () => void }) {
+    const { t } = useTranslation();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,9 +127,10 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2">
-              Leads Atribuídas
-            </h3>
-            <p className="text-sm text-slate-500 font-medium">Comercial: <span className="font-bold text-slate-900">{agent.name}</span></p>
+              
+                                        {t('txt_leads_atribu_das') || 'Leads Atribuídas'}
+                                      </h3>
+            <p className="text-sm text-slate-500 font-medium">{t('txt_comercial') || 'Comercial:'} <span className="font-bold text-slate-900">{agent.name}</span></p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
             <X className="w-5 h-5 text-slate-500" />
@@ -137,7 +140,7 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
         <div className="p-6 bg-slate-50 border-b border-slate-100">
            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
              <div>
-               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Link de Trabalho do Comercial</p>
+               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('txt_link_de_trabalho_do_comercial') || 'Link de Trabalho do Comercial'}</p>
                <div className="flex items-center gap-2">
                  <code className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm text-blue-600 font-mono">
                    {window.location.origin}/chamadas/{agent.id}
@@ -156,12 +159,13 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
                    className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50 border border-rose-100"
                  >
                    {removing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                   Remover Pendentes
-                 </button>
+                   
+                                                     {t('txt_remover_pendentes') || 'Remover Pendentes'}
+                                                   </button>
                )}
                <div className="text-center px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
                  <span className="block text-2xl font-black text-amber-600">{pendentes.length}</span>
-                 <span className="text-[10px] uppercase font-bold text-slate-400">Pendentes</span>
+                 <span className="text-[10px] uppercase font-bold text-slate-400">{t('txt_pendentes_1') || 'Pendentes'}</span>
                </div>
                <div className="flex gap-2">
                  {Object.entries(
@@ -178,7 +182,7 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
                  {callLogs.length === 0 && (
                    <div className="text-center px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
                      <span className="block text-2xl font-black text-slate-300">0</span>
-                     <span className="text-[10px] uppercase font-bold text-slate-400">Chamadas Feitas</span>
+                     <span className="text-[10px] uppercase font-bold text-slate-400">{t('txt_chamadas_feitas') || 'Chamadas Feitas'}</span>
                    </div>
                  )}
                </div>
@@ -194,17 +198,17 @@ export default function AgentLeadsModal({ agent, onClose }: { agent: SalesAgent,
           ) : leads.length === 0 ? (
             <div className="p-12 text-center text-slate-500">
               <Phone className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-              <p>Nenhuma lead atribuída a este comercial.</p>
+              <p>{t('txt_nenhuma_lead_atribu_da_a_este') || 'Nenhuma lead atribuída a este comercial.'}</p>
             </div>
           ) : (
             <table className="w-full text-left border-collapse text-sm">
               <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider sticky top-0 z-10">
                 <tr>
-                  <th className="p-4">Loja</th>
-                  <th className="p-4">Telefone</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4 text-center">Potencial</th>
-                  <th className="p-4">Notas</th>
+                  <th className="p-4">{t('txt_loja_2') || 'Loja'}</th>
+                  <th className="p-4">{t('txt_telefone_3') || 'Telefone'}</th>
+                  <th className="p-4">{t('txt_estado_4') || 'Estado'}</th>
+                  <th className="p-4 text-center">{t('txt_potencial_5') || 'Potencial'}</th>
+                  <th className="p-4">{t('txt_notas_6') || 'Notas'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

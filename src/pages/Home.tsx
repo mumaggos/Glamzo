@@ -250,7 +250,7 @@ export default function Home() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation("Perto de Mim");
+          setSearchLocation(t('near_you') || "Perto de Mim");
           setShowLocSuggestions(false);
         },
         () => {
@@ -272,7 +272,7 @@ export default function Home() {
     
     if (searchQuery.trim()) params.set("q", searchQuery.trim()); 
     if (searchLocation.trim()) { 
-      if (searchLocation === "Perto de Mim") params.set("nearMe", "true"); 
+      if (searchLocation === t('near_you') || "Perto de Mim") params.set("nearMe", "true"); 
       else params.set("city", searchLocation.trim()); 
     } 
     navigate(`/explore?${params.toString()}`); 
@@ -317,8 +317,9 @@ export default function Home() {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start"> 
           {b.is_promoted && ( 
             <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg"> 
-              Destaque 
-            </span> 
+               
+                                        {t('txt_destaque_125') || 'Destaque'} 
+                                      </span> 
           )} 
         </div> 
          
@@ -345,7 +346,7 @@ export default function Home() {
        
       <div className="mt-1 flex items-baseline gap-1"> 
         <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? formatPrice(b.startPrice, b.currency) : 'Grátis'}</span> 
-        <span className="text-sm text-slate-500">preço base</span> 
+        <span className="text-sm text-slate-500">{t('txt_pre_o_base') || 'preço base'}</span> 
       </div> 
     </Link> 
   ); 
@@ -426,14 +427,14 @@ export default function Home() {
               {showLocSuggestions && ( 
                 <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 text-left overflow-y-auto max-h-60 custom-scrollbar"> 
                   <button onMouseDown={handleGetLocation} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-blue-600 text-sm font-bold flex items-center gap-2 border-b border-slate-50 transition-colors"> 
-                    <Navigation className="w-4 h-4" /> Usar a minha localização atual 
-                  </button> 
+                    <Navigation className="w-4 h-4" />  {t('txt_usar_a_minha_localiza_o_atual') || 'Usar a minha localização atual'} 
+                                                        </button> 
                   {searchLocation.trim() && ( 
                     <button onMouseDown={() => { setShowLocSuggestions(false); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-slate-900 text-sm font-bold flex items-center gap-2 border-b border-slate-50 transition-colors"> 
-                      <Search className="w-4 h-4 text-slate-400" /> Pesquisar por "{searchLocation}" 
-                    </button> 
+                      <Search className="w-4 h-4 text-slate-400" /> {t('search') || 'Pesquisar'}  {t('txt_por') || 'por \"'}{searchLocation}{t('txt_text_12') || '\"'} 
+                                                              </button> 
                   )} 
-                  <div className="px-4 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Sugestões</div> 
+                  <div className="px-4 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('txt_sugest_es') || 'Sugestões'}</div> 
                   {SUGGESTED_CITIES.filter(c => c.toLowerCase().includes(searchLocation.toLowerCase())).map(city => ( 
                     <button key={city} onMouseDown={() => { setSearchLocation(city); setShowLocSuggestions(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-2 transition-colors"> 
                       <MapPin className="w-4 h-4 text-slate-300" /> {city} 
@@ -503,7 +504,7 @@ export default function Home() {
             {locaisProximos.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">📍 {t('near_you')}</h2> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('txt_text_13') || '📍'} {t('near_you')}</h2> 
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('near_you_desc') || 'Espaços com vagas nas redondezas da sua localização.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
@@ -515,7 +516,7 @@ export default function Home() {
             {recomendados.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">❤️ {t('recommended') || 'Recomendados para si'}</h2> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('txt_text_14') || '❤️'} {t('recommended') || 'Recomendados para si'}</h2> 
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('recommended_desc') || 'Os espaços com melhores notas reais no Glamzo.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
@@ -527,7 +528,7 @@ export default function Home() {
             {novasLojas.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🆕 {t('new_stores') || 'Acabaram de chegar'}</h2> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('txt_text_15') || '🆕'} {t('new_stores') || 'Acabaram de chegar'}</h2> 
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('new_stores_desc') || 'As mais recentes novidades adicionadas à nossa rede.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
@@ -543,8 +544,8 @@ export default function Home() {
       <section className="py-16 sm:py-24 bg-purple-50/40 border-y border-purple-100 font-['Inter']"> 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
           <div className="text-center max-w-2xl mx-auto mb-16"> 
-            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-[#0f172a] mb-4 font-['Outfit']">Porquê marcar com o Glamzo?</h2> 
-            <p className="text-slate-600 text-base">A plataforma ibérica que moderniza e simplifica a forma como cuida de si.</p> 
+            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-[#0f172a] mb-4 font-['Outfit']">{t('txt_porqu_marcar_com_o_glamzo') || 'Porquê marcar com o Glamzo?'}</h2> 
+            <p className="text-slate-600 text-base">{t('txt_a_plataforma_ib_rica_que_moder') || 'A plataforma ibérica que moderniza e simplifica a forma como cuida de si.'}</p> 
           </div> 
            
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16"> 
@@ -552,24 +553,24 @@ export default function Home() {
               <div className="w-14 h-14 bg-white text-purple-600 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
                 <CalendarCheck className="w-7 h-7" /> 
               </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Marcações 24/7</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">Não espere que o salão abra para telefonar. Encontre horários disponíveis e reserve a qualquer hora do dia ou da noite, instantaneamente.</p> 
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('txt_marca_es_24_7') || 'Marcações 24/7'}</h3> 
+              <p className="text-slate-500 leading-relaxed text-sm">{t('txt_n_o_espere_que_o_sal_o_abra_pa') || 'Não espere que o salão abra para telefonar. Encontre horários disponíveis e reserve a qualquer hora do dia ou da noite, instantaneamente.'}</p> 
             </div> 
              
             <div className="flex flex-col items-center text-center"> 
               <div className="w-14 h-14 bg-white text-rose-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
                 <Star className="w-7 h-7" /> 
               </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Parceiros de Confiança</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">Aceda a portefólios e leia avaliações 100% autênticas de clientes reais. Garanta a qualidade do serviço antes da sua visita.</p> 
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('txt_parceiros_de_confian_a') || 'Parceiros de Confiança'}</h3> 
+              <p className="text-slate-500 leading-relaxed text-sm">{t('txt_aceda_a_portef_lios_e_leia_ava') || 'Aceda a portefólios e leia avaliações 100% autênticas de clientes reais. Garanta a qualidade do serviço antes da sua visita.'}</p> 
             </div> 
              
             <div className="flex flex-col items-center text-center"> 
               <div className="w-14 h-14 bg-white text-emerald-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
                 <ShieldCheck className="w-7 h-7" /> 
               </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">Gestão Sem Esforço</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">Sem taxas ocultas e com segurança total. Remarque, altere ou cancele as suas marcações diretamente através do seu painel de cliente.</p> 
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('txt_gest_o_sem_esfor_o') || 'Gestão Sem Esforço'}</h3> 
+              <p className="text-slate-500 leading-relaxed text-sm">{t('txt_sem_taxas_ocultas_e_com_segura') || 'Sem taxas ocultas e com segurança total. Remarque, altere ou cancele as suas marcações diretamente através do seu painel de cliente.'}</p> 
             </div> 
           </div> 
         </div> 
@@ -579,12 +580,13 @@ export default function Home() {
       <section ref={mapRef} className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']"> 
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4"> 
           <div> 
-            <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🌍 Explorar no Mapa</h2> 
-            <p className="text-slate-500 mt-2">Navegue geograficamente e descubra espaços premium por todo o país.</p> 
+            <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('txt_explorar_no_mapa') || '🌍 Explorar no Mapa'}</h2> 
+            <p className="text-slate-500 mt-2">{t('txt_navegue_geograficamente_e_desc') || 'Navegue geograficamente e descubra espaços premium por todo o país.'}</p> 
           </div> 
           <button onClick={() => navigate('/explore?view=map')} className="text-sm font-bold text-purple-600 hover:text-purple-700 bg-purple-50 px-5 py-2.5 rounded-xl transition-colors"> 
-            Ver Mapa Completo 
-          </button> 
+             
+                                  {t('txt_ver_mapa_completo') || 'Ver Mapa Completo'} 
+                                </button> 
         </div> 
 
         {mapVisible ? ( 
@@ -616,8 +618,8 @@ export default function Home() {
           ) : ( 
             <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-50 flex flex-col items-center justify-center text-slate-400 font-medium p-4 text-center"> 
               <MapIcon className="w-10 h-10 mb-2 text-slate-300 animate-pulse" />  
-              <span className="text-sm font-bold text-slate-700">Mapa de Lojas</span> 
-              <span className="text-xs text-slate-500 mt-1 max-w-xs">Chave da API do Google Maps não configurada.</span> 
+              <span className="text-sm font-bold text-slate-700">{t('txt_mapa_de_lojas') || 'Mapa de Lojas'}</span> 
+              <span className="text-xs text-slate-500 mt-1 max-w-xs">{t('txt_chave_da_api_do_google_maps_n') || 'Chave da API do Google Maps não configurada.'}</span> 
             </div> 
           ) 
         ) : ( 

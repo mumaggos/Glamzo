@@ -135,11 +135,13 @@ export default function HoursTab() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
           <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-            Horários de Funcionamento
-          </h3>
+            
+                                  {t('txt_hor_rios_de_funcionamento') || 'Horários de Funcionamento'}
+                                </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Defina em que horários a sua loja aceita marcações online.
-          </p>
+            
+                                  {t('txt_defina_em_que_hor_rios_a_sua_l') || 'Defina em que horários a sua loja aceita marcações online.'}
+                                </p>
         </div>
       </div>
 
@@ -220,8 +222,9 @@ export default function HoursTab() {
                       className="w-4 h-4 text-rose-600 rounded cursor-pointer"
                     />
                     <span className="text-xs font-bold text-slate-600 select-none">
-                      Fechado
-                    </span>
+                      
+                                                      {t('txt_fechado_214') || 'Fechado'}
+                                                    </span>
                   </label>
                 </div>
 
@@ -230,8 +233,8 @@ export default function HoursTab() {
                     onClick={() => handleCopyHoursToAll(day.id)}
                     className="text-slate-400 hover:text-purple-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors cursor-pointer p-2 hover:bg-purple-50 rounded-lg"
                   >
-                    <Copy className="w-3 h-3" /> Copiar para todos
-                  </button>
+                    <Copy className="w-3 h-3" />  {t('txt_copiar_para_todos') || 'Copiar para todos'}
+                                              </button>
                 </div>
               </div>
             );
@@ -245,7 +248,7 @@ export default function HoursTab() {
           disabled={isSaving}
           className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2"
         >
-          {isSaving ? <span className="animate-pulse">A Guardar...</span> : <CheckCircle2 className="w-5 h-5" />}
+          {isSaving ? <span className="animate-pulse">{t('txt_a_guardar') || 'A Guardar...'}</span> : <CheckCircle2 className="w-5 h-5" />}
           {!isSaving && "Guardar Alterações"}
         </button>
       </div>

@@ -319,16 +319,18 @@ const { slug } = useParams<{ slug: string }>();
         <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-slate-500" />
         </div>
-        <h1 className="text-2xl font-black text-slate-900 mb-2">Loja Indisponível</h1>
+        <h1 className="text-2xl font-black text-slate-900 mb-2">{t('txt_loja_indispon_vel') || 'Loja Indisponível'}</h1>
         <p className="text-slate-500 text-sm max-w-sm mb-6">
-          As reservas online para este espaço encontram-se temporariamente suspensas.
-        </p>
+          
+                          {t('txt_as_reservas_online_para_este_e') || 'As reservas online para este espaço encontram-se temporariamente suspensas.'}
+                        </p>
         <button 
           onClick={() => navigate('/')} 
           className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition"
         >
-          Voltar ao Explorar
-        </button>
+          
+                          {t('txt_voltar_ao_explorar') || 'Voltar ao Explorar'}
+                        </button>
       </div>
     );
   }
@@ -336,7 +338,7 @@ const { slug } = useParams<{ slug: string }>();
   return (
     <>
       <Helmet>
-        <title>{business.name} - Reservas Online | Glamzo</title>
+        <title>{business.name}  {t('txt_reservas_online_glamzo') || '- Reservas Online | Glamzo'}</title>
         {business.logo_url && <link rel="icon" href={business.logo_url} />}
       </Helmet>
       
@@ -383,28 +385,28 @@ const { slug } = useParams<{ slug: string }>();
                 <div className="text-center sm:text-left flex-1">
                   <div className="flex justify-center sm:justify-start gap-2 mb-2">
                     <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] uppercase font-black rounded-full tracking-widest">{business.category}</span>
-                    {business.is_verified && <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] uppercase font-black rounded-full tracking-widest flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Verificado</span>}
+                    {business.is_verified && <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] uppercase font-black rounded-full tracking-widest flex items-center gap-1"><CheckCircle2 className="w-3 h-3" />  {t('txt_verificado_108') || 'Verificado'}</span>}
                   </div>
                   <h1 className="text-3xl font-black text-slate-900 tracking-tight">{business.name}</h1>
                   <p className="text-sm text-slate-500 mt-2 flex items-center justify-center sm:justify-start gap-1.5"><MapPin className="w-4 h-4" /> {business.city}, {business.district}</p>
                   <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-3 text-sm text-slate-700 font-bold">
                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                     <span>{finalRating.toFixed(1)}</span>
-                    <span className="text-slate-400 font-normal">({finalReviewsCount} avaliações)</span>
+                    <span className="text-slate-400 font-normal">({finalReviewsCount}  {t('txt_avalia_es_9') || 'avaliações)'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Sobre */}
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
-                <h2 className="text-lg font-black text-slate-900 mb-3">Sobre o Espaço</h2>
+                <h2 className="text-lg font-black text-slate-900 mb-3">{t('txt_sobre_o_espa_o') || 'Sobre o Espaço'}</h2>
                 <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{business.description || 'Um espaço dedicado a elevar a sua beleza e bem-estar.'}</p>
               </div>
 
               {/* Secção A Nossa Equipa */}
               {staff && staff.length > 0 && (
                 <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm animate-fade-in">
-                  <h3 className="text-lg font-black text-slate-900 mb-4 px-1">A Nossa Equipa</h3>
+                  <h3 className="text-lg font-black text-slate-900 mb-4 px-1">{t('txt_a_nossa_equipa') || 'A Nossa Equipa'}</h3>
                   <div className="flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide snap-x">
                     {staff.map((member, idx) => {
                       if (!member) return null;
@@ -437,14 +439,14 @@ const { slug } = useParams<{ slug: string }>();
               {/* Serviços Premium */}
               <div id="booking-section" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-black text-slate-900">Menu de Serviços</h2>
+                  <h2 className="text-lg font-black text-slate-900">{t('txt_menu_de_servi_os') || 'Menu de Serviços'}</h2>
                   <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">{services.length}</span>
                 </div>
 
                 {loadingServices ? (
                   <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-purple-600" /></div>
                 ) : (services || []).length === 0 ? (
-                  <div className="text-center py-6 text-slate-500 font-medium bg-slate-50 rounded-2xl">Nenhum serviço disponível de momento.</div>
+                  <div className="text-center py-6 text-slate-500 font-medium bg-slate-50 rounded-2xl">{t('txt_nenhum_servi_o_dispon_vel_de_m') || 'Nenhum serviço disponível de momento.'}</div>
                 ) : (
                   <div className="space-y-3">
                     {(services || []).map((srv) => (
@@ -473,14 +475,14 @@ const { slug } = useParams<{ slug: string }>();
                   <button className="absolute top-4 right-4 p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors">
                     <X className="w-6 h-6" />
                   </button>
-                  <img loading="lazy" src={expandedPhoto} className="max-w-full max-h-[90vh] object-contain rounded-xl" alt="Expanded review" onClick={(e) => e.stopPropagation()} />
+                  <img loading="lazy" src={expandedPhoto} className="max-w-full max-h-[90vh] object-contain rounded-xl" alt={t('txt_expanded_review') || 'Expanded review'} onClick={(e) => e.stopPropagation()} />
                 </div>
               )}
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm space-y-6 text-left">
                 <div className="flex justify-between items-center border-b border-slate-100 pb-4 flex-wrap gap-2">
                   <div>
-                    <h3 className="text-lg font-black text-slate-900">Avaliações de Clientes</h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Opiniões reais pós-visita.</p>
+                    <h3 className="text-lg font-black text-slate-900">{t('txt_avalia_es_de_clientes') || 'Avaliações de Clientes'}</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{t('txt_opini_es_reais_p_s_visita') || 'Opiniões reais pós-visita.'}</p>
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -502,7 +504,7 @@ const { slug } = useParams<{ slug: string }>();
                 {reviews.length > 0 && !loadingReviews && (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                      <button onClick={() => setReviewFilterRating(null)} className={`shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${reviewFilterRating === null ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>Todas</button>
+                      <button onClick={() => setReviewFilterRating(null)} className={`shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${reviewFilterRating === null ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{t('txt_todas_109') || 'Todas'}</button>
                       {[5, 4, 3, 2, 1].map(star => (
                         <button key={star} onClick={() => setReviewFilterRating(star)} className={`shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 ${reviewFilterRating === star ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
                           <span>{star}</span><Star className="w-3.5 h-3.5 fill-current" />
@@ -514,9 +516,9 @@ const { slug } = useParams<{ slug: string }>();
                       onChange={(e) => setReviewSortOrder(e.target.value as any)}
                       className="text-xs p-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 outline-none focus:border-purple-500"
                     >
-                      <option value="recent">Mais recentes</option>
-                      <option value="highest">Melhor pontuação</option>
-                      <option value="lowest">Pior pontuação</option>
+                      <option value="recent">{t('txt_mais_recentes') || 'Mais recentes'}</option>
+                      <option value="highest">{t('txt_melhor_pontua_o') || 'Melhor pontuação'}</option>
+                      <option value="lowest">{t('txt_pior_pontua_o') || 'Pior pontuação'}</option>
                     </select>
                   </div>
                 )}
@@ -525,7 +527,7 @@ const { slug } = useParams<{ slug: string }>();
                   <form onSubmit={handleCreateReviewSubmit} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">Pontuação (1 a 5 Estrelas)</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">{t('txt_pontua_o_1_a_5_estrelas') || 'Pontuação (1 a 5 Estrelas)'}</label>
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button type="button" key={star} aria-label={`Avaliar ${star} estrelas`} onClick={() => setNewReviewRating(star)} className="text-amber-400 focus:outline-none cursor-pointer">
@@ -535,22 +537,22 @@ const { slug } = useParams<{ slug: string }>();
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">Serviço Realizado</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">{t('txt_servi_o_realizado') || 'Serviço Realizado'}</label>
                         <select value={newReviewService} onChange={(e) => setNewReviewService(e.target.value)} className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500">
-                          <option value="">-- Escolha um serviço --</option>
+                          <option value="">{t('txt_escolha_um_servi_o') || '-- Escolha um serviço --'}</option>
                           {(services || []).map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                          <option value="Outro Serviço">Outro Serviço Geral</option>
+                          <option value="Outro Serviço">{t('txt_outro_servi_o_geral') || 'Outro Serviço Geral'}</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">O seu Comentário</label>
-                      <textarea placeholder="Como foi o atendimento? (Opcional)" rows={3} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} className="w-full text-xs p-3 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500" />
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{t('txt_o_seu_coment_rio') || 'O seu Comentário'}</label>
+                      <textarea placeholder={t('txt_como_foi_o_atendimento_opciona') || 'Como foi o atendimento? (Opcional)'} rows={3} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} className="w-full text-xs p-3 bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-purple-500" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1">Fotos (Opcional, máx 5)</label>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{t('txt_fotos_opcional_m_x_5') || 'Fotos (Opcional, máx 5)'}</label>
                       <input type="file" multiple accept="image/*" onChange={handlePhotoSelection} className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
-                      {reviewPhotos.length > 0 && <p className="text-[10px] text-slate-500 mt-1">{reviewPhotos.length} foto(s) selecionada(s)</p>}
+                      {reviewPhotos.length > 0 && <p className="text-[10px] text-slate-500 mt-1">{reviewPhotos.length}  {t('txt_foto_s_selecionada_s') || 'foto(s) selecionada(s)'}</p>}
                     </div>
                     <div className="flex justify-end pt-2">
                       <button type="submit" disabled={submittingReview} className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all">
@@ -581,10 +583,10 @@ const { slug } = useParams<{ slug: string }>();
                             <div>
                               <span className="font-bold text-slate-800 text-sm block">{r.customer_name}</span>
                               <div className="flex items-center gap-2 mt-0.5">
-                                {r.service_name && <><span className="text-[10px] text-slate-500 font-medium">Serviço: <span className="font-semibold text-purple-600">{r.service_name}</span></span><span className="text-[10px] text-slate-400">•</span></>}
-                                <span className="text-[10px] text-slate-500 font-medium">⭐ {r.customer_stats?.total_reviews || 1} Avaliações</span>
+                                {r.service_name && <><span className="text-[10px] text-slate-500 font-medium">{t('txt_servi_o') || 'Serviço:'} <span className="font-semibold text-purple-600">{r.service_name}</span></span><span className="text-[10px] text-slate-400">•</span></>}
+                                <span className="text-[10px] text-slate-500 font-medium">⭐ {r.customer_stats?.total_reviews || 1}  {t('txt_avalia_es_10') || 'Avaliações'}</span>
                                 <span className="text-[10px] text-slate-400">•</span>
-                                <span className="text-[10px] text-slate-500 font-medium">📷 {r.customer_stats?.total_photos || (r.image_urls?.length || 0)} Fotos</span>
+                                <span className="text-[10px] text-slate-500 font-medium">{t('txt_text_11') || '📷'} {r.customer_stats?.total_photos || (r.image_urls?.length || 0)}  {t('txt_fotos_110') || 'Fotos'}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-0.5">
@@ -599,7 +601,7 @@ const { slug } = useParams<{ slug: string }>();
                                 <img loading="lazy" 
                                   key={i} 
                                   src={url} 
-                                  alt="Review photo" 
+                                  alt={t('txt_review_photo') || 'Review photo'} 
                                   className="h-20 w-20 object-cover rounded-xl cursor-pointer border border-slate-200 hover:opacity-90 transition-opacity flex-shrink-0"
                                   onClick={() => setExpandedPhoto(url)}
                                 />
@@ -610,7 +612,7 @@ const { slug } = useParams<{ slug: string }>();
                           {r.reply_text && (
                             <div className="mt-3 bg-slate-50 border border-slate-100 rounded-xl p-3">
                               <div className="flex items-center gap-1 mb-1">
-                                <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Resposta do Proprietário</span>
+                                <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">{t('txt_resposta_do_propriet_rio') || 'Resposta do Proprietário'}</span>
                               </div>
                               <p className="text-slate-600 text-xs leading-relaxed">{r.reply_text}</p>
                             </div>
@@ -619,25 +621,27 @@ const { slug } = useParams<{ slug: string }>();
                       ))}
                     </div>
                     {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length === 0 && (
-                       <div className="text-center py-6 text-slate-500 text-xs">Nenhuma avaliação encontrada com este filtro.</div>
+                       <div className="text-center py-6 text-slate-500 text-xs">{t('txt_nenhuma_avalia_o_encontrada_co') || 'Nenhuma avaliação encontrada com este filtro.'}</div>
                     )}
                     {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length > 3 && !showAllReviews && (
                       <div className="mt-2 pt-4 border-t border-slate-100 flex justify-center">
                         <button onClick={() => setShowAllReviews(true)} className="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-xl transition-colors">
-                          Ver todas as {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length} avaliações
-                        </button>
+                          
+                                                                                {t('txt_ver_todas_as') || 'Ver todas as'} {(reviews || []).filter(r => reviewFilterRating === null || Number(r.rating) === reviewFilterRating).length}  {t('txt_avalia_es') || 'avaliações'}
+                                                                              </button>
                       </div>
                     )}
                     {showAllReviews && (
                        <div className="mt-2 pt-4 border-t border-slate-100 flex justify-center">
                          <button onClick={() => setShowAllReviews(false)} className="text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-colors">
-                           Mostrar menos
-                         </button>
+                           
+                                                                                 {t('txt_mostrar_menos') || 'Mostrar menos'}
+                                                                               </button>
                        </div>
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-100"><MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" /><p className="text-xs text-slate-500">Sem avaliações. Seja o primeiro a opinar!</p></div>
+                  <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-100"><MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" /><p className="text-xs text-slate-500">{t('txt_sem_avalia_es_seja_o_primeiro') || 'Sem avaliações. Seja o primeiro a opinar!'}</p></div>
                 )}
               </div>
 
@@ -649,11 +653,11 @@ const { slug } = useParams<{ slug: string }>();
               {/* CTA Reserva Card */}
               <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
                 <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                <h3 className="text-xl font-black mb-2 relative z-10">Marcar Atendimento</h3>
-                <p className="text-xs text-purple-100 mb-6 relative z-10">Agendamento online, rápido e com vagas reais atualizadas ao minuto.</p>
+                <h3 className="text-xl font-black mb-2 relative z-10">{t('txt_marcar_atendimento') || 'Marcar Atendimento'}</h3>
+                <p className="text-xs text-purple-100 mb-6 relative z-10">{t('txt_agendamento_online_r_pido_e_co') || 'Agendamento online, rápido e com vagas reais atualizadas ao minuto.'}</p>
                 <button onClick={(e) => { e.preventDefault(); document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl text-sm font-black uppercase tracking-wider shadow-lg transition-all flex justify-center items-center gap-2 relative z-10">
-                  <Calendar className="w-5 h-5" /> Reservar Agora
-                </button>
+                  <Calendar className="w-5 h-5" />  {t('txt_reservar_agora') || 'Reservar Agora'}
+                                                  </button>
               </div>
 
               {/* Informações */}
@@ -664,7 +668,7 @@ const { slug } = useParams<{ slug: string }>();
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Clock className="w-4 h-4 text-slate-500" />
-                      <h4 className="font-bold text-sm text-slate-800">Horário de Funcionamento</h4>
+                      <h4 className="font-bold text-sm text-slate-800">{t('txt_hor_rio_de_funcionamento') || 'Horário de Funcionamento'}</h4>
                     </div>
                     <div className="space-y-2 text-xs">
                       {['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'].map((day, idx) => {
@@ -714,16 +718,18 @@ const { slug } = useParams<{ slug: string }>();
                           rel="noopener noreferrer"
                           className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
                         >
-                          Como Chegar / Iniciar Trajeto
-                        </a>
+                          
+                                                            {t('txt_como_chegar_iniciar_trajeto') || 'Como Chegar / Iniciar Trajeto'}
+                                                          </a>
                         <a 
                           href={streetViewUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-slate-200 shadow-sm"
                         >
-                          Google Street View
-                        </a>
+                          
+                                                            {t('txt_google_street_view') || 'Google Street View'}
+                                                          </a>
                       </div>
                     </div>
                   );
@@ -741,8 +747,9 @@ const { slug } = useParams<{ slug: string }>();
                     className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition mb-3"
                   >
                     <div className={`w-2.5 h-2.5 rounded-full ${isStoreOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-400'}`}></div>
-                    Falar com a Loja no Chat
-                  </button>
+                    
+                                                          {t('txt_falar_com_a_loja_no_chat') || 'Falar com a Loja no Chat'}
+                                                        </button>
                   <a 
                     href={business.whatsapp || `https://wa.me/${(business.phone || '').replace(/[^0-9]/g, '')}`} 
                     target="_blank" 
@@ -750,13 +757,15 @@ const { slug } = useParams<{ slug: string }>();
                     className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all"
                   >
                     <MessageSquare className="w-4 h-4 fill-emerald-600" />
-                    Falar no WhatsApp
-                  </a>
+                    
+                                                          {t('txt_falar_no_whatsapp') || 'Falar no WhatsApp'}
+                                                        </a>
                   {business.website && (
                     <a href={business.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition-all">
                       <Globe className="w-4 h-4 text-purple-600" />
-                      Visitar Website
-                    </a>
+                      
+                                                                {t('txt_visitar_website') || 'Visitar Website'}
+                                                              </a>
                   )}
                 </div>
               </div>

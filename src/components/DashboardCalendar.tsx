@@ -1,7 +1,9 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { CreditCard, Banknote, User } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 export function DashboardCalendar({ business, bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
+    const { t } = useTranslation();
   
   const columns = useMemo(() => {
     const baseDate = selectedAgendaDate ? new Date(selectedAgendaDate) : new Date();
@@ -90,7 +92,7 @@ export function DashboardCalendar({ business, bookings, staff, businessHours, se
   return (
     <div className="flex flex-col h-[65vh] md:h-[75vh] min-h-[500px] md:min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl border border-slate-200/50 shadow-sm">
       <div className="flex mb-2 bg-slate-50 p-2 md:p-3 rounded-2xl border border-slate-100 shrink-0">
-        <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hora</div>
+        <div className="w-16 md:w-20 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('txt_hora_25') || 'Hora'}</div>
         {columns.map((col: any) => (
           <div key={col.id} className="flex-1 flex flex-col items-center justify-center gap-1.5 border-l border-slate-200/50">
             {col.isStaff ? (
@@ -122,7 +124,7 @@ export function DashboardCalendar({ business, bookings, staff, businessHours, se
                 </div>
               )}
 
-              <span className="w-16 md:w-20 text-[11px] font-mono text-slate-400 font-bold pt-2 text-center shrink-0">{hour}:00</span>
+              <span className="w-16 md:w-20 text-[11px] font-mono text-slate-400 font-bold pt-2 text-center shrink-0">{hour}{t('txt_00') || ':00'}</span>
 
               {/* Grid lines 15, 30, 45 */}
               <div className="absolute left-16 md:left-20 right-0 top-1/4 h-[1px] bg-slate-100/50"></div>

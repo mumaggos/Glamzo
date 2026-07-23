@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, X, Store, Calendar, CreditCard } from 'lucide-react';
 import { SalesAgent } from '../types';
+import { useTranslation } from "react-i18next";
 
 interface AgentStoresModalProps {
   agent: SalesAgent;
@@ -9,6 +10,7 @@ interface AgentStoresModalProps {
 }
 
 export default function AgentStoresModal({ agent, onClose }: AgentStoresModalProps) {
+    const { t } = useTranslation();
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +44,8 @@ export default function AgentStoresModal({ agent, onClose }: AgentStoresModalPro
               <Store className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Lojas Cadastradas</h2>
-              <p className="text-sm text-slate-500">Comercial: {agent.name}</p>
+              <h2 className="text-xl font-bold text-slate-900">{t('txt_lojas_cadastradas') || 'Lojas Cadastradas'}</h2>
+              <p className="text-sm text-slate-500">{t('txt_comercial') || 'Comercial:'} {agent.name}</p>
             </div>
           </div>
           <button
@@ -58,12 +60,12 @@ export default function AgentStoresModal({ agent, onClose }: AgentStoresModalPro
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <Loader2 className="w-8 h-8 animate-spin mb-4" />
-              <p>A carregar lojas...</p>
+              <p>{t('txt_a_carregar_lojas') || 'A carregar lojas...'}</p>
             </div>
           ) : stores.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <Store className="w-12 h-12 mb-4 text-slate-300" />
-              <p>Nenhuma loja cadastrada por este comercial.</p>
+              <p>{t('txt_nenhuma_loja_cadastrada_por_es') || 'Nenhuma loja cadastrada por este comercial.'}</p>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -78,12 +80,13 @@ export default function AgentStoresModal({ agent, onClose }: AgentStoresModalPro
                       </div>
                       <div className="flex items-center gap-1">
                         <CreditCard className="w-3 h-3" />
-                        Plano: {store.selected_plan ? (
+                        
+                                                          {t('txt_plano') || 'Plano:'} {store.selected_plan ? (
                           store.selected_plan === 'app_tablet' || store.selected_plan === 'pro_terminal' || store.selected_plan.includes('terminal') || store.tablet_requested
-                            ? <span className="font-medium text-emerald-600">PRO + Terminal</span>
-                            : <span className="font-medium text-blue-600">PRO</span>
+                            ? <span className="font-medium text-emerald-600">{t('txt_pro_terminal') || 'PRO + Terminal'}</span>
+                            : <span className="font-medium text-blue-600">{t('txt_pro_7') || 'PRO'}</span>
                         ) : (
-                          <span className="text-amber-600 font-medium">Incompleto</span>
+                          <span className="text-amber-600 font-medium">{t('txt_incompleto_8') || 'Incompleto'}</span>
                         )}
                       </div>
                     </div>

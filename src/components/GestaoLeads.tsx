@@ -3,12 +3,14 @@ import { supabase } from '../lib/supabase';
 import Papa from 'papaparse';
 import { Upload, Users, Trash2, Key, Link as LinkIcon, Check, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SalesAgent } from '../types';
+import { useTranslation } from "react-i18next";
 
 interface GestaoLeadsProps {
   agents: SalesAgent[];
 }
 
 export default function GestaoLeads({ agents }: GestaoLeadsProps) {
+    const { t } = useTranslation();
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -206,8 +208,8 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900">Importar Leads (CSV)</h3>
-              <p className="text-xs text-slate-500">Colunas necessárias: Nome, Telefone</p>
+              <h3 className="font-extrabold text-slate-900">{t('txt_importar_leads_csv') || 'Importar Leads (CSV)'}</h3>
+              <p className="text-xs text-slate-500">{t('txt_colunas_necess_rias_nome_telef') || 'Colunas necessárias: Nome, Telefone'}</p>
             </div>
           </div>
           
@@ -252,26 +254,26 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900">Atribuir Leads</h3>
-                <p className="text-xs text-slate-500">Gere um acesso único de CRM</p>
+                <h3 className="font-extrabold text-slate-900">{t('txt_atribuir_leads') || 'Atribuir Leads'}</h3>
+                <p className="text-xs text-slate-500">{t('txt_gere_um_acesso_nico_de_crm') || 'Gere um acesso único de CRM'}</p>
               </div>
             </div>
             <div className="text-right">
               <span className="block text-2xl font-black text-slate-900">{availableLeads}</span>
-              <span className="block text-[10px] uppercase font-bold text-slate-400">Leads Livres</span>
+              <span className="block text-[10px] uppercase font-bold text-slate-400">{t('txt_leads_livres') || 'Leads Livres'}</span>
             </div>
           </div>
 
           <form onSubmit={handleDistribute} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Comercial</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{t('txt_comercial_32') || 'Comercial'}</label>
               <select
                 required
                 value={selectedAgent}
                 onChange={e => setSelectedAgent(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-900 font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
-                <option value="">Selecione um comercial...</option>
+                <option value="">{t('txt_selecione_um_comercial') || 'Selecione um comercial...'}</option>
                 {agents.map(a => (
                   <option key={a.id} value={a.id}>{a.name} ({a.team_name || 'Sem Equipa'})</option>
                 ))}
@@ -280,7 +282,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Quantidade de Leads</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('txt_quantidade_de_leads') || 'Quantidade de Leads'}</label>
                 <input
                   type="number"
                   min="1"
@@ -288,12 +290,12 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                   required
                   value={leadCount}
                   onChange={e => setLeadCount(e.target.value ? parseInt(e.target.value) : '')}
-                  placeholder="Ex: 50"
+                  placeholder={t('txt_ex_50') || 'Ex: 50'}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Senha de Acesso</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('txt_senha_de_acesso') || 'Senha de Acesso'}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <Key className="w-4 h-4" />
@@ -303,7 +305,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                     required
                     value={senhaAcesso}
                     onChange={e => setSenhaAcesso(e.target.value)}
-                    placeholder="Ex: pwd123"
+                    placeholder={t('txt_ex_pwd123') || 'Ex: pwd123'}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
                   />
                 </div>
@@ -316,8 +318,9 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
               className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {distributing && <Loader2 className="w-4 h-4 animate-spin" />}
-              Distribuir Lote & Gerar Acesso
-            </button>
+              
+                                        {t('txt_distribuir_lote_gerar_acesso') || 'Distribuir Lote & Gerar Acesso'}
+                                      </button>
           </form>
 
           {distributeMsg && (
@@ -329,7 +332,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
 
           {generatedLink && (
             <div className="mt-4 p-4 border border-emerald-200 bg-emerald-50 rounded-xl">
-              <p className="text-xs font-bold text-emerald-800 mb-2">Link de Trabalho do Comercial:</p>
+              <p className="text-xs font-bold text-emerald-800 mb-2">{t('txt_link_de_trabalho_do_comercial_1') || 'Link de Trabalho do Comercial:'}</p>
               <div className="flex items-center gap-2">
                 <input 
                   readOnly 
@@ -339,7 +342,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                 <button
                   onClick={copyLink}
                   className="p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shrink-0"
-                  title="Copiar Link"
+                  title={t('txt_copiar_link') || 'Copiar Link'}
                 >
                   {copied ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4" />}
                 </button>
@@ -353,28 +356,31 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
       <div className="bg-white p-6 border border-slate-200 rounded-3xl shadow-sm mt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 className="font-extrabold text-slate-900">Base de Dados de Leads</h3>
-            <p className="text-xs text-slate-500">Registo global de todas as leads inseridas no sistema.</p>
+            <h3 className="font-extrabold text-slate-900">{t('txt_base_de_dados_de_leads') || 'Base de Dados de Leads'}</h3>
+            <p className="text-xs text-slate-500">{t('txt_registo_global_de_todas_as_lea') || 'Registo global de todas as leads inseridas no sistema.'}</p>
           </div>
           <div className="flex bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => { setLeadsFilter('livres'); setCurrentPage(1); }}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${leadsFilter === 'livres' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
             >
-              Livres
-            </button>
+              
+                                        {t('txt_livres_33') || 'Livres'}
+                                      </button>
             <button
               onClick={() => { setLeadsFilter('atribuidas'); setCurrentPage(1); }}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${leadsFilter === 'atribuidas' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
             >
-              Atribuídas
-            </button>
+              
+                                        {t('txt_atribu_das') || 'Atribuídas'}
+                                      </button>
             <button
               onClick={() => { setLeadsFilter('usadas'); setCurrentPage(1); }}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${leadsFilter === 'usadas' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
             >
-              Usadas / Histórico
-            </button>
+              
+                                        {t('txt_usadas_hist_rico') || 'Usadas / Histórico'}
+                                      </button>
           </div>
         </div>
         
@@ -382,12 +388,12 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
           <table className="w-full text-left border-collapse text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider sticky top-0">
               <tr>
-                <th className="p-4">Loja</th>
-                <th className="p-4">Telefone</th>
-                <th className="p-4">Comercial</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4">Potencial</th>
-                <th className="p-4">Notas</th>
+                <th className="p-4">{t('txt_loja_34') || 'Loja'}</th>
+                <th className="p-4">{t('txt_telefone_35') || 'Telefone'}</th>
+                <th className="p-4">{t('txt_comercial_36') || 'Comercial'}</th>
+                <th className="p-4">{t('txt_estado_37') || 'Estado'}</th>
+                <th className="p-4">{t('txt_potencial_38') || 'Potencial'}</th>
+                <th className="p-4">{t('txt_notas_39') || 'Notas'}</th>
               </tr>
             </thead>
             
@@ -406,7 +412,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                 if (filtered.length === 0) {
                   return (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-500">Nenhuma lead encontrada neste estado.</td>
+                      <td colSpan={6} className="p-8 text-center text-slate-500">{t('txt_nenhuma_lead_encontrada_neste') || 'Nenhuma lead encontrada neste estado.'}</td>
                     </tr>
                   );
                 }
@@ -434,7 +440,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                         <td className="p-4 text-center font-bold text-slate-700">{lead.estado_chamada !== 'pendente' ? lead.potencial_fecho : '-'}</td>
                         <td className="p-4 text-xs text-slate-500 max-w-[200px] truncate" title={lead.notas}>{lead.notas || '-'}</td>
                         <td className="p-4 text-center">
-                          <button onClick={() => handleDeleteLead(lead.id)} className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors" title="Apagar Lead">
+                          <button onClick={() => handleDeleteLead(lead.id)} className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors" title={t('txt_apagar_lead') || 'Apagar Lead'}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </td>
@@ -461,7 +467,8 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
           return (
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between rounded-b-3xl">
               <span className="text-xs text-slate-500 font-medium">
-                A mostrar {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredCount)} de {filteredCount} leads
+                
+                                      {t('txt_a_mostrar') || 'A mostrar'} {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredCount)}  {t('txt_de_40') || 'de'} {filteredCount} leads
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -471,7 +478,7 @@ export default function GestaoLeads({ agents }: GestaoLeadsProps) {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-bold text-slate-700">Pág. {currentPage} de {totalPages}</span>
+                <span className="text-xs font-bold text-slate-700">{t('txt_p_g') || 'Pág.'} {currentPage}  {t('txt_de_41') || 'de'} {totalPages}</span>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}

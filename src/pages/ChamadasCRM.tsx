@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Phone, CheckCircle, Clock, XCircle, AlertCircle, Save, Loader2, Search, ArrowRight, Lock, Key, ChevronLeft, ChevronRight, MessageSquare, Send } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 interface Lead {
   id: string;
@@ -16,6 +17,7 @@ interface Lead {
 }
 
 export default function ChamadasCRM() {
+    const { t } = useTranslation();
   const { vendedorId } = useParams<{ vendedorId: string }>();
   const [senha, setSenha] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
@@ -245,8 +247,8 @@ export default function ChamadasCRM() {
           <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-black text-center text-slate-900 mb-2">Portal Comercial</h2>
-          <p className="text-center text-sm text-slate-500 mb-8">Insira a sua senha de acesso ao lote de leads.</p>
+          <h2 className="text-2xl font-black text-center text-slate-900 mb-2">{t('txt_portal_comercial') || 'Portal Comercial'}</h2>
+          <p className="text-center text-sm text-slate-500 mb-8">{t('txt_insira_a_sua_senha_de_acesso_a') || 'Insira a sua senha de acesso ao lote de leads.'}</p>
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -259,7 +261,7 @@ export default function ChamadasCRM() {
                   required
                   value={senha}
                   onChange={e => setSenha(e.target.value)}
-                  placeholder="Senha de Acesso"
+                  placeholder={t('txt_senha_de_acesso') || 'Senha de Acesso'}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-slate-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
                 />
               </div>
@@ -308,7 +310,7 @@ export default function ChamadasCRM() {
             <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center">
               <Phone className="w-4 h-4" />
             </div>
-            <h1 className="font-black text-slate-900 tracking-tight">CRM Vendas</h1>
+            <h1 className="font-black text-slate-900 tracking-tight">{t('txt_crm_vendas') || 'CRM Vendas'}</h1>
           </div>
           
           <div className="flex items-center gap-4">
@@ -316,7 +318,7 @@ export default function ChamadasCRM() {
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
-                placeholder="Pesquisar loja ou telemóvel..." 
+                placeholder={t('txt_pesquisar_loja_ou_telem_vel') || 'Pesquisar loja ou telemóvel...'} 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 w-64 text-slate-700"
@@ -330,8 +332,9 @@ export default function ChamadasCRM() {
               }}
               className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
             >
-              Sair
-            </button>
+              
+                                        {t('txt_sair_111') || 'Sair'}
+                                      </button>
           </div>
         </div>
         
@@ -341,8 +344,9 @@ export default function ChamadasCRM() {
             onClick={() => setActiveTab('pendentes')}
             className={`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'pendentes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
           >
-            A Contactar
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'pendentes' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+            
+                                  {t('txt_a_contactar') || 'A Contactar'}
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'pendentes' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
               {leads.filter(l => l.estado_chamada === 'pendente').length}
             </span>
           </button>
@@ -350,8 +354,9 @@ export default function ChamadasCRM() {
             onClick={() => setActiveTab('contactados')}
             className={`py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'contactados' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
           >
-            Já Contactados
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'contactados' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+            
+                                  {t('txt_j_contactados') || 'Já Contactados'}
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'contactados' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
               {leads.filter(l => l.estado_chamada !== 'pendente').length}
             </span>
           </button>
@@ -364,7 +369,7 @@ export default function ChamadasCRM() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
-            placeholder="Pesquisar..." 
+            placeholder={t('txt_pesquisar') || 'Pesquisar...'} 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
@@ -380,7 +385,7 @@ export default function ChamadasCRM() {
         ) : activeList.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
             <CheckCircle className="w-12 h-12 mb-4 text-slate-300" />
-            <p className="font-medium">Nenhuma lead encontrada.</p>
+            <p className="font-medium">{t('txt_nenhuma_lead_encontrada') || 'Nenhuma lead encontrada.'}</p>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col h-full">
@@ -388,13 +393,13 @@ export default function ChamadasCRM() {
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
                   <tr>
-                    <th className="p-4 w-[20%]">Nome da Loja</th>
-                    <th className="p-4 w-[12%]">Telefone</th>
-                    <th className="p-4 w-[20%]">Estado</th>
-                    <th className="p-4 w-[8%] text-center">SMS</th>
-                    <th className="p-4 w-[10%] text-center">Potencial</th>
-                    <th className="p-4">Notas</th>
-                    <th className="p-4 w-[10%] text-center">Ações</th>
+                    <th className="p-4 w-[20%]">{t('txt_nome_da_loja') || 'Nome da Loja'}</th>
+                    <th className="p-4 w-[12%]">{t('txt_telefone_112') || 'Telefone'}</th>
+                    <th className="p-4 w-[20%]">{t('txt_estado_113') || 'Estado'}</th>
+                    <th className="p-4 w-[8%] text-center">{t('txt_sms_114') || 'SMS'}</th>
+                    <th className="p-4 w-[10%] text-center">{t('txt_potencial_115') || 'Potencial'}</th>
+                    <th className="p-4">{t('txt_notas_116') || 'Notas'}</th>
+                    <th className="p-4 w-[10%] text-center">{t('txt_a_es') || 'Ações'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
@@ -415,27 +420,27 @@ export default function ChamadasCRM() {
                             onChange={(e) => handleEdit(lead.id, 'estado_chamada', e.target.value)}
                             className={`w-full text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer border focus:ring-2 focus:ring-blue-500/30 ${getStatusColor(lead.estado_chamada)}`}
                           >
-                            <option value="pendente">A Contactar</option>
-                            <option value="contactado">Contactado</option>
-                            <option value="nao_atendeu">Não Atendeu (Avisa SMS e Devolve)</option>
-                            <option value="desligou">Desligou Chamada</option>
-                            <option value="invalido">Número Inválido/Desligado</option>
-                            <option value="nao_contactar">Não Contactar Mais</option>
-                            <option value="recusou">Recusou</option>
+                            <option value="pendente">{t('txt_a_contactar') || 'A Contactar'}</option>
+                            <option value="contactado">{t('txt_contactado_117') || 'Contactado'}</option>
+                            <option value="nao_atendeu">{t('txt_n_o_atendeu_avisa_sms_e_devolv') || 'Não Atendeu (Avisa SMS e Devolve)'}</option>
+                            <option value="desligou">{t('txt_desligou_chamada') || 'Desligou Chamada'}</option>
+                            <option value="invalido">{t('txt_n_mero_inv_lido_desligado') || 'Número Inválido/Desligado'}</option>
+                            <option value="nao_contactar">{t('txt_n_o_contactar_mais') || 'Não Contactar Mais'}</option>
+                            <option value="recusou">{t('txt_recusou_118') || 'Recusou'}</option>
                           </select>
                         </td>
                         <td className="p-4 text-center">
                           {queuedSms[lead.id] ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">
-                                <Clock className="w-3 h-3" /> Na fila...
-                              </span>
+                                <Clock className="w-3 h-3" />  {t('txt_na_fila') || 'Na fila...'}
+                                                                          </span>
                             </div>
                           ) : lead.sms_enviado ? (
                             <div className="flex flex-col items-center gap-1">
                               <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                <CheckCircle className="w-3 h-3" /> Enviada
-                              </span>
+                                <CheckCircle className="w-3 h-3" />  {t('txt_enviada_119') || 'Enviada'}
+                                                                              </span>
                             </div>
                           ) : (
                             ['contactado', 'nao_atendeu'].includes(edits[lead.id]?.estado_chamada || lead.estado_chamada) ? (
@@ -445,8 +450,9 @@ export default function ChamadasCRM() {
                                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 mx-auto"
                               >
                                 {sendingSmsId === lead.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                                Enviar SMS
-                              </button>
+                                
+                                                                                    {t('txt_enviar_sms') || 'Enviar SMS'}
+                                                                                  </button>
                             ) : (
                               <span className="text-xs text-slate-400">-</span>
                             )
@@ -460,10 +466,10 @@ export default function ChamadasCRM() {
                               className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 focus:bg-white cursor-pointer"
                             >
                               <option value=""></option>
-                              <option value="Muito recetivo">Muito recetivo</option>
-                              <option value="Recetivo">Recetivo</option>
-                              <option value="Pouco receptivo">Pouco receptivo</option>
-                              <option value="Nada receptivo">Nada receptivo</option>
+                              <option value="Muito recetivo">{t('txt_muito_recetivo') || 'Muito recetivo'}</option>
+                              <option value="Recetivo">{t('txt_recetivo_120') || 'Recetivo'}</option>
+                              <option value="Pouco receptivo">{t('txt_pouco_receptivo') || 'Pouco receptivo'}</option>
+                              <option value="Nada receptivo">{t('txt_nada_receptivo') || 'Nada receptivo'}</option>
                             </select>
                           </div>
                         </td>
@@ -472,7 +478,7 @@ export default function ChamadasCRM() {
                             type="text"
                             value={lead.notas || ''}
                             onChange={(e) => handleEdit(lead.id, 'notas', e.target.value)}
-                            placeholder="Notas da chamada..."
+                            placeholder={t('txt_notas_da_chamada') || 'Notas da chamada...'}
                             className="w-full text-xs bg-transparent border-none px-2 py-1.5 text-slate-700 outline-none focus:bg-slate-50 focus:ring-1 focus:ring-slate-200 rounded-lg transition-colors placeholder:text-slate-300"
                           />
                         </td>
@@ -501,7 +507,8 @@ export default function ChamadasCRM() {
             {totalPages > 1 && (
               <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
                 <span className="text-xs text-slate-500 font-medium">
-                  A mostrar {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, activeList.length)} de {activeList.length} leads
+                  
+                                                            {t('txt_a_mostrar') || 'A mostrar'} {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, activeList.length)}  {t('txt_de_121') || 'de'} {activeList.length} leads
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -511,7 +518,7 @@ export default function ChamadasCRM() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-xs font-bold text-slate-700">Pág. {currentPage} de {totalPages}</span>
+                  <span className="text-xs font-bold text-slate-700">{t('txt_p_g') || 'Pág.'} {currentPage}  {t('txt_de_122') || 'de'} {totalPages}</span>
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}

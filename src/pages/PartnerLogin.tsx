@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Sparkles, Loader2, Landmark } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 export default function PartnerLogin() {
+    const { t } = useTranslation();
   const { signIn, signOut, resetPassword, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -122,11 +124,13 @@ export default function PartnerLogin() {
           <Landmark className="w-6 h-6" />
         </div>
         <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
-          Parceiros Glamzo<span className="text-purple-600 font-black">.</span>
+          
+                            {t('txt_parceiros_glamzo') || 'Parceiros Glamzo'}<span className="text-purple-600 font-black">.</span>
         </h2>
         <p className="mt-2 text-xs text-slate-500 font-medium">
-          Aceda ao seu terminal de gestão de reservas, agenda comercial, faturamento e visibilidade profissional.
-        </p>
+          
+                            {t('txt_aceda_ao_seu_terminal_de_gest') || 'Aceda ao seu terminal de gestão de reservas, agenda comercial, faturamento e visibilidade profissional.'}
+                          </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -148,8 +152,9 @@ export default function PartnerLogin() {
             
             <div>
               <label htmlFor="partner-email" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                E-mail Profissional
-              </label>
+                
+                                              {t('txt_e_mail_profissional') || 'E-mail Profissional'}
+                                            </label>
               <div className="relative rounded-xl shadow-sm">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
                   <Mail className="w-4 h-4" />
@@ -161,7 +166,7 @@ export default function PartnerLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                  placeholder="geral@oseusalao.com"
+                  placeholder={t('txt_geral_oseusalao_com') || 'geral@oseusalao.com'}
                 />
               </div>
             </div>
@@ -169,16 +174,18 @@ export default function PartnerLogin() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="partner-password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Palavra-passe
-                </label>
+                  
+                                                    {t('txt_palavra_passe_138') || 'Palavra-passe'}
+                                                  </label>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
                   className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer disabled:opacity-55"
                   disabled={isResetting}
                 >
-                  Esqueceu-se da senha?
-                </button>
+                  
+                                                    {t('txt_esqueceu_se_da_senha') || 'Esqueceu-se da senha?'}
+                                                  </button>
               </div>
               <div className="relative rounded-xl shadow-sm">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
@@ -191,7 +198,7 @@ export default function PartnerLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                  placeholder="••••••••"
+                  placeholder={t('txt_text_21') || '••••••••'}
                 />
                 <button
                   type="button"
@@ -212,20 +219,22 @@ export default function PartnerLogin() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>A aceder ao painel...</span>
+                    <span>{t('txt_a_aceder_ao_painel') || 'A aceder ao painel...'}</span>
                   </>
                 ) : (
-                  <span>Aceder ao Painel</span>
+                  <span>{t('txt_aceder_ao_painel') || 'Aceder ao Painel'}</span>
                 )}
               </button>
             </div>
           </form>
 
           <p className="mt-8 text-center text-xs text-slate-500">
-            Ainda não é parceiro comercial?{' '}
+            
+                                  {t('txt_ainda_n_o_parceiro_comercial') || 'Ainda não é parceiro comercial?'}{' '}
             <Link to="/partner/signup" className="font-bold text-purple-600 hover:text-purple-700">
-              Registe o seu estabelecimento comercial
-            </Link>
+              
+                                        {t('txt_registe_o_seu_estabelecimento') || 'Registe o seu estabelecimento comercial'}
+                                      </Link>
           </p>
 
         </div>

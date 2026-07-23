@@ -93,14 +93,14 @@ export default function PartnerReviewsTab() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Avaliações</h1>
-          <p className="text-sm text-slate-500 mt-1">Gira as avaliações dos seus clientes e responda ao feedback.</p>
+          <h1 className="text-2xl font-black text-slate-900">{t('txt_avalia_es_40') || 'Avaliações'}</h1>
+          <p className="text-sm text-slate-500 mt-1">{t('txt_gira_as_avalia_es_dos_seus_cli') || 'Gira as avaliações dos seus clientes e responda ao feedback.'}</p>
         </div>
       </div>
       
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
-          <button onClick={() => setFilterRating(null)} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${filterRating === null ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}>Todas as Estrelas</button>
+          <button onClick={() => setFilterRating(null)} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${filterRating === null ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}>{t('txt_todas_as_estrelas') || 'Todas as Estrelas'}</button>
           {[5,4,3,2,1].map(s => (
             <button key={s} onClick={() => setFilterRating(s)} className={`flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg ${filterRating === s ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
               {s} <Star className="w-3 h-3 fill-current" />
@@ -109,14 +109,14 @@ export default function PartnerReviewsTab() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <select value={filterReplied} onChange={(e) => setFilterReplied(e.target.value as any)} className="text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none flex-1">
-            <option value="all">Todas as Respostas</option>
-            <option value="replied">Respondidas</option>
-            <option value="pending">Por Responder</option>
+            <option value="all">{t('txt_todas_as_respostas') || 'Todas as Respostas'}</option>
+            <option value="replied">{t('txt_respondidas_219') || 'Respondidas'}</option>
+            <option value="pending">{t('txt_por_responder') || 'Por Responder'}</option>
           </select>
           <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none flex-1">
-            <option value="recent">Mais Recentes</option>
-            <option value="highest">Melhor Classificação</option>
-            <option value="lowest">Pior Classificação</option>
+            <option value="recent">{t('txt_mais_recentes_41') || 'Mais Recentes'}</option>
+            <option value="highest">{t('txt_melhor_classifica_o') || 'Melhor Classificação'}</option>
+            <option value="lowest">{t('txt_pior_classifica_o') || 'Pior Classificação'}</option>
           </select>
         </div>
       </div>
@@ -145,13 +145,13 @@ export default function PartnerReviewsTab() {
               {r.comment ? (
                 <p className="text-sm text-slate-600 leading-relaxed">{r.comment}</p>
               ) : (
-                <p className="text-sm text-slate-400 italic">O utilizador não deixou comentário.</p>
+                <p className="text-sm text-slate-400 italic">{t('txt_o_utilizador_n_o_deixou_coment') || 'O utilizador não deixou comentário.'}</p>
               )}
               
               {r.image_urls && r.image_urls.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                   {r.image_urls.map((url, i) => (
-                    <img loading="lazy" key={i} src={url} alt="Review" className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
+                    <img loading="lazy" key={i} src={url} alt={t('txt_review_220') || 'Review'} className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
                   ))}
                 </div>
               )}
@@ -161,34 +161,35 @@ export default function PartnerReviewsTab() {
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Reply className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-bold text-slate-800">A sua resposta</span>
+                      <span className="text-xs font-bold text-slate-800">{t('txt_a_sua_resposta') || 'A sua resposta'}</span>
                       {r.replied_at && <span className="text-[10px] text-slate-400">• {new Date(r.replied_at).toLocaleDateString('pt-PT')}</span>}
                     </div>
                     <p className="text-sm text-slate-600">{r.reply_text}</p>
                   </div>
                 ) : replyingTo === r.id ? (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <label className="block text-xs font-bold text-slate-600 mb-2">Responder a {r.customer_name}</label>
+                    <label className="block text-xs font-bold text-slate-600 mb-2">{t('txt_responder_a') || 'Responder a'} {r.customer_name}</label>
                     <textarea 
                       autoFocus
                       rows={3} 
                       value={replyText} 
                       onChange={(e) => setReplyText(e.target.value)}
-                      placeholder="Escreva a sua resposta pública..."
+                      placeholder={t('txt_escreva_a_sua_resposta_p_blica') || 'Escreva a sua resposta pública...'}
                       className="w-full text-sm p-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-purple-500 mb-3"
                     />
                     <div className="flex justify-end gap-2">
                       <button onClick={() => setReplyingTo(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">{t('cancel') || 'Cancelar'}</button>
                       <button onClick={() => submitReply(r.id)} disabled={submittingReply || !replyText.trim()} className="px-4 py-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2">
                         {submittingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                        Publicar Resposta
-                      </button>
+                        
+                                                                  {t('txt_publicar_resposta') || 'Publicar Resposta'}
+                                                                </button>
                     </div>
                   </div>
                 ) : (
                   <button onClick={() => { setReplyingTo(r.id); setReplyText(''); }} className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5">
-                    <Reply className="w-4 h-4" /> Responder publicamente
-                  </button>
+                    <Reply className="w-4 h-4" />  {t('txt_responder_publicamente') || 'Responder publicamente'}
+                                                        </button>
                 )}
               </div>
             </div>
@@ -197,8 +198,8 @@ export default function PartnerReviewsTab() {
       ) : (
         <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">Sem avaliações</h3>
-          <p className="text-sm text-slate-500">Ainda não há avaliações que correspondam aos seus filtros.</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-1">{t('txt_sem_avalia_es') || 'Sem avaliações'}</h3>
+          <p className="text-sm text-slate-500">{t('txt_ainda_n_o_h_avalia_es_que_corr') || 'Ainda não há avaliações que correspondam aos seus filtros.'}</p>
         </div>
       )}
     </div>

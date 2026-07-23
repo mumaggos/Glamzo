@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from "../lib/supabase";
 import { Business, Booking, Service, Staff, Review } from '../types';
+import { useTranslation } from "react-i18next";
 
 interface DashboardOverviewProps {
   business: Business | null;
@@ -27,6 +28,7 @@ export function DashboardOverview({
   trialDaysRemaining,
   setActiveTab
 }: DashboardOverviewProps) {
+    const { t } = useTranslation();
 
   // Simple stats calculation for today
   
@@ -80,13 +82,13 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Resumo da Loja</h2>
-          <p className="text-sm text-slate-500 mt-1">Acompanhe o desempenho do seu negócio em tempo real.</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('txt_resumo_da_loja') || 'Resumo da Loja'}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t('txt_acompanhe_o_desempenho_do_seu') || 'Acompanhe o desempenho do seu negócio em tempo real.'}</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setActiveTab('agenda')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md shadow-purple-500/20">
-            <Plus className="w-4 h-4" /> Nova Reserva
-          </button>
+            <Plus className="w-4 h-4" />  {t('txt_nova_reserva') || 'Nova Reserva'}
+                                </button>
         </div>
       </div>
 
@@ -98,25 +100,25 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
             <Users className="w-5 h-5 text-slate-600 group-hover:text-purple-600" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Adicionar Cliente</span>
+          <span className="text-xs font-bold text-slate-700">{t('txt_adicionar_cliente') || 'Adicionar Cliente'}</span>
         </button>
         <button onClick={() => setActiveTab('servicos')} className="bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
           <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
             <ShoppingBag className="w-5 h-5 text-slate-600 group-hover:text-purple-600" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Novo Serviço</span>
+          <span className="text-xs font-bold text-slate-700">{t('txt_novo_servi_o') || 'Novo Serviço'}</span>
         </button>
         <button onClick={() => setActiveTab('equipa')} className="bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
           <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
             <Users className="w-5 h-5 text-slate-600 group-hover:text-purple-600" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Gerir Equipa</span>
+          <span className="text-xs font-bold text-slate-700">{t('txt_gerir_equipa') || 'Gerir Equipa'}</span>
         </button>
         <button onClick={() => setActiveTab('campanhas')} className="bg-white border border-slate-200 hover:border-purple-300 hover:shadow-md p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group">
           <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
             <Tag className="w-5 h-5 text-slate-600 group-hover:text-purple-600" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Criar Promoção</span>
+          <span className="text-xs font-bold text-slate-700">{t('txt_criar_promo_o') || 'Criar Promoção'}</span>
         </button>
       </div>
 
@@ -130,7 +132,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
             <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{timeLabel}</span>
           </div>
           <h3 className="text-3xl font-black text-slate-900">{displayBookingsCount}</h3>
-          <p className="text-sm font-medium text-slate-500 mt-1">Reservas Hoje</p>
+          <p className="text-sm font-medium text-slate-500 mt-1">{t('txt_reservas_hoje') || 'Reservas Hoje'}</p>
         </div>
 
         <div onClick={() => setActiveTab('financas')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-emerald-300 transition-colors">
@@ -141,7 +143,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
             <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{timeLabel}</span>
           </div>
           <h3 className="text-3xl font-black text-slate-900">{filteredRevenue.toFixed(2)}€</h3>
-          <p className="text-sm font-medium text-slate-500 mt-1">Faturação Prevista</p>
+          <p className="text-sm font-medium text-slate-500 mt-1">{t('txt_fatura_o_prevista') || 'Faturação Prevista'}</p>
         </div>
 
         <div onClick={() => setActiveTab('agenda')} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden cursor-pointer hover:border-amber-300 transition-colors group">
@@ -149,13 +151,14 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
               <AlertCircle className="w-5 h-5 text-amber-600" />
             </div>
-            <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Tarefas</span>
+            <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{t('txt_tarefas_26') || 'Tarefas'}</span>
           </div>
           <h3 className="text-3xl font-black text-slate-900">{tasksPending.length}</h3>
           <p className="text-sm font-medium text-slate-500 mt-1">{tasksPending.length === 1 ? 'Reserva aguarda conclusão' : 'Reservas aguardam conclusão'}</p>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <span className="text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:text-amber-700">
-              Concluir Reservas <ArrowRight className="w-3 h-3" />
+              
+                                        {t('txt_concluir_reservas') || 'Concluir Reservas'} <ArrowRight className="w-3 h-3" />
             </span>
           </div>
         </div>
@@ -165,17 +168,17 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <Star className="w-5 h-5 text-purple-600" />
             </div>
-            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">Plataforma</span>
+            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{t('txt_plataforma_27') || 'Plataforma'}</span>
           </div>
           {reviews.length > 0 ? (
             <>
               <h3 className="text-3xl font-black text-slate-900 mt-1">{(reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1)}</h3>
-              <p className="text-xs font-medium text-slate-500 mt-2">Média de {reviews.length} avaliações</p>
+              <p className="text-xs font-medium text-slate-500 mt-2">{t('txt_m_dia_de') || 'Média de'} {reviews.length}  {t('txt_avalia_es') || 'avaliações'}</p>
             </>
           ) : (
             <>
-              <h3 className="text-xl font-black text-slate-400 mt-1">S/ Dados</h3>
-              <p className="text-xs font-medium text-slate-500 mt-2">As avaliações da sua loja aparecerão aqui</p>
+              <h3 className="text-xl font-black text-slate-400 mt-1">{t('txt_s_dados') || 'S/ Dados'}</h3>
+              <p className="text-xs font-medium text-slate-500 mt-2">{t('txt_as_avalia_es_da_sua_loja_apare') || 'As avaliações da sua loja aparecerão aqui'}</p>
             </>
           )}
         </div>
@@ -187,14 +190,14 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-slate-400" /> Estado do Sistema
-              </h3>
+                <TrendingUp className="w-5 h-5 text-slate-400" />  {t('txt_estado_do_sistema') || 'Estado do Sistema'}
+                                            </h3>
             </div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               
               <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">Plano Atual</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">{t('txt_plano_atual') || 'Plano Atual'}</p>
                   <p className="font-black text-slate-900">{(business?.selected_plan === 'app_tablet' || business?.selected_plan === 'pro_terminal' || business?.tablet_requested) ? 'PRO + TERMINAL' : 'PRO'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${resolvedSubscriptionStatus === 'trialing' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}`}>
@@ -204,8 +207,8 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
               <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">Pagamentos Online</p>
-                  <p className="font-black text-slate-900">Stripe Connect</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">{t('txt_pagamentos_online') || 'Pagamentos Online'}</p>
+                  <p className="font-black text-slate-900">{t('txt_stripe_connect') || 'Stripe Connect'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.charges_enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                   {business?.charges_enabled ? 'Configurado' : 'Pendente'}
@@ -214,8 +217,8 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
               <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">Visibilidade</p>
-                  <p className="font-black text-slate-900">Marketplace</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">{t('txt_visibilidade_28') || 'Visibilidade'}</p>
+                  <p className="font-black text-slate-900">{t('txt_marketplace_29') || 'Marketplace'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                   {business?.status === 'active' ? 'Online' : 'Oculto'}
@@ -224,8 +227,8 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
 
               <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">Configuração</p>
-                  <p className="font-black text-slate-900">Setup Inicial</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-1">{t('txt_configura_o') || 'Configuração'}</p>
+                  <p className="font-black text-slate-900">{t('txt_setup_inicial') || 'Setup Inicial'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${business?.setup_completed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                   {business?.setup_completed ? 'Concluído' : 'Incompleto'}
@@ -240,17 +243,18 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-slate-400" /> Próximas Reservas
-            </h3>
+              <CalendarIcon className="w-5 h-5 text-slate-400" />  {t('txt_pr_ximas_reservas') || 'Próximas Reservas'}
+                                      </h3>
             <button onClick={() => setActiveTab('agenda')} className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-              Ver todas <ArrowRight className="w-3 h-3" />
+              
+                                        {t('txt_ver_todas') || 'Ver todas'} <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           <div className="p-0 flex-1 overflow-y-auto">
             {upcomingBookings.length === 0 ? (
               <div className="p-8 text-center text-slate-500 flex flex-col items-center">
                 <CalendarIcon className="w-10 h-10 text-slate-300 mb-3" />
-                <p className="text-sm font-medium">Sem marcações futuras</p>
+                <p className="text-sm font-medium">{t('txt_sem_marca_es_futuras') || 'Sem marcações futuras'}</p>
               </div>
             ) : (
               <ul className="divide-y divide-slate-100">

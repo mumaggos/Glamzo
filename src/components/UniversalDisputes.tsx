@@ -151,7 +151,7 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
     <div className="flex flex-col h-[600px] bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden shadow-2xl relative">
       {/* Header */}
       <div className="p-4 border-b border-slate-200 bg-white/40">
-        <h3 className="font-extrabold text-slate-900">Gestão de Disputas</h3>
+        <h3 className="font-extrabold text-slate-900">{t('txt_gest_o_de_disputas') || 'Gestão de Disputas'}</h3>
       </div>
       
       {/* List */}
@@ -161,8 +161,8 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
         ) : disputes.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-slate-400">
             <CheckCircle className="w-12 h-12 mb-2 text-emerald-400" />
-            <p className="text-sm font-bold">Sem Disputas</p>
-            <p className="text-xs">Não tem casos abertos.</p>
+            <p className="text-sm font-bold">{t('txt_sem_disputas') || 'Sem Disputas'}</p>
+            <p className="text-xs">{t('txt_n_o_tem_casos_abertos') || 'Não tem casos abertos.'}</p>
           </div>
         ) : (
           disputes.map(dispute => (
@@ -186,13 +186,13 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
                   <div className="flex items-center gap-2 mt-2">
                     {myType === 'admin' ? (
                       <>
-                        <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">[CLIENTE] {dispute.profiles?.full_name}</span>
-                        <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">[LOJA] {dispute.businesses?.name}</span>
+                        <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">{t('txt_cliente') || '[CLIENTE]'} {dispute.profiles?.full_name}</span>
+                        <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">{t('txt_loja') || '[LOJA]'} {dispute.businesses?.name}</span>
                       </>
                     ) : myType === 'customer' ? (
-                      <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">[LOJA] {dispute.businesses?.name}</span>
+                      <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">{t('txt_loja') || '[LOJA]'} {dispute.businesses?.name}</span>
                     ) : (
-                      <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">[CLIENTE] {dispute.profiles?.full_name}</span>
+                      <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 text-[9px] font-bold rounded truncate max-w-[120px]">{t('txt_cliente') || '[CLIENTE]'} {dispute.profiles?.full_name}</span>
                     )}
                   </div>
                 </div>
@@ -219,9 +219,10 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <button onClick={() => setSelectedDispute(null)} className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
                 <ArrowLeft className="w-3.5 h-3.5" />
-                Voltar à Lista
-              </button>
-              <h3 className="font-extrabold text-slate-900 text-sm hidden sm:block">Detalhes do Caso</h3>
+                
+                                              {t('txt_voltar_lista') || 'Voltar à Lista'}
+                                            </button>
+              <h3 className="font-extrabold text-slate-900 text-sm hidden sm:block">{t('txt_detalhes_do_caso') || 'Detalhes do Caso'}</h3>
               <button onClick={() => setSelectedDispute(null)} className="text-slate-400 hover:text-slate-700 p-1">
                 <Check className="w-5 h-5 rotate-45" />
               </button>
@@ -233,10 +234,11 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
                   selectedDispute.status === 'open' ? 'bg-amber-100 text-amber-700' :
                   selectedDispute.status === 'in_review' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
                 }`}>
-                  Estado: {selectedDispute.status}
+                  
+                                                    {t('txt_estado') || 'Estado:'} {selectedDispute.status}
                 </span>
                 <h4 className="font-extrabold text-lg text-slate-900 mb-1">{selectedDispute.title}</h4>
-                <p className="text-[10px] text-slate-500 font-mono">Aberto a {new Date(selectedDispute.created_at).toLocaleString('pt-PT')}</p>
+                <p className="text-[10px] text-slate-500 font-mono">{t('txt_aberto_a') || 'Aberto a'} {new Date(selectedDispute.created_at).toLocaleString('pt-PT')}</p>
               </div>
               
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl mb-6">
@@ -244,10 +246,10 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
               </div>
               
               <div className="border-t border-slate-100 pt-6 mb-6">
-                <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-3">Histórico do Caso</h5>
+                <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-3">{t('txt_hist_rico_do_caso') || 'Histórico do Caso'}</h5>
                 <div className="bg-slate-50 rounded-2xl p-4 h-64 overflow-y-auto mb-4 border border-slate-200 flex flex-col gap-3">
                   {messages.length === 0 ? (
-                    <div className="text-center text-slate-400 text-xs py-8 font-medium">Nenhuma mensagem neste caso.</div>
+                    <div className="text-center text-slate-400 text-xs py-8 font-medium">{t('txt_nenhuma_mensagem_neste_caso') || 'Nenhuma mensagem neste caso.'}</div>
                   ) : (
                     messages.map(msg => {
                       const isMe = msg.sender_type === myType;
@@ -262,7 +264,7 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
                             {msg.content}
                             {msg.file_url && (
                               <a href={msg.file_url} target="_blank" rel="noreferrer" className="block mt-2">
-                                <img loading="lazy" src={msg.file_url} alt="Anexo" className="rounded-lg max-h-32 object-cover" />
+                                <img loading="lazy" src={msg.file_url} alt={t('txt_anexo_61') || 'Anexo'} className="rounded-lg max-h-32 object-cover" />
                               </a>
                             )}
                           </div>
@@ -284,7 +286,7 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
                       type="text" 
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Escrever mensagem..."
+                      placeholder={t('txt_escrever_mensagem') || 'Escrever mensagem...'}
                       className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 focus:border-purple-500 outline-none"
                     />
                     <button type="submit" disabled={!newMessage.trim()} className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white p-3 rounded-xl transition-colors shadow-sm">
@@ -296,26 +298,29 @@ export default function UniversalDisputes({ myId, myType }: UniversalDisputesPro
               
               {myType === 'admin' && (
                 <div className="border-t border-slate-100 pt-6">
-                  <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-3">Ações de Administrador</h5>
+                  <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-3">{t('txt_a_es_de_administrador') || 'Ações de Administrador'}</h5>
                   <div className="flex flex-wrap gap-2">
                     <button 
                       onClick={() => handleUpdateStatus(selectedDispute.id, 'refunded')}
                       className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors"
                     >
-                      Aprovar Reembolso
-                    </button>
+                      
+                                                                {t('txt_aprovar_reembolso') || 'Aprovar Reembolso'}
+                                                              </button>
                     <button 
                       onClick={() => handleUpdateStatus(selectedDispute.id, 'resolved')}
                       className="bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 transition-colors"
                     >
-                      Marcar Resolvido
-                    </button>
+                      
+                                                                {t('txt_marcar_resolvido') || 'Marcar Resolvido'}
+                                                              </button>
                     <button 
                       onClick={() => handleUpdateStatus(selectedDispute.id, 'in_review')}
                       className="bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-600 transition-colors"
                     >
-                      Colocar em Análise
-                    </button>
+                      
+                                                                {t('txt_colocar_em_an_lise') || 'Colocar em Análise'}
+                                                              </button>
                     <button 
                       onClick={() => handleDelete(selectedDispute.id)}
                       className="bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-1"

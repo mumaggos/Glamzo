@@ -22,11 +22,11 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
         <h5 className="font-black text-lg text-slate-900">{staffMember.full_name}</h5>
         <div className="flex gap-4">
            <div className="text-center">
-              <p className="text-[10px] font-black uppercase text-slate-400">Serviços</p>
+              <p className="text-[10px] font-black uppercase text-slate-400">{t('txt_servi_os') || 'Serviços'}</p>
               <p className="text-xl font-black text-slate-700">{staffLedgers.length}</p>
            </div>
            <div className="text-center">
-              <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
+              <p className="text-[10px] font-black uppercase text-purple-600">{t('txt_fatura_o') || 'Faturação'}</p>
               <p className="text-xl font-black text-purple-700">{staffRevenue.toFixed(2)}€</p>
            </div>
         </div>
@@ -43,11 +43,11 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
           <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs min-w-max">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
-                <th className="py-2 px-3">Data</th>
-                <th className="py-2 px-3">Cliente</th>
-                <th className="py-2 px-3">Serviço</th>
-                <th className="py-2 px-3">Método</th>
-                <th className="py-2 px-3 text-right">Valor</th>
+                <th className="py-2 px-3">{t('txt_data_201') || 'Data'}</th>
+                <th className="py-2 px-3">{t('txt_cliente_202') || 'Cliente'}</th>
+                <th className="py-2 px-3">{t('txt_servi_o_37') || 'Serviço'}</th>
+                <th className="py-2 px-3">{t('txt_m_todo') || 'Método'}</th>
+                <th className="py-2 px-3 text-right">{t('txt_valor_203') || 'Valor'}</th>
                 <th className="py-2 px-3 text-center">{t('details') || 'Detalhes'}</th>
               </tr>
             </thead>
@@ -64,7 +64,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
                   </td>
                   <td className="py-2 px-3 text-right font-black text-slate-700">{Number(item.amount_total || item.amount || 0).toFixed(2)}€</td>
                   <td className="py-2 px-3 text-center">
-                    <button onClick={() => setSelectedInvoice({ ...item, booking: item.booking })} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold text-[10px] transition">Recibo</button>
+                    <button onClick={() => setSelectedInvoice({ ...item, booking: item.booking })} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold text-[10px] transition">{t('txt_recibo_204') || 'Recibo'}</button>
                   </td>
                 </tr>
               ))}
@@ -527,11 +527,13 @@ export default function FinanceTab() {
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6 min-w-0">
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Faturação e Livro de Razões
-        </h3>
+          
+                            {t('txt_fatura_o_e_livro_de_raz_es') || 'Faturação e Livro de Razões'}
+                          </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          Acompanhe as suas métricas de faturação e consulte o livro de razões detalhado.
-        </p>
+          
+                            {t('txt_acompanhe_as_suas_m_tricas_de') || 'Acompanhe as suas métricas de faturação e consulte o livro de razões detalhado.'}
+                          </p>
       </div>
 
       {globalError && (
@@ -546,14 +548,15 @@ export default function FinanceTab() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
           <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
             <FileText className="w-4 h-4 text-slate-600" />
-            Faturação e Livro de Razões
-          </h4>
+            
+                                  {t('txt_fatura_o_e_livro_de_raz_es') || 'Faturação e Livro de Razões'}
+                                </h4>
           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
             
             <div className="flex flex-wrap items-center gap-2">
-              <button onClick={() => setLedgerFilter('today')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'today' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Hoje</button>
-              <button onClick={() => setLedgerFilter('week')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'week' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Semana</button>
-              <button onClick={() => setLedgerFilter('month')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'month' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Mês</button>
+              <button onClick={() => setLedgerFilter('today')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'today' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>{t('txt_hoje_205') || 'Hoje'}</button>
+              <button onClick={() => setLedgerFilter('week')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'week' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>{t('txt_semana_206') || 'Semana'}</button>
+              <button onClick={() => setLedgerFilter('month')} className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${ledgerFilter === 'month' ? 'bg-purple-600 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>{t('txt_m_s') || 'Mês'}</button>
               <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm" onClick={() => setLedgerFilter('custom')}>
                 <input type="date" value={customStartDate} onChange={e => { setCustomStartDate(e.target.value); setLedgerFilter('custom'); }} className="text-xs font-bold text-slate-700 bg-transparent outline-none p-1" />
                 <span className="text-slate-300">-</span>
@@ -566,26 +569,27 @@ export default function FinanceTab() {
             className="bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-extrabold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Exportar CSV
-          </button>
+            
+                                  {t('txt_exportar_csv') || 'Exportar CSV'}
+                                </button>
         </div>
 
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Volume Bruto</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('txt_volume_bruto') || 'Volume Bruto'}</span>
              <span className="text-lg font-black text-slate-900 mt-1 block font-mono">{totalVolumeBruto.toFixed(2)}€</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Lucro Líquido</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('txt_lucro_l_quido') || 'Lucro Líquido'}</span>
              <span className="text-lg font-black text-emerald-600 mt-1 block font-mono">{totalReceivedVolume.toFixed(2)}€</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Comissões</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('txt_comiss_es') || 'Comissões'}</span>
              <span className="text-lg font-black text-rose-500 mt-1 block font-mono">{totalComissoesRetidas.toFixed(2)}€</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Online</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{t('txt_online_207') || 'Online'}</span>
              <span className="text-lg font-black text-purple-600 mt-1 block font-mono">{totalReceivedVolumeOnline.toFixed(2)}€</span>
            </div>
         </div>
@@ -593,7 +597,7 @@ export default function FinanceTab() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-            <h5 className="font-bold text-xs text-slate-900 mb-3 uppercase tracking-widest">Faturação por Profissional</h5>
+            <h5 className="font-bold text-xs text-slate-900 mb-3 uppercase tracking-widest">{t('txt_fatura_o_por_profissional') || 'Faturação por Profissional'}</h5>
             <div className="space-y-3">
               {staff?.map(s => {
                 const staffRevenue = filteredLedgers.filter(l => l.staff_id === s.id).reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
@@ -614,15 +618,15 @@ export default function FinanceTab() {
                 );
               })}
               {(!staff || staff.length === 0 || filteredLedgers.filter(l => l.staff_id).length === 0) && (
-                <p className="text-xs text-slate-500 text-center py-2">Sem dados de profissionais no período.</p>
+                <p className="text-xs text-slate-500 text-center py-2">{t('txt_sem_dados_de_profissionais_no') || 'Sem dados de profissionais no período.'}</p>
               )}
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col justify-center items-center text-center">
             <Star className="w-8 h-8 text-amber-400 mb-2" />
-            <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-1">Total de Transações</h5>
+            <h5 className="font-bold text-xs text-slate-900 uppercase tracking-widest mb-1">{t('txt_total_de_transa_es') || 'Total de Transações'}</h5>
             <span className="text-3xl font-black text-slate-900 font-mono">{filteredLedgers.length}</span>
-            <p className="text-[10px] text-slate-400 mt-2">Transações no período selecionado</p>
+            <p className="text-[10px] text-slate-400 mt-2">{t('txt_transa_es_no_per_odo_seleciona') || 'Transações no período selecionado'}</p>
           </div>
         </div>
 
@@ -630,17 +634,17 @@ export default function FinanceTab() {
           <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               <tr>
-                <th className="py-3 px-4">Data</th>
-                <th className="py-3 px-4">Descrição</th>
-                <th className="py-3 px-4">Método</th>
-                <th className="py-3 px-4 text-right">Valor</th>
-                <th className="py-3 px-4 text-center">Ações</th>
+                <th className="py-3 px-4">{t('txt_data_208') || 'Data'}</th>
+                <th className="py-3 px-4">{t('txt_descri_o') || 'Descrição'}</th>
+                <th className="py-3 px-4">{t('txt_m_todo') || 'Método'}</th>
+                <th className="py-3 px-4 text-right">{t('txt_valor_209') || 'Valor'}</th>
+                <th className="py-3 px-4 text-center">{t('txt_a_es') || 'Ações'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredLedgers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-slate-400 font-medium">Nenhuma transação registada.</td>
+                  <td colSpan={5} className="py-6 text-center text-slate-400 font-medium">{t('txt_nenhuma_transa_o_registada') || 'Nenhuma transação registada.'}</td>
                 </tr>
               ) : (
                 filteredLedgers.map((item) => (
@@ -666,8 +670,9 @@ export default function FinanceTab() {
                         onClick={() => setSelectedInvoice(item)}
                         className="text-[10px] font-bold text-purple-600 hover:text-purple-800 transition-colors"
                       >
-                        Ver Detalhes
-                      </button>
+                        
+                                                        {t('txt_ver_detalhes') || 'Ver Detalhes'}
+                                                      </button>
                     </td>
                   </tr>
                 ))
@@ -681,8 +686,9 @@ export default function FinanceTab() {
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6">
         <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2 mb-4">
           <FileText className="w-4 h-4 text-slate-600" />
-          Faturação Detalhada por Profissional
-        </h4>
+          
+                            {t('txt_fatura_o_detalhada_por_profiss') || 'Faturação Detalhada por Profissional'}
+                          </h4>
         <div className="space-y-6">
           {staff?.map(s => {
             const staffLedgers = filteredLedgers.filter(l => l.staff_id === s.id);
@@ -696,7 +702,7 @@ export default function FinanceTab() {
         })
 }
           {(!staff || staff.length === 0 || filteredLedgers.filter(l => l.staff_id).length === 0) && (
-            <p className="text-xs text-slate-500 text-center py-4">Sem dados de profissionais no período.</p>
+            <p className="text-xs text-slate-500 text-center py-4">{t('txt_sem_dados_de_profissionais_no') || 'Sem dados de profissionais no período.'}</p>
           )}
         </div>
       </div>
@@ -714,44 +720,44 @@ export default function FinanceTab() {
               <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-3 text-purple-600">
                 <FileText className="w-6 h-6" />
               </div>
-              <h4 className="font-extrabold text-lg text-slate-900">Fatura Simplificada</h4>
-              <p className="text-[10px] text-slate-400 font-mono mt-1">ID: {selectedInvoice.id.substring(0, 8).toUpperCase()}</p>
+              <h4 className="font-extrabold text-lg text-slate-900">{t('txt_fatura_simplificada') || 'Fatura Simplificada'}</h4>
+              <p className="text-[10px] text-slate-400 font-mono mt-1">{t('txt_id') || 'ID:'} {selectedInvoice.id.substring(0, 8).toUpperCase()}</p>
             </div>
             <div className="p-6 space-y-4 text-sm">
               {selectedInvoice.booking && (
                 <>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
-                    <span className="text-slate-500 font-bold">Cliente</span>
+                    <span className="text-slate-500 font-bold">{t('txt_cliente_210') || 'Cliente'}</span>
                     <span className="font-bold text-slate-900">{selectedInvoice.booking?.profiles?.full_name || 'Desconhecido'}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
-                    <span className="text-slate-500 font-bold">Serviço</span>
+                    <span className="text-slate-500 font-bold">{t('txt_servi_o_38') || 'Serviço'}</span>
                     <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking.service?.name}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
-                    <span className="text-slate-500 font-bold">Profissional</span>
+                    <span className="text-slate-500 font-bold">{t('txt_profissional_211') || 'Profissional'}</span>
                     <span className="font-bold text-slate-900 text-right">{selectedInvoice.booking?.staff?.full_name || 'Funcionário Desconhecido'}</span>
                   </div>
                 </>
               )}
               <div className="flex justify-between border-b border-slate-100 pb-2">
-                <span className="text-slate-500 font-bold">Data</span>
+                <span className="text-slate-500 font-bold">{t('txt_data_212') || 'Data'}</span>
                 <span className="font-mono text-slate-900">{new Date(selectedInvoice.created_at).toLocaleString("pt-PT")}</span>
               </div>
               <div className="flex justify-between border-b border-slate-100 pb-2">
-                <span className="text-slate-500 font-bold">Método</span>
+                <span className="text-slate-500 font-bold">{t('txt_m_todo') || 'Método'}</span>
                 <span className="font-bold uppercase text-slate-900">{selectedInvoice.payment_method}</span>
               </div>
               <div className="flex justify-between border-b border-slate-100 pb-2">
-                <span className="text-slate-500 font-bold">Valor Bruto</span>
+                <span className="text-slate-500 font-bold">{t('txt_valor_bruto') || 'Valor Bruto'}</span>
                 <span className="font-mono font-black text-slate-900">{Number(selectedInvoice.amount || selectedInvoice.amount_total || 0).toFixed(2)}€</span>
               </div>
               <div className="flex justify-between border-b border-slate-100 pb-2">
-                <span className="text-rose-500 font-bold">Comissão Plataforma</span>
+                <span className="text-rose-500 font-bold">{t('txt_comiss_o_plataforma') || 'Comissão Plataforma'}</span>
                 <span className="font-mono font-black text-rose-500">-{Number(selectedInvoice.glamzo_fee || 0).toFixed(2)}€</span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className="text-slate-900 font-black">Valor Líquido Recebido</span>
+                <span className="text-slate-900 font-black">{t('txt_valor_l_quido_recebido') || 'Valor Líquido Recebido'}</span>
                 <span className="font-mono font-black text-emerald-600 text-lg">
                   {Number(selectedInvoice.business_amount || selectedInvoice.amount || 0).toFixed(2)}€
                 </span>

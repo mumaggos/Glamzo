@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Sparkles, Loader2, Check, X, Search, ShieldAlert, ArrowRight, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from "react-i18next";
 
 export default function SuperAdminClub() {
+    const { t } = useTranslation();
   const [tab, setTab] = useState<'users' | 'coupons' | 'withdrawals'>('withdrawals');
   
   const [users, setUsers] = useState<any[]>([]);
@@ -96,36 +98,36 @@ export default function SuperAdminClub() {
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 justify-between md:items-center">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2"><Sparkles className="text-amber-500 w-6 h-6" /> Gestão Glamzo Club</h2>
-          <p className="text-sm text-slate-500 mt-1">Afiliados, Pontos e Pedidos de Levantamento</p>
+          <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2"><Sparkles className="text-amber-500 w-6 h-6" />  {t('txt_gest_o_glamzo_club') || 'Gestão Glamzo Club'}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t('txt_afiliados_pontos_e_pedidos_de') || 'Afiliados, Pontos e Pedidos de Levantamento'}</p>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-xl">
-          <button onClick={() => setTab('withdrawals')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'withdrawals' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Levantamentos</button>
-          <button onClick={() => setTab('coupons')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'coupons' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Cupões</button>
-          <button onClick={() => setTab('users')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'users' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Gestão Utilizadores</button>
+          <button onClick={() => setTab('withdrawals')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'withdrawals' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>{t('txt_levantamentos_52') || 'Levantamentos'}</button>
+          <button onClick={() => setTab('coupons')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'coupons' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>{t('txt_cup_es') || 'Cupões'}</button>
+          <button onClick={() => setTab('users')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'users' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>{t('txt_gest_o_utilizadores') || 'Gestão Utilizadores'}</button>
         </div>
       </div>
 
       {tab === 'withdrawals' && (
         <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="p-6 border-b border-slate-100">
-            <h3 className="font-black text-slate-900 text-lg">Pedidos de Levantamento</h3>
+            <h3 className="font-black text-slate-900 text-lg">{t('txt_pedidos_de_levantamento') || 'Pedidos de Levantamento'}</h3>
           </div>
           {loading ? <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" /></div> : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Cliente</th>
-                    <th className="px-6 py-4 font-bold">Data</th>
-                    <th className="px-6 py-4 font-bold">Método</th>
-                    <th className="px-6 py-4 font-bold">Valor</th>
-                    <th className="px-6 py-4 font-bold">Estado</th>
-                    <th className="px-6 py-4 font-bold text-right">Ação</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_cliente_53') || 'Cliente'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_data_54') || 'Data'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_m_todo') || 'Método'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_valor_55') || 'Valor'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_estado_56') || 'Estado'}</th>
+                    <th className="px-6 py-4 font-bold text-right">{t('txt_a_o') || 'Ação'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {withdrawals.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-slate-500">Nenhum pedido encontrado.</td></tr>}
+                  {withdrawals.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-slate-500">{t('txt_nenhum_pedido_encontrado') || 'Nenhum pedido encontrado.'}</td></tr>}
                   {withdrawals.map(w => (
                     <tr key={w.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4">
@@ -146,8 +148,9 @@ export default function SuperAdminClub() {
                       <td className="px-6 py-4 text-right">
                         {w.status === 'pending' && (
                           <button onClick={() => handleCompleteWithdrawal(w.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
-                            Marcar como Transferido
-                          </button>
+                            
+                                                                  {t('txt_marcar_como_transferido') || 'Marcar como Transferido'}
+                                                                </button>
                         )}
                       </td>
                     </tr>
@@ -162,22 +165,22 @@ export default function SuperAdminClub() {
       {tab === 'coupons' && (
         <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="p-6 border-b border-slate-100">
-            <h3 className="font-black text-slate-900 text-lg">Cupões Gerados (Últimos 100)</h3>
+            <h3 className="font-black text-slate-900 text-lg">{t('txt_cup_es_gerados_ltimos_100') || 'Cupões Gerados (Últimos 100)'}</h3>
           </div>
           {loading ? <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" /></div> : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Código</th>
-                    <th className="px-6 py-4 font-bold">Cliente</th>
-                    <th className="px-6 py-4 font-bold">Valor</th>
-                    <th className="px-6 py-4 font-bold">Data Geração</th>
-                    <th className="px-6 py-4 font-bold">Estado</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_c_digo') || 'Código'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_cliente_57') || 'Cliente'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_valor_58') || 'Valor'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_data_gera_o') || 'Data Geração'}</th>
+                    <th className="px-6 py-4 font-bold">{t('txt_estado_59') || 'Estado'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {coupons.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-500">Nenhum cupão encontrado.</td></tr>}
+                  {coupons.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-500">{t('txt_nenhum_cup_o_encontrado') || 'Nenhum cupão encontrado.'}</td></tr>}
                   {coupons.map(c => (
                     <tr key={c.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4 font-mono font-bold text-slate-900 tracking-wider">{c.code}</td>
@@ -204,9 +207,9 @@ export default function SuperAdminClub() {
       {tab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <h3 className="font-black text-slate-900 text-lg mb-4">Pesquisar Cliente</h3>
+            <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_pesquisar_cliente') || 'Pesquisar Cliente'}</h3>
             <form onSubmit={handleSearchUsers} className="flex gap-2">
-              <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Email ou Nome..." className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-purple-500" />
+              <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder={t('txt_email_ou_nome') || 'Email ou Nome...'} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-purple-500" />
               <button type="submit" disabled={loading} className="bg-slate-900 hover:bg-black text-white px-4 rounded-xl transition-colors disabled:opacity-50"><Search className="w-5 h-5" /></button>
             </form>
             
@@ -230,22 +233,22 @@ export default function SuperAdminClub() {
               
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-slate-50 p-4 rounded-2xl text-center">
-                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Glamzo Points</span>
+                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">{t('txt_glamzo_points') || 'Glamzo Points'}</span>
                   <span className="text-3xl font-black font-mono text-amber-500">{selectedUser.glamzo_points || 0}</span>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-2xl text-center">
-                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">Saldo Afiliado</span>
+                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">{t('txt_saldo_afiliado') || 'Saldo Afiliado'}</span>
                   <span className="text-3xl font-black font-mono text-emerald-500">{(selectedUser.affiliate_balance || 0).toFixed(2)}€</span>
                 </div>
               </div>
               
               <form onSubmit={handleAdjustPoints} className="bg-amber-50 border border-amber-200 p-5 rounded-2xl">
-                <h4 className="font-bold text-amber-900 text-sm mb-3">Ajuste Manual de Pontos</h4>
+                <h4 className="font-bold text-amber-900 text-sm mb-3">{t('txt_ajuste_manual_de_pontos') || 'Ajuste Manual de Pontos'}</h4>
                 <div className="flex gap-2">
-                  <input type="number" required placeholder="+100 ou -50" value={pointsChange} onChange={e => setPointsChange(e.target.value)} className="flex-1 bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm font-bold font-mono outline-none focus:border-amber-500" />
-                  <button type="submit" disabled={actionLoading} className="bg-amber-500 hover:bg-amber-600 text-white px-6 rounded-xl font-bold text-sm transition-colors disabled:opacity-50">Ajustar</button>
+                  <input type="number" required placeholder={t('txt_100_ou_50') || '+100 ou -50'} value={pointsChange} onChange={e => setPointsChange(e.target.value)} className="flex-1 bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm font-bold font-mono outline-none focus:border-amber-500" />
+                  <button type="submit" disabled={actionLoading} className="bg-amber-500 hover:bg-amber-600 text-white px-6 rounded-xl font-bold text-sm transition-colors disabled:opacity-50">{t('txt_ajustar_60') || 'Ajustar'}</button>
                 </div>
-                <p className="text-[10px] text-amber-700 font-medium mt-2">Nota: Um registo será criado com a flag 'admin_adjustment'.</p>
+                <p className="text-[10px] text-amber-700 font-medium mt-2">{t('txt_nota_um_registo_ser_criado_com') || 'Nota: Um registo será criado com a flag \'admin_adjustment\'.'}</p>
               </form>
             </div>
           )}

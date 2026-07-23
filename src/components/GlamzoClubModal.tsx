@@ -236,16 +236,16 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
         {/* Header */}
         <div className="bg-slate-900 p-6 sm:p-8 text-white relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-          <h2 className="text-2xl font-black flex items-center gap-2 relative z-10"><Sparkles className="text-amber-400 w-6 h-6" /> Glamzo Club</h2>
-          <p className="text-slate-400 mt-1 relative z-10 text-sm">O seu programa de fidelidade e afiliados.</p>
+          <h2 className="text-2xl font-black flex items-center gap-2 relative z-10"><Sparkles className="text-amber-400 w-6 h-6" />  {t('txt_glamzo_club') || 'Glamzo Club'}</h2>
+          <p className="text-slate-400 mt-1 relative z-10 text-sm">{t('txt_o_seu_programa_de_fidelidade_e') || 'O seu programa de fidelidade e afiliados.'}</p>
           
           <div className="flex gap-6 mt-6 relative z-10">
             <div>
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Pontos</span>
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">{t('txt_pontos_42') || 'Pontos'}</span>
               <span className="text-3xl font-black font-mono text-amber-400">{currentPoints}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Saldo Afiliado</span>
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">{t('txt_saldo_afiliado') || 'Saldo Afiliado'}</span>
               <span className="text-3xl font-black font-mono text-emerald-400">{currentBalance.toFixed(2)}€</span>
             </div>
           </div>
@@ -282,11 +282,11 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex gap-3 text-blue-800 text-sm">
                 <Clock className="w-5 h-5 shrink-0" />
-                <p><strong>Regra de Validade:</strong> Os pontos acumulados expiram no prazo de 1 ano. Use-os para gerar cupões de desconto nas suas próximas marcações!</p>
+                <p><strong>{t('txt_regra_de_validade') || 'Regra de Validade:'}</strong>  {t('txt_os_pontos_acumulados_expiram_n') || 'Os pontos acumulados expiram no prazo de 1 ano. Use-os para gerar cupões de desconto nas suas próximas marcações!'}</p>
               </div>
-              <h3 className="font-black text-slate-900 text-lg">Histórico de Pontos</h3>
+              <h3 className="font-black text-slate-900 text-lg">{t('txt_hist_rico_de_pontos') || 'Histórico de Pontos'}</h3>
               {loading ? <div className="py-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" /></div> : pointsHistory.length === 0 ? (
-                <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200">Nenhum movimento registado.</div>
+                <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200">{t('txt_nenhum_movimento_registado') || 'Nenhum movimento registado.'}</div>
               ) : (
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
                   {pointsHistory.map(ph => (
@@ -308,19 +308,20 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
           {activeTab === 'trocar' && (
             <div className="space-y-8">
               <div>
-                <h3 className="font-black text-slate-900 text-lg mb-4">Opções de Conversão</h3>
+                <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_op_es_de_convers_o') || 'Opções de Conversão'}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[ { pts: 500, val: 5 }, { pts: 1000, val: 10 } ].map(opt => (
                     <div key={opt.pts} className="bg-white border border-slate-200 rounded-2xl p-5 text-center flex flex-col items-center">
                       <Gift className="w-8 h-8 text-purple-600 mb-2" />
                       <h4 className="font-black text-slate-900 text-xl">{opt.val}€</h4>
-                      <p className="text-xs text-slate-500 font-bold mb-4">Cupão Desconto</p>
+                      <p className="text-xs text-slate-500 font-bold mb-4">{t('txt_cup_o_desconto') || 'Cupão Desconto'}</p>
                       <button 
                         onClick={() => handleConvertPoints(opt.pts, opt.val)}
                         disabled={currentPoints < opt.pts || actionLoading}
                         className="w-full py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-black disabled:opacity-50 transition-colors"
                       >
-                        Trocar por {opt.pts} pts
+                        
+                                                      {t('txt_trocar_por') || 'Trocar por'} {opt.pts} pts
                       </button>
                     </div>
                   ))}
@@ -328,9 +329,9 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
               </div>
 
               <div>
-                <h3 className="font-black text-slate-900 text-lg mb-4">Os Meus Cupões Ativos</h3>
+                <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_os_meus_cup_es_ativos') || 'Os Meus Cupões Ativos'}</h3>
                 {loading ? <div className="py-4 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-purple-600" /></div> : coupons.length === 0 ? (
-                  <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">Ainda não gerou nenhum cupão.</div>
+                  <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">{t('txt_ainda_n_o_gerou_nenhum_cup_o') || 'Ainda não gerou nenhum cupão.'}</div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {coupons.map(c => {
@@ -339,7 +340,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
                         <div key={c.id} className={`border rounded-2xl p-4 flex justify-between items-center ${isActive ? 'bg-white border-purple-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}>
                           <div>
                             <p className="font-black font-mono text-slate-900 tracking-wider">{c.code}</p>
-                            <p className="text-xs text-slate-500 mt-1">Validade: {new Date(c.expires_at).toLocaleDateString()}</p>
+                            <p className="text-xs text-slate-500 mt-1">{t('txt_validade') || 'Validade:'} {new Date(c.expires_at).toLocaleDateString()}</p>
                           </div>
                           <div className="text-right">
                             <span className="block font-black text-purple-600 text-lg">{c.value}€</span>
@@ -357,13 +358,13 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
           {activeTab === 'afiliados' && (
             <div className="space-y-6">
               <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
-                <h3 className="font-black text-emerald-900 text-base mb-2 flex items-center gap-2"><Users className="w-5 h-5" /> Ganhe 10€ por cada Loja Angariada!</h3>
-                <p className="text-sm text-emerald-800 leading-relaxed">Partilhe o seu link exclusivo. Se a loja se registar e mantiver o Plano Pro após os primeiros 14 dias de teste grátis, ganha 10€ diretamente no seu saldo, disponíveis para levantamento ou conversão em pontos.</p>
+                <h3 className="font-black text-emerald-900 text-base mb-2 flex items-center gap-2"><Users className="w-5 h-5" />  {t('txt_ganhe_10_por_cada_loja_angaria') || 'Ganhe 10€ por cada Loja Angariada!'}</h3>
+                <p className="text-sm text-emerald-800 leading-relaxed">{t('txt_partilhe_o_seu_link_exclusivo') || 'Partilhe o seu link exclusivo. Se a loja se registar e mantiver o Plano Pro após os primeiros 14 dias de teste grátis, ganha 10€ diretamente no seu saldo, disponíveis para levantamento ou conversão em pontos.'}</p>
               </div>
 
               <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col sm:flex-row items-center gap-4">
                 <div className="flex-1 w-full">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">O Seu Link de Convite</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">{t('txt_o_seu_link_de_convite') || 'O Seu Link de Convite'}</label>
                   <input readOnly value={refLink} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-700 outline-none" />
                 </div>
                 <button onClick={copyLink} className="w-full sm:w-auto mt-4 sm:mt-6 shrink-0 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2">
@@ -372,9 +373,9 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
               </div>
 
               <div>
-                <h3 className="font-black text-slate-900 text-lg mb-4">As Suas Indicações</h3>
+                <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_as_suas_indica_es') || 'As Suas Indicações'}</h3>
                 {loading ? <div className="py-4 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-purple-600" /></div> : referrals.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">Ainda não indicou nenhuma loja.</div>
+                  <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">{t('txt_ainda_n_o_indicou_nenhuma_loja') || 'Ainda não indicou nenhuma loja.'}</div>
                 ) : (
                   <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
                     {referrals.map(r => (
@@ -399,7 +400,7 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
               <div className="space-y-6">
                 <div className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm text-center">
                   <Wallet className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">Saldo Disponível</p>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">{t('txt_saldo_dispon_vel') || 'Saldo Disponível'}</p>
                   <p className="text-4xl font-black text-slate-900">{currentBalance.toFixed(2)}€</p>
                   
                   <button 
@@ -407,34 +408,35 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
                     disabled={currentBalance <= 0 || actionLoading}
                     className="w-full mt-6 py-3 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    Converter em {currentBalance * 100} Pontos <ArrowRight className="w-4 h-4" />
+                    
+                                                          {t('txt_converter_em') || 'Converter em'} {currentBalance * 100}  {t('txt_pontos_43') || 'Pontos'} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
                 <form onSubmit={handleWithdrawal} className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm space-y-4">
-                  <h3 className="font-black text-slate-900 text-lg mb-4">Pedir Levantamento</h3>
+                  <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_pedir_levantamento') || 'Pedir Levantamento'}</h3>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase block mb-2">Método</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-2">{t('txt_m_todo') || 'Método'}</label>
                     <select value={withdrawMethod} onChange={e => setWithdrawMethod(e.target.value as 'mbway' | 'nib')} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-emerald-500">
-                      <option value="mbway">MBWay</option>
-                      <option value="nib">Transferência Bancária (NIB/IBAN)</option>
+                      <option value="mbway">{t('txt_mbway_44') || 'MBWay'}</option>
+                      <option value="nib">{t('txt_transfer_ncia_banc_ria_nib_iba') || 'Transferência Bancária (NIB/IBAN)'}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase block mb-2">Detalhes ({withdrawMethod === 'mbway' ? 'Nº Telemóvel' : 'IBAN'})</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-2">{t('txt_detalhes') || 'Detalhes ('}{withdrawMethod === 'mbway' ? 'Nº Telemóvel' : 'IBAN'})</label>
                     <input required value={withdrawDetail} onChange={e => setWithdrawDetail(e.target.value)} placeholder={withdrawMethod === 'mbway' ? 'Ex: 912345678' : 'Ex: PT50...'} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-emerald-500" />
                   </div>
                   <button type="submit" disabled={currentBalance < 10 || actionLoading} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Confirmar Levantamento
-                  </button>
-                  {currentBalance < 10 && <p className="text-[10px] text-center text-slate-500 font-bold mt-2">Mínimo para levantamento: 10€</p>}
+                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}  {t('txt_confirmar_levantamento') || 'Confirmar Levantamento'}
+                                                        </button>
+                  {currentBalance < 10 && <p className="text-[10px] text-center text-slate-500 font-bold mt-2">{t('txt_m_nimo_para_levantamento_10') || 'Mínimo para levantamento: 10€'}</p>}
                 </form>
               </div>
 
               <div>
-                <h3 className="font-black text-slate-900 text-lg mb-4">Histórico de Pedidos</h3>
+                <h3 className="font-black text-slate-900 text-lg mb-4">{t('txt_hist_rico_de_pedidos') || 'Histórico de Pedidos'}</h3>
                 {loading ? <div className="py-4 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-emerald-600" /></div> : withdrawals.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">Sem pedidos efetuados.</div>
+                  <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-200 text-sm">{t('txt_sem_pedidos_efetuados') || 'Sem pedidos efetuados.'}</div>
                 ) : (
                   <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
                     {withdrawals.map(w => (

@@ -4,8 +4,10 @@ import { supabase } from '../lib/supabase';
 import { KeyRound, Check, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from "react-i18next";
 
 export default function UpdatePassword() {
+    const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [password, setPassword] = useState('');
@@ -70,11 +72,13 @@ export default function UpdatePassword() {
         <div className="flex flex-col items-center">
           <GlamzoLogo size={64} showSquircle={true} glow={true} className="mb-4" />
           <h2 className="text-center text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
-            Glamzo<span className="text-purple-600 font-black">.</span>
+            
+                                  {t('txt_glamzo_140') || 'Glamzo'}<span className="text-purple-600 font-black">.</span>
           </h2>
           <p className="mt-2 text-center text-sm font-semibold text-slate-500 uppercase tracking-widest">
-            Recuperação de Acesso
-          </p>
+            
+                                  {t('txt_recupera_o_de_acesso') || 'Recuperação de Acesso'}
+                                </p>
         </div>
 
         <div className="mt-8 bg-white py-8 px-4 shadow-sm border border-slate-200 sm:rounded-2xl sm:px-10">
@@ -93,8 +97,9 @@ export default function UpdatePassword() {
 
             <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                Nova Palavra-passe
-              </label>
+                
+                                              {t('txt_nova_palavra_passe') || 'Nova Palavra-passe'}
+                                            </label>
               <div className="relative rounded-xl shadow-sm">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <KeyRound className="w-4 h-4" />
@@ -105,15 +110,16 @@ export default function UpdatePassword() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all"
-                  placeholder="Mínimo de 6 caracteres"
+                  placeholder={t('txt_m_nimo_de_6_caracteres') || 'Mínimo de 6 caracteres'}
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                Confirmar Palavra-passe
-              </label>
+                
+                                              {t('txt_confirmar_palavra_passe') || 'Confirmar Palavra-passe'}
+                                            </label>
               <div className="relative rounded-xl shadow-sm">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <KeyRound className="w-4 h-4" />
@@ -124,7 +130,7 @@ export default function UpdatePassword() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all"
-                  placeholder="Confirme a nova palavra-passe"
+                  placeholder={t('txt_confirme_a_nova_palavra_passe') || 'Confirme a nova palavra-passe'}
                 />
               </div>
             </div>

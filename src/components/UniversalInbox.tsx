@@ -190,9 +190,9 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
       <div className={`w-full md:w-1/3 border-r border-slate-200 flex flex-col ${selectedSession ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-slate-200 bg-white/40">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-extrabold text-slate-900">Mensagens</h3>
+            <h3 className="font-extrabold text-slate-900">{t('txt_mensagens_62') || 'Mensagens'}</h3>
             {myType !== 'admin' && (
-              <button onClick={startSupportChat} className="bg-slate-900 text-white p-2 rounded-lg hover:bg-slate-800 transition-colors" title="Nova mensagem para o Suporte">
+              <button onClick={startSupportChat} className="bg-slate-900 text-white p-2 rounded-lg hover:bg-slate-800 transition-colors" title={t('txt_nova_mensagem_para_o_suporte') || 'Nova mensagem para o Suporte'}>
                 <ShieldAlert className="w-4 h-4" />
               </button>
             )}
@@ -201,7 +201,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
             <input 
               type="text"
-              placeholder="Procurar conversa..."
+              placeholder={t('txt_procurar_conversa') || 'Procurar conversa...'}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-slate-50 border border-slate-300 text-slate-700 pl-9 pr-3 py-2 rounded-xl text-xs focus:border-purple-500 outline-none"
@@ -211,7 +211,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredSessions.length === 0 ? (
             <div className="p-6 text-center text-slate-500">
-              <p className="text-xs">Nenhuma conversa encontrada.</p>
+              <p className="text-xs">{t('txt_nenhuma_conversa_encontrada') || 'Nenhuma conversa encontrada.'}</p>
             </div>
           ) : (
             filteredSessions.map(sess => (
@@ -249,7 +249,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
         {!selectedSession ? (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-6">
             <MessageSquare className="w-12 h-12 mb-4 text-slate-700" />
-            <p className="text-sm font-bold text-slate-600">Selecione uma conversa</p>
+            <p className="text-sm font-bold text-slate-600">{t('txt_selecione_uma_conversa') || 'Selecione uma conversa'}</p>
           </div>
         ) : (
           <>
@@ -266,8 +266,9 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
                 </span>
                 <span className="block text-[9px] text-emerald-400 font-bold tracking-widest font-mono flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                  ONLINE
-                </span>
+                  
+                                                        {t('txt_online_63') || 'ONLINE'}
+                                                      </span>
               </div>
             </div>
             
@@ -301,7 +302,7 @@ export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
                   type="text"
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
-                  placeholder="Escreva a sua mensagem..."
+                  placeholder={t('txt_escreva_a_sua_mensagem') || 'Escreva a sua mensagem...'}
                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-12 py-3 text-xs text-slate-900 outline-none focus:border-purple-600 focus:bg-white transition-all shadow-sm"
                 />
                 <button
