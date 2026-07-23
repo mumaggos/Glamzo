@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { useLocation } from 'react-router-dom';
 
 export default function Footer() {
   const location = useLocation();
+  const { t } = useTranslation();
   const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/chamadas');
   
   if (isDashboardOrAdmin) return null;
@@ -15,7 +17,7 @@ export default function Footer() {
           <div>
             <h2 className="font-bold text-slate-900 mb-4 whitespace-nowrap">Glamzo</h2>
             <p className="text-sm text-slate-600 mb-4 pr-4">
-              O marketplace ibérico que liga os clientes mais exigentes aos melhores profissionais de beleza e bem-estar.
+              {t('footer_desc') || 'O marketplace ibérico que liga os clientes mais exigentes aos melhores profissionais de beleza e bem-estar.'}
             </p>
             {/* Botão Trustpilot */}
             <div className="mt-6">
@@ -41,29 +43,29 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-slate-900 mb-4">A Empresa</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/sobre-nos" className="hover:text-purple-600 focus:outline-none focus:underline">Sobre a Glamzo</Link></li>
-              <li><Link to="/contactos" className="hover:text-purple-600 focus:outline-none focus:underline">Contactos</Link></li>
-              <li><Link to="/faq-cliente" className="hover:text-purple-600 focus:outline-none focus:underline">FAQ Cliente</Link></li>
-              <li><Link to="/faq-parceiro" className="hover:text-purple-600 focus:outline-none focus:underline">FAQ Parceiro</Link></li>
+              <li><Link to="/sobre-nos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('about_glamzo') || 'Sobre a Glamzo'}</Link></li>
+              <li><Link to="/contactos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('contacts') || 'Contactos'}</Link></li>
+              <li><Link to="/faq-cliente" className="hover:text-purple-600 focus:outline-none focus:underline">{t('faq_customer') || 'FAQ Cliente'}</Link></li>
+              <li><Link to="/faq-parceiro" className="hover:text-purple-600 focus:outline-none focus:underline">{t('faq_partner') || 'FAQ Parceiro'}</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-slate-900 mb-4">Suporte Legal</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/termos-e-condicoes" className="hover:text-purple-600 focus:outline-none focus:underline">Termos e Condições</Link></li>
-              <li><Link to="/politica-de-privacidade" className="hover:text-purple-600 focus:outline-none focus:underline">Política de Privacidade</Link></li>
-              <li><Link to="/politica-de-pagamentos" className="hover:text-purple-600 focus:outline-none focus:underline">Termos de Pagamentos</Link></li>
-              <li><Link to="/politica-de-cancelamentos" className="hover:text-purple-600 focus:outline-none focus:underline">Cancelamentos & Reembolsos</Link></li>
+              <li><Link to="/termos-e-condicoes" className="hover:text-purple-600 focus:outline-none focus:underline">{t('terms_conditions') || 'Termos e Condições'}</Link></li>
+              <li><Link to="/politica-de-privacidade" className="hover:text-purple-600 focus:outline-none focus:underline">{t('privacy_policy') || 'Política de Privacidade'}</Link></li>
+              <li><Link to="/politica-de-pagamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('payment_terms') || 'Termos de Pagamentos'}</Link></li>
+              <li><Link to="/politica-de-cancelamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('cancellations_refunds') || 'Cancelamentos >Cancelamentos & Reembolsos< Reembolsos'}</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-slate-900 mb-4">Para Parceiros</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/partner" className="hover:text-purple-600 font-medium text-slate-900 focus:outline-none focus:underline">Descubra o Glamzo PRO</Link></li>
-              <li><Link to="/partner/login" className="hover:text-purple-600 focus:outline-none focus:underline">Login do Parceiro</Link></li>
-              <li><Link to="/partner/signup" className="hover:text-purple-600 focus:outline-none focus:underline">Registe o seu Salão</Link></li>
+              <li><Link to="/partner" className="hover:text-purple-600 font-medium text-slate-900 focus:outline-none focus:underline">{t('discover_glamzo_pro') || 'Descubra o Glamzo PRO'}</Link></li>
+              <li><Link to="/partner/login" className="hover:text-purple-600 focus:outline-none focus:underline">{t('partner_login') || 'Login do Parceiro'}</Link></li>
+              <li><Link to="/partner/signup" className="hover:text-purple-600 focus:outline-none focus:underline">{t('register_salon') || 'Registe o seu Salão'}</Link></li>
             </ul>
           </div>
         </div>

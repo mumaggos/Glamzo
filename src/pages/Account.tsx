@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
@@ -16,6 +17,7 @@ import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Cal
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
+  const { t } = useTranslation();
   const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
 
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -510,7 +512,7 @@ export default function Account() {
   };
 
   if (authLoading) return <div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>;
-  if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">Acesso Restrito</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">Fazer Login</a></div>;
+  if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">{t('restricted_access') || 'Acesso Restrito'}</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">{t('login') || 'Fazer Login'}</a></div>;
 
 
   const filteredBookings = bookings.filter(bk => {
@@ -572,7 +574,7 @@ export default function Account() {
              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
              <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">Glamzo Club</span></div>
              <span className="text-3xl font-black font-mono">{currentPointsBalance}</span>
-             <span className="text-xs text-slate-300 block">Gerir Pontos e Saldo <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
+             <span className="text-xs text-slate-300 block">{t('manage_points') || 'Gerir Pontos e Saldo'}  <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
           </button>
         </div>
       </div>
@@ -615,8 +617,8 @@ export default function Account() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-purple-100 to-transparent opacity-50 blur-3xl pointer-events-none" />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h3 className="text-2xl font-black text-slate-900">Histórico de Reservas</h3>
-                <p className="text-sm text-slate-500 font-medium">As suas marcações ativas e passadas.</p>
+                <h3 className="text-2xl font-black text-slate-900">{t('booking_history') || 'Histórico de Reservas'}</h3>
+                <p className="text-sm text-slate-500 font-medium">{t('booking_history_desc') || 'As suas marcações ativas e passadas.'}</p>
               </div>
             </div>
 
@@ -679,8 +681,8 @@ export default function Account() {
             ) : filteredBookings.length === 0 ? (
               <div className="text-center py-16 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                 <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h4 className="text-lg font-bold text-slate-800 mb-2">Nenhuma marcação</h4>
-                <p className="text-slate-500 mb-6 text-sm">Ainda não fez nenhuma reserva no Glamzo.</p>
+                <h4 className="text-lg font-bold text-slate-800 mb-2">{t('no_bookings') || 'Nenhuma marcação'}</h4>
+                <p className="text-slate-500 mb-6 text-sm">{t('no_bookings_desc') || 'Ainda não fez nenhuma reserva no Glamzo.'}</p>
                 <a href="/explore" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all"><Search className="w-4 h-4" /> Explorar Salões</a>
               </div>
             ) : (
@@ -718,19 +720,19 @@ export default function Account() {
                           <p className="text-lg font-black text-slate-900">{bk.service?.price ? `${bk.service.price}€` : '--'}</p>
                         </div>
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
-                          <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">Ver Loja</a>
+                          <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">{t('view_store') || 'Ver Loja'}</a>
                           
                           
                           {bk.booking_status === 'completed' &&  (
-                            <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">Abrir Disputa</button>
+                            <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">{t('open_dispute') || 'Abrir Disputa'}</button>
                           )}
                           
                           {bk.booking_status === 'completed' && !userReviews.some(r => r.booking_id === bk.id) && (
-                            <button onClick={() => handleOpenReviewModal(bk)} className="flex-1 md:flex-none px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors border border-purple-200">Avaliar</button>
+                            <button onClick={() => handleOpenReviewModal(bk)} className="flex-1 md:flex-none px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors border border-purple-200">{t('rate') || 'Avaliar'}</button>
                           )}
                           
                           {(bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && (
-                            <button onClick={() => handleCancelBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 font-bold rounded-xl text-xs transition-colors">Cancelar</button>
+                            <button onClick={() => handleCancelBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 font-bold rounded-xl text-xs transition-colors">{t('cancel') || 'Cancelar'}</button>
                           )}
                           
                           {(bk.booking_status === 'completed' || bk.booking_status === 'cancelled') && (
@@ -750,7 +752,7 @@ export default function Account() {
                 {/* CENTRO DE APOIO */}
         {activeTab === 'apoio' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in flex flex-col h-[70vh]">
-            <h3 className="text-xl font-black text-slate-900 mb-6">Centro de Apoio</h3>
+            <h3 className="text-xl font-black text-slate-900 mb-6">{t('support_center') || 'Centro de Apoio'}</h3>
             <div className="flex overflow-x-auto no-scrollbar gap-4 mb-4 pb-2">
               <button 
                 onClick={() => setMessageTab('mensagens')} 
@@ -784,7 +786,7 @@ export default function Account() {
         {/* 2. ABA DE PERFIL */}
         {activeTab === 'perfil' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in">
-            <h3 className="text-xl font-black text-slate-900 mb-6">Editar Dados Pessoais</h3>
+            <h3 className="text-xl font-black text-slate-900 mb-6">{t('edit_personal_data') || 'Editar Dados Pessoais'}</h3>
             {errorMsg && <div className="mb-4 p-4 bg-rose-50 text-rose-700 rounded-xl text-sm font-bold flex items-center gap-2"><AlertCircle className="w-5 h-5" /> {errorMsg}</div>}
             {successMsg && <div className="mb-4 p-4 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold flex items-center gap-2"><CheckCircle className="w-5 h-5" /> {successMsg}</div>}
             
@@ -892,7 +894,7 @@ export default function Account() {
                   <Heart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                   <h4 className="text-base font-bold text-slate-800">Sem favoritos</h4>
                   <p className="text-xs text-slate-500 mt-2 mb-4">Ainda não guardou nenhum salão.</p>
-                  <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">Explorar Salões</a>
+                  <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">{t('explore_salons') || 'Explorar Salões'}</a>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

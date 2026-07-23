@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
@@ -35,6 +37,7 @@ const playNotificationSound = () => {
 };
 
 export default function PartnerLayout() {
+  const { t } = useTranslation();
   const { user, profile, signOut, loading: authLoading } = useAuth();
 
   useEffect(() => {
@@ -438,10 +441,10 @@ export default function PartnerLayout() {
           </div>
         ) : (
           <>
-            <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>Resumo</span></Link>
-            <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>Clientes</span></Link>
+            <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>{t('summary') || 'Resumo'}</span></Link>
+            <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>{t('clients') || 'Clientes'}</span></Link>
             <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
-            <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>Reservas</span></Link>
+            <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>{t('bookings') || 'Reservas'}</span></Link>
             <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /><span className="text-[10px] font-bold mt-1 text-slate-400">Menu</span></button>
           </>
         )}

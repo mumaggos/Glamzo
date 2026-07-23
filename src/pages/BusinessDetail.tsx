@@ -215,7 +215,7 @@ const { slug } = useParams<{ slug: string }>();
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      toast('Inicie sessão para guardar nos favoritos!');
+      toast(t('login_favorite') || 'Inicie sessão para guardar nos favoritos!');
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
@@ -280,7 +280,7 @@ const { slug } = useParams<{ slug: string }>();
       created.customer_stats = { total_reviews: 1, total_photos: uploadedUrls.length };
       setReviews(prev => [created, ...prev]);
       setNewReviewComment(''); setNewReviewService(''); setReviewPhotos([]); setReviewFormOpen(false);
-      toast('Avaliação submetida com sucesso! Obrigado.');
+      toast(t('review_submitted') || 'Avaliação submetida com sucesso! Obrigado.');
     } catch (e: any) {
       console.error(e);
       toast('Falha ao registar a avaliação: ' + e.message);
@@ -658,7 +658,7 @@ const { slug } = useParams<{ slug: string }>();
 
               {/* Informações */}
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-sm space-y-5">
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-2">Informações</h3>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-2">{t('information') || 'Informações'}</h3>
                 
                 {(businessHours || []).length > 0 && (
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-4">

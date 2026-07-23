@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
 import SuperAdminClub from '../components/SuperAdminClub';
@@ -42,6 +43,7 @@ const PAGE_FALLBACKS: Record<string, string> = {
 };
 
 export default function Admin() {
+  const { t } = useTranslation();
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 

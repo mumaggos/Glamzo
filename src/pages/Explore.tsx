@@ -9,6 +9,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useGlobalStore } from "../store/useGlobalStore";
 import { useFormatPrice } from "../utils/formatPrice";
 import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
+import { useTranslation } from "react-i18next";
 import {
   Search, MapPin, Grid, Compass, Star, SlidersHorizontal, Sliders, CheckCircle2,
   Loader2, X, Navigation, List, Map as MapIcon, Heart
@@ -118,6 +119,7 @@ function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData:
 
 export default function Explore() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewModeMobile, setViewModeMobile] = useState<"list" | "map">("list");
@@ -515,7 +517,7 @@ export default function Explore() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">
-            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Todos</button>
+            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{t('all') || 'Todos'}</button>
             {MAIN_CATEGORIES.map((cat) => (
               <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat.name)}</button>
             ))}
@@ -523,31 +525,31 @@ export default function Explore() {
           <div className="ml-4 pl-4 border-l border-slate-200 hidden md:flex items-center gap-3">
              <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Pesquisar loja..." className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder={t('search_store') || "Pesquisar loja..."} className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
              </div>
              <div className="hidden lg:flex items-center gap-2">
       <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="">Raio: Todos</option>
-        <option value="5">Até 5 km</option>
-        <option value="10">Até 10 km</option>
-        <option value="25">Até 25 km</option>
-        <option value="50">Até 50 km</option>
+        <option value="">{t('radius_all') || 'Raio: Todos'}</option>
+        <option value="5">{t('up_to') || 'Até'} 5 km</option>
+        <option value="10">{t('up_to') || 'Até'} 10 km</option>
+        <option value="25">{t('up_to') || 'Até'} 25 km</option>
+        <option value="50">{t('up_to') || 'Até'} 50 km</option>
       </select>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="recomendados">Recomendados</option>
-        <option value="distancia">Distância: Mais Próximo</option>
-        <option value="preco_asc">Preço: Mais barato primeiro</option>
-        <option value="rating">Melhor Avaliação</option>
+        <option value="recomendados">{t('recommended') || 'Recomendados'}</option>
+        <option value="distancia">{t('distance_closest') || 'Distância: Mais Próximo'}</option>
+        <option value="preco_asc">{t('price_cheapest') || 'Preço: Mais barato primeiro'}</option>
+        <option value="rating">{t('best_rating') || 'Melhor Avaliação'}</option>
       </select>
       <button onClick={() => setAbertoAgora(!abertoAgora)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        Aberto Agora
+        {t('open_now_explore') || 'Aberto Agora'}
       </button>
       <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        Apenas 4+ ⭐
+        {t('only_4_stars') || 'Apenas 4+ ⭐'}
       </button>
    </div>
    <button onClick={() => setIsDrawerOpen(true)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors lg:ml-2">
-     <SlidersHorizontal className="w-4 h-4" /> Filtros
+     <SlidersHorizontal className="w-4 h-4" /> {t('filters') || 'Filtros'}
    </button>
           </div>
           <div className="md:hidden ml-2 flex items-center">
@@ -562,7 +564,7 @@ export default function Explore() {
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">Explorar ({sortedBusinesses.length})</h2>
+              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">{t('explore') || 'Explorar'} ({sortedBusinesses.length})</h2>
               
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
@@ -579,7 +581,7 @@ export default function Explore() {
            {loading ? (
               <div className="flex flex-col items-center justify-center flex-1 py-20">
                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin mb-4" />
-                <p className="text-sm font-medium text-slate-500">A carregar lojas...</p>
+                <p className="text-sm font-medium text-slate-500">{t('loading_stores') || 'A carregar lojas...'}</p>
               </div>
             ) : sortedBusinesses.length > 0 ? (
               <>
@@ -589,7 +591,7 @@ export default function Explore() {
                 {sortedBusinesses.length === queryLimit && (
                   <div className="text-center pt-8 pb-12">
                     <button onClick={() => setQueryLimit(queryLimit + 12)} className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm">
-                      Carregar mais
+                      {t('load_more') || 'Carregar mais'}
                     </button>
                   </div>
                 )}

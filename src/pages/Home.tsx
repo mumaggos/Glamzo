@@ -465,7 +465,7 @@ export default function Home() {
       {/* 2. CATEGORIAS FOTOGRÁFICAS PREMIUM */} 
       <section className="pb-12 pt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"> 
         <div className="flex items-center justify-between mb-6"> 
-          <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">O que procura hoje?</h2> 
+          <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('what_looking_for') || 'O que procura hoje?'}</h2> 
         </div> 
         <div className="relative group"> 
           <button onClick={() => scrollCategories('left')} aria-label="Ver categorias anteriores" className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
@@ -504,7 +504,7 @@ export default function Home() {
               <section> 
                 <div className="mb-6"> 
                   <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">📍 {t('near_you')}</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">Espaços com vagas nas redondezas da sua localização.</p> 
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('near_you_desc') || 'Espaços com vagas nas redondezas da sua localização.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
                   {locaisProximos.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
@@ -515,8 +515,8 @@ export default function Home() {
             {recomendados.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">❤️ Recomendados para si</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">Os espaços com melhores notas reais no Glamzo.</p> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">❤️ {t('recommended') || 'Recomendados para si'}</h2> 
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('recommended_desc') || 'Os espaços com melhores notas reais no Glamzo.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
                   {recomendados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
@@ -527,8 +527,8 @@ export default function Home() {
             {novasLojas.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🆕 Acabaram de chegar</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">As mais recentes novidades adicionadas à nossa rede.</p> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">🆕 {t('new_stores') || 'Acabaram de chegar'}</h2> 
+                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('new_stores_desc') || 'As mais recentes novidades adicionadas à nossa rede.'}</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
                   {novasLojas.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
