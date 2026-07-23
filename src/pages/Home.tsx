@@ -352,13 +352,13 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center"> 
            
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold tracking-tight text-[#0f172a] leading-[1.1] mb-5 font-['Outfit']"> 
-            O seu momento de beleza, <br className="hidden sm:block" /> 
+            {t('hero_title_1')} <br className="hidden sm:block" /> 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-rose-500"> 
-              marcado num instante. 
+              {t('hero_title_2')}
             </span> 
           </h1> 
           <p className="text-sm sm:text-base lg:text-lg text-slate-500 font-medium max-w-2xl mb-10 font-['Inter']"> 
-            Descubra e reserve online os melhores salões de beleza, barbearias e spas ao seu redor. Rápido, seguro e sem complicações. 
+            {t('hero_desc')}
           </p> 
 
           {/* MOTOR DE RESERVAS ARQUITETÓNICO COM CANTOS SUAVES */} 
@@ -370,10 +370,10 @@ export default function Home() {
                 <Search className="w-5 h-5" /> 
               </div> 
               <div className="px-12 py-3 hover:bg-slate-50 rounded-xl transition-colors cursor-text h-full flex flex-col justify-center"> 
-                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">Tratamento ou Salão</label> 
+                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">{t('hero_search_what')}</label> 
                 <input 
                   type="text" 
-                  placeholder="Ex: Corte, Manicure..." 
+                  placeholder={t('hero_search_what_ph')} 
                   value={searchQuery} 
                   onChange={(e) => { setSearchQuery(e.target.value); setShowQuerySuggestions(true); }}
                   onFocus={() => setShowQuerySuggestions(true)}
@@ -403,10 +403,10 @@ export default function Home() {
                 <MapPin className="w-5 h-5" /> 
               </div> 
               <div className="px-12 py-3 hover:bg-slate-50 rounded-xl transition-colors cursor-text h-full flex flex-col justify-center"> 
-                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">Localização</label> 
+                <label className="block text-[10px] font-extrabold text-[#0f172a] uppercase tracking-widest mb-0.5 text-left">{t('hero_search_where')}</label> 
                 <input 
                   type="text" 
-                  placeholder="Onde se encontra?" 
+                  placeholder={t('hero_search_where_ph')} 
                   value={searchLocation} 
                   onChange={(e) => { setSearchLocation(e.target.value); setShowLocSuggestions(true); }} 
                   onFocus={() => setShowLocSuggestions(true)} 
@@ -439,17 +439,17 @@ export default function Home() {
               onClick={handleSearchSubmit}  
               className="w-full md:w-auto bg-[#0f172a] hover:bg-[#9333ea] text-white font-bold text-sm py-4 md:py-0 px-10 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shrink-0 mt-2 md:mt-0" 
             > 
-              Pesquisar 
+              {t('hero_search_btn')}
             </button> 
           </div> 
 
           {/* Garantias Reais de Confiança (Sem Dados Falsos) */} 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-semibold text-slate-500 font-['Inter']"> 
-            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-500" /> Confirmação Imediata</span> 
+            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-500" /> {t('guarantee_1')}</span> 
             <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" /> 
-            <span className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-purple-500" /> Disponibilidade 24/7</span> 
+            <span className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-purple-500" /> {t('guarantee_2')}</span> 
             <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" /> 
-            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Pagamento Seguro</span> 
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> {t('guarantee_3')}</span> 
           </div> 
         </div> 
       </section> 

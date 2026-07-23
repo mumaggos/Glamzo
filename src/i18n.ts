@@ -21,7 +21,18 @@ const resources = {
       "price": "Price",
       "distance": "Distance",
       "open_now": "Open Now",
-      "closed": "Closed"
+      "closed": "Closed",
+      "hero_title_1": "Your beauty moment,",
+      "hero_title_2": "booked in an instant.",
+      "hero_desc": "Discover and book online the best beauty salons, barbershops, and spas around you. Fast, secure, and hassle-free.",
+      "hero_search_what": "Treatment or Salon",
+      "hero_search_what_ph": "Ex: Haircut, Manicure...",
+      "hero_search_where": "Location",
+      "hero_search_where_ph": "Where are you?",
+      "hero_search_btn": "Search",
+      "guarantee_1": "Instant Confirmation",
+      "guarantee_2": "24/7 Availability",
+      "guarantee_3": "Secure Payment"
     }
   },
   pt: {
@@ -42,7 +53,18 @@ const resources = {
       "price": "Preço",
       "distance": "Distância",
       "open_now": "Aberto",
-      "closed": "Fechado"
+      "closed": "Fechado",
+      "hero_title_1": "O seu momento de beleza,",
+      "hero_title_2": "marcado num instante.",
+      "hero_desc": "Descubra e reserve online os melhores salões de beleza, barbearias e spas ao seu redor. Rápido, seguro e sem complicações.",
+      "hero_search_what": "Tratamento ou Salão",
+      "hero_search_what_ph": "Ex: Corte, Manicure...",
+      "hero_search_where": "Localização",
+      "hero_search_where_ph": "Onde se encontra?",
+      "hero_search_btn": "Pesquisar",
+      "guarantee_1": "Confirmação Imediata",
+      "guarantee_2": "Disponibilidade 24/7",
+      "guarantee_3": "Pagamento Seguro"
     }
   }
 };
