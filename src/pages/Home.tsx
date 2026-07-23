@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom"; 
 import { supabase } from "../lib/supabase"; 
 import { fetchAllReviews } from "../utils/reviewsHelper"; 
+import { useGlobalStore } from "../store/useGlobalStore";
+import { useFormatPrice } from "../utils/formatPrice";
+import { useTranslation } from "react-i18next";
 import { 
   Search, MapPin, Clock, Navigation,  
   ChevronRight, ChevronLeft, Map as MapIcon,  
@@ -65,13 +68,15 @@ const optimizeUnsplashUrl = (url: string | null) => {
 
 export default function Home() {
   const navigate = useNavigate();
+  const formatPrice = useFormatPrice();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
+  const { userLocation: userCoords, setUserLocation: setUserCoords } = useGlobalStore();
   const [mapVisible, setMapVisible] = useState(false);
   const mapRef = useRef<HTMLElement>(null);
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
@@ -131,19 +136,6 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, [searchQuery, businesses, servicesData]);
-
-  useEffect(() => {
-    // Auto-locate user on mount
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation("Perto de Mim");
-        },
-        () => {} // fail silently on auto-locate
-      );
-    }
-  }, []);
 
   const scrollCategories = (direction: 'left' | 'right') => {
     requestAnimationFrame(() => {
@@ -344,7 +336,7 @@ export default function Home() {
       </div> 
        
       <div className="mt-1 flex items-baseline gap-1"> 
-        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${b.startPrice}€` : 'Grátis'}</span> 
+        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? formatPrice(b.startPrice) : 'Grátis'}</span> 
         <span className="text-sm text-slate-500">preço base</span> 
       </div> 
     </Link> 
@@ -503,7 +495,7 @@ export default function Home() {
             {locaisProximos.length > 0 && ( 
               <section> 
                 <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">📍 Perto de si</h2> 
+                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">📍 {t('near_you')}</h2> 
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">Espaços com vagas nas redondezas da sua localização.</p> 
                 </div> 
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 

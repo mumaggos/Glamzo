@@ -55,6 +55,8 @@ const Sobre = lazy(() => import('./pages/info/Sobre'));
 const Contactos = lazy(() => import('./pages/info/Contactos'));
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import GlobalImpersonationBanner from './components/GlobalImpersonationBanner';
+import DeveloperPanel from './components/DeveloperPanel';
+import { useGlobalStore } from './store/useGlobalStore';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { Toaster } from 'react-hot-toast';
@@ -236,6 +238,16 @@ function GlobalRoleEnforcer() {
 
 export default function App() {
   const [loadMessenger, setLoadMessenger] = React.useState(false);
+  const { setUserLocation } = useGlobalStore();
+
+  React.useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.log('Geolocation not granted or failed')
+      );
+    }
+  }, [setUserLocation]);
 
   React.useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -331,6 +343,7 @@ export default function App() {
             </main>
             <Footer />
             <CookieBanner />
+            <DeveloperPanel />
             {loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}
           </div>
         </AuthProvider>

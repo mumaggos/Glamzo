@@ -6,6 +6,8 @@ import { fetchAllReviews } from "../utils/reviewsHelper";
 import { calculateDistanceInKm, getCoordinatesForCity } from "../utils/geoData";
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData";
 import { useAuth } from "../hooks/useAuth";
+import { useGlobalStore } from "../store/useGlobalStore";
+import { useFormatPrice } from "../utils/formatPrice";
 import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
 import {
   Search, MapPin, Grid, Compass, Star, SlidersHorizontal, Sliders, CheckCircle2,
@@ -148,7 +150,12 @@ export default function Explore() {
 
   const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get("category") || "All");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(searchParams.get("subcategory") || "All");
-  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; } | null>(null);
+  const { userLocation, setUserLocation } = useGlobalStore();
+  const userCoords = userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : null;
+  const setUserCoordsLocal = (coords: { latitude: number; longitude: number; } | null) => {
+    if (coords) setUserLocation({ lat: coords.latitude, lng: coords.longitude });
+    else setUserLocation(null);
+  };
   const [geoLocating, setGeoLocating] = useState(false);
   const [mapZoom, setMapZoom] = useState<number>(6);
   const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
@@ -161,21 +168,10 @@ export default function Explore() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      setGeoLocating(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-          setLocalSearchLocation("Perto de Mim");
-          setUseNearMe(true);
-          setGeoLocating(false);
-        },
-        () => {
-          setGeoLocating(false);
-        }
-      );
+    if (useNearMe && userCoords) {
+      setLocalSearchLocation("Perto de Mim");
     }
-  }, []);
+  }, [useNearMe, userCoords]);
 
   const fetchExploreData = async () => {
     setLoading(true);
@@ -307,7 +303,7 @@ export default function Explore() {
         setGeoLocating(true);
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+            setUserCoordsLocal({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
             setLocalSearchLocation("Perto de Mim");
             setUseNearMe(true);
             setGeoLocating(false);
@@ -327,7 +323,7 @@ export default function Explore() {
   const handleClearFilters = () => {
     setLocalSearchQuery(""); setSearchQuery("");
     setLocalSearchLocation(""); setSearchLocation("");
-    setUseNearMe(false); setUserCoords(null);
+    setUseNearMe(false); setUserCoordsLocal(null);
     setSelectedCategory("All");
     setSortBy("recomendados");
     setAbertoAgora(false);

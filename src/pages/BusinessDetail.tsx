@@ -6,6 +6,7 @@ import { Business, Review } from '../types';
 import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
 import { startChatSession, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
 import { useAuth } from '../hooks/useAuth';
+import { useFormatPrice } from '../utils/formatPrice';
 import BookingModal from '../components/BookingModal';
 import toast from 'react-hot-toast';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -19,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function BusinessDetail() {
-  
+  const formatPrice = useFormatPrice();
   const [searchParams] = useSearchParams();
 const { slug } = useParams<{ slug: string }>();
   const { user, profile } = useAuth();
@@ -444,7 +445,7 @@ const { slug } = useParams<{ slug: string }>();
                           <span className="inline-block mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-2 py-1 rounded-lg">⏱ {srv.duration_minutes} min</span>
                         </div>
                         <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:border-l sm:border-slate-100 sm:pl-6">
-                          <span className="text-lg font-black text-slate-900">{Number(srv.price).toFixed(2)}€</span>
+                          <span className="text-lg font-black text-slate-900">{formatPrice(Number(srv.price))}</span>
                           <button onClick={() => handleOpenBooking(srv)} className="px-5 py-2.5 bg-slate-900 hover:bg-purple-600 text-white text-xs font-bold rounded-xl transition-colors">
                             Reservar
                           </button>
