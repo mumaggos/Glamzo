@@ -1,3 +1,6 @@
+import FinanceSettingsTab from "./pages/partner/tabs/FinanceSettingsTab";
+import PayoutsHistoryTab from "./pages/partner/tabs/PayoutsHistoryTab";
+import HardwareManagerTab from "./pages/partner/tabs/HardwareManagerTab";
 
 import { Compass } from 'lucide-react';
 import { GlobalIntentHandler } from './components/GlobalIntentHandler';
@@ -305,6 +308,9 @@ export default function App() {
                     <Route path="avaliacoes" element={<PartnerReviewsTab />} />
                     <Route path="campanhas" element={<MarketingTab />} />
                     <Route path="financeiro" element={<FinanceTab />} />
+                    <Route path="financeiro/configuracoes" element={<FinanceSettingsTab />} />
+                    <Route path="financeiro/repasses" element={<PayoutsHistoryTab />} />
+                    <Route path="financeiro/hardware" element={<HardwareManagerTab />} />
                     <Route path="website" element={<StoreAssetsTab />} />
                     <Route path="mensagens" element={<MessagesTab />} />
                     <Route path="tablet" element={<TabletTab />} />

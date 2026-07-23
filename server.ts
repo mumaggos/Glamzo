@@ -124,10 +124,10 @@ app.get("/api/health", (req, res) => {
 
 app.get("/api/debug-staff", async (req, res) => {
   try {
-    const db = getSupabaseAdmin();
-    const { data, error } = await db.rpc("get_schema_info");
+    
+    const { data, error } = await getSupabaseAdmin().rpc("get_schema_info");
     // Wait, rpc 'get_schema_info' might not exist. Let's just query information_schema
-    const { data: cols, error: err } = await db
+    const { data: cols, error: err } = await getSupabaseAdmin()
       .from("staff")
       .select("*")
       .limit(1);
@@ -523,11 +523,10 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
     }
 
     const stripe = getStripe();
-    const db = getSupabaseAdmin();
+    
 
     // Fetch business profile to see if stripe_account_id exists
-    const { data: business, error: dbErr } = await db
-      .from("businesses")
+    const { data: business, error: dbErr } = await getSupabaseAdmin().from("businesses")
       .select("*")
       .eq("id", businessId)
       .maybeSingle();
@@ -576,8 +575,7 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
       stripeAccountId = account.id;
 
       // Persist the new connected ID inside client database immediately
-      const { error: updateErr } = await db
-        .from("businesses")
+      const { error: updateErr } = await getSupabaseAdmin().from("businesses")
         .update({ stripe_account_id: stripeAccountId })
         .eq("id", businessId);
 
@@ -617,15 +615,17 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
 
 // Fetch dynamic Stripe registration and activation status
 app.post("/api/stripe/create-custom-account", express.json(), async (req, res) => {
+  
   try {
     const { businessId, ownerId } = req.body;
     if (!businessId || !ownerId) {
       return res.status(400).json({ error: "businessId and ownerId are required" });
     }
+    
+    
 
-    const { data: business, error: dbErr } = await db
-      .from("businesses")
-      .select("stripe_account_id, email, name")
+    const { data: business, error: dbErr } = await getSupabaseAdmin().from("businesses")
+      .select("stripe_account_id, email, name, country_code")
       .eq("id", businessId)
       .single();
 
@@ -639,18 +639,24 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
     if (!stripeAccountId) {
       const account = await stripe.accounts.create({
         type: 'custom',
-        country: 'PT',
+        country: business.country_code || 'PT',
         email: business.email || undefined,
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
+        settings: {
+          payouts: {
+            schedule: {
+              interval: 'daily',
+            },
+          },
+        },
       });
 
       stripeAccountId = account.id;
 
-      const { error: updateErr } = await db
-        .from("businesses")
+      const { error: updateErr } = await getSupabaseAdmin().from("businesses")
         .update({ stripe_account_id: stripeAccountId })
         .eq("id", businessId);
 
@@ -674,6 +680,7 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
 });
 
 app.get("/api/stripe/account-status", async (req, res) => {
+  
   try {
     const { businessId } = req.query;
     if (!businessId) {
@@ -681,9 +688,8 @@ app.get("/api/stripe/account-status", async (req, res) => {
       return;
     }
 
-    const db = getSupabaseAdmin();
-    const { data: business, error: dbErr } = await db
-      .from("businesses")
+    
+    const { data: business, error: dbErr } = await getSupabaseAdmin().from("businesses")
       .select("stripe_account_id")
       .eq("id", businessId)
       .maybeSingle();
@@ -700,7 +706,7 @@ app.get("/api/stripe/account-status", async (req, res) => {
     } catch (err) {
       if (err.statusCode === 404 || err.code === "resource_missing") {
          console.warn(`[Ghost Account] Connect account ${business.stripe_account_id} not found. Clearing from DB.`);
-         await db.from("businesses").update({ 
+         await getSupabaseAdmin().from("businesses").update({ 
            stripe_account_id: null, 
            charges_enabled: false, 
            payouts_enabled: false 
@@ -712,8 +718,7 @@ app.get("/api/stripe/account-status", async (req, res) => {
     }
 
     // Sync other components and consumers by persisting the status back to the database row
-    await db
-      .from("businesses")
+    await getSupabaseAdmin().from("businesses")
       .update({
         charges_enabled: account.charges_enabled,
         payouts_enabled: account.payouts_enabled,
@@ -729,6 +734,190 @@ app.get("/api/stripe/account-status", async (req, res) => {
     });
   } catch (err: any) {
     console.error("Failed retrieving Stripe account stats:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Terminal Order Checkout
+
+// Terminal Connection Token
+app.post("/api/stripe/terminal/connection-token", async (req, res) => {
+  try {
+    const { businessId } = req.body;
+    if (!businessId) {
+      return res.status(400).json({ error: "Missing businessId parameter" });
+    }
+
+    const { data: business, error: dbErr } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("stripe_account_id")
+      .eq("id", businessId)
+      .maybeSingle();
+
+    if (dbErr || !business || !business.stripe_account_id) {
+      return res.status(404).json({ error: "Stripe account not found for this business" });
+    }
+
+    const stripe = getStripe();
+    const token = await stripe.terminal.connectionTokens.create(
+      {},
+      { stripeAccount: business.stripe_account_id }
+    );
+
+    res.json({ secret: token.secret });
+  } catch (err: any) {
+    console.error("Failed to create connection token:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Terminal Payment Intent
+app.post("/api/stripe/terminal/create-payment-intent", async (req, res) => {
+  try {
+    const { businessId, amount, currency = "eur" } = req.body;
+    if (!businessId || !amount) {
+      return res.status(400).json({ error: "Missing businessId or amount parameter" });
+    }
+
+    const { data: business, error: dbErr } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("stripe_account_id")
+      .eq("id", businessId)
+      .maybeSingle();
+
+    if (dbErr || !business || !business.stripe_account_id) {
+      return res.status(404).json({ error: "Stripe account not found for this business" });
+    }
+
+    const stripe = getStripe();
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount,
+        currency,
+        payment_method_types: ["card_present"],
+        capture_method: "manual",
+      },
+      { stripeAccount: business.stripe_account_id }
+    );
+
+    res.json({ client_secret: paymentIntent.client_secret });
+  } catch (err: any) {
+    console.error("Failed to create terminal payment intent:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Terminal Capture Payment Intent
+app.post("/api/stripe/terminal/capture-payment-intent", async (req, res) => {
+  try {
+    const { businessId, paymentIntentId } = req.body;
+    if (!businessId || !paymentIntentId) {
+      return res.status(400).json({ error: "Missing businessId or paymentIntentId parameter" });
+    }
+
+    const { data: business, error: dbErr } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("stripe_account_id")
+      .eq("id", businessId)
+      .maybeSingle();
+
+    if (dbErr || !business || !business.stripe_account_id) {
+      return res.status(404).json({ error: "Stripe account not found for this business" });
+    }
+
+    const stripe = getStripe();
+    const paymentIntent = await stripe.paymentIntents.capture(
+      paymentIntentId,
+      {},
+      { stripeAccount: business.stripe_account_id }
+    );
+
+    res.json(paymentIntent);
+  } catch (err: any) {
+    console.error("Failed to capture terminal payment intent:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/stripe/terminal/order", async (req, res) => {
+  try {
+    const { businessId } = req.body;
+    if (!businessId) {
+      return res.status(400).json({ error: "Missing businessId parameter" });
+    }
+
+    const { data: business, error: dbErr } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("stripe_account_id, country_code")
+      .eq("id", businessId)
+      .maybeSingle();
+
+    if (dbErr || !business || !business.stripe_account_id) {
+      return res.status(404).json({ error: "Stripe account not found for this business" });
+    }
+
+    const stripe = getStripe();
+    const currency = business.country_code === 'US' ? 'usd' : 'eur';
+    
+    // Configura os métodos de pagamento dependendo da moeda
+    const paymentMethods = currency === 'eur' ? ["card", "mb_way"] : ["card"];
+
+    // Cria uma sessão de checkout para o dono pagar o terminal
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: paymentMethods as any,
+      line_items: [
+        {
+          price_data: {
+            currency: currency,
+            product_data: {
+              name: "Terminal Físico Stripe",
+              description: "Starter Kit (Terminal de Pagamento + Envio Express)",
+            },
+            unit_amount: 9900, // 99 EUR / USD
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${req.headers.origin}/partner/dashboard/financeiro/hardware?terminal_success=true`,
+      cancel_url: `${req.headers.origin}/partner/dashboard/financeiro/hardware?terminal_canceled=true`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err: any) {
+    console.error("Failed to order terminal:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/stripe/payouts/:businessId", async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    if (!businessId) {
+      return res.status(400).json({ error: "Missing businessId parameter" });
+    }
+
+    const { data: business, error: dbErr } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("stripe_account_id")
+      .eq("id", businessId)
+      .maybeSingle();
+
+    if (dbErr || !business || !business.stripe_account_id) {
+      return res.status(404).json({ error: "Stripe account not found for this business" });
+    }
+
+    const stripe = getStripe();
+    const payouts = await stripe.payouts.list(
+      { limit: 50 },
+      { stripeAccount: business.stripe_account_id }
+    );
+
+    res.json(payouts.data);
+  } catch (err: any) {
+    console.error("Failed retrieving payouts:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -759,11 +948,10 @@ app.post("/api/create-checkout-session", async (req, res) => {
       return;
     }
 
-    const db = getSupabaseAuthClient(req);
     const stripe = getStripe();
 
     // Securely fetch booking and price from DB
-    const { data: bookingRec, error: bookingErr } = await db
+    const { data: bookingRec, error: bookingErr } = await getSupabaseAdmin()
       .from("bookings")
       .select("business_id, total_price, original_service_price")
       .eq("id", bookingId)
@@ -805,8 +993,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
     let resolvedStripeAccountId = stripeAccountId;
     try {
       if (bookingRec.business_id) {
-        const { data: bizRec } = await db
-          .from("businesses")
+        const { data: bizRec } = await getSupabaseAdmin().from('businesses')
           .select("stripe_account_id")
           .eq("id", bookingRec.business_id)
           .maybeSingle();
@@ -1054,11 +1241,10 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
       isTerminal, "Price ID:", priceId
     );
 
-    const db = getSupabaseAdmin();
+    
 
     // Fetch business profile to resolve billing coordinates
-    const { data: business, error: bizErr } = await db
-      .from("businesses")
+    const { data: business, error: bizErr } = await getSupabaseAdmin().from("businesses")
       .select("*")
       .eq("id", businessId)
       .maybeSingle();
@@ -1103,8 +1289,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         customerId = customer.id;
 
         // Persist the customer ID immediately
-        await db
-          .from("businesses")
+        await getSupabaseAdmin().from('businesses')
           .update({ stripe_customer_id: customerId })
           .eq("id", businessId);
       } catch (custErr: any) {
@@ -1165,9 +1350,9 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'Taxa de Ativação / Caução Equipamento'
+              name: 'Terminal Físico Stripe Reader'
             },
-            unit_amount: 999
+            unit_amount: 9900
           },
           quantity: 1
         });
@@ -1284,7 +1469,7 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
   try {
     const { sessionId, businessId } = req.body;
     const stripe = getStripe();
-    const db = getSupabaseAdmin();
+    
 
     let customerId: string | null = null;
     let subId: string | null = null;
@@ -1322,8 +1507,7 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
 
     // Fallback: If no sessionId was provided or no subscription link was found, try finding via stripe_customer_id or stripe_subscription_id
     if (!subId || !customerId) {
-      const { data: biz } = await db
-        .from("businesses")
+      const { data: biz } = await getSupabaseAdmin().from("businesses")
         .select("id, stripe_customer_id, stripe_subscription_id")
         .eq("id", resolvedBusinessId)
         .maybeSingle();
@@ -1376,7 +1560,7 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
     } catch (err) {
        if (err.statusCode === 404 || err.code === "resource_missing") {
           console.warn(`[Ghost Subscription] Subscription ${subId} not found in Stripe. Clearing from DB.`);
-          await db.from("businesses").update({
+          await getSupabaseAdmin().from("businesses").update({
              subscription_active: false,
              subscription_status: 'canceled',
              stripe_subscription_id: null
@@ -1426,13 +1610,12 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
       `[Verify Subscription Server] Synchronizing SaaS parameters on businesses for id ${resolvedBusinessId}:`,
       saasUpdateData,
     );
-    await db
-      .from("businesses")
+    await getSupabaseAdmin().from("businesses")
       .update(saasUpdateData)
       .eq("id", resolvedBusinessId);
 
     // Upsert subscription table entry in database
-    const { data: existingSub } = await db
+    const { data: existingSub } = await getSupabaseAdmin()
       .from("subscriptions")
       .select("id")
       .eq("business_id", resolvedBusinessId)
@@ -1443,7 +1626,7 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
       console.log(
         `[Verify Subscription Applet] Updating existing subscription for business: ${resolvedBusinessId}`,
       );
-      const { error: updErr } = await db
+      const { error: updErr } = await getSupabaseAdmin()
         .from("subscriptions")
         .update({
           plan_name: "PRO",
@@ -1458,7 +1641,7 @@ app.post("/api/stripe/verify-subscription", async (req, res) => {
       console.log(
         `[Verify Subscription Applet] Creating next subscription row for business: ${resolvedBusinessId}`,
       );
-      const { error: insErr } = await db.from("subscriptions").insert({
+      const { error: insErr } = await getSupabaseAdmin().from("subscriptions").insert({
         business_id: resolvedBusinessId,
         plan_name: "PRO",
         status: subStatus,
@@ -1509,11 +1692,10 @@ app.post("/api/stripe/create-portal-session", async (req, res) => {
       return;
     }
 
-    const db = getSupabaseAdmin();
+    
     const stripe = getStripe();
 
-    const { data: business, error: bizErr } = await db
-      .from("businesses")
+    const { data: business, error: bizErr } = await getSupabaseAdmin().from("businesses")
       .select("*")
       .eq("id", businessId)
       .maybeSingle();
@@ -1531,8 +1713,7 @@ app.post("/api/stripe/create-portal-session", async (req, res) => {
         metadata: { businessId: businessId },
       });
       customerId = customer.id;
-      await db
-        .from("businesses")
+      await getSupabaseAdmin().from("businesses")
         .update({ stripe_customer_id: customerId })
         .eq("id", businessId);
     }
@@ -1564,11 +1745,10 @@ app.post("/api/stripe/cancel-subscription", async (req, res) => {
       return;
     }
 
-    const db = getSupabaseAdmin();
+    
     const stripe = getStripe();
 
-    const { data: business, error: bizErr } = await db
-      .from("businesses")
+    const { data: business, error: bizErr } = await getSupabaseAdmin().from("businesses")
       .select("*")
       .eq("id", businessId)
       .maybeSingle();
@@ -1593,8 +1773,7 @@ app.post("/api/stripe/cancel-subscription", async (req, res) => {
     }
 
     // Update database fields
-    await db
-      .from("businesses")
+    await getSupabaseAdmin().from("businesses")
       .update({
         stripe_subscription_id: null,
         subscription_status: "cancelled",
@@ -1603,7 +1782,7 @@ app.post("/api/stripe/cancel-subscription", async (req, res) => {
       .eq("id", businessId);
 
     // Update subscriptions table entries
-    await db
+    await getSupabaseAdmin()
       .from("subscriptions")
       .update({
         status: "cancelled",
@@ -1628,7 +1807,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
   const sig = req.headers["stripe-signature"];
   const rawBody = req.body;
   const stripe = getStripe();
-  const db = getSupabaseAdmin();
+  
 
   let event: Stripe.Event | null = null;
   const mainSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -1755,7 +1934,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                 }
             }
 
-            const { error: bizUpdateErr } = await db
+            const { error: bizUpdateErr } = await getSupabaseAdmin()
               .from("businesses")
               .update(saasUpdateData)
               .eq("id", businessId);
@@ -1764,7 +1943,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
               console.warn(
                 "[Webhook Warning] Direct businesses table subscription pillars update failed, attempting standard customer link...",
               );
-              await db
+              await getSupabaseAdmin()
                 .from("businesses")
                 .update({ stripe_customer_id: customerId })
                 .eq("id", businessId);
@@ -1779,7 +1958,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
               "[Webhook Exception] Safe update on businesses failed. Continuing with fallback subscription table sync.",
               bizUpdateEx.message,
             );
-            await db
+            await getSupabaseAdmin()
               .from("businesses")
               .update({ stripe_customer_id: customerId })
               .eq("id", businessId);
@@ -1787,7 +1966,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
           }
 
           // 2. Safe check subscription status to avoid upsert on onConflict unique constraints
-          const { data: existingSub, error: findSubErr } = await db
+          const { data: existingSub, error: findSubErr } = await getSupabaseAdmin()
             .from("subscriptions")
             .select("id")
             .eq("business_id", businessId)
@@ -1805,7 +1984,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
             console.log(
               `[Webhook SaaS Sync] Existing subscription found for business ${businessId}. Updating to status '${subStatus}' and stripe_subscription_id '${subId}'...`,
             );
-            const { error: updErr } = await db
+            const { error: updErr } = await getSupabaseAdmin()
               .from("subscriptions")
               .update({
                 plan_name: planDbName,
@@ -1820,7 +1999,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
             console.log(
               `[Webhook SaaS Sync] No subscription found for business ${businessId}. Inserting new subscription row with status '${subStatus}' and stripe_subscription_id '${subId}'...`,
             );
-            const { error: insErr } = await db.from("subscriptions").insert({
+            const { error: insErr } = await getSupabaseAdmin().from("subscriptions").insert({
               business_id: businessId,
               plan_name: planDbName,
               status: subStatus,
@@ -1846,7 +2025,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
               console.log(
                 `[Webhook Terminal] Marking tablet_order deposit as paid for business ${businessId}`,
               );
-              await db
+              await getSupabaseAdmin()
                 .from("tablet_orders")
                 .update({ deposit_paid: true, status: "processing" })
                 .eq("business_id", businessId)
@@ -1855,13 +2034,13 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
             // EMAIL VERIFICATION - SUBSCRIPTION
             try {
-              const { data: business } = await db
+              const { data: business } = await getSupabaseAdmin()
                 .from("businesses")
                 .select("email, owner_id")
                 .eq("id", businessId)
                 .maybeSingle();
               if (business) {
-                const { data: owner } = await db
+                const { data: owner } = await getSupabaseAdmin()
                   .from("profiles")
                   .select("email")
                   .eq("id", business.owner_id)
@@ -1894,13 +2073,13 @@ const handleStripeWebhook = async (req: any, res: any) => {
         const bookingId = session.metadata?.bookingId;
         if (bookingId) {
           // 1. Confirm bookings entry status
-          const { error: bkErr } = await db
+          const { error: bkErr } = await getSupabaseAdmin()
             .from("bookings")
             .update({ payment_status: "paid", booking_status: "confirmed" })
             .eq("id", bookingId);
 
           // 2. Confirm ledger log status
-          const { error: payErr } = await db
+          const { error: payErr } = await getSupabaseAdmin()
             .from("payments")
             .update({
               payment_status: "paid",
@@ -1922,9 +2101,9 @@ const handleStripeWebhook = async (req: any, res: any) => {
           // Mark coupon as used if one was applied
           const couponCode = session.metadata?.couponCode;
           if (couponCode) {
-            const { data: bookingRecForCoupon } = await db.from("bookings").select("customer_id").eq("id", bookingId).maybeSingle();
+            const { data: bookingRecForCoupon } = await getSupabaseAdmin().from("bookings").select("customer_id").eq("id", bookingId).maybeSingle();
             if (bookingRecForCoupon && bookingRecForCoupon.customer_id) {
-               await db.from("reward_coupons").update({ is_used: true, used_at: new Date().toISOString() })
+               await getSupabaseAdmin().from("reward_coupons").update({ is_used: true, used_at: new Date().toISOString() })
                  .eq("code", couponCode)
                  .eq("customer_id", bookingRecForCoupon.customer_id);
                console.log(`[Webhook] Reward coupon ${couponCode} marked as used for customer ${bookingRecForCoupon.customer_id}`);
@@ -1933,7 +2112,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
           // 3. SECURE LOYALTY DISPATCH: "1€ pago online = 1 GlamPoint"
           try {
-            const { data: bookingRec } = await db
+            const { data: bookingRec } = await getSupabaseAdmin()
               .from("bookings")
               .select("customer_id, total_price")
               .eq("id", bookingId)
@@ -1944,7 +2123,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                 Number(bookingRec.total_price || 0),
               );
               if (pointsEarned > 0) {
-                const { data: userProfile } = await db
+                const { data: userProfile } = await getSupabaseAdmin()
                   .from("profiles")
                   .select("loyalty_points")
                   .eq("id", bookingRec.customer_id)
@@ -1953,7 +2132,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                 const originalPoints = userProfile?.loyalty_points || 0;
                 const nextPointsBalance = originalPoints + pointsEarned;
 
-                const { error: loyaltyErr } = await db
+                const { error: loyaltyErr } = await getSupabaseAdmin()
                   .from("profiles")
                   .update({ loyalty_points: nextPointsBalance })
                   .eq("id", bookingRec.customer_id);
@@ -1986,7 +2165,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
       const customerId = customer.id;
       
       console.log(`[Stripe Webhook customer.deleted] Removing customer ${customerId}`);
-      await db.from("businesses").update({ 
+      await getSupabaseAdmin().from("businesses").update({ 
         subscription_active: false, 
         subscription_status: 'canceled', 
         stripe_customer_id: null 
@@ -2030,8 +2209,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
         liveSubscription.metadata?.business_id ||
         liveSubscription.metadata?.businessId;
       if (!businessId) {
-        const { data: bRec } = await db
-          .from("businesses")
+        const { data: bRec } = await getSupabaseAdmin().from('businesses')
           .select("id")
           .eq("stripe_customer_id", customerId)
           .maybeSingle();
@@ -2059,7 +2237,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
              saasUpdateData.public_page_enabled = false;
           }
 
-          await db
+          await getSupabaseAdmin()
             .from("businesses")
             .update(saasUpdateData)
             .eq("id", businessId);
@@ -2076,7 +2254,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
       let syncErr = null;
       if (businessId) {
-        const { data: existingSub } = await db
+        const { data: existingSub } = await getSupabaseAdmin()
           .from("subscriptions")
           .select("id")
           .eq("business_id", businessId)
@@ -2086,7 +2264,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
           console.log(
             `[Webhook SaaS Sync] Updating subscription in db for business ${businessId} to status '${syncedStatus}'`,
           );
-          const { error: updErr } = await db
+          const { error: updErr } = await getSupabaseAdmin()
             .from("subscriptions")
             .update({
               status: syncedStatus,
@@ -2099,7 +2277,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
           console.log(
             `[Webhook SaaS Sync] Creating subscription record in db for business ${businessId} with status '${syncedStatus}'`,
           );
-          const { error: insErr } = await db.from("subscriptions").insert({
+          const { error: insErr } = await getSupabaseAdmin().from("subscriptions").insert({
             business_id: businessId,
             plan_name: "Glamzo PRO", // Defaults to PRO if missed by checkout event
             status: syncedStatus,
@@ -2112,7 +2290,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
         }
       } else {
         // Fallback: update by subscription ID only
-        const { error: normalUpd } = await db
+        const { error: normalUpd } = await getSupabaseAdmin()
           .from("subscriptions")
           .update({ status: syncedStatus, expires_at: syncedExpiry })
           .eq("stripe_subscription_id", stripeSubId);
@@ -2153,8 +2331,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
         );
 
         let businessId = null;
-        const { data: bRec1 } = await db
-          .from("businesses")
+        const { data: bRec1 } = await getSupabaseAdmin().from('businesses')
           .select("id")
           .eq("stripe_customer_id", customerId)
           .maybeSingle();
@@ -2178,7 +2355,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                  const invoiceAmountPaid = (invoice as any).amount_paid || 0;
                  const billingReason = (invoice as any).billing_reason;
                  if (invoiceAmountPaid > 0 && billingReason !== 'subscription_create') {
-                   const { data: referral } = await db
+                   const { data: referral } = await getSupabaseAdmin()
                      .from('affiliate_referrals')
                      .select('*')
                      .eq('referred_business_id', businessId)
@@ -2187,13 +2364,13 @@ const handleStripeWebhook = async (req: any, res: any) => {
 
                    if (referral) {
                      // Update referral status
-                     await db
+                     await getSupabaseAdmin()
                        .from('affiliate_referrals')
                        .update({ status: 'paid' })
                        .eq('id', referral.id);
                      
                      // Find referrer and add 10 EUR to balance
-                     const { data: referrer } = await db
+                     const { data: referrer } = await getSupabaseAdmin()
                        .from('profiles')
                        .select('affiliate_balance')
                        .eq('id', referral.referrer_id)
@@ -2201,7 +2378,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                        
                      if (referrer) {
                         const newBalance = (referrer.affiliate_balance || 0) + 10;
-                        await db.from('profiles').update({ affiliate_balance: newBalance }).eq('id', referral.referrer_id);
+                        await getSupabaseAdmin().from('profiles').update({ affiliate_balance: newBalance }).eq('id', referral.referrer_id);
                         console.log(`[Affiliate] Added 10 EUR to user ${referral.referrer_id} for referring business ${businessId}`);
                      }
                    }
@@ -2215,7 +2392,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
                saasUpdateData.public_page_enabled = false;
             }
 
-            await db
+            await getSupabaseAdmin()
               .from("businesses")
               .update(saasUpdateData)
               .eq("id", businessId);
@@ -2227,19 +2404,19 @@ const handleStripeWebhook = async (req: any, res: any) => {
           }
         }
 
-        const { data: existingSub } = await db
+        const { data: existingSub } = await getSupabaseAdmin()
           .from("subscriptions")
           .select("id")
           .eq("stripe_subscription_id", stripeSubId)
           .maybeSingle();
 
         if (existingSub) {
-          await db
+          await getSupabaseAdmin()
             .from("subscriptions")
             .update({ status: syncedStatus })
             .eq("id", existingSub.id);
         } else if (businessId) {
-          await db.from("subscriptions").insert({
+          await getSupabaseAdmin().from("subscriptions").insert({
             business_id: businessId,
             plan_name: "PRO",
             status: syncedStatus,
@@ -2255,7 +2432,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
       const deauthAccount = event.account; // Depending on event structure, it could be event.account
       if (deauthAccount) {
          console.log(`[Stripe Webhook account.application.deauthorized] Deauthorizing ${deauthAccount}`);
-         await db.from("businesses").update({ 
+         await getSupabaseAdmin().from("businesses").update({ 
            stripe_account_id: null,
            charges_enabled: false,
            payouts_enabled: false 
@@ -2282,8 +2459,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
          console.log(`[Stripe Webhook account.updated] Transfers inactive for ${stripeAccountId}. Detaching account.`);
       }
 
-      const { error: bizUpdateErr } = await db
-        .from("businesses")
+      const { error: bizUpdateErr } = await getSupabaseAdmin().from("businesses")
         .update(updateData)
         .eq("stripe_account_id", stripeAccountId);
 
@@ -2305,8 +2481,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
       const stripeAccountId = event.account; // Retrieve the target standard sub-account header field
 
       if (stripeAccountId) {
-        const { data: business } = await db
-          .from("businesses")
+        const { data: business } = await getSupabaseAdmin().from('businesses')
           .select("id")
           .eq("stripe_account_id", stripeAccountId)
           .maybeSingle();
@@ -2316,7 +2491,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
           const targetStatus =
             event.type === "payout.paid" ? "completed" : "rejected";
 
-          const { error: payoutLogErr } = await db.from("payouts").insert({
+          const { error: payoutLogErr } = await getSupabaseAdmin().from("payouts").insert({
             business_id: business.id,
             amount: transRealAmount,
             payout_method: "stripe_connect",
@@ -2351,14 +2526,13 @@ const handleStripeWebhook = async (req: any, res: any) => {
         invoice.hosted_invoice_url || invoice.invoice_pdf || "#";
 
       if (stripeSubId) {
-        const { data: business } = await db
-          .from("businesses")
+        const { data: business } = await getSupabaseAdmin().from('businesses')
           .select("id, email, owner_id")
           .eq("stripe_subscription_id", stripeSubId)
           .maybeSingle();
 
         if (business) {
-          const { data: owner } = await db
+          const { data: owner } = await getSupabaseAdmin()
             .from("profiles")
             .select("email")
             .eq("id", business.owner_id)
@@ -2423,14 +2597,81 @@ app.post(
   handleStripeWebhook,
 );
 
+app.post(
+  "/api/stripe/webhook/connect",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    const connectSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
+    const stripe = getStripe();
+
+    let event;
+
+    try {
+      if (!sig || !connectSecret) {
+        console.warn("[Connect Webhook] Missing signature or secret");
+        return res.status(400).send("Missing signature or secret");
+      }
+      event = stripe.webhooks.constructEvent(req.body, sig, connectSecret);
+    } catch (err: any) {
+      console.error("[Connect Webhook] Signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "account.updated") {
+      const account = event.data.object as Stripe.Account;
+      const chargesEnabled = account.charges_enabled;
+      
+      console.log(`[Connect Webhook] account.updated for ${account.id}, charges_enabled: ${chargesEnabled}`);
+
+      const { data: business, error: fetchError } = await getSupabaseAdmin()
+        .from("businesses")
+        .select("id, owner_id, stripe_payments_enabled")
+        .eq("stripe_account_id", account.id)
+        .single();
+
+      if (business) {
+        const wasActive = business.stripe_payments_enabled;
+        const detailsSubmitted = account.details_submitted;
+
+        const { error } = await getSupabaseAdmin()
+          .from("businesses")
+          .update({ stripe_payments_enabled: chargesEnabled })
+          .eq("id", business.id);
+
+        if (error) {
+          console.error("[Connect Webhook] Failed to update business:", error);
+          return res.status(500).json({ error: "Failed to update business" });
+        }
+
+        if (!chargesEnabled && (wasActive || detailsSubmitted)) {
+          const { data: profile } = await getSupabaseAdmin()
+            .from("profiles")
+            .select("email, full_name")
+            .eq("id", business.owner_id)
+            .single();
+          
+          if (profile?.email) {
+            await EmailService.sendActionRequiredStripeEmail(profile.email, profile.full_name || "Parceiro");
+          }
+        }
+      } else if (fetchError) {
+        console.error("[Connect Webhook] Failed to fetch business:", fetchError);
+      }
+    }
+
+    res.json({ received: true });
+  }
+);
+
 // Initialize Express + Vite server middlewares
 
 
 app.post('/api/staff/bookings/query', express.json(), async (req, res) => {
   try {
     const { businessId, staffId, limitDate } = req.body;
-    const db = getSupabaseAdmin();
-    const { data, error } = await db
+    
+    const { data, error } = await getSupabaseAdmin()
       .from("bookings")
       .select("*, customer_profile:profiles(full_name, avatar_url), service:services(name, duration_minutes, price)")
       .eq("business_id", businessId)
@@ -2449,8 +2690,8 @@ app.post('/api/staff/bookings/query', express.json(), async (req, res) => {
 app.post('/api/staff/bookings/create', express.json(), async (req, res) => {
   try {
     const { payload } = req.body;
-    const db = getSupabaseAdmin();
-    const { data, error } = await db.from("bookings").insert(payload);
+    
+    const { data, error } = await getSupabaseAdmin().from("bookings").insert(payload);
     if (error) throw error;
     res.json({ success: true, data });
   } catch (e: any) {
@@ -2465,7 +2706,7 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
     if (!bookingId) return res.status(400).json({ error: 'Missing bookingId' });
 
     const supabaseAdmin = getSupabaseAdmin();
-    const { data: booking, error: fetchError } = await supabaseAdmin
+    const { data: booking, error: fetchError } = await getSupabaseAdmin()
       .from('bookings')
       .select('*')
       .eq('id', bookingId)
@@ -2481,19 +2722,19 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
     }
     const pointsToAdd = (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') ? 0 : (booking.payment_method === 'stripe' ? 50 : 0);
 
-    const { error: updateError } = await supabaseAdmin.from('bookings').update({
+    const { error: updateError } = await getSupabaseAdmin().from('bookings').update({
       booking_status: 'completed'
     }).eq('id', bookingId);
     if (updateError) throw updateError;
 
     if (booking.customer_id) {
-      const { data: profile } = await supabaseAdmin.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
+      const { data: profile } = await getSupabaseAdmin().from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
       if (pointsToAdd > 0) {
         const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
-        await supabaseAdmin.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+        await getSupabaseAdmin().from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
         const expiresDate = new Date();
         expiresDate.setFullYear(expiresDate.getFullYear() + 1);
-        await supabaseAdmin.from('points_history').insert({
+        await getSupabaseAdmin().from('points_history').insert({
           user_id: booking.customer_id,
           points: pointsToAdd,
           description: `Reserva #${booking.id.split('-')[0]}`,
@@ -2513,25 +2754,25 @@ app.post('/api/business/complete-booking', express.json(), async (req, res) => {
 app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
   try {
     const { id, payload } = req.body;
-    const db = getSupabaseAdmin();
+    
     
     if (payload.booking_status === 'completed') {
-      const { data: booking, error: fetchError } = await db.from('bookings').select('*').eq('id', id).maybeSingle();
+      const { data: booking, error: fetchError } = await getSupabaseAdmin().from('bookings').select('*').eq('id', id).maybeSingle();
       if (fetchError || !booking) throw fetchError || new Error("Booking not found");
           if (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') {
       console.log('Pagamento local: Sem pontos');
     }
     const pointsToAdd = (booking.payment_method === 'in_store' || booking.payment_method === 'local' || booking.payment_method === 'dinheiro') ? 0 : (booking.payment_method === 'stripe' ? 50 : 0);
-      const { error: updateError } = await db.from('bookings').update({ booking_status: 'completed' }).eq('id', id);
+      const { error: updateError } = await getSupabaseAdmin().from('bookings').update({ booking_status: 'completed' }).eq('id', id);
       if (updateError) throw updateError;
       if (booking.customer_id) {
-        const { data: profile } = await db.from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
+        const { data: profile } = await getSupabaseAdmin().from('profiles').select('glamzo_points').eq('id', booking.customer_id).maybeSingle();
         if (pointsToAdd > 0) {
         const newPoints = (profile?.glamzo_points || 0) + pointsToAdd;
-        await db.from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
+        await getSupabaseAdmin().from('profiles').update({ glamzo_points: newPoints }).eq('id', booking.customer_id);
         const expiresDate = new Date();
         expiresDate.setFullYear(expiresDate.getFullYear() + 1);
-        await db.from('points_history').insert({
+        await getSupabaseAdmin().from('points_history').insert({
           user_id: booking.customer_id,
           points: pointsToAdd,
           description: `Reserva #${booking.id.split('-')[0]}`,
@@ -2541,7 +2782,7 @@ app.post('/api/staff/bookings/update', express.json(), async (req, res) => {
       }
       }
     } else {
-      const { error } = await db.from("bookings").update(payload).eq('id', id);
+      const { error } = await getSupabaseAdmin().from("bookings").update(payload).eq('id', id);
       if (error) throw error;
     }
     
@@ -2647,15 +2888,15 @@ app.post('/api/user/affiliate-referrals', express.json(), async (req, res) => {
 app.post('/api/admin/impersonate', express.json(), async (req, res) => {
   try {
     const { adminId, targetEmail } = req.body;
-    const db = getSupabaseAdmin();
+    
     // Verify admin
-    const { data: adminUser } = await db.from('profiles').select('role').eq('id', adminId).maybeSingle();
+    const { data: adminUser } = await getSupabaseAdmin().from('profiles').select('role').eq('id', adminId).maybeSingle();
     if (!adminUser || adminUser.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized' });
     }
     
     // Generate magic link
-    const { data: linkData, error: linkErr } = await db.auth.admin.generateLink({
+    const { data: linkData, error: linkErr } = await getSupabaseAuthClient(req).auth.admin.generateLink({
       type: 'magiclink',
       email: targetEmail
     });
@@ -2676,8 +2917,8 @@ app.post('/api/admin/leads/import', express.json({ limit: '10mb' }), async (req,
       return res.status(400).json({ error: 'Invalid leads payload' });
     }
     
-    const db = getSupabaseAdmin();
-    const { data, error } = await db.from('leads').upsert(leads, { onConflict: 'telefone', ignoreDuplicates: true }).select();
+    
+    const { data, error } = await getSupabaseAdmin().from('leads').upsert(leads, { onConflict: 'telefone', ignoreDuplicates: true }).select();
     
     if (error) throw error;
     res.json({ success: true, count: data?.length || 0, total: leads.length, duplicates: leads.length - (data?.length || 0) });
@@ -2693,9 +2934,9 @@ app.post('/api/admin/leads/distribute', express.json(), async (req, res) => {
       return res.status(400).json({ error: 'Missing parameters' });
     }
     
-    const db = getSupabaseAdmin();
     
-    const { data: leadsToAssign, error: fetchError } = await db
+    
+    const { data: leadsToAssign, error: fetchError } = await getSupabaseAdmin()
       .from('leads')
       .select('id')
       .is('vendedor_id', null)
@@ -2709,7 +2950,7 @@ app.post('/api/admin/leads/distribute', express.json(), async (req, res) => {
 
     const leadIds = leadsToAssign.map(l => l.id);
 
-    const { data: updatedLeads, error: updateError } = await db
+    const { data: updatedLeads, error: updateError } = await getSupabaseAdmin()
       .from('leads')
       .update({ vendedor_id: agentId, senha_acesso: senhaAcesso })
       .in('id', leadIds)
@@ -2729,8 +2970,8 @@ async function startServer() {
   app.get("/api/availability/:businessId", async (req, res) => {
     try {
       const businessId = req.params.businessId;
-      const db = getSupabaseAdmin();
-      const { data: hoursData } = await db
+      
+      const { data: hoursData } = await getSupabaseAdmin()
         .from("business_hours")
         .select("*")
         .eq("business_id", businessId);
@@ -2754,7 +2995,7 @@ async function startServer() {
         day: "2-digit",
       }).format(maxDay);
 
-      const { data: bookingsData } = await db
+      const { data: bookingsData } = await getSupabaseAdmin()
         .from("bookings")
         .select("staff_id, booking_date, start_time, end_time")
         .eq("business_id", businessId)
@@ -2762,7 +3003,7 @@ async function startServer() {
         .gte("booking_date", todayStr)
         .lte("booking_date", maxDayStr);
 
-      const { data: staffData } = await db
+      const { data: staffData } = await getSupabaseAdmin()
         .from("staff")
         .select("id, full_name, is_active")
         .eq("business_id", businessId)

@@ -48,16 +48,16 @@ export default function Partner() {
       a: "Pode testar a plataforma Glamzo sem qualquer compromisso durante 14 dias. Não lhe será cobrado nenhum valor durante este período. Se decidir que não é para si, basta cancelar com um clique antes do fim do período."
     },
     {
-      q: "O que é a caução de 9.90€ no Plano Terminal?",
-      a: "O Plano Terminal inclui o envio de um Tablet físico (Samsung/Lenovo) configurado para a sua receção. A caução única de 9.90€ serve apenas para ativar o envio e seguro do equipamento. O equipamento permanece associado à sua conta enquanto a subscrição estiver ativa."
+      q: "Preciso mesmo de comprar o terminal de 99€ para cobrar presencialmente?",
+      a: "Não! O plano PRO inclui o 'Tap-to-Pay', transformando o seu smartphone num terminal de pagamento seguro sem custo extra."
     },
     {
       q: "Tenho de assinar contrato de fidelização?",
       a: "Não! A Glamzo funciona num modelo de subscrição mensal transparente. Pode cancelar, fazer upgrade ou downgrade do seu plano a qualquer momento diretamente no seu painel."
     },
     {
-      q: "Como recebo os pagamentos online dos clientes?",
-      a: "A Glamzo integra nativamente com a Stripe (Glamzo Pay). O dinheiro das reservas online entra diretamente na sua conta conectada e pode ser transferido para o seu banco (IBAN) com total segurança."
+      q: "A Glamzo cobra comissões sobre os meus serviços?",
+      a: "Não cobramos comissões de marketplace ou de angariação (ao contrário de outras plataformas). Apenas aplicamos uma taxa de processamento transparente de 2% + 0.75€ (ou na moeda local) exclusivamente nas transações pagas por cartão para cobrir custos de rede. Dinheiro físico tem 0 taxas."
     }
   ];
 
@@ -194,18 +194,20 @@ export default function Partner() {
                 <span className="text-sm text-slate-500 font-bold mb-1">/mês</span>
               </div>
               
-              <p className="text-sm text-slate-600 font-medium mb-8 h-10">O essencial para colocar o seu salão no mapa e receber marcações ilimitadas.</p>
+              <p className="text-sm text-slate-600 font-medium mb-8 h-10">O ecossistema essencial para lotar a sua agenda e gerir o seu espaço.</p>
 
               <ul className="space-y-4 text-sm text-slate-700 font-semibold mb-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Agenda e Staff Ilimitado</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Página Web (SEO Otimizado)</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Notificações & Lembretes Cliente</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Pagamentos Stripe Integrados</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Agenda</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Página Web SEO</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Pagamentos Online e Tap-to-Pay no Telemóvel</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Zero taxas por funcionário (Staff Ilimitado)</strong></li>
+                
               </ul>
 
               <Link to="/partner/signup" className="block w-full text-center bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-800 font-black py-4 rounded-2xl transition-all text-sm shadow-sm">
                 Teste 14 Dias Grátis
               </Link>
+              <p className="mt-4 text-[10px] text-slate-500 text-center leading-tight">(Taxa transparente de processamento: 2% + 0.75€ por transação paga via cartão. Zero comissões de marketplace).</p>
             </div>
 
             {/* Plano TERMINAL (Destaque) */}
@@ -213,35 +215,32 @@ export default function Partner() {
               <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-bl-2xl shadow-lg">Mais Popular</div>
               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full group-hover:bg-purple-600/30 transition-all duration-500" />
               
-              <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> Hardware + Digital</span>
-              <h3 className="text-2xl font-black text-white mt-2">Glamzo PRO Terminal</h3>
+              <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> Opcional - Equipamento</span>
+              <h3 className="text-2xl font-black text-white mt-2">Terminal Físico Glamzo</h3>
               
               <div className="mt-6 mb-8 flex flex-col">
                 <div className="flex items-end gap-2">
-                  <span className="text-5xl font-black text-white tracking-tighter">24.90€</span>
-                  <span className="text-sm text-slate-400 font-bold mb-1">/mês</span>
+                  <span className="text-5xl font-black text-white tracking-tighter">99€</span>
+                  <span className="text-sm text-slate-400 font-bold mb-1">Único</span>
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
-                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-lg w-max">
-                    + 9.90€ Caução Única (Tablet)
-                  </span>
-                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg w-max">
-                    Faturado no momento (Sem Trial)
+                  
+                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg w-max">
+                    Portes e Impostos Incluídos
                   </span>
                 </div>
               </div>
               
-              <p className="text-sm text-slate-300 font-medium mb-8 h-10">A experiência Elite. A sua receção equipada com um tablet oficial de gestão Glamzo.</p>
+              <p className="text-sm text-slate-300 font-medium mb-8 h-10">Esqueça os alugueres mensais. Compre a sua máquina e ela é sua para sempre.</p>
 
               <ul className="space-y-4 text-sm text-white font-semibold mb-10 relative z-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Tudo do Plano Digital</li>
-                <li className="flex items-center gap-3"><Zap className="w-5 h-5 text-amber-400 shrink-0" /> <strong>Tablet Físico (Samsung/Lenovo)</strong></li>
-                <li className="flex items-center gap-3"><Sparkles className="w-5 h-5 text-purple-400 shrink-0" /> Alertas Sonoros de Novas Reservas</li>
-                <li className="flex items-center gap-3"><ShieldCheck className="w-5 h-5 text-purple-400 shrink-0" /> Destaque Premium no Marketplace</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Zero Mensalidades ou Fidelização</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Pagamentos Contactless e Chip</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Sincronização direta com a Agenda</li>
               </ul>
 
               <Link to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
-                Ativar Terminal (Envio Imediato)
+                Adicionar Terminal (Opcional)
               </Link>
             </div>
 

@@ -493,12 +493,12 @@ export default function SubscriptionTab() {
             <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
             { (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
-          <h4 className="text-xl font-black relative z-10 mt-2">Glamzo PRO Terminal</h4>
+          <h4 className="text-xl font-black relative z-10 mt-2">Terminal Físico Glamzo</h4>
           <div className="mt-4 mb-6 relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <div>
-                <span className="text-4xl font-black text-white">24.90€</span>
-                <span className="text-sm font-bold text-slate-400"> / mês</span>
+                <span className="text-4xl font-black text-white">99.00€</span>
+                <span className="text-sm font-bold text-slate-400"> Único</span>
               </div>
               {!hasUsedTrial ? (
                 <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-lg">14 Dias Grátis</span>
@@ -507,13 +507,13 @@ export default function SubscriptionTab() {
               )}
             </div>
             <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
-              <span className="text-xs font-bold text-purple-300">+ 9.90€ Caução Única (Equipamento)</span>
+              <span className="text-xs font-bold text-purple-300">Sem Mensalidades ou Fidelização</span>
             </div>
           </div>
           <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Tudo do Plano Glamzo PRO</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Tablet Samsung/Lenovo Físico</strong> configurado para a receção</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Alertas sonoros (Sininho) nas novas reservas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> A máquina é sua (Portes e Impostos Incluídos)</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Terminal Físico (Stripe Reader)</strong> contact-less e chip</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Sincronização direta com a Agenda</li>
             <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
           </ul>
 
@@ -523,7 +523,7 @@ export default function SubscriptionTab() {
               disabled={isVerifyingSub}
               className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
             >
-              {isVerifyingSub ? "A carregar..." : "Reativar com Terminal"}
+              {isVerifyingSub ? "A carregar..." : "Adicionar Terminal"}
             </button>
           ) : (business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested) ? (
             <button 

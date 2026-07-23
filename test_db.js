@@ -1,9 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
-const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
-async function test() {
-  const { data, error } = await supabase.from('businesses').select('profiles!businesses_owner_id_fkey(last_active)').limit(1);
-  console.log("Data:", data, "Error:", error);
-}
-test();
+const fs = require('fs');
+let s = fs.readFileSync('server.ts', 'utf8');
+const lines = s.split('\n');
+lines.forEach((line, i) => {
+    if (line.includes('const db = getSupabaseAdmin();') && lines[i+1] && lines[i+1].includes('const db = getSupabaseAdmin();')) {
+        console.log("Found duplicate at line", i);
+    }
+});

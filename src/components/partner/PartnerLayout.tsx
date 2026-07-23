@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
-import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
+import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 
 
@@ -267,6 +267,9 @@ export default function PartnerLayout() {
     { id: "avaliacoes", label: "Avaliações", icon: Star, path: "/partner/dashboard/avaliacoes" },
     { id: "campanhas", label: "Promoções", icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: "Faturação", icon: Landmark, path: "/partner/dashboard/financeiro" },
+    { id: "financeiro_config", label: "Configuração Pagamentos", icon: ShieldCheck, path: "/partner/dashboard/financeiro/configuracoes" },
+    { id: "financeiro_repasses", label: "Histórico Repasses", icon: CreditCard, path: "/partner/dashboard/financeiro/repasses" },
+    { id: "financeiro_hardware", label: "Terminais & Hardware", icon: Smartphone, path: "/partner/dashboard/financeiro/hardware" },
     { id: "subscricao", label: "Subscrição", icon: CreditCard, path: "/partner/dashboard/subscricao" },
     { id: "website", label: "Website & QR Code", icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: "Mensagens", icon: MessageSquare, path: "/partner/dashboard/mensagens" },

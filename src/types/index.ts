@@ -48,6 +48,7 @@ export interface Business {
   tablet_requested?: boolean;
   payouts_enabled?: boolean;
   stripe_customer_id?: string | null;
+  stripe_payments_enabled?: boolean;
   stripe_subscription_id?: string | null;
   selected_plan?: string | null;
   setup_completed?: boolean;

@@ -283,6 +283,36 @@ export const EmailService = {
       subject: "Vamos configurar a sua loja na Glamzo! 🎁",
       html
     });
+  },
+  async sendActionRequiredStripeEmail(to: string, name: string) {
+    const resend = getResendClient();
+    if (!resend) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #e11d48;">Ação Necessária: Os seus pagamentos foram temporariamente suspensos</h2>
+        <p>Olá ${name},</p>
+        <p>A Stripe (o nosso parceiro de pagamentos) requer a atualização de alguns documentos ou informações da sua conta.</p>
+        <p>Para resolver a situação e reativar a sua conta de pagamentos, por favor aceda ao painel de administração da Glamzo, no separador <strong>Configuração Pagamentos</strong>.</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="https://glamzo.pt/partner/finance" style="display: inline-block; padding: 12px 24px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+            Aceder ao Painel
+          </a>
+        </p>
+        <p>Agradecemos a sua rápida atenção a este assunto.</p>
+        <p style="margin-top: 40px; color: #64748b; font-size: 14px;">
+          Com os melhores cumprimentos,<br>
+          <strong>A Equipa Glamzo</strong>
+        </p>
+      </div>
+    `;
+
+    return resend.emails.send({
+      from: getEmailFrom(),
+      to,
+      subject: "Ação Necessária: Os seus pagamentos foram temporariamente suspensos",
+      html
+    });
   }
 };
 

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { supabase } from "../../../lib/supabase";
-import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2 } from "lucide-react";
+import { useStripeTerminal } from "../../../hooks/useStripeTerminal";
+import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2, Smartphone, CreditCard } from "lucide-react";
 import { processBookingPoints } from '../../../utils/rewardsHelper';
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 
@@ -17,6 +18,7 @@ export default function AgendaTab() {
 
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
   const [manualBookingType, setManualBookingType] = useState<"booking" | "block">("booking");
+  const { initialize, startTapToPay, processTerminalPayment, status: terminalStatus, isInitializing, isDiscovering } = useStripeTerminal(business?.id);
   const [manualClientName, setManualClientName] = useState("");
   const [manualReason, setManualReason] = useState("");
   const [manualBlockDuration, setManualBlockDuration] = useState(60);
@@ -28,6 +30,7 @@ export default function AgendaTab() {
   const [isSavingManual, setIsSavingManual] = useState(false);
   const [isUpdatingBooking, setIsUpdatingBooking] = useState(false);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('Cliente não compareceu');
   const [disputeDescription, setDisputeDescription] = useState('');
   const [submittingDispute, setSubmittingDispute] = useState(false);
@@ -298,7 +301,10 @@ export default function AgendaTab() {
                          </div>
                        </div>
                      ) : (
-                       <button onClick={() => handleUpdateBookingStatus("completed")} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>
+                       <>
+                       <button onClick={() => setIsPaymentModalOpen(true)} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:scale-[1.02] transition-transform text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-2 text-lg uppercase tracking-wide"><CreditCard className="w-6 h-6" /> Cobrar ao Cliente</button>
+                        <button onClick={() => handleUpdateBookingStatus("completed")} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>
+                       </>
                      )}
                      {selectedBooking.booking_status !== "completed" && selectedBooking.booking_status !== "cancelled" && (
                        <button onClick={() => handleUpdateBookingStatus("cancelled")} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">Cancelar Marcação</button>
@@ -315,6 +321,59 @@ export default function AgendaTab() {
       )}
 
       
+            {/* MODAL COBRANÇA */}
+      {isPaymentModalOpen && selectedBooking && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95">
+            <button onClick={() => setIsPaymentModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500"><X className="w-4 h-4" /></button>
+            <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-2"><CreditCard className="text-purple-600 w-7 h-7"/> Cobrar ao Cliente</h3>
+            <p className="text-slate-500 mb-6">Escolha o método de cobrança para concluir o pagamento na loja.</p>
+            
+            <div className="space-y-4">
+              <button onClick={async () => { 
+                try {
+                  const price = selectedBooking.original_service_price ?? selectedBooking.total_price;
+                  const amount = Math.round(Number(price || 0) * 100);
+                  if (amount <= 0) {
+                    toast.error("O valor da marcação é 0€");
+                    return;
+                  }
+                  await initialize(); 
+                  await startTapToPay(); 
+                  await processTerminalPayment(amount);
+                  
+                  // Handle success
+                  await supabase.from("bookings").update({ payment_status: 'paid', payment_method: 'local' }).eq("id", selectedBooking.id);
+                  await handleUpdateBookingStatus("completed");
+                  setIsPaymentModalOpen(false);
+                  toast.success("Pagamento Concluído com Sucesso!");
+                } catch (err: any) {
+                  toast.error(err.message || "Erro ao processar pagamento");
+                }
+              }} className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-purple-600 hover:bg-purple-50 transition-all text-left">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
+                  <Smartphone className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Tap-to-Pay (NFC)</h4>
+                  <p className="text-sm text-slate-500 mt-1">{terminalStatus || 'Aproxime o cartão ou telemóvel do cliente do seu dispositivo.'}</p>
+                </div>
+              </button>
+
+              <button onClick={() => console.log('Iniciar Fluxo Capacitor Stripe Terminal')} className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-blue-600 hover:bg-blue-50 transition-all text-left">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                  <CreditCard className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Terminal Físico</h4>
+                  <p className="text-sm text-slate-500 mt-1">Envie o valor para o seu Stripe Reader M2 / WisePad 3 via Bluetooth.</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL DISPUTA */}
       {disputeModalOpen && selectedBooking && (
         <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">

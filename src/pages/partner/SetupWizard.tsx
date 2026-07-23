@@ -1230,9 +1230,9 @@ export default function SetupWizard() {
                   <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">14 Dias Grátis</span>
                 </div>
                 <ul className="space-y-2 mt-4 text-sm text-slate-600">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> App Gestão Completa</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Marketplace Glamzo</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Website e QR Code</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Agenda e Website SEO</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tap-to-Pay no Telemóvel</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>Zero taxas (Staff Ilimitado)</strong></li>
                 </ul>
               </div>
 
@@ -1244,19 +1244,19 @@ export default function SetupWizard() {
                   Recomendado
                 </div>
                 {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">PRO Terminal</h3>
-                <div className="my-3"><span className="text-3xl font-black">24,90€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <h3 className="text-lg font-bold text-slate-900">Terminal Físico Glamzo</h3>
+                <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> Único</span></div>
                 <div className="mb-4 flex flex-col gap-1">
-                  <span className="inline-block bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-1 rounded w-max">+ 9,99€ Caução Única (Tablet)</span>
-                  <span className="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded w-max">Faturado no momento (Sem Trial)</span>
+                  
+                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">Portes e Impostos Incluídos</span>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tudo do plano PRO</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tablet configurado</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Suporte prioritário</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Sem Mensalidades/Fidelização</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Contactless e Chip</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Integração Direta c/ Agenda</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
-                  + Caução única de equipamento: 9,99€
+                  O terminal é seu para sempre.
                 </div>
               </div>
             </div>
