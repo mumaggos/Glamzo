@@ -7,6 +7,7 @@ import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
 
 import React, { useEffect, Suspense, lazy } from 'react';
+import i18n from './i18n';
 
 const Home = lazy(() => import('./pages/Home'));
 const Explore = lazy(() => import('./pages/Explore'));
@@ -238,7 +239,13 @@ function GlobalRoleEnforcer() {
 
 export default function App() {
   const [loadMessenger, setLoadMessenger] = React.useState(false);
-  const { setUserLocation } = useGlobalStore();
+  const { setUserLocation, language } = useGlobalStore();
+
+  React.useEffect(() => {
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
 
   React.useEffect(() => {
     if (navigator.geolocation) {

@@ -124,11 +124,4 @@ i18n
     }
   });
 
-// Subscribe to store changes to update i18n language
-useGlobalStore.subscribe((state) => {
-  if (i18n.language !== state.language) {
-    i18n.changeLanguage(state.language);
-  }
-});
-
 export default i18n;
