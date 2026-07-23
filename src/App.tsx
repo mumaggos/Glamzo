@@ -1,3 +1,5 @@
+import { DevOverrideProvider } from './contexts/DevOverrideContext';
+import DevOverridePanel from './components/DevOverridePanel';
 import FinanceSettingsTab from "./pages/partner/tabs/FinanceSettingsTab";
 import PayoutsHistoryTab from "./pages/partner/tabs/PayoutsHistoryTab";
 import HardwareManagerTab from "./pages/partner/tabs/HardwareManagerTab";
@@ -251,7 +253,8 @@ export default function App() {
       <BrowserRouter>
         <ScrollToTop />
           
-        <AuthProvider>
+        <DevOverrideProvider>
+          <AuthProvider>
           <GlobalImpersonationBanner />
           <SessionGuard />
           <GlobalRoleEnforcer />
@@ -334,6 +337,8 @@ export default function App() {
             {loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}
           </div>
         </AuthProvider>
+          <DevOverridePanel />
+        </DevOverrideProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );
