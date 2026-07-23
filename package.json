@@ -20,6 +20,8 @@
     "@google/genai": "^1.29.0",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.9",
+    "@stripe/connect-js": "^3.4.6",
+    "@stripe/react-connect-js": "^3.4.4",
     "@stripe/stripe-js": "^9.6.0",
     "@supabase/supabase-js": "^2.106.1",
     "@tailwindcss/vite": "^4.1.14",
