@@ -400,7 +400,7 @@ export default function StaffTab() {
             
             <div className="p-6 space-y-6">
               <div className="flex bg-slate-100 p-1 rounded-2xl">
-                {[{id:"day",label:"Dia"},{id:"week",label:"Semana"},{id:"month",label:"Mês"},{id:"year",label:"Ano"}].map(f => (
+                {[{id:"day",label:t('time_day') || 'Dia'},{id:"week",label:t('time_week') || 'Semana'},{id:"month",label:t('time_month') || 'Mês'},{id:"year",label:t('time_year') || 'Ano'}].map(f => (
                    <button
                      key={f.id}
                      onClick={() => setMetricsFilter(f.id)}

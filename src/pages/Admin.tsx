@@ -1298,14 +1298,14 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
             {/* Scrolling Navigation Links */}
             <nav className="flex-1 space-y-1.5">
               {[
-                { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
+                { id: 'users', label: t('admin_users') || 'Clientes Finais (CRM)', icon: Users },
                 
-                { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
-                { id: 'club', label: 'Gestão de Cupões', icon: Gift },
-                { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
-                { id: 'support', label: 'Disputas & Tickets', icon: Scale },
-                { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
+                { id: 'funnel', label: t('admin_funnel') || 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'sales_teams', label: t('admin_sales_teams') || 'Equipas de Vendas', icon: Briefcase },
+                { id: 'club', label: t('admin_club') || 'Gestão de Cupões', icon: Gift },
+                { id: 'payouts', label: t('admin_payouts') || 'Payouts & Planários', icon: Landmark },
+                { id: 'support', label: t('admin_support') || 'Disputas & Tickets', icon: Scale },
+                { id: 'terminal', label: t('admin_terminal') || 'Gestão de Lojas & Modo Deus', icon: Settings },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1381,13 +1381,13 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
           {/* Navigation Links inside admin sidebar */}
           <nav className="p-3.5 space-y-1.5">
             {[
-              { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
-              { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
-              { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
-              { id: 'support', label: 'Disputas & Tickets', icon: Scale },
-              { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
-              { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
+              { id: 'users', label: t('admin_users') || 'Clientes Finais (CRM)', icon: Users },
+              { id: 'funnel', label: t('admin_funnel') || 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'sales_teams', label: t('admin_sales_teams') || 'Equipas de Vendas', icon: Briefcase },
+              { id: 'payouts', label: t('admin_payouts') || 'Payouts & Planários', icon: Landmark },
+              { id: 'support', label: t('admin_support') || 'Disputas & Tickets', icon: Scale },
+              { id: 'terminal', label: t('admin_terminal') || 'Gestão de Lojas & Modo Deus', icon: Settings },
+              { id: 'analytics', label: t('admin_analytics') || 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;

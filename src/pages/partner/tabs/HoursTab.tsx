@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Clock, CheckCircle2, Copy } from "lucide-react";
@@ -9,6 +10,7 @@ interface PartnerContextType {
 }
 
 export default function HoursTab() {
+  const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [hours, setHours] = useState<BusinessHours[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -144,13 +146,13 @@ export default function HoursTab() {
       <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl">
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
           {[
-            { id: 1, label: "Segunda-feira" },
-            { id: 2, label: "Terça-feira" },
-            { id: 3, label: "Quarta-feira" },
-            { id: 4, label: "Quinta-feira" },
-            { id: 5, label: "Sexta-feira" },
-            { id: 6, label: "Sábado" },
-            { id: 0, label: "Domingo" },
+            { id: 1, label: t('day_monday') || 'Segunda-feira' },
+            { id: 2, label: t('day_tuesday') || 'Terça-feira' },
+            { id: 3, label: t('day_wednesday') || 'Quarta-feira' },
+            { id: 4, label: t('day_thursday') || 'Quinta-feira' },
+            { id: 5, label: t('day_friday') || 'Sexta-feira' },
+            { id: 6, label: t('day_saturday') || 'Sábado' },
+            { id: 0, label: t('day_sunday') || 'Domingo' },
           ].map((day) => {
             const currentDay = localHours[day.id];
             const isClosed = currentDay ? currentDay.is_closed : false;

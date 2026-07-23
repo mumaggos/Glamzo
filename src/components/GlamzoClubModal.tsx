@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { X, Sparkles, Gift, Users, CreditCard, Clock, Loader2, Copy, Check, ShieldAlert, ArrowRight, Wallet } from 'lucide-react';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function GlamzoClubModal({ isOpen, onClose, user, profile, currentPoints: propCurrentPoints, currentBalance: propCurrentBalance, onPointsUpdate }: Props) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'pontos' | 'trocar' | 'afiliados' | 'levantamentos'>('pontos');
   
   // Data States
@@ -252,10 +254,10 @@ export default function GlamzoClubModal({ isOpen, onClose, user, profile, curren
         {/* Tabs */}
         <div className="flex border-b border-slate-200 overflow-x-auto shrink-0 scrollbar-hide">
           {[
-            { id: 'pontos', label: 'Meus Pontos', icon: Sparkles },
-            { id: 'trocar', label: 'Trocar Pontos', icon: Gift },
-            { id: 'afiliados', label: 'Afiliados', icon: Users },
-            { id: 'levantamentos', label: 'Levantamentos', icon: Wallet }
+            { id: 'pontos', label: t('club_my_points') || 'Meus Pontos', icon: Sparkles },
+            { id: 'trocar', label: t('club_exchange') || 'Trocar Pontos', icon: Gift },
+            { id: 'afiliados', label: t('club_affiliates') || 'Afiliados', icon: Users },
+            { id: 'levantamentos', label: t('club_withdrawals') || 'Levantamentos', icon: Wallet }
           ].map(tab => (
             <button
               key={tab.id}

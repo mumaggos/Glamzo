@@ -585,11 +585,11 @@ export default function Account() {
         {/* Menu de Abas */}
         <div className="hidden lg:flex overflow-x-auto bg-white rounded-2xl shadow-lg border border-slate-100 p-2 gap-2 mb-8 no-scrollbar items-center">
           {[
-            { id: 'reservas', icon: Calendar, label: 'Minhas Reservas' },
-            { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' },
-            { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
-            { id: 'recompensas', icon: Gift, label: 'Recompensas' },
-            { id: 'favoritos', icon: Heart, label: 'Favoritos' }
+            { id: 'reservas', icon: Calendar, label: t('acc_my_reservations') || 'Minhas Reservas' },
+            { id: 'apoio', icon: MessageSquare, label: t('acc_support_center') || 'Centro de Apoio' },
+            { id: 'perfil', icon: UserCircle, label: t('acc_edit_data') || 'Editar Dados' },
+            { id: 'recompensas', icon: Gift, label: t('acc_rewards') || 'Recompensas' },
+            { id: 'favoritos', icon: Heart, label: t('acc_favorites') || 'Favoritos' }
           ].map(tab => {
             const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
             return (
@@ -983,8 +983,8 @@ export default function Account() {
       {/* Bottom Nav para Mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-4 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[
-          { id: 'reservas', icon: Calendar, label: 'Reservas' },
-          { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' }
+          { id: 'reservas', icon: Calendar, label: t('acc_my_reservations') || 'Reservas' },
+          { id: 'apoio', icon: MessageSquare, label: t('acc_support_center') || 'Centro de Apoio' }
           
         ].map(tab => {
           const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
@@ -1012,8 +1012,8 @@ export default function Account() {
         </Link>
 
         {[
-          { id: 'favoritos', icon: Heart, label: 'Favoritos' },
-          { id: 'perfil', icon: UserCircle, label: 'Perfil' }
+          { id: 'favoritos', icon: Heart, label: t('acc_favorites') || 'Favoritos' },
+          { id: 'perfil', icon: UserCircle, label: t('acc_profile') || 'Perfil' }
         ].map(tab => (
           <button 
             key={tab.id}

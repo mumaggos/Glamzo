@@ -16,13 +16,13 @@ import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
 const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || ""; 
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
-const HOME_CATEGORIES = [ 
-  { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia" }, 
-  { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" }, 
-  { name: "Nails & Beauty", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Nails %26 Beauty" }, 
-  { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Estética" }, 
-  { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Wellness" }, 
-  { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Noivas %26 Eventos" } 
+const HOME_CATEGORIES = [
+   { name: "Cabeleireiro", nameKey: "home_cat_hair", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia" },
+   { name: "Barbearia", nameKey: "home_cat_barber", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" },
+   { name: "Nails & Beauty", nameKey: "home_cat_nails", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Nails %26 Beauty" },
+   { name: "Estética", nameKey: "home_cat_esthetics", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Estética" },
+   { name: "Wellness & Spa", nameKey: "home_cat_wellness", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Wellness" },
+   { name: "Noivas", nameKey: "home_cat_brides", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Noivas %26 Eventos" }
 ]; 
 
 const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"]; 
@@ -474,7 +474,7 @@ export default function Home() {
           <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 no-scrollbar snap-x scroll-smooth"> 
             {HOME_CATEGORIES.map((cat, index) => ( 
               <button  
-                key={cat.name}  
+                key={t(cat.nameKey) || cat.name}  
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
