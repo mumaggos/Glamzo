@@ -1,5 +1,3 @@
-import { useCurrency } from "../hooks/useCurrency";
-import { useTranslation } from "../hooks/useTranslation";
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -199,10 +197,6 @@ export default function Partner() {
               <p className="text-sm text-slate-600 font-medium mb-8 h-10">O ecossistema essencial para lotar a sua agenda e gerir o seu espaço.</p>
 
               <ul className="space-y-4 text-sm text-slate-700 font-semibold mb-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Agenda</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Página Web SEO</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Pagamentos Online e Tap-to-Pay no Telemóvel</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Zero taxas por funcionário (Staff Ilimitado)</strong></li>
                 <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Agenda</li>
                 <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Página Web SEO</li>
                 <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Pagamentos Online e Tap-to-Pay no Telemóvel</li>

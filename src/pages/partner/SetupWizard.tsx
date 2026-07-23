@@ -1,5 +1,3 @@
-import { useCurrency } from "../../hooks/useCurrency";
-import { useTranslation } from "../../hooks/useTranslation";
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';

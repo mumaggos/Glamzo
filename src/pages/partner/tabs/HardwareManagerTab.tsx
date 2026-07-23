@@ -76,8 +76,8 @@ export default function HardwareManagerTab() {
           </p>
           <ul className="space-y-3 mb-8">
             <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Aceita cartões com chip e PIN</li>
-            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Bateria de longa duração</li>
-            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Starter Kit: 99,00€ / $99 (Hardware + Envio Express)</li>
+            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Pagamento único, sem mensalidades</li>
+            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> 99,00€ / $99 (Hardware, Envio Expresso e Impostos incluídos)</li>
           </ul>
           <button 
             onClick={handleOrder}

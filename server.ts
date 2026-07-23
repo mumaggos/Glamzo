@@ -1155,7 +1155,7 @@ async function getOrCreatePriceIdFallback(stripe: Stripe): Promise<string> {
 const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
   console.log("Creating Stripe Checkout...");
   try {
-    const { businessId, planName, successUrl, cancelUrl, skipTrial, force_no_trial, currency = "eur" } = req.body;
+    const { businessId, planName, successUrl, cancelUrl, skipTrial, force_no_trial } = req.body;
     const finalSkipTrial = skipTrial || force_no_trial;
 
     // Validate request parameters
