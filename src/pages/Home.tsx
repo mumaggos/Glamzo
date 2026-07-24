@@ -67,7 +67,8 @@ const optimizeUnsplashUrl = (url: string | null) => {
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
@@ -140,7 +141,7 @@ export default function Home() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation("Perto de Mim");
+          setSearchLocation(t('home.nearMe'));
         },
         () => {} // fail silently on auto-locate
       );
@@ -252,7 +253,7 @@ export default function Home() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation("Perto de Mim");
+          setSearchLocation(t('home.nearMe'));
           setShowLocSuggestions(false);
         },
         () => {
@@ -274,7 +275,7 @@ export default function Home() {
     
     if (searchQuery.trim()) params.set("q", searchQuery.trim()); 
     if (searchLocation.trim()) { 
-      if (searchLocation === "Perto de Mim") params.set("nearMe", "true"); 
+      if (searchLocation === t('home.nearMe')) params.set("nearMe", "true"); 
       else params.set("city", searchLocation.trim()); 
     } 
     navigate(`/explore?${params.toString()}`); 
@@ -336,7 +337,7 @@ export default function Home() {
       <div className="flex justify-between items-start gap-2"> 
         <div> 
           <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3> 
-          <p className="text-sm text-slate-500 mt-0.5 truncate">{b.category} · {b.city}</p> 
+          <p className="text-sm text-slate-500 mt-0.5 truncate">{t(`categories.${b.category}`, { defaultValue: b.category })} · {b.city}</p> 
         </div> 
          
         <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0"> 
@@ -482,8 +483,8 @@ export default function Home() {
               > 
                 <img src={cat.image} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
-                <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']"> 
-                  {cat.name} 
+                <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
+                  {t(`categories.${cat.name}`, { defaultValue: cat.name })}
                 </span> 
               </button> 
             ))} 
@@ -592,7 +593,7 @@ export default function Home() {
         {mapVisible ? ( 
           API_KEY ? ( 
             <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
-              <APIProvider apiKey={API_KEY}> 
+              <APIProvider apiKey={API_KEY} language={currentLangCode}> 
                 <Map 
                   defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
                   defaultZoom={userCoords ? 13 : 8} 

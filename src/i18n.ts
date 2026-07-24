@@ -9,6 +9,31 @@ i18n
     resources: {
       en: { 
         translation: {
+          categories: {
+              "Ao domicílio": "At Home",
+          "Cabeleireiro": "Hair Salon",
+          "Barbearia": "Barbershop",
+          "Nails & Beauty": "Nails & Beauty",
+          "Estética": "Esthetics",
+          "Wellness & Spa": "Wellness & Spa",
+          "Wellness": "Wellness",
+          "Noivas": "Brides",
+          "Noivas & Eventos": "Brides & Events",
+          "Cabelo & Barbearia": "Hair & Barbershop"
+},
+          
+          partnerLoginContent: {
+            title: "Acceso de Socio",
+            subtitle: "Gestiona tu negocio, equipo y reservas.",
+            emailLabel: "Correo Comercial",
+            emailPlaceholder: "general@tusalon.com",
+            passwordLabel: "Contraseña",
+            forgotPassword: "¿Olvidaste tu contraseña?",
+            loginButton: "Acceder al Panel",
+            loginLoading: "Accediendo al panel...",
+            notPartnerYet: "¿Aún no eres socio comercial?",
+            registerSalon: "Registra tu establecimiento",
+          },
           settings: {
           "succDataUpdated": "Dados da loja atualizados com sucesso.",
           "errDataUpdate": "Erro ao atualizar dados da loja.",
@@ -502,7 +527,8 @@ i18n
             registerSalon: "Register your Salon",
             allRightsReserved: "All rights reserved.",
           },
-          home: { 
+          home: {
+            nearMe: "Near Me", 
             heroTitle1: "Your beauty moment,", 
             heroTitle2: "booked in an instant.", 
             heroSubtitle: "Discover and book online the best beauty salons, barbershops, and spas near you. Fast, secure, and hassle-free.", 
@@ -638,6 +664,31 @@ i18n
       },
       es: { 
         translation: {
+          categories: {
+              "Ao domicílio": "Ao domicílio",
+          "Cabeleireiro": "Peluquería",
+          "Barbearia": "Barbería",
+          "Nails & Beauty": "Uñas y Belleza",
+          "Estética": "Estética",
+          "Wellness & Spa": "Bienestar y Spa",
+          "Wellness": "Bienestar",
+          "Noivas": "Novias",
+          "Noivas & Eventos": "Novias y Eventos",
+          "Cabelo & Barbearia": "Cabello y Barbería"
+},
+          
+          partnerLoginContent: {
+            title: "Acceso de Socio",
+            subtitle: "Gestiona tu negocio, equipo y reservas.",
+            emailLabel: "Correo Comercial",
+            emailPlaceholder: "general@tusalon.com",
+            passwordLabel: "Contraseña",
+            forgotPassword: "¿Olvidaste tu contraseña?",
+            loginButton: "Acceder al Panel",
+            loginLoading: "Accediendo al panel...",
+            notPartnerYet: "¿Aún no eres socio comercial?",
+            registerSalon: "Registra tu establecimiento",
+          },
           settings: {
           "succDataUpdated": "Dados da loja atualizados com sucesso.",
           "errDataUpdate": "Erro ao atualizar dados da loja.",
@@ -1131,7 +1182,8 @@ i18n
             registerSalon: "Registra tu Salón",
             allRightsReserved: "Todos los derechos reservados.",
           },
-          home: { 
+          home: {
+            nearMe: "Cerca de Mí", 
             heroTitle1: "Tu momento de belleza,", 
             heroTitle2: "reservado al instante.", 
             heroSubtitle: "Descubre y reserva online los mejores salones de belleza, barberías y spas cerca de ti. Rápido, seguro y sin complicaciones.", 
@@ -1267,6 +1319,31 @@ i18n
       },
       fr: { 
         translation: {
+          categories: {
+              "Ao domicílio": "A Domicilio",
+          "Cabeleireiro": "Salon de Coiffure",
+          "Barbearia": "Barbier",
+          "Nails & Beauty": "Ongles & Beauté",
+          "Estética": "Esthétique",
+          "Wellness & Spa": "Bien-être & Spa",
+          "Wellness": "Bien-être",
+          "Noivas": "Mariées",
+          "Noivas & Eventos": "Mariées & Événements",
+          "Cabelo & Barbearia": "Coiffure & Barbier"
+},
+          
+          partnerLoginContent: {
+            title: "Acceso de Socio",
+            subtitle: "Gestiona tu negocio, equipo y reservas.",
+            emailLabel: "Correo Comercial",
+            emailPlaceholder: "general@tusalon.com",
+            passwordLabel: "Contraseña",
+            forgotPassword: "¿Olvidaste tu contraseña?",
+            loginButton: "Acceder al Panel",
+            loginLoading: "Accediendo al panel...",
+            notPartnerYet: "¿Aún no eres socio comercial?",
+            registerSalon: "Registra tu establecimiento",
+          },
           settings: {
           "succDataUpdated": "Dados da loja atualizados com sucesso.",
           "errDataUpdate": "Erro ao atualizar dados da loja.",
@@ -1760,7 +1837,8 @@ i18n
             registerSalon: "Enregistrez votre Salon",
             allRightsReserved: "Tous droits réservés.",
           },
-          home: { 
+          home: {
+            nearMe: "Près de Moi", 
             heroTitle1: "Votre moment de beauté,", 
             heroTitle2: "réservé en un instant.", 
             heroSubtitle: "Découvrez et réservez en ligne les meilleurs salons de beauté, barbiers et spas près de chez vous. Rapide, sécurisé et sans tracas.", 
@@ -1896,6 +1974,31 @@ i18n
       },
       pt: { 
         translation: {
+          categories: {
+              "Ao domicílio": "À Domicile",
+          "Cabeleireiro": "Cabeleireiro",
+          "Barbearia": "Barbearia",
+          "Nails & Beauty": "Nails & Beauty",
+          "Estética": "Estética",
+          "Wellness & Spa": "Wellness & Spa",
+          "Wellness": "Wellness",
+          "Noivas": "Noivas",
+          "Noivas & Eventos": "Noivas & Eventos",
+          "Cabelo & Barbearia": "Cabelo & Barbearia"
+},
+          
+          partnerLoginContent: {
+            title: "Acceso de Socio",
+            subtitle: "Gestiona tu negocio, equipo y reservas.",
+            emailLabel: "Correo Comercial",
+            emailPlaceholder: "general@tusalon.com",
+            passwordLabel: "Contraseña",
+            forgotPassword: "¿Olvidaste tu contraseña?",
+            loginButton: "Acceder al Panel",
+            loginLoading: "Accediendo al panel...",
+            notPartnerYet: "¿Aún no eres socio comercial?",
+            registerSalon: "Registra tu establecimiento",
+          },
           settings: {
           "succDataUpdated": "Dados da loja atualizados com sucesso.",
           "errDataUpdate": "Erro ao atualizar dados da loja.",
@@ -2389,7 +2492,8 @@ i18n
             registerSalon: "Registe o seu Salão",
             allRightsReserved: "Todos os direitos reservados.",
           },
-          home: { 
+          home: {
+            nearMe: "Perto de Mim", 
             heroTitle1: "O seu momento de beleza,", 
             heroTitle2: "marcado num instante.", 
             heroSubtitle: "Descubra e reserve online os melhores salões de beleza, barbearias e spas ao seu redor. Rápido, seguro e sem complicações.", 

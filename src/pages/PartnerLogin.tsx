@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Sparkles, Loader2, Landmark } from 'lucide-react';
 
 export default function PartnerLogin() {
+  const { t } = useTranslation();
   const { signIn, signOut, resetPassword, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -161,7 +163,7 @@ export default function PartnerLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all text-slate-800 placeholder:text-slate-600"
-                  placeholder="geral@oseusalao.com"
+                  placeholder={t("partnerLoginContent.emailPlaceholder")}
                 />
               </div>
             </div>
@@ -212,19 +214,19 @@ export default function PartnerLogin() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>A aceder ao painel...</span>
+                    <span>{t('partnerLoginContent.loginLoading')}</span>
                   </>
                 ) : (
-                  <span>Aceder ao Painel</span>
+                  <span>{t('partnerLoginContent.loginButton')}</span>
                 )}
               </button>
             </div>
           </form>
 
           <p className="mt-8 text-center text-xs text-slate-500">
-            Ainda não é parceiro comercial?{' '}
+            {t('partnerLoginContent.notPartnerYet')}{' '}
             <Link to="/partner/signup" className="font-bold text-purple-600 hover:text-purple-700">
-              Registe o seu estabelecimento comercial
+              {t('partnerLoginContent.registerSalon')}
             </Link>
           </p>
 

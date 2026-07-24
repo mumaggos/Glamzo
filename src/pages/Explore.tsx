@@ -15,11 +15,7 @@ import {
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 // Removed obsolete local calculations
 
-const getCategoryDisplayName = (name: string, t: any) => {
-  if (name === "Wellness") return t('explore.wellness');
-  if (name === "Ao domicílio") return t('explore.atHome');
-  return name;
-};
+const getCategoryDisplayName = (name: string, t: any) => { return t(`categories.${name}`, { defaultValue: name }); };
 
 // Marcador Oficial Glamzo no Mapa
 const getCustomMarkerIcon = (rating: number, isHovered: boolean = false) => {
@@ -116,7 +112,8 @@ function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData:
 }
 
 export default function Explore() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -168,7 +165,7 @@ export default function Explore() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-          setLocalSearchLocation("Perto de Mim");
+          setLocalSearchLocation(t('home.nearMe'));
           setUseNearMe(true);
           setGeoLocating(false);
         },
@@ -310,7 +307,7 @@ export default function Explore() {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-            setLocalSearchLocation("Perto de Mim");
+            setLocalSearchLocation(t('home.nearMe'));
             setUseNearMe(true);
             setGeoLocating(false);
           },
@@ -320,7 +317,7 @@ export default function Explore() {
           }
         );
       } else if (userCoords) {
-        setLocalSearchLocation("Perto de Mim");
+        setLocalSearchLocation(t('home.nearMe'));
         setUseNearMe(true);
       }
     }
@@ -470,7 +467,7 @@ export default function Explore() {
               <span>{b.rating > 0 ? b.rating.toFixed(1) : t('explore.new')}</span>
             </div>
           </div>
-          <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
+          <p className="text-xs font-medium text-purple-600 truncate">{t(`categories.${b.category}`, { defaultValue: b.category })}</p>
           <p className="text-xs text-slate-500 truncate">{b.city} {b.distance && `(${b.distance.toFixed(1)}km)`}</p>
           {viewMode === 'list' && b.description && (
             <p className="text-xs text-slate-400 mt-1 line-clamp-2">{b.description}</p>
@@ -605,7 +602,7 @@ export default function Explore() {
         {/* Lado Direito - Mapa (Escondido em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}`}>
            {mapApiKey ? (
-             <APIProvider apiKey={mapApiKey}>
+             <APIProvider apiKey={mapApiKey} language={currentLangCode}>
                <Map 
      center={mapCenter || (userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 })} 
      zoom={mapZoom} 

@@ -75,7 +75,8 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 };
 
 export default function SetupWizard() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -975,7 +976,7 @@ export default function SetupWizard() {
                 <p className="text-xs text-slate-500 mb-2.5">{t('setupWizard.mapHint')}</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
                   {API_KEY ? (
-                    <APIProvider apiKey={API_KEY}>
+                    <APIProvider apiKey={API_KEY} language={currentLangCode}>
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
