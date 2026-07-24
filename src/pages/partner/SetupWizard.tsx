@@ -7,6 +7,7 @@ import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-m
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from "react-i18next";
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -74,6 +75,7 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 };
 
 export default function SetupWizard() {
+    const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -122,6 +124,7 @@ export default function SetupWizard() {
   const [address, setAddress] = useState('');
   const [doorNumber, setDoorNumber] = useState('');
   const [city, setCity] = useState('');
+  const [currency, setCurrency] = useState('EUR');
   const [district, setDistrict] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
@@ -221,7 +224,7 @@ export default function SetupWizard() {
     if (!status && !stepParam && !checkoutSuccess && !searchParams.get('checkout_canceled')) return;
 
     if (checkoutSuccess === 'true') {
-      setSuccessMsg('Confirmado! O seu plano foi subscrito com sucesso.');
+      setSuccessMsg(t('setupWizard.errSubscriptionSuccess'));
       setStep(5);
       if (business.setup_step !== 5) {
          supabase.from('businesses').update({ setup_step: 5 }).eq('id', business.id).then();
@@ -237,21 +240,21 @@ export default function SetupWizard() {
       }
       navigate('/partner/setup', { replace: true });
     } else if (status === 'stripe_cancelled' || searchParams.get('checkout_canceled') === 'true') {
-      toast.error('O pagamento não foi concluído ou foi cancelado. Por favor, tente novamente ou escolha outro plano.');
+      toast.error(t('setupWizard.errPaymentCancelled'));
       if (business && business.setup_step === 4) {
          setStep(4);
       }
       navigate('/partner/setup', { replace: true });
     } else if (status === 'connect_success') {
       if (business && business.stripe_account_id) {
-        setSuccessMsg('Conta de pagamentos associada com sucesso.');
+        setSuccessMsg(t('setupWizard.errStripeConnectSuccess'));
       }
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
       window.history.replaceState({}, document.title, '/partner/setup');
     } else if (status === 'connect_refresh') {
-      setErrorMsg('O processo de configuração de pagamentos foi interrompido.');
+      setErrorMsg(t('setupWizard.errStripeConnectInterrupt'));
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
@@ -351,6 +354,7 @@ export default function SetupWizard() {
         setAddress(currentBiz.address || draft?.address || '');
         setDoorNumber(currentBiz.door_number || draft?.doorNumber || '');
         setCity(currentBiz.city || draft?.city || '');
+        setCurrency(currentBiz.currency || draft?.currency || (navigator.language.includes('US') ? 'USD' : navigator.language.includes('GB') ? 'GBP' : 'EUR'));
         setDistrict(currentBiz.district || draft?.district || '');
         setPostalCode(currentBiz.postal_code || draft?.postalCode || '');
         setCategory(currentBiz.category || draft?.category || MAIN_CATEGORIES[0].name);
@@ -408,7 +412,7 @@ export default function SetupWizard() {
         }
       }
     } catch (err: any) {
-      setErrorMsg('Erro ao preparar a configuração da loja: ' + err.message);
+      setErrorMsg(t('setupWizard.errSetupPrepare') + err.message);
     } finally {
       setLoading(false);
     }
@@ -473,7 +477,7 @@ export default function SetupWizard() {
 
     if (step === 1) {
       if (!name || !phone || !address || !city || !postalCode || !district) {
-        setErrorMsg('Preencha os campos obrigatórios.');
+        setErrorMsg(t('setupWizard.errRequiredFields'));
         return;
       }
       setLoading(true);
@@ -499,7 +503,7 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
-          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, slug, setup_step: 2,
+          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, currency, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
@@ -551,7 +555,7 @@ export default function SetupWizard() {
 
     } else if (step === 3) {
       if (services.length === 0) {
-        setErrorMsg('Adicione pelo menos um serviço para prosseguir.');
+        setErrorMsg(t('setupWizard.errAddOneService'));
         return;
       }
       try {
@@ -569,7 +573,7 @@ export default function SetupWizard() {
     } else if (step === 4) {
       if (selectedPlan === 'TERMINAL') {
         if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
-          setErrorMsg('Erro de Validação: Preencha todos os dados de envio do terminal (Nome, Telefone, Morada, Código Postal e Cidade) para continuar.');
+          setErrorMsg(t('setupWizard.errShippingData'));
           return;
         }
       }
@@ -653,7 +657,7 @@ export default function SetupWizard() {
         }
       } catch (e: any) {
         console.error('Checkout setup failed:', e);
-        setErrorMsg('Erro no pagamento Stripe: ' + (e.message || 'Falha na subscrição. Por favor, tente novamente.'));
+        setErrorMsg(t('setupWizard.errStripePayment') + (e.message || t('setupWizard.errSubscriptionFailed')));
       } finally {
         setLoading(false);
       }
@@ -677,7 +681,7 @@ export default function SetupWizard() {
   const handleMagicSetup = async () => {
     if (!user || !business) return;
     if (!name || !phone || !address || !city || !postalCode || !district) {
-      setErrorMsg('Preencha os campos obrigatórios (Nome, Telefone, Morada, Código Postal, Cidade, Distrito).');
+      setErrorMsg(t('setupWizard.errRequiredFieldsFull'));
       return;
     }
 
@@ -761,7 +765,7 @@ export default function SetupWizard() {
           public_page_enabled: false
         }).eq('id', business.id);
 
-        setErrorMsg('Erro de Segurança: Não foi encontrada uma subscrição ativa para este espaço. Por favor, assine um plano de subscrição na etapa anterior para que possamos ativar o seu website público.');
+        setErrorMsg(t('setupWizard.errSecuritySub'));
         setLoading(false);
         return;
       }
@@ -803,8 +807,8 @@ export default function SetupWizard() {
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Configure a sua Loja</h1>
-          <p className="text-sm text-slate-500 mt-2">Complete os passos para ativar o seu estabelecimento na Glamzo.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('setupWizard.title')}</h1>
+          <p className="text-sm text-slate-500 mt-2">{t('setupWizard.subtitle')}</p>
         </div>
 
         {errorMsg && (
@@ -834,23 +838,23 @@ export default function SetupWizard() {
 
         {step === 1 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Informações da Loja</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('setupWizard.storeInfo')}</h2>
             <div className="space-y-4">
               
               <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Imagens do Estabelecimento (Capa e Perfil)</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('setupWizard.imagesTitle')}</label>
                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 h-44 sm:h-52 flex flex-col justify-end">
                   {coverUrl ? (
                     <img loading="lazy" src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-100/50">
                       <Upload className="w-8 h-8 text-slate-300 mb-1" />
-                      <span className="text-xs font-medium">Carregar Foto de Capa</span>
+                      <span className="text-xs font-medium">{t('setupWizard.uploadCover')}</span>
                     </div>
                   )}
                   <label className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow flex items-center gap-2 backdrop-blur-sm z-10">
                     <Camera className="w-4 h-4" />
-                    <span>Alterar Capa</span>
+                    <span>{t('setupWizard.changeCover')}</span>
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -874,7 +878,7 @@ export default function SetupWizard() {
                       
                       <label className="absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <Camera className="w-5 h-5 text-white" />
-                        <span className="text-[9px] font-bold text-white uppercase mt-1">Alterar</span>
+                        <span className="text-[9px] font-bold text-white uppercase mt-1">{t('setupWizard.change')}</span>
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -888,16 +892,16 @@ export default function SetupWizard() {
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500 text-center mt-2">Clique em "Alterar Capa" para o banner superior e passe o rato por cima do círculo central para alterar o seu perfil comercial.</p>
+                <p className="text-[11px] text-slate-500 text-center mt-2">{t('setupWizard.coverHint')}</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome do Estabelecimento *</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder="Ex: Barbearia Central" />
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.storeName')}</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder={t('setupWizard.storeNamePlaceholder')} />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria do Estabelecimento *</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.storeCategory')}</label>
                 <select 
                   value={category} 
                   onChange={e => setCategory(e.target.value)} 
@@ -907,41 +911,50 @@ export default function SetupWizard() {
                     <option key={cat.name} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-500 mt-1">Isso ajuda a interligar e filtrar os seus serviços para que os clientes o encontrem facilmente.</p>
+                <p className="text-[10px] text-slate-500 mt-1">{t('setupWizard.storeCategoryHint')}</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Telefone *</label>
-                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 910 000 000" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.phone')}</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.phonePlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">E-mail</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: ola@barbearia.pt" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.email')}</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.emailPlaceholder')} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada *</label>
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Rua Direita" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.address')}</label>
+                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.addressPlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nº Porta / Andar</label>
-                  <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 12, 1º Esq" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.door')}</label>
+                  <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.doorPlaceholder')} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
-                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.postalCode')}</label>
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.postalCodePlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
-                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.city')}</label>
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.districtPlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Distrito *</label>
-                  <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
+  
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.currencyLabel', 'Moeda (Currency) *')}</label>
+                <select value={currency} onChange={e => setCurrency(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium">
+                  <option value="EUR">EUR - Euro (€)</option>
+                  <option value="GBP">GBP - Libra (£)</option>
+                  <option value="USD">USD - Dólar ($)</option>
+                  <option value="BRL">BRL - Real (R$)</option>
+                </select>
+
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.district')}</label>
+                  <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.districtPlaceholder')} />
                 </div>
               </div>
 
@@ -953,13 +966,13 @@ export default function SetupWizard() {
                   className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
                   <MapPin className="w-3.5 h-3.5 text-purple-650" />
-                  <span>Encontrar no Mapa 📍</span>
+                  <span>{t('setupWizard.findOnMap')}</span>
                 </button>
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Localização Exata no Mapa *</label>
-                <p className="text-xs text-slate-500 mb-2.5">Arraste o marcador ou clique no mapa para posicionar o seu estabelecimento com precisão de modo a não haver erro de distância.</p>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.exactLocation')}</label>
+                <p className="text-xs text-slate-500 mb-2.5">{t('setupWizard.mapHint')}</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
                   {API_KEY ? (
                     <APIProvider apiKey={API_KEY}>
@@ -990,8 +1003,8 @@ export default function SetupWizard() {
                               <MapPin className="w-5 h-5 fill-current" />
                             </div>
                             <div className="absolute top-10 bg-slate-900 text-white text-[9px] font-bold px-2 py-1 rounded shadow-md whitespace-nowrap opacity-90">
-                              Arraste até à sua Loja
-                            </div>
+                              {t('setupWizard.dragToStore')}
+                                                                                      </div>
                           </div>
                         </AdvancedMarker>
                       </Map>
@@ -999,11 +1012,11 @@ export default function SetupWizard() {
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
                       <MapPin className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
-                      <span className="text-sm font-bold text-slate-700">Pré-visualização do Mapa</span>
-                      <span className="text-xs text-slate-500 mt-1 max-w-xs">Insira a morada correta acima. As coordenadas serão geradas automaticamente ou configuradas no mapa.</span>
+                      <span className="text-sm font-bold text-slate-700">{t('setupWizard.mapPreview')}</span>
+                      <span className="text-xs text-slate-500 mt-1 max-w-xs">{t('setupWizard.mapAddressHint')}</span>
                       {coordinates && (
                         <div className="mt-3 text-[10px] font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded">
-                          Coords: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                          {t('setupWizard.coords')} {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
                         </div>
                       )}
                     </div>
@@ -1023,11 +1036,11 @@ export default function SetupWizard() {
                     <div className="bg-purple-100 p-2 rounded-lg">
                       <Gift className="w-5 h-5 text-purple-600" />
                     </div>
-                    <h3 className="text-lg font-bold text-purple-900">Configuração Mágica (Oferta)</h3>
+                    <h3 className="text-lg font-bold text-purple-900">{t('setupWizard.magicSetupTitle')}</h3>
                   </div>
                   <p className="text-sm text-purple-800 mb-5 max-w-xl">
-                    Não quer perder tempo a configurar serviços e horários? Nós tratamos de tudo por si, sem custos adicionais. Preencha apenas os dados acima e clique no botão abaixo.
-                  </p>
+                    {t('setupWizard.magicSetupDesc')}
+                                                        </p>
                   <button
                     type="button"
                     onClick={handleMagicSetup}
@@ -1035,8 +1048,8 @@ export default function SetupWizard() {
                     className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl shadow-md transition-all uppercase tracking-wider"
                   >
                     <Sparkles className="w-4 h-4" />
-                    Quero que a Glamzo configure a loja para mim
-                  </button>
+                    {t('setupWizard.magicSetupBtn')}
+                                                        </button>
                 </div>
               </div>
             </div>
@@ -1047,8 +1060,8 @@ export default function SetupWizard() {
         
         {step === 2 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Horários de Funcionamento</h2>
-            <p className="text-sm text-slate-500 mb-6">Defina os dias e horas em que a sua loja está aberta. Isto garante que os clientes apenas podem marcar dentro deste horário.</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('setupWizard.businessHoursTitle')}</h2>
+            <p className="text-sm text-slate-500 mb-6">{t('setupWizard.businessHoursDesc')}</p>
             <div className="space-y-4">
               {WEEKDAYS.map((dayName, idx) => {
                 const h = businessHours.find(bh => bh.weekday === idx);
@@ -1073,7 +1086,7 @@ export default function SetupWizard() {
                           onChange={(e) => handleHourChange(idx, 'open_time', e.target.value)}
                           className="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         />
-                        <span className="text-slate-400 font-bold">até</span>
+                        <span className="text-slate-400 font-bold">{t('setupWizard.until')}</span>
                         <input 
                           type="time" 
                           value={h.close_time}
@@ -1083,8 +1096,8 @@ export default function SetupWizard() {
                       </div>
                     ) : (
                       <div className="flex-1 text-sm font-bold text-slate-400 px-3 py-2">
-                        Fechado
-                      </div>
+                        {t('setupWizard.closed')}
+                                                          </div>
                     )}
                   </div>
                 );
@@ -1095,13 +1108,13 @@ export default function SetupWizard() {
 
         {step === 3 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('setupWizard.servicesTitle')}</h2>
             <div className="mb-6 space-y-3">
               {services.map(s => (
                 <div key={s.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
                   <div>
                     <h4 className="font-bold text-sm text-slate-900">{s.name}</h4>
-                    <p className="text-xs text-slate-500">{s.duration_minutes} min</p>
+                    <p className="text-xs text-slate-500">{s.duration_minutes} {t('setupWizard.min')}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="font-black text-slate-900">{s.price}€</div>
@@ -1111,7 +1124,7 @@ export default function SetupWizard() {
                         if (!error) {
                            setServices(services.filter(svc => svc.id !== s.id));
                         } else {
-                           setErrorMsg('Erro ao remover serviço: ' + error.message);
+                           setErrorMsg(t('setupWizard.errRemoveService') + error.message);
                         }
                       }}
                       className="text-red-500 hover:text-red-700 p-1"
@@ -1125,8 +1138,8 @@ export default function SetupWizard() {
             </div>
 
             <div className="mb-6 p-5 border border-purple-100 rounded-xl bg-purple-50/20">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Serviços Recomendados ({category})</h4>
-              <p className="text-xs text-slate-500 mb-3">Clique para adicionar instantaneamente os serviços mais solicitados:</p>
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('setupWizard.recommendedServices')}{category})</h4>
+              <p className="text-xs text-slate-500 mb-3">{t('setupWizard.addRecommendedHint')}</p>
               <div className="flex flex-wrap gap-2">
                 {(POPULAR_SERVICES_BY_CATEGORY[category] || POPULAR_SERVICES_BY_CATEGORY['Cabelo & Barbearia']).map((ps) => {
                   const isAdded = services.some(s => s.name.toLowerCase() === ps.name.toLowerCase());
@@ -1162,22 +1175,22 @@ export default function SetupWizard() {
             </div>
 
             <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
-              <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Serviço</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-4">{t('setupWizard.addServiceBtn')}</h4>
               <div className="space-y-4">
                 <div>
-                  <input id="new-svc-name" type="text" placeholder="Nome do Serviço" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-name" type="text" placeholder={t('setupWizard.serviceNamePlaceholder')} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
                 <div>
                   <select id="new-svc-cat" className="px-3 py-2 border border-slate-300 rounded text-sm w-full bg-white">
-                    <option value="">Selecione o Tipo de Serviço (Opcional)</option>
+                    <option value="">{t('setupWizard.serviceTypePlaceholder')}</option>
                     {(SUBCATEGORIES_BY_MAIN[category] || []).map((sub: string) => (
                       <option key={sub} value={sub}>{sub}</option>
                     ))}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <input id="new-svc-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
-                  <input id="new-svc-price" type="number" step="0.01" placeholder="Preço (€)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-duration" type="number" placeholder={t('setupWizard.durationPlaceholder')} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-price" type="number" step="0.01" placeholder={t('setupWizard.pricePlaceholder')} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
               </div>
               <button 
@@ -1195,7 +1208,7 @@ export default function SetupWizard() {
                     }).select().maybeSingle();
                     
                     if (error) {
-                      setErrorMsg('Erro ao adicionar serviço: ' + error.message);
+                      setErrorMsg(t('setupWizard.errAddService') + error.message);
                     } else if (data) {
                       setServices([...services, data]);
                       (document.getElementById('new-svc-name') as HTMLInputElement).value = '';
@@ -1203,20 +1216,20 @@ export default function SetupWizard() {
                       (document.getElementById('new-svc-price') as HTMLInputElement).value = '';
                     }
                   } else {
-                     setErrorMsg('Preencha todos os campos do serviço');
+                     setErrorMsg(t('setupWizard.errFillService'));
                   }
                 }}
                 className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
               >
-                Adicionar Serviço
-              </button>
+                {t('setupWizard.addServiceBtn')}
+                                            </button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('setupWizard.choosePlanTitle')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div 
@@ -1224,15 +1237,15 @@ export default function SetupWizard() {
                 onClick={() => setSelectedPlan('PRO')}
               >
                 {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">Glamzo PRO</h3>
-                <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <h3 className="text-lg font-bold text-slate-900">{t('setupWizard.planPro')}</h3>
+                <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">{t('setupWizard.perMonth')}</span></div>
                 <div className="mb-4">
-                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">14 Dias Grátis</span>
+                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">{t('setupWizard.free14Days')}</span>
                 </div>
                 <ul className="space-y-2 mt-4 text-sm text-slate-600">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Agenda e Website SEO</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tap-to-Pay no Telemóvel</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>Zero taxas (Staff Ilimitado)</strong></li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureAgendaSeo')}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureTapToPay')}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>{t('setupWizard.featureZeroFees')}</strong></li>
                 </ul>
               </div>
 
@@ -1241,43 +1254,43 @@ export default function SetupWizard() {
                 onClick={() => setSelectedPlan('TERMINAL')}
               >
                 <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
-                  Recomendado
-                </div>
+                  {t('setupWizard.recommendedBadge')}
+                                                  </div>
                 {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">Terminal Físico Glamzo</h3>
-                <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> Único</span></div>
+                <h3 className="text-lg font-bold text-slate-900">{t('setupWizard.planTerminal')}</h3>
+                <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> {t('setupWizard.uniquePayment')}</span></div>
                 <div className="mb-4 flex flex-col gap-1">
                   
-                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">Portes e Impostos Incluídos</span>
+                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">{t('setupWizard.featureShippingIncluded')}</span>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Sem Mensalidades/Fidelização</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Contactless e Chip</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Integração Direta c/ Agenda</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureNoFidelity')}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureContactless')}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureDirectIntegration')}</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
-                  O terminal é seu para sempre.
-                </div>
+                  {t('setupWizard.terminalForever')}
+                                                  </div>
               </div>
             </div>
 
             {selectedPlan === 'TERMINAL' && (
               <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
-                <h4 className="font-bold text-slate-900 mb-4">Dados de Envio do Terminal</h4>
+                <h4 className="font-bold text-slate-900 mb-4">{t('setupWizard.shippingDataTitle')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Nome Destinatário" value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Telefone" value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Morada" value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
-                  <input type="text" placeholder="Código Postal" value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Cidade" value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder={t('setupWizard.shippingNamePlaceholder')} value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder={t('setupWizard.shippingPhonePlaceholder')} value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder={t('setupWizard.shippingAddressPlaceholder')} value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
+                  <input type="text" placeholder={t('setupWizard.shippingPostalCodePlaceholder')} value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder={t('setupWizard.shippingCityPlaceholder')} value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
                 </div>
               </div>
             )}
             
             {selectedPlan === 'PRO' ? (
-    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
+    <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectFree')}</p>
   ) : (
-    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e concluir a adesão.</p>
+    <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectPay')}</p>
   )}
             
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
@@ -1288,7 +1301,7 @@ export default function SetupWizard() {
                 className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Voltar</span>
+                <span>{t('setupWizard.backBtn')}</span>
               </button>
               <button
                 type="button"
@@ -1296,7 +1309,7 @@ export default function SetupWizard() {
                 onClick={handleNext}
                 className="w-full px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{selectedPlan === 'TERMINAL' ? 'Avançar para Pagamento' : 'Iniciar 14 Dias Grátis'}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{selectedPlan === 'TERMINAL' ? t('setupWizard.proceedToPayment') : t('setupWizard.start14DaysFree')}</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
           </div>
@@ -1307,21 +1320,21 @@ export default function SetupWizard() {
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Landmark className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Receber Pagamentos Online</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('setupWizard.receiveOnlineTitle')}</h2>
             <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
-              Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
-            </p>
+              {t('setupWizard.receiveOnlineDesc')}
+                                      </p>
             
             {(business?.charges_enabled || business?.stripe_account_id) ? (
                <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
                  <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                 <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
-                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta bancária está associada.</p>
+                 <h3 className="font-bold text-emerald-900">{t('setupWizard.setupDoneTitle')}</h3>
+                 <p className="text-xs text-emerald-700 mt-2 mb-6">{t('setupWizard.bankConnected')}</p>
                  <button
                     onClick={() => updateSetupStep(6)}
                     className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
                   >
-                    <span>Prosseguir</span>
+                    <span>{t('setupWizard.proceedBtn')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                </div>
@@ -1331,12 +1344,12 @@ export default function SetupWizard() {
                     onClick={triggerStripeOnboarding}
                     className="px-8 py-4 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-lg inline-flex items-center gap-3 w-full max-w-md justify-center"
                   >
-                    <span>Conectar Stripe Glamzo Pay</span>
+                    <span>{t('setupWizard.connectStripeBtn')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
-                    Configurar mais tarde
-                  </button>
+                    {t('setupWizard.setupLaterBtn')}
+                                                        </button>
                 </div>
             )}
           </div>
@@ -1344,25 +1357,25 @@ export default function SetupWizard() {
 
         {step === 6 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">{t('setupWizard.allReadyTitle')}</h2>
             <div className="max-w-md mx-auto space-y-4 mb-8">
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">Dados da Loja</span>
+                  <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.storeDataStep')}</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">Serviços ({services.length})</span>
+                  <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.servicesStep')}{services.length})</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">Plano Subscrito</span>
+                  <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.subscribedPlanStep')}</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className={`flex items-center justify-between p-4 rounded-xl border ${business?.charges_enabled ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
                   <span className={`font-semibold text-sm ${business?.charges_enabled ? 'text-emerald-900' : 'text-amber-900'}`}>
-                    Pagamentos Online
-                  </span>
-                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">Mais tarde</span>}
+                    {t('setupWizard.onlinePaymentsStep')}
+                                                    </span>
+                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">{t('setupWizard.laterLabel')}</span>}
                 </div>
             </div>
 
@@ -1371,7 +1384,7 @@ export default function SetupWizard() {
                 onClick={publishBusiness}
                 className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-black text-lg uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 inline-flex items-center gap-3"
               >
-                <span>Concluir Setup & Entrar</span>
+                <span>{t('setupWizard.finishSetupBtn')}</span>
                 <Sparkles className="w-6 h-6" />
               </button>
             </div>
@@ -1387,7 +1400,7 @@ export default function SetupWizard() {
                   className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2 w-full max-w-[200px]"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
+                  <span>{t('setupWizard.backBtn')}</span>
                 </button>
              )}
             
@@ -1398,7 +1411,7 @@ export default function SetupWizard() {
                 onClick={handleNext}
                 className="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{step === 3 ? 'Assinar Plano' : 'Prosseguir'}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{step === 3 ? t('setupWizard.signPlan') : t('setupWizard.proceedBtn')}</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             )}
           </div>

@@ -6,8 +6,10 @@ import { useStripeTerminal } from "../../../hooks/useStripeTerminal";
 import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, ChevronRight, ShieldAlert, Loader2, Smartphone, CreditCard } from "lucide-react";
 import { processBookingPoints } from '../../../utils/rewardsHelper';
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
+import { useTranslation } from "react-i18next";
 
 export default function AgendaTab() {
+    const { t } = useTranslation();
   const { business, user, services, staff, bookings, businessHours, loadLayoutData } = useOutletContext<any>();
 
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
@@ -62,7 +64,7 @@ export default function AgendaTab() {
              startLimitMin = sh * 60 + sm;
              endLimitMin = eh * 60 + em;
          } else {
-             alert(`Operação cancelada! O teu espaço está fechado nesta data.`);
+             alert(t('agenda.errClosedDate'));
              setIsSavingManual(false); return;
          }
       } else if (business?.opening_time && business?.closing_time) {
@@ -73,7 +75,7 @@ export default function AgendaTab() {
       }
 
       if (inputTotalMin < startLimitMin || inputTotalMin >= endLimitMin) {
-          alert(`Operação cancelada! Fora do horário de expediente.`);
+          alert(t('agenda.errOutsideHours'));
           setIsSavingManual(false); return;
       }
 
@@ -106,7 +108,7 @@ export default function AgendaTab() {
       let hasOverlap = bookingsOnDay.some(b => checkOverlap(b, targetStaffId));
 
       if (hasOverlap) {
-         alert("Operação cancelada! Já existe uma marcação ou bloqueio neste horário para o profissional selecionado.");
+         alert(t('agenda.errOverlap'));
          setIsSavingManual(false);
          return;
       }
@@ -129,11 +131,11 @@ export default function AgendaTab() {
 
       if (error) throw error;
       
-      notifyTerminal(manualBookingType === "block" ? "🛑 Bloqueio Ativado" : "📅 Gravado", `Agenda atualizada.`);
+      notifyTerminal(manualBookingType === "block" ? t('agenda.succBlockActive') : t('agenda.succBookingSaved'), t('agenda.succAgendaUpdated'));
       setIsManualBookingOpen(false);
       setManualClientName(""); setManualReason(""); setManualNotes("");
       loadLayoutData();
-    } catch (err: any) { alert("Erro ao guardar dados."); } finally { setIsSavingManual(false); }
+    } catch (err: any) { alert(t('agenda.errSaveData')); } finally { setIsSavingManual(false); }
   };
 
     const handleOpenDispute = () => {
@@ -157,12 +159,12 @@ export default function AgendaTab() {
         status: 'open'
       });
       if (error) throw error;
-      toast.success('Queixa registada com sucesso. A equipa vai analisar.');
+      toast.success(t('agenda.succDisputeRegistered'));
       setDisputeReason('');
       setDisputeDescription('');
       setDisputeModalOpen(false);
     } catch (err: any) {
-      toast.error(err.message || "Erro ao abrir disputa.");
+      toast.error(err.message || t('agenda.errOpenDispute'));
     } finally {
       setSubmittingDispute(false);
     }
@@ -181,11 +183,11 @@ export default function AgendaTab() {
         const { error } = await supabase.from('bookings').update({ booking_status: status }).eq('id', selectedBooking.id);
         if (error) throw error;
       }
-      if (status === 'completed') notifyTerminal("✅ Concluída!", "Serviço fechado e pontos atribuídos.");
+      if (status === 'completed') notifyTerminal(t('agenda.succServiceClosed'), t('agenda.succPointsAssigned'));
       setSelectedBooking(null); 
       loadLayoutData();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao atualizar o estado.");
+      toast.error(err.message || t('agenda.errUpdateStatus'));
       console.error(err);
     } finally { 
       setIsUpdatingBooking(false); 
@@ -204,7 +206,7 @@ export default function AgendaTab() {
       )}
 
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 shrink-0 w-full flex-wrap">
-        <div><h3 className="text-2xl font-black text-slate-900 flex items-center gap-2"><Sparkles className="w-6 h-6 text-purple-500" /> Agenda</h3></div>
+        <div><h3 className="text-2xl font-black text-slate-900 flex items-center gap-2"><Sparkles className="w-6 h-6 text-purple-500" /> {t('agenda.title')}</h3></div>
         
         <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
           <button onClick={() => {
@@ -227,11 +229,11 @@ export default function AgendaTab() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <div className="flex bg-slate-200/50 p-1 rounded-xl w-full sm:w-auto">
-            <button onClick={() => setAgendaMode("day")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === 'day' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Dia</button>
-            <button onClick={() => setAgendaMode("3days")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === '3days' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>3 Dias</button>
-            <button onClick={() => setAgendaMode("week")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Semana</button>
+            <button onClick={() => setAgendaMode("day")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === 'day' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>{t('agenda.day')}</button>
+            <button onClick={() => setAgendaMode("3days")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === '3days' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('agenda.threeDays')}</button>
+            <button onClick={() => setAgendaMode("week")} className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${agendaMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>{t('agenda.week')}</button>
           </div>
-          <button onClick={() => { setIsManualBookingOpen(true); if (services.length > 0) setManualServiceId(services[0].id); if (staff.length > 0) setManualStaffId(staff[0].id); }} className="w-full sm:w-auto bg-slate-900 text-white font-extrabold px-6 py-2.5 rounded-xl text-sm flex justify-center items-center gap-2 shadow-lg"><Plus className="w-4 h-4" /> Nova</button>
+          <button onClick={() => { setIsManualBookingOpen(true); if (services.length > 0) setManualServiceId(services[0].id); if (staff.length > 0) setManualStaffId(staff[0].id); }} className="w-full sm:w-auto bg-slate-900 text-white font-extrabold px-6 py-2.5 rounded-xl text-sm flex justify-center items-center gap-2 shadow-lg"><Plus className="w-4 h-4" /> {t('agenda.newBooking')}</button>
         </div>
       </div>
 
@@ -241,9 +243,9 @@ export default function AgendaTab() {
         </div>
         <div className="lg:col-span-1 space-y-6 shrink-0">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/60">
-            <h3 className="font-black text-slate-800 mb-4">Filtrar</h3>
+            <h3 className="font-black text-slate-800 mb-4">{t('agenda.filterBtn')}</h3>
             <div className="space-y-2">
-              <button onClick={() => setSelectedStaffFilter("all")} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === "all" ? "bg-slate-900 text-white" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">👥</div> Ver Todos</button>
+              <button onClick={() => setSelectedStaffFilter("all")} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === "all" ? "bg-slate-900 text-white" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">👥</div> {t('agenda.viewAllBtn')}</button>
               {staff.map((st: any) => (
                 <button key={st.id} onClick={() => setSelectedStaffFilter(st.id)} className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${selectedStaffFilter === st.id ? "bg-purple-100 text-purple-900 ring-2 ring-purple-500" : "hover:bg-slate-50 text-slate-600 border border-slate-100"}`}><img loading="lazy" src={st.avatar_url || `https://ui-avatars.com/api/?name=${st.full_name}`} className="w-8 h-8 rounded-full object-cover shrink-0" /> <span className="truncate">{st.full_name}</span></button>
               ))}
@@ -256,10 +258,10 @@ export default function AgendaTab() {
       {selectedBooking && (
         <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl flex flex-col text-slate-800 overflow-hidden animate-in zoom-in-95">
-            <div className="p-5 border-b flex justify-between items-center bg-slate-50"><h3 className="font-extrabold text-lg">Detalhes da Reserva</h3><button onClick={() => setSelectedBooking(null)} className="w-8 h-8 rounded-full bg-white shadow-sm border flex items-center justify-center"><X className="w-4 h-4" /></button></div>
+            <div className="p-5 border-b flex justify-between items-center bg-slate-50"><h3 className="font-extrabold text-lg">{t('agenda.bookingDetails')}</h3><button onClick={() => setSelectedBooking(null)} className="w-8 h-8 rounded-full bg-white shadow-sm border flex items-center justify-center"><X className="w-4 h-4" /></button></div>
             <div className="p-6 space-y-4">
-               <div><p className="text-[10px] uppercase font-bold text-slate-400">Serviço & Notas</p><p className="text-sm font-black text-slate-800">{selectedBooking.notes || 'Marcação'}</p></div>
-               <div className="flex justify-between"><div><p className="text-[10px] uppercase font-bold text-slate-400">Hora</p><p className="text-sm font-bold text-slate-800">{selectedBooking.start_time}</p></div><div className="text-right"><p className="text-[10px] uppercase font-bold text-slate-400">Profissional</p><p className="text-sm font-bold text-purple-600">{selectedBooking.staff?.full_name || 'Equipa'}</p></div></div>
+               <div><p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.serviceAndNotes')}</p><p className="text-sm font-black text-slate-800">{selectedBooking.notes || 'Marcação'}</p></div>
+               <div className="flex justify-between"><div><p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.time')}</p><p className="text-sm font-bold text-slate-800">{selectedBooking.start_time}</p></div><div className="text-right"><p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.professional')}</p><p className="text-sm font-bold text-purple-600">{selectedBooking.staff?.full_name || 'Equipa'}</p></div></div>
                
                {(() => {
                  const price = selectedBooking.original_service_price ?? selectedBooking.total_price;
@@ -267,19 +269,19 @@ export default function AgendaTab() {
                  return (
                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                      <div>
-                        <p className="text-[10px] uppercase font-bold text-slate-400">Estado do Pagamento</p>
+                        <p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.paymentStatus')}</p>
                         {isPaid ? (
                            <p className="text-sm font-bold text-emerald-600 flex items-center gap-1 mt-1">
-                             ✅ Já pagou online
-                           </p>
+                             {t('agenda.paidOnline')}
+                                                                </p>
                         ) : (
                            <p className="text-sm font-bold text-amber-600 flex items-center gap-1 mt-1">
-                             ⚠️ A receber no local
-                           </p>
+                             {t('agenda.payLocal')}
+                                                                    </p>
                         )}
                      </div>
                      <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold text-slate-400">Valor</p>
+                        <p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.value')}</p>
                         <p className="text-lg font-black text-slate-900">{Number(price || 0).toFixed(2)}€</p>
                      </div>
                    </div>
@@ -292,26 +294,26 @@ export default function AgendaTab() {
                  return (
                    <>
                      {selectedBooking.booking_status === "pending" && (
-                       <button onClick={() => handleUpdateBookingStatus("confirmed")} disabled={isUpdatingBooking} className="w-full bg-blue-500 hover:bg-blue-600 transition-colors text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 mb-2"><CheckCircle className="w-5 h-5" /> Confirmar Marcação</button>
+                       <button onClick={() => handleUpdateBookingStatus("confirmed")} disabled={isUpdatingBooking} className="w-full bg-blue-500 hover:bg-blue-600 transition-colors text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 mb-2"><CheckCircle className="w-5 h-5" /> {t('agenda.confirmBookingBtn')}</button>
                      )}
                      {selectedBooking.booking_status === "completed" ? (
                        <div className="space-y-2">
                          <div className="w-full bg-gradient-to-r from-emerald-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-not-allowed opacity-90">
-                           <CheckCircle className="w-5 h-5" /> Serviço Concluído
-                         </div>
+                           <CheckCircle className="w-5 h-5" /> {t('agenda.serviceCompletedBtn')}
+                                                              </div>
                        </div>
                      ) : (
                        <>
-                       <button onClick={() => setIsPaymentModalOpen(true)} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:scale-[1.02] transition-transform text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-2 text-lg uppercase tracking-wide"><CreditCard className="w-6 h-6" /> Cobrar ao Cliente</button>
-                        <button onClick={() => handleUpdateBookingStatus("completed")} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Confirmar Conclusão</button>
+                       <button onClick={() => setIsPaymentModalOpen(true)} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:scale-[1.02] transition-transform text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-2 text-lg uppercase tracking-wide"><CreditCard className="w-6 h-6" /> {t('agenda.chargeClientBtn')}</button>
+                        <button onClick={() => handleUpdateBookingStatus("completed")} disabled={isUpdatingBooking} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> {t('agenda.confirmCompletionBtn')}</button>
                        </>
                      )}
                      {selectedBooking.booking_status !== "completed" && selectedBooking.booking_status !== "cancelled" && (
-                       <button onClick={() => handleUpdateBookingStatus("cancelled")} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">Cancelar Marcação</button>
+                       <button onClick={() => handleUpdateBookingStatus("cancelled")} disabled={isUpdatingBooking} className="w-full bg-white text-rose-500 hover:bg-rose-50 font-bold py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">{t('agenda.cancelBookingBtn')}</button>
                      )}
                      <button onClick={() => setDisputeModalOpen(true)} className="w-full bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors mt-2">
-                       <ShieldAlert className="w-4 h-4" /> Abrir Disputa / Problema
-                     </button>
+                       <ShieldAlert className="w-4 h-4" /> {t('agenda.openDisputeBtn')}
+                                                  </button>
                    </>
                  );
                })()}
@@ -326,8 +328,8 @@ export default function AgendaTab() {
         <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95">
             <button onClick={() => setIsPaymentModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500"><X className="w-4 h-4" /></button>
-            <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-2"><CreditCard className="text-purple-600 w-7 h-7"/> Cobrar ao Cliente</h3>
-            <p className="text-slate-500 mb-6">Escolha o método de cobrança para concluir o pagamento na loja.</p>
+            <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-2"><CreditCard className="text-purple-600 w-7 h-7"/> {t('agenda.chargeClientBtn')}</h3>
+            <p className="text-slate-500 mb-6">{t('agenda.chargeClientDesc')}</p>
             
             <div className="space-y-4">
               <button onClick={async () => { 
@@ -335,7 +337,7 @@ export default function AgendaTab() {
                   const price = selectedBooking.original_service_price ?? selectedBooking.total_price;
                   const amount = Math.round(Number(price || 0) * 100);
                   if (amount <= 0) {
-                    toast.error("O valor da marcação é 0€");
+                    toast.error(t('agenda.errBookingValueZero'));
                     return;
                   }
                   await initialize(); 
@@ -346,16 +348,16 @@ export default function AgendaTab() {
                   await supabase.from("bookings").update({ payment_status: 'paid', payment_method: 'local' }).eq("id", selectedBooking.id);
                   await handleUpdateBookingStatus("completed");
                   setIsPaymentModalOpen(false);
-                  toast.success("Pagamento Concluído com Sucesso!");
+                  toast.success(t('agenda.succPaymentComplete'));
                 } catch (err: any) {
-                  toast.error(err.message || "Erro ao processar pagamento");
+                  toast.error(err.message || t('agenda.errProcessPayment'));
                 }
               }} className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-purple-600 hover:bg-purple-50 transition-all text-left">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
                   <Smartphone className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-lg">Tap-to-Pay (NFC)</h4>
+                  <h4 className="font-bold text-slate-900 text-lg">{t('agenda.tapToPayBtn')}</h4>
                   <p className="text-sm text-slate-500 mt-1">{terminalStatus || 'Aproxime o cartão ou telemóvel do cliente do seu dispositivo.'}</p>
                 </div>
               </button>
@@ -365,8 +367,8 @@ export default function AgendaTab() {
                   <CreditCard className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-lg">Terminal Físico</h4>
-                  <p className="text-sm text-slate-500 mt-1">Envie o valor para o seu Stripe Reader M2 / WisePad 3 via Bluetooth.</p>
+                  <h4 className="font-bold text-slate-900 text-lg">{t('agenda.physicalTerminalBtn')}</h4>
+                  <p className="text-sm text-slate-500 mt-1">{t('agenda.terminalDesc')}</p>
                 </div>
               </button>
             </div>
@@ -379,19 +381,19 @@ export default function AgendaTab() {
         <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border-2 border-rose-100 animate-in zoom-in-95">
             <button onClick={() => setDisputeModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-rose-100 text-rose-500"><X className="w-4 h-4" /></button>
-            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/> Reportar Problema</h3>
-            <p className="text-sm text-slate-500 mb-6">Esta ação irá abrir uma queixa formal junto da equipa de Suporte Glamzo.</p>
+            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/> {t('agenda.reportProblemTitle')}</h3>
+            <p className="text-sm text-slate-500 mb-6">{t('agenda.reportProblemDesc')}</p>
             <form onSubmit={submitDispute} className="space-y-4">
               <select required value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 text-sm rounded-xl outline-none focus:border-rose-500">
-                <option value="Cliente não compareceu">Cliente não compareceu (No-show)</option>
-                <option value="Cliente recusou-se a pagar">Cliente recusou-se a pagar</option>
-                <option value="Comportamento inadequado">Comportamento inadequado</option>
-                <option value="Outro problema de cobrança">Outro problema de cobrança</option>
+                <option value="Cliente não compareceu">{t('agenda.disputeNoShow')}</option>
+                <option value={t('agenda.disputeRefused')}>{t('agenda.disputeRefused')}</option>
+                <option value={t('agenda.disputeBehavior')}>{t('agenda.disputeBehavior')}</option>
+                <option value={t('agenda.disputeOther')}>{t('agenda.disputeOther')}</option>
               </select>
-              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder="Detalhe o que aconteceu..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
+              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder={t('agenda.disputeDetailPlaceholder')} className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
               <button type="submit" disabled={submittingDispute} className="w-full py-4 bg-rose-600 hover:bg-rose-700 transition-colors text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30">
-                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />} Enviar Queixa Oficial
-              </button>
+                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />} {t('agenda.sendDisputeBtn')}
+                                            </button>
             </form>
           </div>
         </div>
@@ -401,25 +403,25 @@ export default function AgendaTab() {
       {isManualBookingOpen && (
         <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col text-slate-800 max-h-[85vh] animate-in zoom-in-95">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl"><h3 className="font-extrabold text-xl text-slate-900">Nova Marcação</h3><button onClick={() => setIsManualBookingOpen(false)} className="w-10 h-10 rounded-full bg-white shadow-sm border flex items-center justify-center"><X className="w-5 h-5" /></button></div>
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl"><h3 className="font-extrabold text-xl text-slate-900">{t('agenda.newBookingTitle')}</h3><button onClick={() => setIsManualBookingOpen(false)} className="w-10 h-10 rounded-full bg-white shadow-sm border flex items-center justify-center"><X className="w-5 h-5" /></button></div>
             <form onSubmit={handleSaveManualBooking} className="p-6 overflow-y-auto space-y-5 custom-scrollbar">
               <div className="flex p-1 bg-slate-100 rounded-2xl">
-                <button type="button" onClick={() => setManualBookingType("booking")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "booking" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>Cliente</button>
-                <button type="button" onClick={() => setManualBookingType("block")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "block" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500"}`}>Bloqueio</button>
+                <button type="button" onClick={() => setManualBookingType("booking")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "booking" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>{t('agenda.clientTab')}</button>
+                <button type="button" onClick={() => setManualBookingType("block")} className={`flex-1 text-sm font-bold py-2.5 rounded-xl ${manualBookingType === "block" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500"}`}>{t('agenda.blockTab')}</button>
               </div>
               {manualBookingType === "booking" ? (
                 <>
-                  <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Nome</label><input type="text" required placeholder="Ex: Maria" value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold" /></div>
+                  <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.nameLabel')}</label><input type="text" required placeholder={t('agenda.namePlaceholder')} value={manualClientName} onChange={(e) => setManualClientName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold" /></div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Serviço</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Equipa</label><select value={manualStaffId} onChange={(e) => setManualStaffId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{staff.length === 0 ? <option value="all">Toda a Equipa</option> : <option value="" disabled hidden>Selecione um funcionário</option>}{staff.map((st:any) => <option key={st.id} value={st.id}>{st.full_name}</option>)}</select></div>
+                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.serviceLabel')}</label><select value={manualServiceId} onChange={(e) => setManualServiceId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{services.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                    <div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.teamLabel')}</label><select value={manualStaffId} onChange={(e) => setManualStaffId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 outline-none rounded-2xl p-4 text-sm font-bold">{staff.length === 0 ? <option value="all">{t('agenda.allTeam')}</option> : <option value="" disabled hidden>{t('agenda.selectStaff')}</option>}{staff.map((st:any) => <option key={st.id} value={st.id}>{st.full_name}</option>)}</select></div>
                   </div>
                 </>
               ) : (
-                <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Motivo</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Duração</label><select value={manualBlockDuration} onChange={(e) => setManualBlockDuration(Number(e.target.value))} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold"><option value={15}>15 min</option><option value={30}>30 min</option><option value={45}>45 min</option><option value={60}>1h</option><option value={90}>1h 30m</option><option value={120}>2h</option><option value={180}>3h</option><option value={240}>4h</option><option value={300}>5h</option><option value={480}>8h</option></select></div></div>
+                <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.reasonLabel')}</label><input type="text" required value={manualReason} onChange={(e) => setManualReason(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.durationLabel')}</label><select value={manualBlockDuration} onChange={(e) => setManualBlockDuration(Number(e.target.value))} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold"><option value={15}>{t('agenda.min15')}</option><option value={30}>{t('agenda.min30')}</option><option value={45}>{t('agenda.min45')}</option><option value={60}>{t('agenda.h1')}</option><option value={90}>{t('agenda.h1m30')}</option><option value={120}>{t('agenda.h2')}</option><option value={180}>{t('agenda.h3')}</option><option value={240}>{t('agenda.h4')}</option><option value={300}>{t('agenda.h5')}</option><option value={480}>{t('agenda.h8')}</option></select></div></div>
               )}
-              <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Data</label><input type="date" required value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">Hora</label><input type="time" required value={manualStartTime} onChange={(e) => setManualStartTime(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div></div>
-              <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsManualBookingOpen(false)} className="flex-1 bg-white text-slate-700 border text-sm font-bold py-4 rounded-2xl">Cancelar</button><button type="submit" disabled={isSavingManual} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-black py-4 rounded-2xl shadow-lg">{isSavingManual ? "A guardar..." : "Confirmar"}</button></div>
+              <div className="grid grid-cols-2 gap-4"><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.dateLabel')}</label><input type="date" required value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div><div className="space-y-1.5"><label className="text-[11px] font-black uppercase text-slate-400">{t('agenda.time')}</label><input type="time" required value={manualStartTime} onChange={(e) => setManualStartTime(e.target.value)} className="w-full bg-slate-50 border outline-none rounded-2xl p-4 text-sm font-bold" /></div></div>
+              <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsManualBookingOpen(false)} className="flex-1 bg-white text-slate-700 border text-sm font-bold py-4 rounded-2xl">{t('agenda.cancelBtn')}</button><button type="submit" disabled={isSavingManual} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-black py-4 rounded-2xl shadow-lg">{isSavingManual ? "A guardar..." : "Confirmar"}</button></div>
             </form>
           </div>
         </div>

@@ -26,6 +26,7 @@ export interface Business {
   district: string;
   city: string;
   address: string;
+  currency?: string | null;
   door_number?: string | null;
     postal_code: string | null;
   logo_url: string | null;
@@ -238,6 +239,7 @@ export interface TabletOrder {
   shipping_name: string;
   shipping_phone: string;
   shipping_address: string;
+  currency?: string | null;
   shipping_postal_code: string;
   shipping_city: string;
   deposit_paid: boolean;

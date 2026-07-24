@@ -2,11 +2,13 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { User, LogOut, Briefcase, Search, Heart, Home as HomeIcon } from 'lucide-react';
 import GlamzoLogo from './GlamzoLogo';
+import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/chamadas');
   const isPartnerPage = location.pathname.startsWith('/partner');
@@ -53,12 +55,12 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-6">
               {isPartnerPage ? (
                 <Link to="/" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-all tracking-wide`}>
-                  Ver Marketplace Clientes
+                  {t('navbar.viewMarketplace')}
                 </Link>
               ) : (
                 <>
                   <Link to="/explore" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
-                    Explorar Parceiros
+                    {t('navbar.explorePartners')}
                   </Link>
                   {user && profile?.role === 'customer' && (
                     <Link 
@@ -69,12 +71,12 @@ export default function Navbar() {
                           : 'text-rose-500 bg-rose-50 hover:bg-rose-100 border border-rose-200/55 hover:border-rose-450'
                       } px-3.5 py-1.5 transition-all rounded-full tracking-wider`}
                     >
-                      ÁREA PARCEIRO
+                      {t('navbar.partnerArea')}
                     </Link>
                   )}
                   {profile?.role === 'business' && (
                     <Link to="/dashboard" className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-all">
-                      Painel do Salão
+                      {t('navbar.salonPanel')}
                     </Link>
                   )}
                 </>
@@ -126,7 +128,7 @@ export default function Navbar() {
                         ? 'text-slate-600 hover:text-rose-400 hover:bg-rose-950/30 hover:border-rose-900/40' 
                         : 'text-slate-600 hover:text-rose-600 hover:bg-rose-550/10 hover:border-rose-100'
                     }`}
-                    title="Terminar Sessão"
+                    title={t('navbar.signOut')}
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -137,13 +139,13 @@ export default function Navbar() {
                     to={isPartnerPage ? "/partner/login" : "/login"}
                     className={`text-xs sm:text-sm px-3.5 py-2 ${isDarkNavbar ? 'text-slate-300 hover:text-white' : 'text-slate-650 hover:text-slate-900'} transition-all font-medium`}
                   >
-                    Entrar
+                    {t('navbar.signIn')}
                   </Link>
                   <Link
                     to={isPartnerPage ? "/partner/signup" : "/signup"}
                     className="text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md shadow-purple-950/20 transition-all hover:scale-[1.01]"
                   >
-                    {isPartnerPage ? "Registar" : "Criar Conta"}
+                    {isPartnerPage ? t('navbar.register') : t('navbar.createAccount')}
                   </Link>
                 </div>
               )}

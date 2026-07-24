@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase";
 import { Business, Review } from "../types";
 import { fetchAllReviews } from "../utils/reviewsHelper";
@@ -14,9 +15,9 @@ import {
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 // Removed obsolete local calculations
 
-const getCategoryDisplayName = (name: string) => {
-  if (name === "Wellness") return "Wellness & Spa";
-  if (name === "Ao domicílio") return "Ao Domicílio";
+const getCategoryDisplayName = (name: string, t: any) => {
+  if (name === "Wellness") return t('explore.wellness');
+  if (name === "Ao domicílio") return t('explore.atHome');
   return name;
 };
 
@@ -115,6 +116,7 @@ function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData:
 }
 
 export default function Explore() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -227,7 +229,7 @@ export default function Explore() {
       setPromotions(promoMap);
       
     } catch (err: any) {
-      setErrorMsg("Falha ao carregar diretório. Tente novamente.");
+      setErrorMsg(t('explore.failLoadDirectory'));
     } finally {
       setLoading(false);
     }
@@ -244,7 +246,7 @@ export default function Explore() {
 
   const handleToggleFavorite = async (businessId: string) => {
     if (!user) {
-      alert("Por favor, inicie sessão para guardar favoritos!");
+      alert(t('explore.loginToSaveFav'));
       return;
     }
     const isNowFav = await toggleFavorite(user.id, businessId);
@@ -313,7 +315,7 @@ export default function Explore() {
             setGeoLocating(false);
           },
           () => {
-            alert("Ative a localização no seu dispositivo.");
+            alert(t('explore.enableLocation'));
             setGeoLocating(false);
           }
         );
@@ -425,11 +427,11 @@ export default function Explore() {
     // Social Proof Badge Logic (Mock)
     let badge = null;
     if (b.is_top_rated) {
-      badge = <span className="bg-[#0f172a] text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400"/> Top Rated</span>;
+      badge = <span className="bg-[#0f172a] text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400"/> {t('explore.topRated')}</span>;
     } else if (b.is_popular) {
-      badge = <span className="bg-rose-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">🔥 Muito Procurado</span>;
+      badge = <span className="bg-rose-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">{t('explore.highlyDemanded')}</span>;
     } else if (b.is_new) {
-      badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Nova Loja</span>;
+      badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> {t('explore.newShop')}</span>;
     }
     
     const isGrid = viewMode === 'grid';
@@ -452,11 +454,11 @@ export default function Explore() {
           />
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
             {b.is_promoted && (
-              <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">Destaque</span>
+              <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">{t('explore.featured')}</span>
             )}
             {badge}
           </div>
-          <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
+          <button onClick={(e) => { e.preventDefault(); handleToggleFavorite(b.id); }} aria-label={userFavorites.includes(b.id) ? t('explore.removeFav') : t('explore.addFav')} className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10">
             <Heart className={`w-6 h-6 stroke-[1.5] transition-colors ${userFavorites.includes(b.id) ? "fill-rose-500 stroke-rose-500" : "fill-black/20 stroke-white"}`} />
           </button>
         </div>
@@ -465,7 +467,7 @@ export default function Explore() {
             <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
             <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{b.rating > 0 ? b.rating.toFixed(1) : "Novo"}</span>
+              <span>{b.rating > 0 ? b.rating.toFixed(1) : t('explore.new')}</span>
             </div>
           </div>
           <p className="text-xs font-medium text-purple-600 truncate">{b.category}</p>
@@ -494,7 +496,7 @@ export default function Explore() {
                   );
                 })
              ) : (
-                <span className="text-[11px] text-slate-500 font-medium py-1.5">Sem vagas próximas</span>
+                <span className="text-[11px] text-slate-500 font-medium py-1.5">{t('explore.noSlots')}</span>
              )}
           </div>
         </div>
@@ -509,39 +511,39 @@ export default function Explore() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">
-            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Todos</button>
+            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{t('explore.all')}</button>
             {MAIN_CATEGORIES.map((cat) => (
-              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat.name)}</button>
+              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat.name, t)}</button>
             ))}
           </div>
           <div className="ml-4 pl-4 border-l border-slate-200 hidden md:flex items-center gap-3">
              <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Pesquisar loja..." className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder={t('explore.searchStore')} className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
              </div>
              <div className="hidden lg:flex items-center gap-2">
       <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="">Raio: Todos</option>
-        <option value="5">Até 5 km</option>
-        <option value="10">Até 10 km</option>
-        <option value="25">Até 25 km</option>
-        <option value="50">Até 50 km</option>
+        <option value="">{t('explore.radiusAll')}</option>
+        <option value="5">{t('explore.radius5')}</option>
+        <option value="10">{t('explore.radius10')}</option>
+        <option value="25">{t('explore.radius25')}</option>
+        <option value="50">{t('explore.radius50')}</option>
       </select>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="recomendados">Recomendados</option>
-        <option value="distancia">Distância: Mais Próximo</option>
-        <option value="preco_asc">Preço: Mais barato primeiro</option>
-        <option value="rating">Melhor Avaliação</option>
+        <option value="recomendados">{t('explore.sortRecommended')}</option>
+        <option value="distancia">{t('explore.sortDistance')}</option>
+        <option value="preco_asc">{t('explore.sortPriceAsc')}</option>
+        <option value="rating">{t('explore.sortRating')}</option>
       </select>
       <button onClick={() => setAbertoAgora(!abertoAgora)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        Aberto Agora
+        {t('explore.openNow')}
       </button>
       <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        Apenas 4+ ⭐
+        {t('explore.only4Stars')}
       </button>
    </div>
    <button onClick={() => setIsDrawerOpen(true)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors lg:ml-2">
-     <SlidersHorizontal className="w-4 h-4" /> Filtros
+     <SlidersHorizontal className="w-4 h-4" /> {t('explore.filters')}
    </button>
           </div>
           <div className="md:hidden ml-2 flex items-center">
@@ -556,7 +558,7 @@ export default function Explore() {
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">Explorar ({sortedBusinesses.length})</h2>
+              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">{t('explore.exploreTitle')} ({sortedBusinesses.length})</h2>
               
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
@@ -573,7 +575,7 @@ export default function Explore() {
            {loading ? (
               <div className="flex flex-col items-center justify-center flex-1 py-20">
                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin mb-4" />
-                <p className="text-sm font-medium text-slate-500">A carregar lojas...</p>
+                <p className="text-sm font-medium text-slate-500">{t('explore.loadingShops')}</p>
               </div>
             ) : sortedBusinesses.length > 0 ? (
               <>
@@ -583,7 +585,7 @@ export default function Explore() {
                 {sortedBusinesses.length === queryLimit && (
                   <div className="text-center pt-8 pb-12">
                     <button onClick={() => setQueryLimit(queryLimit + 12)} className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm">
-                      Carregar mais
+                      {t('explore.loadMore')}
                     </button>
                   </div>
                 )}
@@ -593,9 +595,9 @@ export default function Explore() {
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4">
                   <Search className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 font-['Outfit']">Nenhum espaço encontrado</h3>
-                <p className="text-xs text-slate-500 mt-2 max-w-sm">Tente limpar os filtros ou pesquisar noutra zona.</p>
-                <button onClick={handleClearFilters} className="mt-6 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">Limpar Tudo</button>
+                <h3 className="text-lg font-bold text-slate-900 font-['Outfit']">{t('explore.noShopsFound')}</h3>
+                <p className="text-xs text-slate-500 mt-2 max-w-sm">{t('explore.tryClearFilters')}</p>
+                <button onClick={handleClearFilters} className="mt-6 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">{t('explore.clearAll')}</button>
               </div>
             )}
         </div>
@@ -643,8 +645,8 @@ export default function Explore() {
            ) : (
              <div className="flex flex-col items-center justify-center h-full bg-slate-100 text-slate-500 p-8 text-center">
                 <MapPin className="w-8 h-8 mb-3 opacity-50" />
-                <p className="text-sm font-bold">Mapa Indisponível</p>
-                <p className="text-xs mt-1">Configure a API Key do Google Maps.</p>
+                <p className="text-sm font-bold">{t('explore.mapUnavailable')}</p>
+                <p className="text-xs mt-1">{t('explore.configureMapApi')}</p>
              </div>
            )}
         </div>
@@ -657,9 +659,9 @@ export default function Explore() {
            className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors"
          >
            {viewModeMobile === 'list' ? (
-             <><MapIcon className="w-4 h-4" /> Mostrar Mapa</>
+             <><MapIcon className="w-4 h-4" /> {t('explore.showMap')}</>
            ) : (
-             <><List className="w-4 h-4" /> Mostrar Lista</>
+             <><List className="w-4 h-4" /> {t('explore.showList')}</>
            )}
          </button>
       </div>
@@ -670,49 +672,49 @@ export default function Explore() {
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
           <div className="w-full max-w-sm bg-white h-full shadow-2xl relative flex flex-col animate-slide-in-right font-['Inter']">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="font-bold text-slate-900 font-['Outfit']">Filtros</h2>
+              <h2 className="font-bold text-slate-900 font-['Outfit']">{t('explore.filters')}</h2>
               <button onClick={() => setIsDrawerOpen(false)} aria-label="Fechar" className="p-2 bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                <div>
-                 <label className="block text-xs font-bold text-slate-700 mb-2">Localização</label>
+                 <label className="block text-xs font-bold text-slate-700 mb-2">{t('explore.location')}</label>
                  <div className="relative mb-2">
                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                   <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Lisboa..." className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+                   <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder={t('explore.locationPlaceholder')} className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
                  </div>
                  <button onClick={handleNearMeToggle} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors ${useNearMe ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'}`}>
-                    <Navigation className="w-4 h-4" /> Usar a minha localização
+                    <Navigation className="w-4 h-4" /> {t('explore.useMyLocation')}
                  </button>
                </div>
                <div>
-      <label className="block text-xs font-bold text-slate-700 mb-2">Raio de Pesquisa</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">{t('explore.searchRadius')}</label>
       <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
-        <option value="">Todos</option>
-        <option value="5">Até 5 km</option>
-        <option value="10">Até 10 km</option>
-        <option value="25">Até 25 km</option>
-        <option value="50">Até 50 km</option>
+        <option value="">{t('explore.radiusAll')}</option>
+        <option value="5">{t('explore.radius5')}</option>
+        <option value="10">{t('explore.radius10')}</option>
+        <option value="25">{t('explore.radius25')}</option>
+        <option value="50">{t('explore.radius50')}</option>
       </select>
-      <label className="block text-xs font-bold text-slate-700 mb-2">Ordenação</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">{t('explore.sortOrder')}</label>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
-        <option value="recomendados">Recomendados</option>
-        <option value="distancia">Distância: Mais Próximo</option>
-        <option value="preco_asc">Preço: Mais barato primeiro</option>
-        <option value="rating">Melhor Avaliação</option>
+        <option value="recomendados">{t('explore.sortRecommended')}</option>
+        <option value="distancia">{t('explore.sortDistance')}</option>
+        <option value="preco_asc">{t('explore.sortPriceAsc')}</option>
+        <option value="rating">{t('explore.sortRating')}</option>
       </select>
-      <label className="block text-xs font-bold text-slate-700 mb-2">Filtros Rápidos</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">{t('explore.quickFilters')}</label>
       <div className="flex gap-2">
         <button onClick={() => setAbertoAgora(!abertoAgora)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
-          Aberto Agora
+          {t('explore.openNow')}
         </button>
         <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
-          Apenas 4+ ⭐
+          {t('explore.only4Stars')}
         </button>
       </div>
    </div>
 </div>
             <div className="p-5 border-t border-slate-100">
-               <button onClick={() => setIsDrawerOpen(false)} className="w-full py-3.5 bg-purple-600 text-white rounded-xl text-sm font-bold shadow-md">Aplicar Filtros</button>
+               <button onClick={() => setIsDrawerOpen(false)} className="w-full py-3.5 bg-purple-600 text-white rounded-xl text-sm font-bold shadow-md">{t('explore.applyFilters')}</button>
             </div>
           </div>
         </div>

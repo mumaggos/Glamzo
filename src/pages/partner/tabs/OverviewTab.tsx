@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { DashboardOverview } from "../../../components/DashboardOverview";
 import { Business, Booking, Staff, Service, Review } from "../../../types";
 import { fetchReviewsForBusiness } from "../../../utils/reviewsHelper";
@@ -16,6 +17,7 @@ interface PartnerContextType {
 }
 
 export default function OverviewTab() {
+  const { t } = useTranslation();
   const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const [reviews, setReviews] = React.useState<Review[]>([]);
   React.useEffect(() => {
@@ -93,10 +95,10 @@ export default function OverviewTab() {
            
            <div className="z-10 text-center sm:text-left">
              <h3 className="text-xl font-extrabold tracking-tight text-white mb-1 flex items-center justify-center sm:justify-start gap-2">
-               Insight de Elite <Sparkles className="w-4 h-4 text-purple-300" />
+               {t('overview.eliteInsight')} <Sparkles className="w-4 h-4 text-purple-300" />
              </h3>
              <p className="text-indigo-200 text-sm font-medium">
-               O teu serviço estrela é <strong className="text-white text-base">"{topService}"</strong> – parabéns! Mantém o excelente trabalho para continuares a faturar.
+               {t('overview.starService')} <strong className="text-white text-base">"{topService}"</strong> {t('overview.congratsKeepItUp')}
              </p>
            </div>
          </div>
