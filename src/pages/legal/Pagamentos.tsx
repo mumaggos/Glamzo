@@ -1,13 +1,11 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Pagamentos() {
-    const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="politica-de-pagamentos"
-      defaultTitle={t('Política de Pagamentos') || 'Política de Pagamentos'} 
+      defaultTitle="Política de Pagamentos" 
       defaultLastUpdated="18 de Junho de 2026"
       defaultContent={
         <>

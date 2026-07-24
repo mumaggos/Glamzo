@@ -3,7 +3,6 @@ import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Sparkles, Check, CheckCircle, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
 import { Business } from "../../../types";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
@@ -11,7 +10,6 @@ interface PartnerContextType {
 }
 
 export default function SubscriptionTab() {
-    const { t } = useTranslation();
   const { business, staff } = useOutletContext<PartnerContextType>();
   const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > new Date());
   const isSuspended = business ? !hasValidSubscription : false;
@@ -395,13 +393,11 @@ export default function SubscriptionTab() {
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          
-                            {t('txt_subscri_o_e_fatura_o') || 'Subscrição e Faturação'}
-                          </h3>
+          Subscrição e Faturação
+        </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          
-                            {t('txt_acompanhe_a_sua_subscri_o_glam') || 'Acompanhe a sua subscrição Glamzo Pro, consulte faturas reais e verifique o estado do seu Glamzo Pay Connect.'}
-                          </p>
+          Acompanhe a sua subscrição Glamzo Pro, consulte faturas reais e verifique o estado do seu Glamzo Pay Connect.
+        </p>
       </div>
 
             {isSuspended && (
@@ -409,17 +405,16 @@ export default function SubscriptionTab() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"/>
             <div>
-              <h4 className="text-sm font-bold text-rose-900">{t('txt_loja_suspensa') || 'Loja Suspensa'}</h4>
-              <p className="text-xs text-rose-700 mt-1">{t('txt_o_seu_per_odo_de_utiliza_o_exp') || 'O seu período de utilização expirou ou a subscrição foi cancelada. A sua página pública não está visível.'}</p>
+              <h4 className="text-sm font-bold text-rose-900">Loja Suspensa</h4>
+              <p className="text-xs text-rose-700 mt-1">O seu período de utilização expirou ou a subscrição foi cancelada. A sua página pública não está visível.</p>
             </div>
           </div>
           <button 
             onClick={async () => { await supabase.auth.signOut(); window.location.href = '/partner/login'; }} 
             className="px-4 py-2 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap"
           >
-            
-                                  {t('txt_terminar_sess_o') || 'Terminar Sessão'}
-                                </button>
+            Terminar Sessão
+          </button>
         </div>
       )}
 
@@ -440,26 +435,26 @@ export default function SubscriptionTab() {
               : "bg-white border-slate-200 hover:border-purple-300"
           }`}>
           <div className="flex justify-between items-start mb-2">
-            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{t('txt_digital_245') || 'Digital'}</span>
-            {business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">{t('txt_plano_atual') || 'Plano Atual'}</span>}
+            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
+            {business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
-          <h4 className="text-xl font-black text-slate-900 mt-2">{t('txt_glamzo_pro') || 'Glamzo PRO'}</h4>
+          <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
           <div className="mt-4 mb-6 flex flex-wrap items-center gap-3">
             <div>
-              <span className="text-4xl font-black text-slate-900">{t('txt_19_90') || '19.90€'}</span>
+              <span className="text-4xl font-black text-slate-900">19.90€</span>
               <span className="text-sm font-bold text-slate-500"> / mês</span>
             </div>
             {!hasUsedTrial ? (
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">{t('txt_14_dias_gr_tis_46') || '14 Dias Grátis'}</span>
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">14 Dias Grátis</span>
             ) : (
-              <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">{t('txt_cobran_a_imediata') || 'Cobrança Imediata'}</span>
+              <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">Cobrança Imediata</span>
             )}
           </div>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/>  {t('txt_agenda_e_reservas_ilimitadas') || 'Agenda e Reservas Ilimitadas'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/>  {t('txt_p_gina_p_blica_premium_no_expl') || 'Página Pública Premium no Explorar'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/>  {t('txt_equipa_e_servi_os_ilimitados') || 'Equipa e Serviços Ilimitados'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/>  {t('txt_pagamentos_online_seguros_stri') || 'Pagamentos Online Seguros (Stripe)'}</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
           </ul>
           
                     {isSuspended ? (
@@ -476,14 +471,12 @@ export default function SubscriptionTab() {
               disabled={isVerifyingSub}
               className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
             >
-              
-                                            {t('txt_fazer_downgrade_para_base') || 'Fazer Downgrade para Base'}
-                                          </button>
+              Fazer Downgrade para Base
+            </button>
           ) : (
             <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
-              
-                                                {t('txt_o_seu_plano_atual') || 'O Seu Plano Atual'}
-                                              </button>
+              O Seu Plano Atual
+            </button>
           )}
         </div>
         
@@ -493,35 +486,35 @@ export default function SubscriptionTab() {
               ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-2xl ring-2 ring-purple-500/30 text-white" 
               : "bg-slate-900 text-white border-purple-500 shadow-2xl"
           }`}>
-          <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-2xl shadow-lg">{t('txt_recomendado_246') || 'Recomendado'}</div>
+          <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-2xl shadow-lg">Recomendado</div>
           <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full group-hover:bg-purple-500/30 transition-all"></div>
           
           <div className="flex justify-between items-start mb-2 relative z-10">
-            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/>  {t('txt_hardware_digital') || 'Hardware + Digital'}</span>
-            { (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">{t('txt_plano_atual') || 'Plano Atual'}</span>}
+            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
+            { (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
-          <h4 className="text-xl font-black relative z-10 mt-2">{t('txt_terminal_f_sico_glamzo_47') || 'Terminal Físico Glamzo'}</h4>
+          <h4 className="text-xl font-black relative z-10 mt-2">Terminal Físico Glamzo</h4>
           <div className="mt-4 mb-6 relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <div>
-                <span className="text-4xl font-black text-white">{t('txt_99_00_48') || '99.00€'}</span>
-                <span className="text-sm font-bold text-slate-400">  {t('txt_nico') || 'Único'}</span>
+                <span className="text-4xl font-black text-white">99.00€</span>
+                <span className="text-sm font-bold text-slate-400"> Único</span>
               </div>
               {!hasUsedTrial ? (
-                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-lg">{t('txt_14_dias_gr_tis_49') || '14 Dias Grátis'}</span>
+                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-lg">14 Dias Grátis</span>
               ) : (
-                <span className="bg-slate-700 text-slate-300 text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-inner">{t('txt_cobran_a_imediata') || 'Cobrança Imediata'}</span>
+                <span className="bg-slate-700 text-slate-300 text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-inner">Cobrança Imediata</span>
               )}
             </div>
             <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
-              <span className="text-xs font-bold text-purple-300">{t('txt_sem_mensalidades_ou_fideliza_o') || 'Sem Mensalidades ou Fidelização'}</span>
+              <span className="text-xs font-bold text-purple-300">Sem Mensalidades ou Fidelização</span>
             </div>
           </div>
           <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/>  {t('txt_a_m_quina_sua_portes_e_imposto') || 'A máquina é sua (Portes e Impostos Incluídos)'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>{t('txt_terminal_f_sico_stripe_reader') || 'Terminal Físico (Stripe Reader)'}</strong>  {t('txt_contact_less_e_chip') || 'contact-less e chip'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/>  {t('txt_sincroniza_o_direta_com_a_agen') || 'Sincronização direta com a Agenda'}</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/>  {t('txt_relat_rios_avan_ados_csv') || 'Relatórios Avançados CSV'}</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> A máquina é sua (Portes e Impostos Incluídos)</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Terminal Físico (Stripe Reader)</strong> contact-less e chip</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Sincronização direta com a Agenda</li>
+            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
           </ul>
 
                     {isSuspended ? (
@@ -542,9 +535,8 @@ export default function SubscriptionTab() {
             </button>
           ) : (
             <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
-              
-                                                {t('txt_o_seu_plano_atual') || 'O Seu Plano Atual'}
-                                              </button>
+              O Seu Plano Atual
+            </button>
           )}
         </div>
 
@@ -556,8 +548,8 @@ export default function SubscriptionTab() {
             onClick={handleOpenBillingPortal}
             className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
           >
-            <FileText className="w-4 h-4" />  {t('txt_gerir_fatura_o_e_cart_o') || 'Gerir Faturação e Cartão'}
-                                </button>
+            <FileText className="w-4 h-4" /> Gerir Faturação e Cartão
+          </button>
           {!isSuspended && (
             <button
               onClick={handleCancelSubscription}
@@ -574,9 +566,8 @@ export default function SubscriptionTab() {
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 mb-6">
         <h4 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
           <Banknote className="w-4 h-4 text-emerald-500" />
-          
-                            {t('txt_glamzo_pay_levantamentos') || 'Glamzo Pay / Levantamentos'}
-                          </h4>
+          Glamzo Pay / Levantamentos
+        </h4>
         
         {(!business?.stripe_account_id || (stripeStatus && (!stripeStatus.charges_enabled || stripeStatus.connected === false))) ? (
           <div className="bg-white p-5 rounded-2xl border border-slate-200 text-center">
@@ -585,16 +576,15 @@ export default function SubscriptionTab() {
             </div>
             {business?.stripe_account_id && stripeStatus && stripeStatus.connected !== false && !stripeStatus.charges_enabled ? (
               <>
-                <h5 className="font-bold text-slate-900 mb-1">{t('txt_concluir_configura_o_glamzo_pa') || 'Concluir Configuração Glamzo Pay'}</h5>
-                <p className="text-xs text-rose-500 mb-4 max-w-sm mx-auto font-medium">{t('txt_a_sua_conta_foi_criada_mas_fal') || 'A sua conta foi criada, mas faltam detalhes importantes. Conclua o registo para ativar os pagamentos.'}</p>
+                <h5 className="font-bold text-slate-900 mb-1">Concluir Configuração Glamzo Pay</h5>
+                <p className="text-xs text-rose-500 mb-4 max-w-sm mx-auto font-medium">A sua conta foi criada, mas faltam detalhes importantes. Conclua o registo para ativar os pagamentos.</p>
               </>
             ) : (
               <>
-                <h5 className="font-bold text-slate-900 mb-1">{t('txt_receba_pagamentos_online') || 'Receba Pagamentos Online'}</h5>
+                <h5 className="font-bold text-slate-900 mb-1">Receba Pagamentos Online</h5>
                 <p className="text-xs text-slate-500 mb-4 max-w-sm mx-auto">
-                  
-                                                        {t('txt_configure_a_sua_conta_glamzo_p') || 'Configure a sua conta Glamzo Pay (via Stripe) para aceitar pagamentos com Cartão, Apple Pay e MBWay através do sistema de reservas.'}
-                                                      </p>
+                  Configure a sua conta Glamzo Pay (via Stripe) para aceitar pagamentos com Cartão, Apple Pay e MBWay através do sistema de reservas.
+                </p>
               </>
             )}
             <button
@@ -604,13 +594,13 @@ export default function SubscriptionTab() {
               {(business?.stripe_account_id && stripeStatus?.connected !== false) ? 'Concluir Registo' : 'Configurar Conta Bancária'}
             </button>
             <div className="mt-4 pt-4 border-t border-slate-100 max-w-xs mx-auto text-left">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('txt_ou_insira_id_stripe_manual_se') || 'Ou insira ID Stripe Manual (Se já tiver conta)'}</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ou insira ID Stripe Manual (Se já tiver conta)</label>
               <div className="flex gap-2">
                 <input 
                   type="text" 
                   value={manualStripeId}
                   onChange={e => setManualStripeId(e.target.value)}
-                  placeholder={t('txt_acct_1') || 'acct_1...'} 
+                  placeholder="acct_1..." 
                   className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono outline-none focus:border-emerald-500"
                 />
                 <button 
@@ -618,33 +608,32 @@ export default function SubscriptionTab() {
                   disabled={savingManualStripe || !manualStripeId}
                   className="bg-slate-800 text-white px-3 rounded-lg text-xs font-bold disabled:opacity-50 hover:bg-slate-900"
                 >
-                  
-                                                    {t('txt_salvar_247') || 'Salvar'}
-                                                  </button>
+                  Salvar
+                </button>
               </div>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-slate-200">
-              <h5 className="font-bold text-xs text-slate-900 mb-4">{t('txt_conta_glamzo_pay') || 'Conta Glamzo Pay'}</h5>
+              <h5 className="font-bold text-xs text-slate-900 mb-4">Conta Glamzo Pay</h5>
               
               {stripeStatus && (
                 <div className="mb-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">{t('txt_receber_pagamentos') || 'Receber Pagamentos'}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Receber Pagamentos</span>
                     {stripeStatus.charges_enabled ? (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/>  {t('txt_ativo_248') || 'Ativo'}</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
                     ) : (
-                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/>  {t('txt_restrito_249') || 'Restrito'}</span>
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">{t('txt_levantamentos_250') || 'Levantamentos'}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Levantamentos</span>
                     {stripeStatus.payouts_enabled ? (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/>  {t('txt_ativo_251') || 'Ativo'}</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Ativo</span>
                     ) : (
-                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/>  {t('txt_restrito_252') || 'Restrito'}</span>
+                      <span className="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Restrito</span>
                     )}
                   </div>
                 </div>
@@ -656,36 +645,34 @@ export default function SubscriptionTab() {
                     onClick={handleConnectStripe}
                     className="flex-1 bg-amber-500 text-white font-bold py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center justify-center gap-2"
                   >
-                    <AlertCircle className="w-4 h-4"/>  {t('txt_concluir_registo') || 'Concluir Registo'}
-                                                            </button>
+                    <AlertCircle className="w-4 h-4"/> Concluir Registo
+                  </button>
                 ) : (
                   <button
                     onClick={handleConnectStripe}
                     className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-xl text-xs hover:bg-slate-800 transition"
                   >
-                    
-                                                                  {t('txt_painel_stripe_glamzo_pay') || 'Painel Stripe / Glamzo Pay'}
-                                                                </button>
+                    Painel Stripe / Glamzo Pay
+                  </button>
                 )}
               </div>
             </div>
 
             <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
-              <h5 className="font-bold text-xs text-emerald-900 mb-1 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500"/>  {t('txt_transfer_ncias_autom_ticas') || 'Transferências Automáticas'}</h5>
+              <h5 className="font-bold text-xs text-emerald-900 mb-1 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500"/> Transferências Automáticas</h5>
               <p className="text-[11px] text-emerald-700/80 leading-relaxed mb-3">
-                
-                                                  {t('txt_os_seus_fundos_dispon_veis_s_o') || 'Os seus fundos disponíveis são processados de forma automática e gratuita'} <b>{t('txt_todas_as_segundas_feiras') || 'todas as Segundas-feiras'}</b>  {t('txt_para_a_sua_conta_banc_ria') || 'para a sua conta bancária.'}
-                                                </p>
+                Os seus fundos disponíveis são processados de forma automática e gratuita <b>todas as Segundas-feiras</b> para a sua conta bancária.
+              </p>
               
               <div className="bg-white p-3 rounded-xl border border-emerald-100 flex flex-wrap items-center justify-between gap-2 shadow-sm">
                 <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t('txt_dispon_vel_para_levantamento') || 'Disponível para Levantamento'}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Disponível para Levantamento</p>
                   <p className="text-lg font-black text-emerald-600 font-mono">
                     {stripeStatus?.available_balance ? (stripeStatus.available_balance / 100).toFixed(2) : "0.00"}€
                   </p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 text-right">{t('txt_pendente_253') || 'Pendente'}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 text-right">Pendente</p>
                   <p className="text-sm font-bold text-slate-600 font-mono text-right">
                     {stripeStatus?.pending_balance ? (stripeStatus.pending_balance / 100).toFixed(2) : "0.00"}€
                   </p>

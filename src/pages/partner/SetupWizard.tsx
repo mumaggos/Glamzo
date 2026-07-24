@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -15,7 +14,6 @@ const API_KEY =
   "";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
-    const { t } = useTranslation();
   const map = useMap();
   useEffect(() => {
     if (map && coordinates) {
@@ -76,7 +74,6 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 };
 
 export default function SetupWizard() {
-    const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -794,20 +791,20 @@ export default function SetupWizard() {
   }
 
   const steps = [
-    { num: 1, title: t('setup_step_store') || 'Loja', icon: <Building2 className="w-4 h-4" /> },
-    { num: 2, title: t('setup_step_hours') || 'Horários', icon: <Clock className="w-4 h-4" /> },
-    { num: 3, title: t('setup_step_services') || 'Serviços', icon: <Scissors className="w-4 h-4" /> },
-    { num: 4, title: t('setup_step_plan') || 'Plano', icon: <CreditCard className="w-4 h-4" /> },
-    { num: 5, title: t('setup_step_payments') || 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
-    { num: 6, title: t('setup_step_review') || 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
+    { num: 1, title: 'Loja', icon: <Building2 className="w-4 h-4" /> },
+    { num: 2, title: 'Horários', icon: <Clock className="w-4 h-4" /> },
+    { num: 3, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
+    { num: 4, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
+    { num: 5, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
+    { num: 6, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('txt_configure_a_sua_loja') || 'Configure a sua Loja'}</h1>
-          <p className="text-sm text-slate-500 mt-2">{t('txt_complete_os_passos_para_ativar') || 'Complete os passos para ativar o seu estabelecimento na Glamzo.'}</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Configure a sua Loja</h1>
+          <p className="text-sm text-slate-500 mt-2">Complete os passos para ativar o seu estabelecimento na Glamzo.</p>
         </div>
 
         {errorMsg && (
@@ -837,23 +834,23 @@ export default function SetupWizard() {
 
         {step === 1 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('txt_informa_es_da_loja') || 'Informações da Loja'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Informações da Loja</h2>
             <div className="space-y-4">
               
               <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('setup_images') || 'Imagens do Estabelecimento (Capa e Perfil)'}</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Imagens do Estabelecimento (Capa e Perfil)</label>
                 <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 h-44 sm:h-52 flex flex-col justify-end">
                   {coverUrl ? (
-                    <img loading="lazy" src={coverUrl} alt={t('txt_capa_152') || 'Capa'} className="absolute inset-0 w-full h-full object-cover" />
+                    <img loading="lazy" src={coverUrl} alt="Capa" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-100/50">
                       <Upload className="w-8 h-8 text-slate-300 mb-1" />
-                      <span className="text-xs font-medium">{t('txt_carregar_foto_de_capa') || 'Carregar Foto de Capa'}</span>
+                      <span className="text-xs font-medium">Carregar Foto de Capa</span>
                     </div>
                   )}
                   <label className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow flex items-center gap-2 backdrop-blur-sm z-10">
                     <Camera className="w-4 h-4" />
-                    <span>{t('txt_alterar_capa') || 'Alterar Capa'}</span>
+                    <span>Alterar Capa</span>
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -868,7 +865,7 @@ export default function SetupWizard() {
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
                     <div className="relative w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden flex items-center justify-center group">
                       {logoUrl ? (
-                        <img loading="lazy" src={logoUrl} alt={t('txt_perfil_153') || 'Perfil'} className="w-full h-full object-cover" />
+                        <img loading="lazy" src={logoUrl} alt="Perfil" className="w-full h-full object-cover" />
                       ) : (
                         <div className="flex flex-col items-center justify-center text-slate-400">
                           <Building2 className="w-8 h-8 text-slate-300" />
@@ -877,7 +874,7 @@ export default function SetupWizard() {
                       
                       <label className="absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <Camera className="w-5 h-5 text-white" />
-                        <span className="text-[9px] font-bold text-white uppercase mt-1">{t('txt_alterar_148') || 'Alterar'}</span>
+                        <span className="text-[9px] font-bold text-white uppercase mt-1">Alterar</span>
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -891,16 +888,16 @@ export default function SetupWizard() {
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500 text-center mt-2">{t('txt_clique_em_alterar_capa_para_o') || 'Clique em "Alterar Capa" para o banner superior e passe o rato por cima do círculo central para alterar o seu perfil comercial.'}</p>
+                <p className="text-[11px] text-slate-500 text-center mt-2">Clique em "Alterar Capa" para o banner superior e passe o rato por cima do círculo central para alterar o seu perfil comercial.</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_store_name') || 'Nome do Estabelecimento *'}</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder={t('txt_ex_barbearia_central') || 'Ex: Barbearia Central'} />
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome do Estabelecimento *</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder="Ex: Barbearia Central" />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_store_category') || 'Categoria do Estabelecimento *'}</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Categoria do Estabelecimento *</label>
                 <select 
                   value={category} 
                   onChange={e => setCategory(e.target.value)} 
@@ -910,41 +907,41 @@ export default function SetupWizard() {
                     <option key={cat.name} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-500 mt-1">{t('txt_isso_ajuda_a_interligar_e_filt') || 'Isso ajuda a interligar e filtrar os seus serviços para que os clientes o encontrem facilmente.'}</p>
+                <p className="text-[10px] text-slate-500 mt-1">Isso ajuda a interligar e filtrar os seus serviços para que os clientes o encontrem facilmente.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_phone') || 'Telefone *'}</label>
-                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_910_000_000') || 'Ex: 910 000 000'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Telefone *</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 910 000 000" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_email') || 'E-mail'}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_ola_barbearia_pt') || 'Ex: ola@barbearia.pt'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">E-mail</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: ola@barbearia.pt" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_address') || 'Morada *'}</label>
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_rua_direita') || 'Ex: Rua Direita'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Morada *</label>
+                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Rua Direita" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_door') || 'Nº Porta / Andar'}</label>
-                  <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_12_1_esq') || 'Ex: 12, 1º Esq'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nº Porta / Andar</label>
+                  <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 12, 1º Esq" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_postal_code') || 'Código Postal *'}</label>
-                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_1000_100') || 'Ex: 1000-100'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Código Postal *</label>
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 1000-100" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_city') || 'Cidade *'}</label>
-                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_lisboa_30') || 'Ex: Lisboa'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Cidade *</label>
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_district') || 'Distrito *'}</label>
-                  <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('txt_ex_lisboa_31') || 'Ex: Lisboa'} />
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Distrito *</label>
+                  <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Lisboa" />
                 </div>
               </div>
 
@@ -956,13 +953,13 @@ export default function SetupWizard() {
                   className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
                   <MapPin className="w-3.5 h-3.5 text-purple-650" />
-                  <span>{t('txt_encontrar_no_mapa') || 'Encontrar no Mapa 📍'}</span>
+                  <span>Encontrar no Mapa 📍</span>
                 </button>
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setup_exact_location') || 'Localização Exata no Mapa *'}</label>
-                <p className="text-xs text-slate-500 mb-2.5">{t('txt_arraste_o_marcador_ou_clique_n') || 'Arraste o marcador ou clique no mapa para posicionar o seu estabelecimento com precisão de modo a não haver erro de distância.'}</p>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Localização Exata no Mapa *</label>
+                <p className="text-xs text-slate-500 mb-2.5">Arraste o marcador ou clique no mapa para posicionar o seu estabelecimento com precisão de modo a não haver erro de distância.</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
                   {API_KEY ? (
                     <APIProvider apiKey={API_KEY}>
@@ -993,9 +990,8 @@ export default function SetupWizard() {
                               <MapPin className="w-5 h-5 fill-current" />
                             </div>
                             <div className="absolute top-10 bg-slate-900 text-white text-[9px] font-bold px-2 py-1 rounded shadow-md whitespace-nowrap opacity-90">
-                              
-                                                                                        {t('txt_arraste_at_sua_loja') || 'Arraste até à sua Loja'}
-                                                                                      </div>
+                              Arraste até à sua Loja
+                            </div>
                           </div>
                         </AdvancedMarker>
                       </Map>
@@ -1003,12 +999,11 @@ export default function SetupWizard() {
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
                       <MapPin className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
-                      <span className="text-sm font-bold text-slate-700">{t('txt_pr_visualiza_o_do_mapa') || 'Pré-visualização do Mapa'}</span>
-                      <span className="text-xs text-slate-500 mt-1 max-w-xs">{t('txt_insira_a_morada_correta_acima') || 'Insira a morada correta acima. As coordenadas serão geradas automaticamente ou configuradas no mapa.'}</span>
+                      <span className="text-sm font-bold text-slate-700">Pré-visualização do Mapa</span>
+                      <span className="text-xs text-slate-500 mt-1 max-w-xs">Insira a morada correta acima. As coordenadas serão geradas automaticamente ou configuradas no mapa.</span>
                       {coordinates && (
                         <div className="mt-3 text-[10px] font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded">
-                          
-                                                                                {t('txt_coords') || 'Coords:'} {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                          Coords: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
                         </div>
                       )}
                     </div>
@@ -1028,12 +1023,11 @@ export default function SetupWizard() {
                     <div className="bg-purple-100 p-2 rounded-lg">
                       <Gift className="w-5 h-5 text-purple-600" />
                     </div>
-                    <h3 className="text-lg font-bold text-purple-900">{t('txt_configura_o_m_gica_oferta') || 'Configuração Mágica (Oferta)'}</h3>
+                    <h3 className="text-lg font-bold text-purple-900">Configuração Mágica (Oferta)</h3>
                   </div>
                   <p className="text-sm text-purple-800 mb-5 max-w-xl">
-                    
-                                                          {t('txt_n_o_quer_perder_tempo_a_config') || 'Não quer perder tempo a configurar serviços e horários? Nós tratamos de tudo por si, sem custos adicionais. Preencha apenas os dados acima e clique no botão abaixo.'}
-                                                        </p>
+                    Não quer perder tempo a configurar serviços e horários? Nós tratamos de tudo por si, sem custos adicionais. Preencha apenas os dados acima e clique no botão abaixo.
+                  </p>
                   <button
                     type="button"
                     onClick={handleMagicSetup}
@@ -1041,9 +1035,8 @@ export default function SetupWizard() {
                     className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl shadow-md transition-all uppercase tracking-wider"
                   >
                     <Sparkles className="w-4 h-4" />
-                    
-                                                          {t('txt_quero_que_a_glamzo_configure_a') || 'Quero que a Glamzo configure a loja para mim'}
-                                                        </button>
+                    Quero que a Glamzo configure a loja para mim
+                  </button>
                 </div>
               </div>
             </div>
@@ -1054,8 +1047,8 @@ export default function SetupWizard() {
         
         {step === 2 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('txt_hor_rios_de_funcionamento') || 'Horários de Funcionamento'}</h2>
-            <p className="text-sm text-slate-500 mb-6">{t('txt_defina_os_dias_e_horas_em_que') || 'Defina os dias e horas em que a sua loja está aberta. Isto garante que os clientes apenas podem marcar dentro deste horário.'}</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Horários de Funcionamento</h2>
+            <p className="text-sm text-slate-500 mb-6">Defina os dias e horas em que a sua loja está aberta. Isto garante que os clientes apenas podem marcar dentro deste horário.</p>
             <div className="space-y-4">
               {WEEKDAYS.map((dayName, idx) => {
                 const h = businessHours.find(bh => bh.weekday === idx);
@@ -1080,7 +1073,7 @@ export default function SetupWizard() {
                           onChange={(e) => handleHourChange(idx, 'open_time', e.target.value)}
                           className="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         />
-                        <span className="text-slate-400 font-bold">{t('txt_at') || 'até'}</span>
+                        <span className="text-slate-400 font-bold">até</span>
                         <input 
                           type="time" 
                           value={h.close_time}
@@ -1090,9 +1083,8 @@ export default function SetupWizard() {
                       </div>
                     ) : (
                       <div className="flex-1 text-sm font-bold text-slate-400 px-3 py-2">
-                        
-                                                            {t('txt_fechado_149') || 'Fechado'}
-                                                          </div>
+                        Fechado
+                      </div>
                     )}
                   </div>
                 );
@@ -1103,7 +1095,7 @@ export default function SetupWizard() {
 
         {step === 3 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('txt_servi_os') || 'Serviços'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Serviços</h2>
             <div className="mb-6 space-y-3">
               {services.map(s => (
                 <div key={s.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
@@ -1123,7 +1115,7 @@ export default function SetupWizard() {
                         }
                       }}
                       className="text-red-500 hover:text-red-700 p-1"
-                      title={t('txt_remover_servi_o') || 'Remover serviço'}
+                      title="Remover serviço"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1133,8 +1125,8 @@ export default function SetupWizard() {
             </div>
 
             <div className="mb-6 p-5 border border-purple-100 rounded-xl bg-purple-50/20">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_servi_os_recomendados') || 'Serviços Recomendados ('}{category})</h4>
-              <p className="text-xs text-slate-500 mb-3">{t('txt_clique_para_adicionar_instanta') || 'Clique para adicionar instantaneamente os serviços mais solicitados:'}</p>
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Serviços Recomendados ({category})</h4>
+              <p className="text-xs text-slate-500 mb-3">Clique para adicionar instantaneamente os serviços mais solicitados:</p>
               <div className="flex flex-wrap gap-2">
                 {(POPULAR_SERVICES_BY_CATEGORY[category] || POPULAR_SERVICES_BY_CATEGORY['Cabelo & Barbearia']).map((ps) => {
                   const isAdded = services.some(s => s.name.toLowerCase() === ps.name.toLowerCase());
@@ -1162,7 +1154,7 @@ export default function SetupWizard() {
                       }`}
                     >
                       <span>{isAdded ? '✓' : '+'}</span>
-                      <span>{ps.name} ({ps.price}{t('txt_text_24') || '€)'}</span>
+                      <span>{ps.name} ({ps.price}€)</span>
                     </button>
                   );
                 })}
@@ -1170,22 +1162,22 @@ export default function SetupWizard() {
             </div>
 
             <div className="p-6 border border-slate-200 rounded-xl bg-slate-50">
-              <h4 className="text-sm font-bold text-slate-900 mb-4">{t('txt_adicionar_servi_o') || 'Adicionar Serviço'}</h4>
+              <h4 className="text-sm font-bold text-slate-900 mb-4">Adicionar Serviço</h4>
               <div className="space-y-4">
                 <div>
-                  <input id="new-svc-name" type="text" placeholder={t('txt_nome_do_servi_o') || 'Nome do Serviço'} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-name" type="text" placeholder="Nome do Serviço" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
                 <div>
                   <select id="new-svc-cat" className="px-3 py-2 border border-slate-300 rounded text-sm w-full bg-white">
-                    <option value="">{t('txt_selecione_o_tipo_de_servi_o_op') || 'Selecione o Tipo de Serviço (Opcional)'}</option>
+                    <option value="">Selecione o Tipo de Serviço (Opcional)</option>
                     {(SUBCATEGORIES_BY_MAIN[category] || []).map((sub: string) => (
                       <option key={sub} value={sub}>{sub}</option>
                     ))}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <input id="new-svc-duration" type="number" placeholder={t('txt_dura_o_min') || 'Duração (min)'} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
-                  <input id="new-svc-price" type="number" step="0.01" placeholder={t('txt_pre_o') || 'Preço (€)'} className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-duration" type="number" placeholder="Duração (min)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
+                  <input id="new-svc-price" type="number" step="0.01" placeholder="Preço (€)" className="px-3 py-2 border border-slate-300 rounded text-sm w-full" />
                 </div>
               </div>
               <button 
@@ -1216,16 +1208,15 @@ export default function SetupWizard() {
                 }}
                 className="mt-4 px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-lg hover:bg-purple-700 w-full"
               >
-                
-                                              {t('txt_adicionar_servi_o') || 'Adicionar Serviço'}
-                                            </button>
+                Adicionar Serviço
+              </button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('txt_escolha_o_seu_plano') || 'Escolha o seu Plano'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Escolha o seu Plano</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div 
@@ -1233,15 +1224,15 @@ export default function SetupWizard() {
                 onClick={() => setSelectedPlan('PRO')}
               >
                 {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">{t('txt_glamzo_pro') || 'Glamzo PRO'}</h3>
-                <div className="my-3"><span className="text-3xl font-black">{t('txt_19_90_25') || '19,90€'}</span><span className="text-slate-500 text-sm">/mês</span></div>
+                <h3 className="text-lg font-bold text-slate-900">Glamzo PRO</h3>
+                <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">/mês</span></div>
                 <div className="mb-4">
-                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">{t('txt_14_dias_gr_tis_26') || '14 Dias Grátis'}</span>
+                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">14 Dias Grátis</span>
                 </div>
                 <ul className="space-y-2 mt-4 text-sm text-slate-600">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" />  {t('txt_agenda_e_website_seo') || 'Agenda e Website SEO'}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" />  {t('txt_tap_to_pay_no_telem_vel') || 'Tap-to-Pay no Telemóvel'}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>{t('txt_zero_taxas_staff_ilimitado') || 'Zero taxas (Staff Ilimitado)'}</strong></li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Agenda e Website SEO</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Tap-to-Pay no Telemóvel</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>Zero taxas (Staff Ilimitado)</strong></li>
                 </ul>
               </div>
 
@@ -1250,45 +1241,43 @@ export default function SetupWizard() {
                 onClick={() => setSelectedPlan('TERMINAL')}
               >
                 <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
-                  
-                                                    {t('txt_recomendado_150') || 'Recomendado'}
-                                                  </div>
+                  Recomendado
+                </div>
                 {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">{t('txt_terminal_f_sico_glamzo_27') || 'Terminal Físico Glamzo'}</h3>
-                <div className="my-3"><span className="text-3xl font-black">{t('txt_99_00') || '99,00€'}</span><span className="text-slate-500 text-sm">  {t('txt_nico') || 'Único'}</span></div>
+                <h3 className="text-lg font-bold text-slate-900">Terminal Físico Glamzo</h3>
+                <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> Único</span></div>
                 <div className="mb-4 flex flex-col gap-1">
                   
-                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">{t('txt_portes_e_impostos_inclu_dos') || 'Portes e Impostos Incluídos'}</span>
+                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">Portes e Impostos Incluídos</span>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" />  {t('txt_sem_mensalidades_fideliza_o') || 'Sem Mensalidades/Fidelização'}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" />  {t('txt_contactless_e_chip') || 'Contactless e Chip'}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" />  {t('txt_integra_o_direta_c_agenda') || 'Integração Direta c/ Agenda'}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Sem Mensalidades/Fidelização</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Contactless e Chip</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Integração Direta c/ Agenda</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
-                  
-                                                    {t('txt_o_terminal_seu_para_sempre') || 'O terminal é seu para sempre.'}
-                                                  </div>
+                  O terminal é seu para sempre.
+                </div>
               </div>
             </div>
 
             {selectedPlan === 'TERMINAL' && (
               <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
-                <h4 className="font-bold text-slate-900 mb-4">{t('txt_dados_de_envio_do_terminal') || 'Dados de Envio do Terminal'}</h4>
+                <h4 className="font-bold text-slate-900 mb-4">Dados de Envio do Terminal</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder={t('txt_nome_destinat_rio') || 'Nome Destinatário'} value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('txt_telefone_154') || 'Telefone'} value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('txt_morada_155') || 'Morada'} value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
-                  <input type="text" placeholder={t('txt_c_digo_postal_32') || 'Código Postal'} value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('txt_cidade_156') || 'Cidade'} value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Nome Destinatário" value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Telefone" value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Morada" value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
+                  <input type="text" placeholder="Código Postal" value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Cidade" value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
                 </div>
               </div>
             )}
             
             {selectedPlan === 'PRO' ? (
-    <p className="text-xs text-slate-500 text-center">{t('txt_ao_avan_ar_ser_redirecionado_p') || 'Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.'}</p>
+    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e iniciar os seus 14 dias grátis.</p>
   ) : (
-    <p className="text-xs text-slate-500 text-center">{t('txt_ao_avan_ar_ser_redirecionado_p_28') || 'Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e concluir a adesão.'}</p>
+    <p className="text-xs text-slate-500 text-center">Ao avançar, será redirecionado para o Stripe para adicionar o seu cartão e concluir a adesão.</p>
   )}
             
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
@@ -1299,7 +1288,7 @@ export default function SetupWizard() {
                 className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>{t('back') || 'Voltar'}</span>
+                <span>Voltar</span>
               </button>
               <button
                 type="button"
@@ -1318,22 +1307,21 @@ export default function SetupWizard() {
             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Landmark className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('txt_receber_pagamentos_online') || 'Receber Pagamentos Online'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Receber Pagamentos Online</h2>
             <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
-              
-                                        {t('txt_para_aceitar_pagamentos_com_se') || 'Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.'}
-                                      </p>
+              Para aceitar pagamentos com segurança e receber transferências diretamente na sua conta bancária, conecte a sua conta Stripe Connect agora. Pode também saltar este passo e configurar mais tarde.
+            </p>
             
             {(business?.charges_enabled || business?.stripe_account_id) ? (
                <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
                  <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                 <h3 className="font-bold text-emerald-900">{t('txt_configura_o_conclu_da') || 'Configuração Concluída'}</h3>
-                 <p className="text-xs text-emerald-700 mt-2 mb-6">{t('txt_a_sua_conta_banc_ria_est_assoc') || 'A sua conta bancária está associada.'}</p>
+                 <h3 className="font-bold text-emerald-900">Configuração Concluída</h3>
+                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta bancária está associada.</p>
                  <button
                     onClick={() => updateSetupStep(6)}
                     className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
                   >
-                    <span>{t('txt_prosseguir_151') || 'Prosseguir'}</span>
+                    <span>Prosseguir</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                </div>
@@ -1343,13 +1331,12 @@ export default function SetupWizard() {
                     onClick={triggerStripeOnboarding}
                     className="px-8 py-4 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-lg inline-flex items-center gap-3 w-full max-w-md justify-center"
                   >
-                    <span>{t('txt_conectar_stripe_glamzo_pay') || 'Conectar Stripe Glamzo Pay'}</span>
+                    <span>Conectar Stripe Glamzo Pay</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
-                    
-                                                          {t('txt_configurar_mais_tarde') || 'Configurar mais tarde'}
-                                                        </button>
+                    Configurar mais tarde
+                  </button>
                 </div>
             )}
           </div>
@@ -1357,26 +1344,25 @@ export default function SetupWizard() {
 
         {step === 6 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">{t('txt_tudo_pronto') || 'Tudo Pronto!'}</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">Tudo Pronto!</h2>
             <div className="max-w-md mx-auto space-y-4 mb-8">
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">{t('txt_dados_da_loja') || 'Dados da Loja'}</span>
+                  <span className="font-semibold text-sm text-emerald-900">Dados da Loja</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">{t('txt_servi_os_29') || 'Serviços ('}{services.length})</span>
+                  <span className="font-semibold text-sm text-emerald-900">Serviços ({services.length})</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">{t('txt_plano_subscrito') || 'Plano Subscrito'}</span>
+                  <span className="font-semibold text-sm text-emerald-900">Plano Subscrito</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className={`flex items-center justify-between p-4 rounded-xl border ${business?.charges_enabled ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
                   <span className={`font-semibold text-sm ${business?.charges_enabled ? 'text-emerald-900' : 'text-amber-900'}`}>
-                    
-                                                      {t('txt_pagamentos_online') || 'Pagamentos Online'}
-                                                    </span>
-                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">{t('txt_mais_tarde') || 'Mais tarde'}</span>}
+                    Pagamentos Online
+                  </span>
+                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">Mais tarde</span>}
                 </div>
             </div>
 
@@ -1385,7 +1371,7 @@ export default function SetupWizard() {
                 onClick={publishBusiness}
                 className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-black text-lg uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20 inline-flex items-center gap-3"
               >
-                <span>{t('txt_concluir_setup_entrar') || 'Concluir Setup & Entrar'}</span>
+                <span>Concluir Setup & Entrar</span>
                 <Sparkles className="w-6 h-6" />
               </button>
             </div>
@@ -1401,7 +1387,7 @@ export default function SetupWizard() {
                   className="px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2 w-full max-w-[200px]"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>{t('back') || 'Voltar'}</span>
+                  <span>Voltar</span>
                 </button>
              )}
             

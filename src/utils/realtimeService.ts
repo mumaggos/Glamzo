@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { GlamzoNotification, ChatSession, ChatMessage, SupportTicket } from '../types';
-import { useTranslation } from "react-i18next";
 
 // Browser-level BroadcastChannel for instantaneous multi-tab / iframe sync (perfect for sandbox preview)
 const bcName = 'glamzo_marketplace_realtime';

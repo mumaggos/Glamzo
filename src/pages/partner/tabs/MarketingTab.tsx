@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Tag, Plus, Check, X, Edit2, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 export default function MarketingTab() {
-    const { t } = useTranslation();
   const { business } = useOutletContext<any>();
 
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -119,13 +117,11 @@ export default function MarketingTab() {
     <div id="view-campanhas" className="space-y-6 animate-fade-in max-w-2xl">
       <div className="border-b border-slate-100 pb-5">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          
-                            {t('txt_campanhas_cup_es') || 'Campanhas & Cupões'}
-                          </h3>
+          Campanhas & Cupões
+        </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          
-                            {t('txt_promova_promo_es_atraia_client') || 'Promova promoções, atraia clientes em dias de menor afluência e defina cupões promocionais reais.'}
-                          </p>
+          Promova promoções, atraia clientes em dias de menor afluência e defina cupões promocionais reais.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start text-left">
@@ -133,16 +129,15 @@ export default function MarketingTab() {
         <div className="bg-slate-50 border border-slate-100/50 rounded-3xl p-5 sm:p-6 space-y-4">
           <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-1.5 leading-none">
             <Tag className="w-4.5 h-4.5 text-rose-500" />
-            <span>{t('txt_cup_es_de_desconto') || 'Cupões de Desconto'}</span>
+            <span>Cupões de Desconto</span>
           </h4>
           <p className="text-[11px] text-slate-500 leading-normal font-sans">
-            
-                                  {t('txt_os_cup_es_podem_ser_aplicados') || 'Os cupões podem ser aplicados pelos clientes no momento do agendamento ou pagamento.'}
-                                </p>
+            Os cupões podem ser aplicados pelos clientes no momento do agendamento ou pagamento.
+          </p>
 
           <div className="space-y-3 pt-2">
             {loadingCoupons ? (
-              <div className="text-center py-4 text-xs text-slate-400">{t('txt_a_carregar_cup_es') || 'A carregar cupões...'}</div>
+              <div className="text-center py-4 text-xs text-slate-400">A carregar cupões...</div>
             ) : (
               <>
                 {coupons.map((cp, idx) => {
@@ -163,15 +158,13 @@ export default function MarketingTab() {
                           </span>
                           {!cp.is_active && (
                             <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase">
-                              
-                                                                        {t('txt_inativo_215') || 'Inativo'}
-                                                                      </span>
+                              Inativo
+                            </span>
                           )}
                           {isExpired && (
                             <span className="text-[9px] bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded font-bold uppercase">
-                              
-                                                                        {t('txt_expirado_216') || 'Expirado'}
-                                                                      </span>
+                              Expirado
+                            </span>
                           )}
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
@@ -180,8 +173,7 @@ export default function MarketingTab() {
                             : `${cp.discount_value}€ de desconto`}
                           {cp.valid_until && (
                             <span className="block text-[10px] text-slate-400 mt-0.5">
-                              
-                                                                        {t('txt_v_lido_at') || 'Válido até:'} {new Date(cp.valid_until).toLocaleDateString("pt-PT")}
+                              Válido até: {new Date(cp.valid_until).toLocaleDateString("pt-PT")}
                             </span>
                           )}
                         </div>
@@ -206,9 +198,8 @@ export default function MarketingTab() {
                 })}
                 {coupons.length === 0 && (
                   <div className="text-center py-6 text-sm text-slate-400 border border-dashed border-slate-200 rounded-2xl">
-                    
-                                                              {t('txt_sem_cup_es_criados') || 'Sem cupões criados.'}
-                                                            </div>
+                    Sem cupões criados.
+                  </div>
                 )}
               </>
             )}
@@ -219,9 +210,8 @@ export default function MarketingTab() {
             className="w-full py-3 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            
-                                  {t('txt_criar_novo_cup_o') || 'Criar Novo Cupão'}
-                                </button>
+            Criar Novo Cupão
+          </button>
         </div>
 
         {/* RIGHT CONTAINER: Automation Triggers (e.g., WhatsApp) */}
@@ -231,12 +221,11 @@ export default function MarketingTab() {
           </div>
           <h4 className="font-extrabold text-xs text-amber-950 uppercase tracking-wider flex items-center gap-1.5 leading-none relative z-10">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>{t('txt_disparar_automa_o_de_whatsapp') || 'Disparar Automação de WhatsApp (Fidelizados)'}</span>
+            <span>Disparar Automação de WhatsApp (Fidelizados)</span>
           </h4>
           <p className="text-[11px] text-slate-500 leading-normal font-sans relative z-10">
-            
-                                  {t('txt_selecione_um_lote_de_clientes') || 'Selecione um lote de clientes com mais de 3 meses de inatividade e dispare uma notificação automática apelando ao retorno.'}
-                                </p>
+            Selecione um lote de clientes com mais de 3 meses de inatividade e dispare uma notificação automática apelando ao retorno.
+          </p>
           <button
             onClick={() => {
               notifyTerminal(
@@ -246,9 +235,8 @@ export default function MarketingTab() {
             }}
             className="px-4 py-2 bg-white border border-slate-200 hover:border-amber-950 hover:text-amber-400 hover:bg-slate-50 rounded-xl text-xs font-bold font-mono uppercase tracking-wider transition-all cursor-pointer text-nowrap block text-center relative z-10 w-full"
           >
-            
-                                  {t('txt_avan_ar_com_notifica_es_autom') || 'Avançar com Notificações Automáticas'}
-                                </button>
+            Avançar com Notificações Automáticas
+          </button>
         </div>
       </div>
 
@@ -258,9 +246,8 @@ export default function MarketingTab() {
           <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">
-                
-                                              {t('txt_novo_cup_o_promocional') || 'Novo Cupão Promocional'}
-                                            </h3>
+                Novo Cupão Promocional
+              </h3>
               <button
                 onClick={() => setShowAddCouponModal(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
@@ -271,13 +258,12 @@ export default function MarketingTab() {
             <form onSubmit={handleCreateCoupon} className="p-5 space-y-4">
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                  
-                                                    {t('txt_c_digo_do_cup_o') || 'Código do Cupão'}
-                                                  </label>
+                  Código do Cupão
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder={t('txt_ex_verao2026') || 'Ex: VERAO2026'}
+                  placeholder="Ex: VERAO2026"
                   value={couponForm.code}
                   onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
                   className="w-full bg-slate-50 border border-slate-200 text-sm px-4 py-2.5 rounded-xl text-slate-900 font-mono font-bold placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -287,14 +273,13 @@ export default function MarketingTab() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                    
-                                                          {t('txt_desconto') || 'Desconto (%)'}
-                                                        </label>
+                    Desconto (%)
+                  </label>
                   <input
                     type="number"
                     min="1"
                     max="100"
-                    placeholder={t('txt_ex_15') || 'Ex: 15'}
+                    placeholder="Ex: 15"
                     value={couponForm.discount_percent}
                     onChange={(e) => setCouponForm({ ...couponForm, discount_percent: e.target.value, discount_value: "" })}
                     className="w-full bg-slate-50 border border-slate-200 text-sm px-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -302,14 +287,13 @@ export default function MarketingTab() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                    
-                                                          {t('txt_desconto_39') || 'Desconto (€)'}
-                                                        </label>
+                    Desconto (€)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder={t('txt_ex_5_00') || 'Ex: 5.00'}
+                    placeholder="Ex: 5.00"
                     value={couponForm.discount_value}
                     onChange={(e) => setCouponForm({ ...couponForm, discount_value: e.target.value, discount_percent: "" })}
                     className="w-full bg-slate-50 border border-slate-200 text-sm px-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -319,9 +303,8 @@ export default function MarketingTab() {
 
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                  
-                                                    {t('txt_v_lido_at_opcional') || 'Válido Até (Opcional)'}
-                                                  </label>
+                  Válido Até (Opcional)
+                </label>
                 <input
                   type="date"
                   value={couponForm.valid_until}
@@ -335,9 +318,8 @@ export default function MarketingTab() {
                   type="submit"
                   className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-purple-900/20 transition-all cursor-pointer"
                 >
-                  
-                                                    {t('txt_criar_cup_o') || 'Criar Cupão'}
-                                                  </button>
+                  Criar Cupão
+                </button>
               </div>
             </form>
           </div>

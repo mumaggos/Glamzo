@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 import { Dispute, Favorite, Review } from '../types';
-import { useTranslation } from "react-i18next";
 
 // Storage keys
 const CREDITS_STORAGE_PFX = 'glamzo_credits_';

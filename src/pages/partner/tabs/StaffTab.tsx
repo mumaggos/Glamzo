@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from 'react-i18next';
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Users, Plus, Pencil, Trash2, X, AlertCircle, Mail, BarChart3, Download } from "lucide-react";
@@ -15,7 +14,6 @@ interface PartnerContextType {
 }
 
 export default function StaffTab() {
-    const { t } = useTranslation();
   const { business, staff, bookings, loadLayoutData } = useOutletContext<PartnerContextType>();
   const [metricsStaff, setMetricsStaff] = useState<Staff | null>(null);
   const [metricsFilter, setMetricsFilter] = useState<"day" | "week" | "month" | "year">("day");
@@ -247,13 +245,11 @@ export default function StaffTab() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
           <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-            
-                                  {t('txt_equipa_e_escalas') || 'Equipa e Escalas'}
-                                </h3>
+            Equipa e Escalas
+          </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            
-                                  {t('txt_gira_os_hor_rios_e_disponibili') || 'Gira os horários e disponibilidades dos seus barbeiros ou esteticistas.'}
-                                </p>
+            Gira os horários e disponibilidades dos seus barbeiros ou esteticistas.
+          </p>
         </div>
         <button
             onClick={() => {
@@ -274,7 +270,7 @@ export default function StaffTab() {
           className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition shadow-lg shadow-slate-900/20"
         >
           <Plus className="w-4 h-4" />
-          <span>{t('txt_novo_colaborador') || 'Novo Colaborador'}</span>
+          <span>Novo Colaborador</span>
         </button>
       </div>
 
@@ -283,13 +279,11 @@ export default function StaffTab() {
           <div className="text-center py-10 bg-white rounded-2xl border border-slate-200 border-dashed">
             <Users className="w-8 h-8 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 text-sm font-bold">
-              
-                                        {t('txt_a_sua_equipa_est_vazia') || 'A sua equipa está vazia.'}
-                                      </p>
+              A sua equipa está vazia.
+            </p>
             <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              
-                                        {t('txt_adicione_os_profissionais_do_s') || 'Adicione os profissionais do seu salão para que os clientes possam escolher com quem se querem agendar.'}
-                                      </p>
+              Adicione os profissionais do seu salão para que os clientes possam escolher com quem se querem agendar.
+            </p>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -302,8 +296,8 @@ export default function StaffTab() {
               >
                 {!st.is_active && (
                   <div className="absolute top-3 right-3 text-[9px] font-black uppercase text-rose-500 bg-rose-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />  {t('txt_inativo_240') || 'Inativo'}
-                                              </div>
+                    <AlertCircle className="w-3 h-3" /> Inativo
+                  </div>
                 )}
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center border border-purple-100 text-purple-600 font-black text-xl shrink-0 overflow-hidden shadow-inner">
@@ -331,14 +325,14 @@ export default function StaffTab() {
                   <button
                     onClick={() => setMetricsStaff(st)}
                     className="w-10 flex items-center justify-center bg-purple-50 hover:bg-purple-500 text-purple-500 hover:text-white rounded-xl transition border border-purple-100 cursor-pointer"
-                    title={t('txt_ver_m_tricas') || 'Ver Métricas'}
+                    title="Ver Métricas"
                   >
                     <BarChart3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleResendEmail(st)}
                     className="w-10 flex items-center justify-center bg-emerald-50 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl transition border border-emerald-100 cursor-pointer"
-                    title={t('txt_enviar_credenciais') || 'Enviar Credenciais'}
+                    title="Enviar Credenciais"
                   >
                     <Mail className="w-4 h-4" />
                   </button>
@@ -360,11 +354,12 @@ export default function StaffTab() {
                     }}
                     className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border border-slate-200 cursor-pointer"
                   >
-                    <Pencil className="w-3 h-3" />{t('edit') || 'Editar'}</button>
+                    <Pencil className="w-3 h-3" /> Editar
+                  </button>
                   <button
                     onClick={() => handleDeleteStaff(st.id)}
                     className="w-10 flex items-center justify-center bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition border border-rose-100 cursor-pointer"
-                    title={t('txt_remover_profissional') || 'Remover Profissional'}
+                    title="Remover Profissional"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -391,7 +386,7 @@ export default function StaffTab() {
                  )}
                  <div>
                    <h3 className="font-extrabold text-xl text-slate-900">{metricsStaff.full_name}</h3>
-                   <p className="text-sm text-slate-500">{t('txt_m_tricas_de_performance') || 'Métricas de Performance'}</p>
+                   <p className="text-sm text-slate-500">Métricas de Performance</p>
                  </div>
               </div>
               <button
@@ -404,7 +399,7 @@ export default function StaffTab() {
             
             <div className="p-6 space-y-6">
               <div className="flex bg-slate-100 p-1 rounded-2xl">
-                {[{id:"day",label:t('time_day') || 'Dia'},{id:"week",label:t('time_week') || 'Semana'},{id:"month",label:t('time_month') || 'Mês'},{id:"year",label:t('time_year') || 'Ano'}].map(f => (
+                {[{id:"day",label:"Dia"},{id:"week",label:"Semana"},{id:"month",label:"Mês"},{id:"year",label:"Ano"}].map(f => (
                    <button
                      key={f.id}
                      onClick={() => setMetricsFilter(f.id)}
@@ -442,11 +437,11 @@ export default function StaffTab() {
                    <div className="space-y-6">
                      <div className="grid grid-cols-2 gap-4">
                        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-center">
-                          <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">{t('txt_servi_os_conclu_dos') || 'Serviços Concluídos'}</p>
+                          <p className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Serviços Concluídos</p>
                           <p className="text-3xl font-black text-emerald-700 mt-1">{totalServices}</p>
                        </div>
                        <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl text-center">
-                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-wider">{t('txt_receita_gerada') || 'Receita Gerada'}</p>
+                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-wider">Receita Gerada</p>
                           <p className="text-3xl font-black text-purple-700 mt-1">{metrics.totalRevenue}€</p>
                        </div>
                      </div>
@@ -456,15 +451,15 @@ export default function StaffTab() {
                         <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-xs">
                           <thead className="bg-slate-50 sticky top-0 border-b border-slate-100 text-[9px] uppercase tracking-widest text-slate-500 font-bold">
                             <tr>
-                              <th className="py-2 px-3">{t('txt_data_241') || 'Data'}</th>
-                              <th className="py-2 px-3">{t('txt_cliente_242') || 'Cliente'}</th>
-                              <th className="py-2 px-3">{t('txt_servi_o_45') || 'Serviço'}</th>
-                              <th className="py-2 px-3 text-right">{t('txt_valor_243') || 'Valor'}</th>
+                              <th className="py-2 px-3">Data</th>
+                              <th className="py-2 px-3">Cliente</th>
+                              <th className="py-2 px-3">Serviço</th>
+                              <th className="py-2 px-3 text-right">Valor</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-50">
                             {filteredBookings.length === 0 ? (
-                              <tr><td colSpan={4} className="py-4 text-center text-slate-400">{t('txt_nenhum_servi_o_encontrado') || 'Nenhum serviço encontrado.'}</td></tr>
+                              <tr><td colSpan={4} className="py-4 text-center text-slate-400">Nenhum serviço encontrado.</td></tr>
                             ) : (
                               filteredBookings.map((b: any) => (
                                 <tr key={b.id} className="hover:bg-slate-50 transition-colors">
@@ -482,8 +477,8 @@ export default function StaffTab() {
                        onClick={() => handleDownloadMetrics(metricsStaff, metrics)}
                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition shadow-lg mt-4"
                      >
-                       <Download className="w-5 h-5"/>  {t('txt_baixar_documento_csv') || 'Baixar Documento (CSV)'}
-                                                  </button>
+                       <Download className="w-5 h-5"/> Baixar Documento (CSV)
+                     </button>
                    </div>
                  );
               })()}
@@ -512,9 +507,8 @@ export default function StaffTab() {
             <form onSubmit={handleSaveStaff} className="space-y-4 text-xs font-semibold">
               <div>
                 <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                  
-                                                    {t('txt_nome_completo') || 'Nome Completo'}
-                                                  </label>
+                  Nome Completo
+                </label>
                 <input
                   type="text"
                   required
@@ -525,16 +519,15 @@ export default function StaffTab() {
                       full_name: e.target.value,
                     }))
                   }
-                  placeholder={t('txt_ex_jo_o_silva') || 'Ex: João Silva'}
+                  placeholder="Ex: João Silva"
                   className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                  
-                                                    {t('txt_cargo_especialidade') || 'Cargo / Especialidade'}
-                                                  </label>
+                  Cargo / Especialidade
+                </label>
                 <input
                   type="text"
                   value={staffForm.role_title}
@@ -544,21 +537,20 @@ export default function StaffTab() {
                       role_title: e.target.value,
                     }))
                   }
-                  placeholder={t('txt_ex_barber_master_colorista_sen') || 'Ex: Barber Master, Colorista Senior...'}
+                  placeholder="Ex: Barber Master, Colorista Senior..."
                   className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                  
-                                                    {t('txt_fotografia_do_profissional') || 'Fotografia do Profissional'}
-                                                  </label>
+                  Fotografia do Profissional
+                </label>
                 <div className="flex items-center gap-4">
                   {staffForm.avatar_url && (
                     <img loading="lazy"
                       src={staffForm.avatar_url}
-                      alt={t('txt_preview_244') || 'Preview'}
+                      alt="Preview"
                       className="w-12 h-12 rounded-full object-cover border border-slate-200"
                     />
                   )}
@@ -578,9 +570,8 @@ export default function StaffTab() {
 
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                      
-                                                                {t('txt_email_de_acesso') || 'Email de Acesso'}
-                                                              </label>
+                      Email de Acesso
+                    </label>
                     <input
                       type="email"
                       value={staffForm.email}
@@ -590,15 +581,14 @@ export default function StaffTab() {
                           email: e.target.value,
                         }))
                       }
-                      placeholder={t('txt_ex_funcionario_loja_pt') || 'Ex: funcionario@loja.pt'}
+                      placeholder="Ex: funcionario@loja.pt"
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                     />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                      
-                                                                {t('txt_password_de_acesso') || 'Password de Acesso'}
-                                                              </label>
+                      Password de Acesso
+                    </label>
                     <input
                       type="text"
                       value={staffForm.temp_password}
@@ -608,7 +598,7 @@ export default function StaffTab() {
                           temp_password: e.target.value,
                         }))
                       }
-                      placeholder={t('txt_deixe_vazio_para_gerar_auto') || 'Deixe vazio para gerar auto'}
+                      placeholder="Deixe vazio para gerar auto"
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                     />
                   </div>
@@ -616,16 +606,14 @@ export default function StaffTab() {
                 </div>
                 {!editingStaff && (
                   <div className="bg-purple-50/50 p-3 rounded-xl border border-purple-100 mb-4 text-[10px] text-purple-700 font-medium">
-                    
-                                                          {t('txt_ao_criar_a_conta_ser_enviado_u') || 'Ao criar a conta, será enviado um link para o funcionário com o login e a senha para o email inserido.'}
-                                                        </div>
+                    Ao criar a conta, será enviado um link para o funcionário com o login e a senha para o email inserido.
+                  </div>
                 )}
                 <div className="grid grid-cols-1 mb-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                      
-                                                                {t('txt_telem_vel') || 'Telemóvel'}
-                                                              </label>
+                      Telemóvel
+                    </label>
                     <input
                       type="tel"
                       value={staffForm.phone}
@@ -635,7 +623,7 @@ export default function StaffTab() {
                           phone: e.target.value,
                         }))
                       }
-                      placeholder={t('txt_ex_910_000_000') || 'Ex: 910 000 000'}
+                      placeholder="Ex: 910 000 000"
                       className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-slate-900 text-xs outline-none focus:border-rose-600 transition-all font-sans"
                     />
                   </div>
@@ -643,9 +631,8 @@ export default function StaffTab() {
 
                 <div className="space-y-2">
                   <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1.5">
-                    
-                                                          {t('txt_dias_de_folga_m_ltiplos') || 'Dias de Folga (Múltiplos)'}
-                                                        </label>
+                    Dias de Folga (Múltiplos)
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, idx) => (
                       <button
@@ -671,10 +658,10 @@ export default function StaffTab() {
 
                 {createdStaffAuth && (
                   <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-3">
-                    <p className="text-xs text-emerald-800 font-bold">{t('txt_credenciais_de_acesso_geradas') || 'Credenciais de Acesso Geradas:'}</p>
+                    <p className="text-xs text-emerald-800 font-bold">Credenciais de Acesso Geradas:</p>
                     <div className="text-xs text-slate-600">
-                      <strong>{t('txt_email') || 'Email:'}</strong> {createdStaffAuth.email}<br/>
-                      <strong>{t('txt_password') || 'Password:'}</strong> {createdStaffAuth.temp_password}
+                      <strong>Email:</strong> {createdStaffAuth.email}<br/>
+                      <strong>Password:</strong> {createdStaffAuth.temp_password}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -686,9 +673,8 @@ export default function StaffTab() {
                         }}
                         className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-3 py-2 rounded-lg transition"
                       >
-                        
-                                                                      {t('txt_copiar_dados') || 'Copiar Dados'}
-                                                                    </button>
+                        Copiar Dados
+                      </button>
                       <button
                         type="button"
                         onClick={async (e) => {
@@ -721,9 +707,8 @@ export default function StaffTab() {
                         }}
                         className="flex-1 bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold text-[10px] px-3 py-2 rounded-lg transition"
                       >
-                        
-                                                                      {t('txt_enviar_por_email') || 'Enviar por Email'}
-                                                                    </button>
+                        Enviar por Email
+                      </button>
                     </div>
                   </div>
                 )}
@@ -746,18 +731,16 @@ export default function StaffTab() {
                   htmlFor="isActiveToggle"
                   className="text-xs text-slate-700 cursor-pointer select-none"
                 >
-                  
-                                                    {t('txt_o_profissional_est_ativo_e_a_r') || 'O profissional está ativo e a receber marcações?'}
-                                                  </label>
+                  O profissional está ativo e a receber marcações?
+                </label>
               </div>
 
               <button
                 type="submit"
                 className="w-full bg-rose-600 hover:bg-rose-700 py-3 rounded-xl font-bold text-white tracking-wide transition-all uppercase cursor-pointer text-xs"
               >
-                
-                                              {t('txt_confirmar_registo_profissional') || 'Confirmar Registo Profissional'}
-                                            </button>
+                Confirmar Registo Profissional
+              </button>
             </form>
           </div>
         </div>

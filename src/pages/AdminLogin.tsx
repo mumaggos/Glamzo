@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { ShieldCheck, Eye, EyeOff, KeyRound, Mail, Loader2, Compass } from 'lucide-react';
-import { useTranslation } from "react-i18next";
 
 export default function AdminLogin() {
-    const { t } = useTranslation();
   const { signIn, signOut, signUp, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 

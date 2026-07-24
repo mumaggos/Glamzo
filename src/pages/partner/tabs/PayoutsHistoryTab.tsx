@@ -9,10 +9,8 @@ interface PartnerContextType {
 import { Loader2, Calendar as CalendarIcon, CheckCircle2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { useTranslation } from "react-i18next";
 
 export default function PayoutsHistoryTab() {
-    const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [payouts, setPayouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,31 +56,27 @@ export default function PayoutsHistoryTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-900">{t('txt_hist_rico_de_repasses') || 'Histórico de Repasses'}</h2>
+        <h2 className="text-xl font-bold text-slate-900">Histórico de Repasses</h2>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {payouts.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
-            
-                                  {t('txt_ainda_n_o_tem_repasses_efetuad') || 'Ainda não tem repasses efetuados.'}
-                                </div>
+            Ainda não tem repasses efetuados.
+          </div>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  
-                                                        {t('txt_data_221') || 'Data'}
-                                                      </th>
+                  Data
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  
-                                                        {t('txt_valor_222') || 'Valor'}
-                                                      </th>
+                  Valor
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  
-                                                        {t('txt_estado_223') || 'Estado'}
-                                                      </th>
+                  Estado
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
@@ -100,8 +94,8 @@ export default function PayoutsHistoryTab() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {payout.status === 'paid' ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <CheckCircle2 className="w-3.5 h-3.5" />  {t('txt_pago_224') || 'Pago'}
-                                                        </span>
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Pago
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                         <Clock className="w-3.5 h-3.5" /> {payout.status}

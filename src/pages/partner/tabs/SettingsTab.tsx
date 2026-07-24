@@ -3,7 +3,6 @@ import { useOutletContext } from "react-router-dom";
 import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound } from "lucide-react";
 import { Business } from "../../../types";
 import { supabase } from "../../../lib/supabase";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
@@ -11,7 +10,6 @@ interface PartnerContextType {
 }
 
 export default function SettingsTab() {
-    const { t } = useTranslation();
   const { business, loadLayoutData } = useOutletContext<PartnerContextType>();
   const [activeTab, setActiveTab] = useState("dados");
 
@@ -226,12 +224,11 @@ export default function SettingsTab() {
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
           <Settings className="w-6 h-6 text-slate-700" />
-          <span>{t('txt_configura_es') || 'Configurações'}</span>
+          <span>Configurações</span>
         </h3>
         <p className="text-sm text-slate-500 mt-1">
-          
-                            {t('txt_ajuste_as_prefer_ncias_da_sua') || 'Ajuste as preferências da sua conta, imagens de montra e regras.'}
-                          </p>
+          Ajuste as preferências da sua conta, imagens de montra e regras.
+        </p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
@@ -239,17 +236,17 @@ export default function SettingsTab() {
         {/* Sidebar Interna das Definições */}
         <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
           <button onClick={() => setActiveTab("dados")} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === "dados" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"}`}>
-            <Building2 className="w-4 h-4" />  {t('txt_dados_da_loja') || 'Dados da Loja'}
-                                </button>
+            <Building2 className="w-4 h-4" /> Dados da Loja
+          </button>
           <button onClick={() => setActiveTab("seguranca")} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === "seguranca" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"}`}>
-            <KeyRound className="w-4 h-4" />  {t('txt_seguran_a') || 'Segurança'}
-                                </button>
+            <KeyRound className="w-4 h-4" /> Segurança
+          </button>
           <button onClick={() => setActiveTab("imagens")} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === "imagens" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"}`}>
-            <ImageIcon className="w-4 h-4" />  {t('txt_imagens_234') || 'Imagens'}
-                                </button>
+            <ImageIcon className="w-4 h-4" /> Imagens
+          </button>
           <button onClick={() => setActiveTab("regras")} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === "regras" ? "bg-purple-50 text-purple-700" : "hover:bg-slate-50 text-slate-600"}`}>
-            <Clock className="w-4 h-4" />  {t('txt_regras_de_agendamento') || 'Regras de Agendamento'}
-                                </button>
+            <Clock className="w-4 h-4" /> Regras de Agendamento
+          </button>
         </div>
 
         {/* Área do Conteúdo Ativo */}
@@ -257,16 +254,16 @@ export default function SettingsTab() {
           
           {activeTab === "dados" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
-              <h4 className="text-lg font-black text-slate-900 mb-6">{t('txt_dados_da_loja') || 'Dados da Loja'}</h4>
+              <h4 className="text-lg font-black text-slate-900 mb-6">Dados da Loja</h4>
               <form onSubmit={handleSaveDados} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_nome_da_loja') || 'Nome da Loja'}</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_morada_completa') || 'Morada Completa'}</label><input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_porta_andar') || 'Porta / Andar'}</label><input type="text" value={formData.door_number} onChange={e => setFormData({...formData, door_number: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_c_digo_postal_44') || 'Código Postal'}</label><input type="text" value={formData.postal_code} onChange={e => setFormData({...formData, postal_code: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_cidade_235') || 'Cidade'}</label><input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_telefone_236') || 'Telefone'}</label><input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_email_237') || 'Email'}</label><input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nome da Loja</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Morada Completa</label><input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Porta / Andar</label><input type="text" value={formData.door_number} onChange={e => setFormData({...formData, door_number: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Código Postal</label><input type="text" value={formData.postal_code} onChange={e => setFormData({...formData, postal_code: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cidade</label><input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Telefone</label><input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label><input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                 </div>
                 <div className="pt-4 flex justify-end">
                   <button type="submit" disabled={savingDados} className="bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
@@ -279,18 +276,18 @@ export default function SettingsTab() {
 
           {activeTab === "seguranca" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
-              <h4 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-purple-600" />  {t('txt_alterar_password') || 'Alterar Password'}</h4>
+              <h4 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2"><ShieldAlert className="w-5 h-5 text-purple-600" /> Alterar Password</h4>
               {providers.includes('google') ? (
                 <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
                   <Shield className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-bold text-purple-800">{t('txt_a_sua_conta_gerida_de_forma_se') || 'A sua conta é gerida de forma segura pelo Google.'}</span>
+                  <span className="text-sm font-bold text-purple-800">A sua conta é gerida de forma segura pelo Google.</span>
                 </div>
               ) : (
               <form onSubmit={handleSaveSeguranca} className="space-y-6">
                 <div className="space-y-4">
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_password_atual') || 'Password Atual'}</label><input type="password" value={passwordData.current} onChange={e => setPasswordData({...passwordData, current: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_nova_password') || 'Nova Password'}</label><input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_repetir_nova_password') || 'Repetir Nova Password'}</label><input type="password" value={passwordData.repeatNewPassword} onChange={e => setPasswordData({...passwordData, repeatNewPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password Atual</label><input type="password" value={passwordData.current} onChange={e => setPasswordData({...passwordData, current: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nova Password</label><input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Repetir Nova Password</label><input type="password" value={passwordData.repeatNewPassword} onChange={e => setPasswordData({...passwordData, repeatNewPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                 </div>
                 <div className="pt-4 flex justify-end">
                   <button type="submit" disabled={savingSeguranca} className="bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
@@ -304,35 +301,35 @@ export default function SettingsTab() {
 
           {activeTab === "imagens" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
-              <h4 className="text-lg font-black text-slate-900 mb-6">{t('txt_imagens_e_log_tipo') || 'Imagens e Logótipo'}</h4>
+              <h4 className="text-lg font-black text-slate-900 mb-6">Imagens e Logótipo</h4>
               <form onSubmit={handleSaveImagens} className="space-y-8">
                 <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={e => handleImageChange('logo', e)} />
                 <input type="file" accept="image/*" className="hidden" ref={coverInputRef} onChange={e => handleImageChange('cover', e)} />
 
                 <div className="space-y-4">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_log_tipo') || 'Logótipo'}</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Logótipo</label>
                   <div className="flex items-center gap-6">
                     <div className="w-24 h-24 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
-                      {images.logo_url ? <img loading="lazy" src={images.logo_url} alt={t('txt_logo_238') || 'Logo'} className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-slate-300" />}
+                      {images.logo_url ? <img loading="lazy" src={images.logo_url} alt="Logo" className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-slate-300" />}
                     </div>
                     <button type="button" onClick={() => logoInputRef.current?.click()} className="bg-white border border-slate-200 hover:border-purple-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
-                      <Upload className="w-4 h-4" />  {t('txt_escolher_log_tipo') || 'Escolher Logótipo'}
-                                                              </button>
+                      <Upload className="w-4 h-4" /> Escolher Logótipo
+                    </button>
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_capa_da_loja') || 'Capa da Loja'}</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Capa da Loja</label>
                   <div className="w-full h-40 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center relative group">
                     {images.cover_url ? (
-                      <img loading="lazy" src={images.cover_url} alt={t('txt_cover_239') || 'Cover'} className="w-full h-full object-cover" />
+                      <img loading="lazy" src={images.cover_url} alt="Cover" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex flex-col items-center text-slate-400"><ImageIcon className="w-8 h-8 mb-2" /><span className="text-xs font-medium">{t('txt_sem_imagem_de_capa') || 'Sem imagem de capa'}</span></div>
+                      <div className="flex flex-col items-center text-slate-400"><ImageIcon className="w-8 h-8 mb-2" /><span className="text-xs font-medium">Sem imagem de capa</span></div>
                     )}
                   </div>
                   <div className="flex justify-start">
                     <button type="button" onClick={() => coverInputRef.current?.click()} className="bg-white border border-slate-200 hover:border-purple-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
-                      <Upload className="w-4 h-4" />  {t('txt_escolher_capa') || 'Escolher Capa'}
-                                                              </button>
+                      <Upload className="w-4 h-4" /> Escolher Capa
+                    </button>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">
@@ -346,36 +343,36 @@ export default function SettingsTab() {
 
           {activeTab === "regras" && (
             <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm animate-fade-in">
-              <h4 className="text-lg font-black text-slate-900 mb-6">{t('txt_regras_de_agendamento') || 'Regras de Agendamento'}</h4>
+              <h4 className="text-lg font-black text-slate-900 mb-6">Regras de Agendamento</h4>
               <form onSubmit={handleSaveRegras} className="space-y-6">
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_anteced_ncia_m_nima_para_marca') || 'Antecedência Mínima para Marcação'}</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Antecedência Mínima para Marcação</label>
                     <select value={rules.min_notice} onChange={e => setRules({...rules, min_notice: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none">
-                      <option value="0">{t('txt_sem_restri_o') || 'Sem restrição'}</option>
-                      <option value="30">{t('txt_30_minutos') || '30 minutos'}</option>
-                      <option value="60">{t('txt_1_hora') || '1 hora'}</option>
-                      <option value="120">{t('txt_2_horas') || '2 horas'}</option>
-                      <option value="1440">{t('txt_24_horas') || '24 horas'}</option>
+                      <option value="0">Sem restrição</option>
+                      <option value="30">30 minutos</option>
+                      <option value="60">1 hora</option>
+                      <option value="120">2 horas</option>
+                      <option value="1440">24 horas</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_pol_tica_de_cancelamento') || 'Política de Cancelamento'}</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Política de Cancelamento</label>
                     <select value={rules.cancellation_policy} onChange={e => setRules({...rules, cancellation_policy: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none">
-                      <option value="flexible">{t('txt_flex_vel_permitido_at_2h_antes') || 'Flexível (Permitido até 2h antes)'}</option>
-                      <option value="moderate">{t('txt_moderada_permitido_at_12h_ante') || 'Moderada (Permitido até 12h antes)'}</option>
-                      <option value="strict">{t('txt_rigorosa_permitido_at_24h_ante') || 'Rigorosa (Permitido até 24h antes)'}</option>
+                      <option value="flexible">Flexível (Permitido até 2h antes)</option>
+                      <option value="moderate">Moderada (Permitido até 12h antes)</option>
+                      <option value="strict">Rigorosa (Permitido até 24h antes)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_limite_de_aceita_o_de_reservas') || 'Limite de Aceitação de Reservas'}</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Limite de Aceitação de Reservas</label>
                     <select value={rules.booking_end_margin} onChange={e => setRules({...rules, booking_end_margin: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none">
-                      <option value="0">{t('txt_normal_n_o_exceder_a_hora_de_f') || 'Normal (Não exceder a hora de fecho)'}</option>
-                      <option value="-1">{t('txt_at_hora_de_fecho_em_ponto') || 'Até à hora de fecho em ponto'}</option>
-                      <option value="30">{t('txt_parar_de_receber_30_min_antes') || 'Parar de receber 30 min antes do fecho'}</option>
-                      <option value="60">{t('txt_parar_de_receber_1_hora_antes') || 'Parar de receber 1 hora antes do fecho'}</option>
+                      <option value="0">Normal (Não exceder a hora de fecho)</option>
+                      <option value="-1">Até à hora de fecho em ponto</option>
+                      <option value="30">Parar de receber 30 min antes do fecho</option>
+                      <option value="60">Parar de receber 1 hora antes do fecho</option>
                     </select>
-                    <p className="text-[10px] text-slate-400 mt-1">{t('txt_controla_se_o_servi_o_pode_ult') || 'Controla se o serviço pode ultrapassar a hora de fecho ou se deve terminar antes.'}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Controla se o serviço pode ultrapassar a hora de fecho ou se deve terminar antes.</p>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">

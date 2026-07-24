@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 import { ChatSession, ChatMessage, SupportTicket, GlamzoNotification } from '../types';
-import { useTranslation } from "react-i18next";
 
 // Storage keys
 const CHATS_KEY = 'glamzo_synced_chats_v1';

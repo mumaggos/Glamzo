@@ -4,10 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
-import { useTranslation } from "react-i18next";
 
 export default function Login() {
-    const { t } = useTranslation();
   const { signIn, signInWithGoogle, resetPassword, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -157,13 +155,11 @@ export default function Login() {
         <div className="flex flex-col items-center">
           <GlamzoLogo size={64} showSquircle={true} glow={true} className="mb-4" />
           <h2 className="text-center text-3xl font-black text-slate-900 tracking-tight">
-            
-                                  {t('txt_login_126') || 'Login'}
-                                </h2>
+            Login
+          </h2>
           <p className="mt-2 text-center text-sm text-slate-500 font-medium">
-            
-                                  {t('txt_aceda_para_continuar_a_sua_mar') || 'Aceda para continuar a sua marcação.'}
-                                </p>
+            Aceda para continuar a sua marcação.
+          </p>
         </div>
       </div>
 
@@ -185,9 +181,8 @@ export default function Login() {
           <form className="space-y-5" onSubmit={handleEmailLogin}>
             <div>
               <label htmlFor="email-address-input" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                
-                                              {t('txt_endere_o_de_e_mail') || 'Endereço de E-mail'}
-                                            </label>
+                Endereço de E-mail
+              </label>
               <div className="relative rounded-xl">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Mail className="w-4 h-4" />
@@ -199,7 +194,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900"
-                  placeholder={t('txt_exemplo_glamzo_com') || 'exemplo@glamzo.com'}
+                  placeholder="exemplo@glamzo.com"
                 />
               </div>
             </div>
@@ -207,9 +202,8 @@ export default function Login() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="password-fields" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  
-                                                    {t('txt_palavra_passe_127') || 'Palavra-passe'}
-                                                  </label>
+                  Palavra-passe
+                </label>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
@@ -230,7 +224,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900"
-                  placeholder={t('txt_text_16') || '••••••••'}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
@@ -247,14 +241,14 @@ export default function Login() {
               disabled={loading}
               className="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-black transition-all disabled:opacity-50 gap-2 items-center cursor-pointer shadow-lg mt-2"
             >
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" />{t('txt_a_iniciar_sess_o') || 'A iniciar sessão...'}</> : <span>{t('txt_entrar_na_conta') || 'Entrar na Conta'}</span>}
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" />A iniciar sessão...</> : <span>Entrar na Conta</span>}
             </button>
           </form>
 
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-              <div className="relative flex justify-center text-xs"><span className="px-3 bg-white text-slate-400 font-bold uppercase tracking-wider">{t('txt_ou_128') || 'Ou'}</span></div>
+              <div className="relative flex justify-center text-xs"><span className="px-3 bg-white text-slate-400 font-bold uppercase tracking-wider">Ou</span></div>
             </div>
 
             <div className="mt-6">
@@ -267,18 +261,16 @@ export default function Login() {
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.245-3.123C18.29 1.855 15.54 1 12.24 1 6.033 1 12.24 10.285s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.985 0-.743-.075-1.309-.165-1.855h-10.628z" />
                 </svg>
-                <span>{t('txt_entrar_com_o_google') || 'Entrar com o Google'}</span>
+                <span>Entrar com o Google</span>
               </button>
             </div>
           </div>
 
           <p className="mt-6 text-center text-xs font-bold text-slate-600">
-            
-                                  {t('txt_ainda_n_o_tem_conta') || 'Ainda não tem conta?'}{' '}
+            Ainda não tem conta?{' '}
             <Link to={`/signup${window.location.search}`} className="text-purple-600 hover:text-purple-700">
-              
-                                        {t('txt_registe_se_gr_tis') || 'Registe-se Grátis'}
-                                      </Link>
+              Registe-se Grátis
+            </Link>
           </p>
 
         </div>

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { LogOut, ShieldAlert } from 'lucide-react';
-import { useTranslation } from "react-i18next";
 
 export default function GlobalImpersonationBanner() {
-    const { t } = useTranslation();
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [loading, setLoading] = useState(false);
 

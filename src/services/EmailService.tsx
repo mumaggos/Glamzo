@@ -15,7 +15,6 @@ import {
 
   StaffCredentialsEmail
 } from '../emails/GlamzoTemplates';
-import { useTranslation } from "react-i18next";
 
 let resendInstance: Resend | null = null;
 let isInitialized = false;

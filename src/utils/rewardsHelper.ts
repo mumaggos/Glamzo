@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import { useTranslation } from "react-i18next";
 
 export async function processBookingPoints(booking: any) {
   if (!booking || !booking.id || !booking.customer_id) return;

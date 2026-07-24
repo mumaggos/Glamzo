@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Scissors, Share, PlusSquare, Download } from "lucide-react";
 
 export default function StaffLogin() {
-    const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -69,13 +67,11 @@ export default function StaffLogin() {
           <Scissors className="w-12 h-12" />
         </div>
         <h2 className="text-center text-3xl font-extrabold text-slate-900 tracking-tight">
-          
-                            {t('txt_portal_do_funcion_rio') || 'Portal do Funcionário'}
-                          </h2>
+          Portal do Funcionário
+        </h2>
         <p className="mt-2 text-center text-sm text-slate-600">
-          
-                            {t('txt_acesso_exclusivo_para_profissi') || 'Acesso exclusivo para profissionais'}
-                          </p>
+          Acesso exclusivo para profissionais
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -91,9 +87,8 @@ export default function StaffLogin() {
                 htmlFor="email"
                 className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
-                
-                                              {t('txt_email_175') || 'Email'}
-                                            </label>
+                Email
+              </label>
               <div className="mt-1">
                 <input
                   id="email"
@@ -104,7 +99,7 @@ export default function StaffLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm transition-all"
-                  placeholder={t('txt_seu_email') || 'Seu email'}
+                  placeholder="Seu email"
                 />
               </div>
             </div>
@@ -114,9 +109,8 @@ export default function StaffLogin() {
                 htmlFor="password"
                 className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
-                
-                                              {t('txt_password_tempor_ria') || 'Password Temporária'}
-                                            </label>
+                Password Temporária
+              </label>
               <div className="mt-1">
                 <input
                   id="password"
@@ -126,7 +120,7 @@ export default function StaffLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm transition-all"
-                  placeholder={t('txt_text_34') || '••••••••'}
+                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -149,36 +143,37 @@ export default function StaffLogin() {
               className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-purple-100 rounded-xl text-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all"
             >
               <Download className="w-4 h-4" />
-              
-                                        {t('txt_instalar_app_no_telem_vel') || 'Instalar App no Telemóvel'}
-                                      </button>
+              Instalar App no Telemóvel
+            </button>
             
             {showInstallHelp && (
               <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 space-y-3">
-                <p className="font-bold text-slate-800">{t('txt_como_instalar_a_app') || 'Como instalar a App:'}</p>
+                <p className="font-bold text-slate-800">Como instalar a App:</p>
                 
                 <div>
-                  <p className="font-bold text-purple-700 mb-1">{t('txt_no_iphone_safari') || '📱 No iPhone (Safari):'}</p>
+                  <p className="font-bold text-purple-700 mb-1">📱 No iPhone (Safari):</p>
                   <ol className="list-decimal pl-4 space-y-1">
-                    <li>{t('txt_clica_no_cone_de_partilha') || 'Clica no ícone de partilha'} <Share className="w-3 h-3 inline mx-1" />  {t('txt_na_barra_inferior') || 'na barra inferior'}</li>
-                    <li>{t('txt_desliza_para_baixo_e_escolhe') || 'Desliza para baixo e escolhe'} <strong>{t('txt_ecr_principal') || '"Ecrã Principal"'}</strong> <PlusSquare className="w-3 h-3 inline mx-1" /></li>
-                    <li>{t('txt_clica_em') || 'Clica em'} <strong>{t('add') || 'Adicionar'}</strong>  {t('txt_no_canto_superior_direito') || 'no canto superior direito'}</li>
+                    <li>Clica no ícone de partilha <Share className="w-3 h-3 inline mx-1" /> na barra inferior</li>
+                    <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> <PlusSquare className="w-3 h-3 inline mx-1" /></li>
+                    <li>Clica em <strong>Adicionar</strong> no canto superior direito</li>
                   </ol>
                 </div>
 
                 <div>
-                  <p className="font-bold text-rose-700 mb-1">{t('txt_no_android_chrome') || '📱 No Android (Chrome):'}</p>
+                  <p className="font-bold text-rose-700 mb-1">📱 No Android (Chrome):</p>
                   <ol className="list-decimal pl-4 space-y-1">
-                    <li>{t('txt_clica_nos_3_pontinhos_no_canto') || 'Clica nos 3 pontinhos no canto superior direito'}</li>
-                    <li>{t('txt_escolhe_176') || 'Escolhe'} <strong>{t('txt_adicionar_ao_ecr_principal') || '"Adicionar ao ecrã principal"'}</strong></li>
-                    <li>{t('txt_clica_em') || 'Clica em'} <strong>{t('add') || 'Adicionar'}</strong></li>
+                    <li>Clica nos 3 pontinhos no canto superior direito</li>
+                    <li>Escolhe <strong>"Adicionar ao ecrã principal"</strong></li>
+                    <li>Clica em <strong>Adicionar</strong></li>
                   </ol>
                 </div>
                 
                 <button 
                   onClick={() => setShowInstallHelp(false)}
                   className="w-full mt-2 py-2 text-center font-bold text-slate-500 hover:text-slate-700 transition"
-                >{t('close') || 'Fechar'}</button>
+                >
+                  Fechar
+                </button>
               </div>
             )}
           </div>

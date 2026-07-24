@@ -4,10 +4,8 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { Package, Truck, CheckCircle2, Store, Search, AlertCircle, MapPin } from "lucide-react";
 import { Business } from "../../types";
-import { useTranslation } from "react-i18next";
 
 export default function SuperAdminLogistics() {
-    const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -90,7 +88,7 @@ export default function SuperAdminLogistics() {
     (b.city && b.city.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  if (authLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">{t('txt_a_verificar_acessos') || 'A verificar acessos...'}</div>;
+  if (authLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">A verificar acessos...</div>;
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans">
@@ -98,12 +96,11 @@ export default function SuperAdminLogistics() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Package className="w-6 h-6 text-emerald-400" />
-            <h1 className="text-xl font-bold tracking-tight">{t('txt_log_stica') || 'Logística |'} <span className="font-light">{t('txt_kits_de_boas_vindas') || 'Kits de Boas-vindas'}</span></h1>
+            <h1 className="text-xl font-bold tracking-tight">Logística | <span className="font-light">Kits de Boas-vindas</span></h1>
           </div>
           <div className="text-sm font-medium bg-slate-800 px-3 py-1 rounded-full border border-slate-700 text-slate-300">
-            
-                                  {t('txt_acesso_restrito') || 'Acesso Restrito'}
-                                </div>
+            Acesso Restrito
+          </div>
         </div>
       </header>
 
@@ -113,17 +110,16 @@ export default function SuperAdminLogistics() {
             <div>
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Store className="w-5 h-5 text-slate-400" />
-                
-                                              {t('txt_lojas_eleg_veis_para_envio') || 'Lojas Elegíveis para Envio'}
-                                            </h2>
-              <p className="text-sm text-slate-500 mt-1">{t('txt_lojas_com_trial_finalizado_e_p') || 'Lojas com trial finalizado e primeiro pagamento confirmado.'}</p>
+                Lojas Elegíveis para Envio
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">Lojas com trial finalizado e primeiro pagamento confirmado.</p>
             </div>
             
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
-                placeholder={t('txt_pesquisar_loja_ou_cidade') || 'Pesquisar loja ou cidade...'} 
+                placeholder="Pesquisar loja ou cidade..." 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full sm:w-64"
@@ -141,24 +137,24 @@ export default function SuperAdminLogistics() {
           {loading ? (
             <div className="p-12 text-center text-slate-400">
               <Truck className="w-8 h-8 animate-pulse mx-auto mb-3" />
-              <p>{t('txt_a_carregar_envios_pendentes') || 'A carregar envios pendentes...'}</p>
+              <p>A carregar envios pendentes...</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="p-16 text-center">
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
                 <CheckCircle2 className="w-8 h-8 text-emerald-500" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">{t('txt_nenhum_envio_pendente') || 'Nenhum envio pendente'}</h3>
-              <p className="text-slate-500 mt-1">{t('txt_todas_as_lojas_eleg_veis_j_rec') || 'Todas as lojas elegíveis já receberam o seu Kit de Boas-vindas.'}</p>
+              <h3 className="text-lg font-bold text-slate-900">Nenhum envio pendente</h3>
+              <p className="text-slate-500 mt-1">Todas as lojas elegíveis já receberam o seu Kit de Boas-vindas.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_loja_145') || 'Loja'}</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('txt_detalhes_de_envio_morada_compl') || 'Detalhes de Envio (Morada Completa)'}</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('txt_a_o') || 'Ação'}</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Loja</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Detalhes de Envio (Morada Completa)</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ação</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -192,9 +188,8 @@ export default function SuperAdminLogistics() {
                           ) : (
                             <>
                               <Truck className="w-4 h-4" />
-                              
-                                                                            {t('txt_marcar_enviado') || 'Marcar Enviado'}
-                                                                          </>
+                              Marcar Enviado
+                            </>
                           )}
                         </button>
                       </td>

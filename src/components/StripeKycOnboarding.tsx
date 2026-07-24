@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { loadConnectAndInitialize } from '@stripe/connect-js';
 import { ConnectComponentsProvider, ConnectAccountOnboarding } from '@stripe/react-connect-js';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useTranslation } from "react-i18next";
 
 interface StripeKycOnboardingProps {
   businessId: string;
@@ -11,7 +10,6 @@ interface StripeKycOnboardingProps {
 }
 
 export default function StripeKycOnboarding({ businessId, ownerId, onComplete }: StripeKycOnboardingProps) {
-    const { t } = useTranslation();
   const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

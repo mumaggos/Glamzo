@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
@@ -17,7 +16,6 @@ import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Cal
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
-    const { t } = useTranslation();
   const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
 
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -512,7 +510,7 @@ export default function Account() {
   };
 
   if (authLoading) return <div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>;
-  if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">{t('restricted_access') || 'Acesso Restrito'}</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">{t('login') || 'Fazer Login'}</a></div>;
+  if (!user) return <div className="max-w-md mx-auto my-12 p-6 bg-white border border-slate-100 rounded-2xl text-center shadow-sm"><ShieldAlert className="w-12 h-12 text-purple-600 mx-auto mb-4" /><h3 className="text-lg font-bold text-slate-800">Acesso Restrito</h3><a href="/login" className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700">Fazer Login</a></div>;
 
 
   const filteredBookings = bookings.filter(bk => {
@@ -559,7 +557,7 @@ export default function Account() {
         <div className="max-w-5xl mx-auto relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
           <div className="flex items-center gap-6">
             <div className="relative group w-24 h-24">
-              {avatarUrl ? <img loading="lazy" src={avatarUrl} alt={t('txt_avatar_77') || 'Avatar'} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
+              {avatarUrl ? <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="w-24 h-24 rounded-full bg-white text-slate-300 border-4 border-white flex items-center justify-center"><User className="w-10 h-10" /></div>}
               <label className="absolute bottom-0 right-0 p-2 bg-purple-600 text-white rounded-full cursor-pointer hover:bg-purple-700 shadow-md">
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} className="hidden" />
@@ -572,9 +570,9 @@ export default function Account() {
           </div>
           <button onClick={() => setIsClubModalOpen(true)} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center text-white hover:bg-white/20 transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 group relative overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-             <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">{t('txt_glamzo_club') || 'Glamzo Club'}</span></div>
+             <div className="flex items-center justify-center gap-2 text-amber-400 mb-1"><Sparkles className="w-4 h-4"/> <span className="text-xs font-bold uppercase tracking-widest">Glamzo Club</span></div>
              <span className="text-3xl font-black font-mono">{currentPointsBalance}</span>
-             <span className="text-xs text-slate-300 block">{t('manage_points') || 'Gerir Pontos e Saldo'}  <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
+             <span className="text-xs text-slate-300 block">Gerir Pontos e Saldo <span className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
           </button>
         </div>
       </div>
@@ -585,11 +583,11 @@ export default function Account() {
         {/* Menu de Abas */}
         <div className="hidden lg:flex overflow-x-auto bg-white rounded-2xl shadow-lg border border-slate-100 p-2 gap-2 mb-8 no-scrollbar items-center">
           {[
-            { id: 'reservas', icon: Calendar, label: t('acc_my_reservations') || 'Minhas Reservas' },
-            { id: 'apoio', icon: MessageSquare, label: t('acc_support_center') || 'Centro de Apoio' },
-            { id: 'perfil', icon: UserCircle, label: t('acc_edit_data') || 'Editar Dados' },
-            { id: 'recompensas', icon: Gift, label: t('acc_rewards') || 'Recompensas' },
-            { id: 'favoritos', icon: Heart, label: t('acc_favorites') || 'Favoritos' }
+            { id: 'reservas', icon: Calendar, label: 'Minhas Reservas' },
+            { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' },
+            { id: 'perfil', icon: UserCircle, label: 'Editar Dados' },
+            { id: 'recompensas', icon: Gift, label: 'Recompensas' },
+            { id: 'favoritos', icon: Heart, label: 'Favoritos' }
           ].map(tab => {
             const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
             return (
@@ -617,8 +615,8 @@ export default function Account() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-purple-100 to-transparent opacity-50 blur-3xl pointer-events-none" />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h3 className="text-2xl font-black text-slate-900">{t('booking_history') || 'Histórico de Reservas'}</h3>
-                <p className="text-sm text-slate-500 font-medium">{t('booking_history_desc') || 'As suas marcações ativas e passadas.'}</p>
+                <h3 className="text-2xl font-black text-slate-900">Histórico de Reservas</h3>
+                <p className="text-sm text-slate-500 font-medium">As suas marcações ativas e passadas.</p>
               </div>
             </div>
 
@@ -629,38 +627,33 @@ export default function Account() {
                 onClick={() => setDateFilter('todos')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'todos' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                
-                                              {t('txt_todas_69') || 'Todas'}
-                                            </button>
+                Todas
+              </button>
               <button 
                 onClick={() => setDateFilter('hoje')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'hoje' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                
-                                              {t('txt_hoje_70') || 'Hoje'}
-                                            </button>
+                Hoje
+              </button>
               <button 
                 onClick={() => setDateFilter('semana')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'semana' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                
-                                              {t('txt_esta_semana') || 'Esta Semana'}
-                                            </button>
+                Esta Semana
+              </button>
               <button 
                 onClick={() => setDateFilter('mes')} 
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'mes' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                
-                                              {t('txt_este_m_s') || 'Este Mês'}
-                                            </button>
+                Este Mês
+              </button>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setDateFilter('intervalo')} 
                   className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${dateFilter === 'intervalo' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                 >
-                  
-                                                    {t('txt_data_espec_fica') || 'Data Específica'}
-                                                  </button>
+                  Data Específica
+                </button>
                 {dateFilter === 'intervalo' && (
                   <div className="flex items-center gap-2">
                     <input 
@@ -669,7 +662,7 @@ export default function Account() {
                       onChange={(e) => setCustomStartDate(e.target.value)}
                       className="px-3 py-1.5 rounded-full border border-slate-200 text-xs text-slate-700 outline-none focus:border-purple-500 bg-white"
                     />
-                    <span className="text-slate-400 text-xs font-bold">{t('txt_at') || 'até'}</span>
+                    <span className="text-slate-400 text-xs font-bold">até</span>
                     <input 
                       type="date" 
                       value={customEndDate}
@@ -686,9 +679,9 @@ export default function Account() {
             ) : filteredBookings.length === 0 ? (
               <div className="text-center py-16 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                 <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h4 className="text-lg font-bold text-slate-800 mb-2">{t('no_bookings') || 'Nenhuma marcação'}</h4>
-                <p className="text-slate-500 mb-6 text-sm">{t('no_bookings_desc') || 'Ainda não fez nenhuma reserva no Glamzo.'}</p>
-                <a href="/explore" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all"><Search className="w-4 h-4" />  {t('txt_explorar_sal_es') || 'Explorar Salões'}</a>
+                <h4 className="text-lg font-bold text-slate-800 mb-2">Nenhuma marcação</h4>
+                <p className="text-slate-500 mb-6 text-sm">Ainda não fez nenhuma reserva no Glamzo.</p>
+                <a href="/explore" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg transition-all"><Search className="w-4 h-4" /> Explorar Salões</a>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
@@ -702,7 +695,7 @@ export default function Account() {
                       <div className="w-full md:w-auto flex items-center gap-4 flex-1">
                         <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
                           {bk.service?.image_url ? (
-                            <img loading="lazy" referrerPolicy="no-referrer" src={bk.service.image_url} alt={t('txt_servi_o_4') || 'Serviço'} className="w-full h-full object-cover" />
+                            <img loading="lazy" referrerPolicy="no-referrer" src={bk.service.image_url} alt="Serviço" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-300"><Scissors className="w-6 h-6" /></div>
                           )}
@@ -715,29 +708,29 @@ export default function Account() {
                             <h4 className="font-bold text-slate-900 truncate">{bk.service?.name || 'Serviço Personalizado'}</h4>
                           </div>
                           <p className="text-sm font-bold text-slate-700 truncate">{bk.business?.name || 'Salão Parceiro'}</p>
-                          <p className="text-xs text-slate-500 mt-1 font-mono">{new Date(bk.booking_date).toLocaleDateString('pt')} • {bk.start_time}  {t('txt_s') || 'às'} {bk.end_time}</p>
+                          <p className="text-xs text-slate-500 mt-1 font-mono">{new Date(bk.booking_date).toLocaleDateString('pt')} • {bk.start_time} às {bk.end_time}</p>
                         </div>
                       </div>
                       
                       <div className="w-full md:w-auto flex flex-col md:items-end gap-3 shrink-0 border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
                         <div className="text-right">
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('txt_total_71') || 'Total'}</p>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total</p>
                           <p className="text-lg font-black text-slate-900">{bk.service?.price ? `${bk.service.price}€` : '--'}</p>
                         </div>
                         <div className="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
-                          <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">{t('view_store') || 'Ver Loja'}</a>
+                          <a href={`/${bk.business?.slug || ''}`} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center">Ver Loja</a>
                           
                           
                           {bk.booking_status === 'completed' &&  (
-                            <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">{t('open_dispute') || 'Abrir Disputa'}</button>
+                            <button onClick={() => handleOpenDispute(bk)} className="flex-1 md:flex-none px-4 py-2 border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all">Abrir Disputa</button>
                           )}
                           
                           {bk.booking_status === 'completed' && !userReviews.some(r => r.booking_id === bk.id) && (
-                            <button onClick={() => handleOpenReviewModal(bk)} className="flex-1 md:flex-none px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors border border-purple-200">{t('rate') || 'Avaliar'}</button>
+                            <button onClick={() => handleOpenReviewModal(bk)} className="flex-1 md:flex-none px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs transition-colors border border-purple-200">Avaliar</button>
                           )}
                           
                           {(bk.booking_status === 'confirmed' || bk.booking_status === 'pending') && (
-                            <button onClick={() => handleCancelBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 font-bold rounded-xl text-xs transition-colors">{t('cancel') || 'Cancelar'}</button>
+                            <button onClick={() => handleCancelBooking(bk.id)} className="flex-1 md:flex-none px-4 py-2 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 font-bold rounded-xl text-xs transition-colors">Cancelar</button>
                           )}
                           
                           {(bk.booking_status === 'completed' || bk.booking_status === 'cancelled') && (
@@ -757,16 +750,15 @@ export default function Account() {
                 {/* CENTRO DE APOIO */}
         {activeTab === 'apoio' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in flex flex-col h-[70vh]">
-            <h3 className="text-xl font-black text-slate-900 mb-6">{t('support_center') || 'Centro de Apoio'}</h3>
+            <h3 className="text-xl font-black text-slate-900 mb-6">Centro de Apoio</h3>
             <div className="flex overflow-x-auto no-scrollbar gap-4 mb-4 pb-2">
               <button 
                 onClick={() => setMessageTab('mensagens')} 
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'mensagens' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <MessageSquare className="w-4 h-4" /> 
-                 
-                                              {t('txt_mensagens_72') || 'Mensagens'}
-                                              {unreadMessages > 0 && (
+                Mensagens
+                {unreadMessages > 0 && (
                   <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">{unreadMessages}</span>
                 )}
               </button>
@@ -775,9 +767,8 @@ export default function Account() {
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${messageTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <ShieldAlert className="w-4 h-4" /> 
-                 
-                                              {t('txt_disputas_73') || 'Disputas'}
-                                              {pendingDisputes > 0 && (
+                Disputas
+                {pendingDisputes > 0 && (
                   <span className="bg-white text-rose-600 text-[10px] px-2 py-0.5 rounded-full">{pendingDisputes}</span>
                 )}
               </button>
@@ -793,36 +784,36 @@ export default function Account() {
         {/* 2. ABA DE PERFIL */}
         {activeTab === 'perfil' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 animate-fade-in">
-            <h3 className="text-xl font-black text-slate-900 mb-6">{t('edit_personal_data') || 'Editar Dados Pessoais'}</h3>
+            <h3 className="text-xl font-black text-slate-900 mb-6">Editar Dados Pessoais</h3>
             {errorMsg && <div className="mb-4 p-4 bg-rose-50 text-rose-700 rounded-xl text-sm font-bold flex items-center gap-2"><AlertCircle className="w-5 h-5" /> {errorMsg}</div>}
             {successMsg && <div className="mb-4 p-4 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold flex items-center gap-2"><CheckCircle className="w-5 h-5" /> {successMsg}</div>}
             
             <form className="space-y-5 max-w-2xl" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_nome_completo') || 'Nome Completo'}</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo</label>
                   <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_telem_vel') || 'Telemóvel'}</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder={t('txt_ex_912345678') || 'Ex: 912345678'} />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Telemóvel</label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder="Ex: 912345678" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_e_mail_de_acesso') || 'E-mail de Acesso'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">E-mail de Acesso</label>
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" />
               </div>
               <button type="submit" disabled={submitting} className="px-8 py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition-all shadow-md disabled:opacity-50 flex items-center gap-2">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}  {t('txt_salvar_altera_es') || 'Salvar Alterações'}
-                                            </button>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Salvar Alterações
+              </button>
             </form>
             
             <div className="mt-12 pt-8 border-t border-slate-200/60">
-              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><KeyRound className="w-5 h-5 text-purple-600" />  {t('txt_seguran_a_e_autentica_o') || 'Segurança e Autenticação'}</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2"><KeyRound className="w-5 h-5 text-purple-600" /> Segurança e Autenticação</h3>
               {providers.includes('google') ? (
                 <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
                   <Shield className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-bold text-purple-800">{t('txt_a_sua_conta_gerida_de_forma_se') || 'A sua conta é gerida de forma segura pelo Google.'}</span>
+                  <span className="text-sm font-bold text-purple-800">A sua conta é gerida de forma segura pelo Google.</span>
                 </div>
               ) : (
                 <form onSubmit={handleUpdatePassword} className="space-y-5 max-w-sm">
@@ -833,12 +824,12 @@ export default function Account() {
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('txt_nova_password') || 'Nova Password'}</label>
-                    <input type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder={t('txt_text_5') || '••••••••'} />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nova Password</label>
+                    <input type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium text-slate-900" placeholder="••••••••" />
                   </div>
                   <button type="submit" disabled={savingPassword} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-md">
-                    {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}  {t('txt_atualizar_password') || 'Atualizar Password'}
-                                                            </button>
+                    {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Atualizar Password
+                  </button>
                 </form>
               )}
             </div>
@@ -854,22 +845,22 @@ export default function Account() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
                 <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4"><Gift className="w-6 h-6" /></div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">{t('txt_trocar_pontos_por_vouchers') || 'Trocar Pontos por Vouchers'}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed mb-6">{t('txt_por_cada_100_pontos_acumula_1') || 'Por cada 100 pontos acumula 1€ de desconto real para gastar em qualquer espaço Glamzo.'}</p>
+                <h3 className="text-xl font-black text-slate-900 mb-2">Trocar Pontos por Vouchers</h3>
+                <p className="text-sm text-slate-500 leading-relaxed mb-6">Por cada 100 pontos acumula 1€ de desconto real para gastar em qualquer espaço Glamzo.</p>
                 <div className="space-y-3">
                   <button onClick={() => handleRedeemPoints(500, 5)} disabled={currentPointsBalance < 500} className="w-full py-4 bg-slate-900 hover:bg-black disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-black transition-colors flex justify-between px-6 items-center">
-                    <span>{t('txt_resgatar_5_00') || 'Resgatar 5.00€'}</span> <span className="font-mono text-xs opacity-70">{t('txt_500_pts') || '500 PTS'}</span>
+                    <span>Resgatar 5.00€</span> <span className="font-mono text-xs opacity-70">500 PTS</span>
                   </button>
                   <button onClick={() => handleRedeemPoints(1000, 10)} disabled={currentPointsBalance < 1000} className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 text-white rounded-xl font-black transition-colors flex justify-between px-6 items-center shadow-lg">
-                    <span>{t('txt_resgatar_10_00') || 'Resgatar 10.00€'}</span> <span className="font-mono text-xs opacity-70">{t('txt_1000_pts') || '1000 PTS'}</span>
+                    <span>Resgatar 10.00€</span> <span className="font-mono text-xs opacity-70">1000 PTS</span>
                   </button>
                 </div>
               </div>
 
               <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-800 text-white">
-                <h3 className="text-lg font-black mb-4">{t('txt_meus_c_digos_ativos') || 'Meus Códigos Ativos'}</h3>
+                <h3 className="text-lg font-black mb-4">Meus Códigos Ativos</h3>
                 {rewardsList.length === 0 ? (
-                  <p className="text-sm text-slate-400">{t('txt_nenhum_voucher_dispon_vel') || 'Nenhum voucher disponível.'}</p>
+                  <p className="text-sm text-slate-400">Nenhum voucher disponível.</p>
                 ) : (
                   <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                     {rewardsList.map((rw, i) => (
@@ -878,7 +869,7 @@ export default function Account() {
                           <span className="font-mono text-amber-400 font-black tracking-widest bg-black/40 px-2 py-1 rounded">{rw.code}</span>
                           <span className={`text-[10px] font-bold uppercase ${rw.used ? 'text-slate-400' : 'text-emerald-400'}`}>{rw.used ? 'Utilizado' : 'Disponível'}</span>
                         </div>
-                        <p className="text-xs text-slate-300">{t('txt_vale_74') || 'Vale'} {rw.value}{t('txt_00_expira') || '.00€ • Expira:'} {new Date(rw.expires_at).toLocaleDateString('pt')}</p>
+                        <p className="text-xs text-slate-300">Vale {rw.value}.00€ • Expira: {new Date(rw.expires_at).toLocaleDateString('pt')}</p>
                       </div>
                     ))}
                   </div>
@@ -893,15 +884,15 @@ export default function Account() {
         {activeTab === 'favoritos' && (
           <div className="space-y-6 animate-fade-in">
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60">
-              <h3 className="text-xl font-black text-slate-900 mb-6">{t('txt_sal_es_guardados') || 'Salões Guardados'}</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-6">Salões Guardados</h3>
               {loadingFavorites ? (
                 <div className="py-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>
               ) : favoriteBusinesses.length === 0 ? (
                 <div className="py-12 text-center bg-slate-50 rounded-2xl border border-slate-100">
                   <Heart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <h4 className="text-base font-bold text-slate-800">{t('txt_sem_favoritos') || 'Sem favoritos'}</h4>
-                  <p className="text-xs text-slate-500 mt-2 mb-4">{t('txt_ainda_n_o_guardou_nenhum_sal_o') || 'Ainda não guardou nenhum salão.'}</p>
-                  <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">{t('explore_salons') || 'Explorar Salões'}</a>
+                  <h4 className="text-base font-bold text-slate-800">Sem favoritos</h4>
+                  <p className="text-xs text-slate-500 mt-2 mb-4">Ainda não guardou nenhum salão.</p>
+                  <a href="/explore" className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold inline-block hover:bg-purple-700">Explorar Salões</a>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -918,8 +909,8 @@ export default function Account() {
                         <h4 className="font-bold text-slate-900 text-sm">{biz.name}</h4>
                         <p className="text-xs text-slate-500">{biz.city || 'Portugal'}</p>
                         <div className="mt-2 flex gap-2">
-                          <a href={`/salao/${biz.id}`} className="text-[10px] font-bold bg-purple-50 hover:bg-purple-600 hover:text-white transition-colors text-purple-700 px-3 py-1.5 rounded-lg">{t('txt_reservar_75') || 'Reservar'}</a>
-                          <button onClick={() => handleRemoveFavorite(biz.id)} className="text-[10px] font-bold bg-rose-50 hover:bg-rose-500 hover:text-white transition-colors text-rose-600 px-3 py-1.5 rounded-lg">{t('remove') || 'Remover'}</button>
+                          <a href={`/salao/${biz.id}`} className="text-[10px] font-bold bg-purple-50 hover:bg-purple-600 hover:text-white transition-colors text-purple-700 px-3 py-1.5 rounded-lg">Reservar</a>
+                          <button onClick={() => handleRemoveFavorite(biz.id)} className="text-[10px] font-bold bg-rose-50 hover:bg-rose-500 hover:text-white transition-colors text-rose-600 px-3 py-1.5 rounded-lg">Remover</button>
                         </div>
                       </div>
                     </div>
@@ -946,18 +937,18 @@ export default function Account() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
             <button onClick={() => setReviewModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-slate-200"><X className="w-4 h-4" /></button>
-            <h3 className="text-xl font-black text-slate-900 mb-2">{t('txt_avaliar_servi_o') || 'Avaliar Serviço'}</h3>
-            <p className="text-sm text-slate-500 mb-6">{t('txt_como_correu_com') || 'Como correu com'} <strong className="text-purple-600">{reviewBooking?.business?.name}</strong>?</p>
+            <h3 className="text-xl font-black text-slate-900 mb-2">Avaliar Serviço</h3>
+            <p className="text-sm text-slate-500 mb-6">Como correu com <strong className="text-purple-600">{reviewBooking?.business?.name}</strong>?</p>
             <form onSubmit={handleSubmitReview} className="space-y-5">
               <div className="flex items-center gap-2 justify-center py-4 bg-slate-50 rounded-2xl border border-slate-100">
                 {[1, 2, 3, 4, 5].map((score) => (
                   <Star key={score} onClick={() => setReviewRating(score)} className={`w-10 h-10 cursor-pointer transition-transform hover:scale-110 ${score <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                 ))}
               </div>
-              <textarea required rows={4} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder={t('txt_deixe_um_coment_rio_detalhado') || 'Deixe um comentário detalhado para ajudar outros clientes...'} className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-purple-500 outline-none text-sm rounded-2xl resize-none" />
+              <textarea required rows={4} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="Deixe um comentário detalhado para ajudar outros clientes..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-purple-500 outline-none text-sm rounded-2xl resize-none" />
               <button type="submit" disabled={submittingReview} className="w-full py-4 bg-purple-600 text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30">
-                {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}  {t('txt_submeter_avalia_o') || 'Submeter Avaliação'}
-                                            </button>
+                {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />} Submeter Avaliação
+              </button>
             </form>
           </div>
         </div>
@@ -967,18 +958,18 @@ export default function Account() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border-2 border-rose-100">
             <button onClick={() => setDisputeModalOpen(false)} className="absolute top-5 right-5 p-2 bg-slate-100 rounded-full hover:bg-rose-100 text-rose-500"><X className="w-4 h-4" /></button>
-            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/>  {t('txt_abrir_disputa') || 'Abrir Disputa'}</h3>
-            <p className="text-sm text-slate-500 mb-6">{t('txt_reportar_problema_com_a_reserv') || 'Reportar problema com a reserva em'} <strong>{disputeBooking?.business?.name}</strong>.</p>
+            <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-2"><ShieldAlert className="text-rose-500 w-6 h-6"/> Abrir Disputa</h3>
+            <p className="text-sm text-slate-500 mb-6">Reportar problema com a reserva em <strong>{disputeBooking?.business?.name}</strong>.</p>
             <form onSubmit={handleSubmitDispute} className="space-y-4">
               <select required value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 text-sm rounded-xl outline-none focus:border-rose-500">
-                <option value="Qualidade do serviço insatisfatória">{t('txt_servi_o_de_m_qualidade') || 'Serviço de má qualidade'}</option>
-                <option value="Profissional ausente (No-show do parceiro)">{t('txt_o_profissional_sal_o_n_o_apare') || 'O profissional/salão não apareceu'}</option>
-                <option value="Preço cobrado diferente do anunciado">{t('txt_fui_cobrado_a_mais_no_local') || 'Fui cobrado a mais no local'}</option>
+                <option value="Qualidade do serviço insatisfatória">Serviço de má qualidade</option>
+                <option value="Profissional ausente (No-show do parceiro)">O profissional/salão não apareceu</option>
+                <option value="Preço cobrado diferente do anunciado">Fui cobrado a mais no local</option>
               </select>
-              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder={t('txt_detalhe_o_que_aconteceu') || 'Detalhe o que aconteceu...'} className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
+              <textarea required rows={4} value={disputeDescription} onChange={(e) => setDisputeDescription(e.target.value)} placeholder="Detalhe o que aconteceu..." className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-rose-500 outline-none text-sm rounded-xl resize-none" />
               <button type="submit" disabled={submittingDispute} className="w-full py-4 bg-rose-600 text-white rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30">
-                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />}  {t('txt_formalizar_reclama_o') || 'Formalizar Reclamação'}
-                                            </button>
+                {submittingDispute ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />} Formalizar Reclamação
+              </button>
             </form>
           </div>
         </div>
@@ -990,8 +981,8 @@ export default function Account() {
       {/* Bottom Nav para Mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t pb-safe pt-2 px-4 flex justify-between items-center z-[50] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[
-          { id: 'reservas', icon: Calendar, label: t('acc_my_reservations') || 'Reservas' },
-          { id: 'apoio', icon: MessageSquare, label: t('acc_support_center') || 'Centro de Apoio' }
+          { id: 'reservas', icon: Calendar, label: 'Reservas' },
+          { id: 'apoio', icon: MessageSquare, label: 'Centro de Apoio' }
           
         ].map(tab => {
           const hasNotification = tab.id === 'apoio' && (unreadMessages > 0 || pendingDisputes > 0);
@@ -1015,12 +1006,12 @@ export default function Account() {
           <div className="bg-gradient-to-r from-purple-600 to-rose-500 p-4 rounded-full shadow-lg shadow-purple-500/40 text-white mb-1">
             <Compass className="w-6 h-6" />
           </div>
-          <span className="text-[10px] font-black text-slate-800">{t('txt_explorar_76') || 'Explorar'}</span>
+          <span className="text-[10px] font-black text-slate-800">Explorar</span>
         </Link>
 
         {[
-          { id: 'favoritos', icon: Heart, label: t('acc_favorites') || 'Favoritos' },
-          { id: 'perfil', icon: UserCircle, label: t('acc_profile') || 'Perfil' }
+          { id: 'favoritos', icon: Heart, label: 'Favoritos' },
+          { id: 'perfil', icon: UserCircle, label: 'Perfil' }
         ].map(tab => (
           <button 
             key={tab.id}

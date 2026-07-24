@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from "react-i18next";
 
 interface GlamzoLogoProps {
   size?: number | string;
@@ -18,7 +17,6 @@ export default function GlamzoLogo({
   glow = true,
   forceDark = false
 }: GlamzoLogoProps) {
-    const { t } = useTranslation();
   
   const customStyles = (
     <style dangerouslySetInnerHTML={{ __html: `
@@ -112,8 +110,7 @@ export default function GlamzoLogo({
 
       {withText && (
         <span className={`text-xl font-display font-black tracking-[0.2em] uppercase leading-none drop-shadow-sm ${forceDark ? 'text-slate-900' : 'text-slate-100'}`}>
-          
-                            {t('txt_glamzo_45') || 'Glamzo'}<span className="text-purple-500 font-black">.</span>
+          Glamzo<span className="text-purple-500 font-black">.</span>
         </span>
       )}
     </div>

@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-
 export const PORTUGAL_GEO: Record<string, string[]> = {
   Aveiro: ['Aveiro', 'Águeda', 'Anadia', 'Arouca', 'Castelo de Paiva', 'Espinho', 'Estarreja', 'Ílhavo', 'Mealhada', 'Murtosa', 'Oliveira de Azeméis', 'Oliveira do Bairro', 'Ovar', 'Santa Maria da Feira', 'São João da Madeira', 'Sever do Vouga', 'Vagos', 'Vale de Cambra'],
   Beja: ['Beja', 'Aljustrel', 'Almodôvar', 'Alvito', 'Barrancos', 'Castro Verde', 'Mértola', 'Moura', 'Odemira', 'Ourique', 'Serpa', 'Vidigueira'],

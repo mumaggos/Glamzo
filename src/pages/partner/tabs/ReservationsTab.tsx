@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Calendar, Clock, Scissors, User } from 'lucide-react';
-import { useTranslation } from "react-i18next";
+
 
 const ReservationRow = React.memo(({ booking }: { booking: any }) => {
-    const { t } = useTranslation();
   return (
     <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
@@ -61,7 +60,6 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
 });
 
 const ReservationsTab = React.memo(function ReservationsTab() {
-    const { t } = useTranslation();
   const { bookings } = useOutletContext<any>();
   const [filter, setFilter] = useState("hoje");
   const [customStartDate, setCustomStartDate] = useState(() => {
@@ -106,8 +104,8 @@ const ReservationsTab = React.memo(function ReservationsTab() {
     <div className="max-w-[1200px] mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('txt_todas_as_reservas') || 'Todas as Reservas'}</h1>
-          <p className="text-slate-500 text-sm font-medium">{t('txt_hist_rico_completo_e_pr_ximas') || 'Histórico completo e próximas marcações.'}</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Todas as Reservas</h1>
+          <p className="text-slate-500 text-sm font-medium">Histórico completo e próximas marcações.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
           {filter === 'custom' && (
@@ -118,13 +116,13 @@ const ReservationsTab = React.memo(function ReservationsTab() {
             </div>
           )}
           <select value={filter} onChange={e => setFilter(e.target.value)} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs focus:outline-none focus:border-purple-500 shadow-sm">
-            <option value="hoje">{t('txt_hoje_225') || 'Hoje'}</option>
-            <option value="ontem">{t('txt_ontem_226') || 'Ontem'}</option>
-            <option value="semana">{t('txt_esta_semana') || 'Esta Semana'}</option>
-            <option value="mes">{t('txt_este_m_s') || 'Este Mês'}</option>
-            <option value="pendentes">{t('txt_pendentes_227') || 'Pendentes'}</option>
-            <option value="todas">{t('txt_todas_228') || 'Todas'}</option>
-            <option value="custom">{t('txt_personalizado_229') || 'Personalizado'}</option>
+            <option value="hoje">Hoje</option>
+            <option value="ontem">Ontem</option>
+            <option value="semana">Esta Semana</option>
+            <option value="mes">Este Mês</option>
+            <option value="pendentes">Pendentes</option>
+            <option value="todas">Todas</option>
+            <option value="custom">Personalizado</option>
           </select>
         </div>
       </div>
@@ -136,20 +134,20 @@ const ReservationsTab = React.memo(function ReservationsTab() {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 mb-2">{t('txt_sem_reservas') || 'Sem reservas'}</h3>
-            <p className="text-sm text-slate-500">{t('txt_nenhuma_marca_o_encontrada_par') || 'Nenhuma marcação encontrada para este filtro.'}</p>
+            <h3 className="text-lg font-black text-slate-900 mb-2">Sem reservas</h3>
+            <p className="text-sm text-slate-500">Nenhuma marcação encontrada para este filtro.</p>
           </div>
         ) : (
         <div className="w-full max-w-[100vw] md:max-w-full overflow-x-auto custom-scrollbar pb-2">
           <div className="overflow-x-auto w-full block sm:table"><table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
               <tr>
-                <th className="px-6 py-4">{t('txt_data_hora') || 'Data & Hora'}</th>
-                <th className="px-6 py-4">{t('txt_cliente_230') || 'Cliente'}</th>
-                <th className="px-6 py-4">{t('txt_servi_o_42') || 'Serviço'}</th>
-                <th className="px-6 py-4">{t('txt_profissional_231') || 'Profissional'}</th>
-                <th className="px-6 py-4 text-center">{t('txt_estado_232') || 'Estado'}</th>
-                <th className="px-6 py-4 text-right">{t('txt_valor_233') || 'Valor'}</th>
+                <th className="px-6 py-4">Data & Hora</th>
+                <th className="px-6 py-4">Cliente</th>
+                <th className="px-6 py-4">Serviço</th>
+                <th className="px-6 py-4">Profissional</th>
+                <th className="px-6 py-4 text-center">Estado</th>
+                <th className="px-6 py-4 text-right">Valor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">

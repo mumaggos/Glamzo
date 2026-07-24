@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, Save, History, CreditCard, Sparkles, UserCheck, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useTranslation } from "react-i18next";
 
 interface ClientXRayModalProps {
   isOpen: boolean;
@@ -12,7 +11,6 @@ interface ClientXRayModalProps {
 }
 
 export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: ClientXRayModalProps) {
-    const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [glamzoPoints, setGlamzoPoints] = useState(0);
@@ -133,8 +131,8 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-3xl">
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900">{t('txt_raio_x_do_cliente') || 'Raio-X do Cliente'}</h2>
-            <p className="text-sm text-slate-500 font-medium mt-1">{t('txt_vis_o_detalhada_e_gest_o_finan') || 'Visão detalhada e gestão financeira (Modo Admin)'}</p>
+            <h2 className="text-xl font-extrabold text-slate-900">Raio-X do Cliente</h2>
+            <p className="text-sm text-slate-500 font-medium mt-1">Visão detalhada e gestão financeira (Modo Admin)</p>
           </div>
           <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
             <X className="w-5 h-5" />
@@ -149,23 +147,23 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
             {/* Info Card */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <UserCheck className="w-4 h-4" />  {t('txt_dados_pessoais') || 'Dados Pessoais'}
-                                            </h3>
+                <UserCheck className="w-4 h-4" /> Dados Pessoais
+              </h3>
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="text-slate-500 text-xs">{t('txt_nome_16') || 'Nome'}</p>
+                  <p className="text-slate-500 text-xs">Nome</p>
                   <p className="font-bold text-slate-900">{client.full_name || 'Sem nome'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 text-xs">{t('txt_e_mail_17') || 'E-mail'}</p>
+                  <p className="text-slate-500 text-xs">E-mail</p>
                   <p className="font-bold text-slate-900 font-mono text-xs mt-0.5">{client.email}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 text-xs">{t('txt_telefone_18') || 'Telefone'}</p>
+                  <p className="text-slate-500 text-xs">Telefone</p>
                   <p className="font-bold text-slate-900">{client.phone || 'Não definido'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 text-xs">{t('txt_data_de_registo') || 'Data de Registo'}</p>
+                  <p className="text-slate-500 text-xs">Data de Registo</p>
                   <p className="font-bold text-slate-900">{new Date(client.created_at).toLocaleDateString('pt-PT')}</p>
                 </div>
               </div>
@@ -174,12 +172,12 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
             {/* Financials Card */}
             <div className="bg-purple-50 border border-purple-100 rounded-2xl p-5 shadow-sm">
               <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />  {t('txt_gest_o_financeira') || 'Gestão Financeira'}
-                                            </h3>
+                <CreditCard className="w-4 h-4" /> Gestão Financeira
+              </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="text-purple-900 text-xs font-bold block mb-1">{t('txt_saldo_em_carteira') || 'Saldo em Carteira (€)'}</label>
+                  <label className="text-purple-900 text-xs font-bold block mb-1">Saldo em Carteira (€)</label>
                   <div className="relative">
                     <input 
                       type="number" 
@@ -193,7 +191,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                 </div>
 
                 <div>
-                  <label className="text-purple-900 text-xs font-bold block mb-1">{t('txt_glamzo_points') || 'Glamzo Points'}</label>
+                  <label className="text-purple-900 text-xs font-bold block mb-1">Glamzo Points</label>
                   <div className="relative">
                     <input 
                       type="number" 
@@ -218,12 +216,11 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
             {/* Referrer Info */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                
-                                              {t('txt_refer_ncia_convite') || 'Referência / Convite'}
-                                            </h3>
+                Referência / Convite
+              </h3>
               {client.referred_by ? (
                 <div>
-                  <p className="text-xs text-slate-500">{t('txt_convidado_por_c_digo') || 'Convidado por código:'} <span className="font-mono font-bold text-slate-700">{client.referred_by}</span></p>
+                  <p className="text-xs text-slate-500">Convidado por código: <span className="font-mono font-bold text-slate-700">{client.referred_by}</span></p>
                   {referrer && (
                     <div className="mt-2 p-3 bg-white border border-slate-200 rounded-xl">
                       <p className="font-bold text-slate-900 text-sm">{referrer.full_name || 'Sem nome'}</p>
@@ -232,7 +229,7 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
                   )}
                 </div>
               ) : (
-                <p className="text-sm font-medium text-slate-500 italic">{t('txt_registo_org_nico_sem_convite') || 'Registo orgânico (sem convite).'}</p>
+                <p className="text-sm font-medium text-slate-500 italic">Registo orgânico (sem convite).</p>
               )}
             </div>
 
@@ -243,26 +240,26 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm h-full flex flex-col">
               <div className="p-5 border-b border-slate-100 flex items-center gap-2">
                 <History className="w-5 h-5 text-slate-400" />
-                <h3 className="text-sm font-extrabold text-slate-900">{t('txt_hist_rico_de_reservas') || 'Histórico de Reservas'}</h3>
+                <h3 className="text-sm font-extrabold text-slate-900">Histórico de Reservas</h3>
               </div>
               
               <div className="p-0 flex-1 overflow-y-auto">
                 {loading ? (
-                  <div className="p-8 text-center text-slate-500 text-sm font-medium">{t('txt_a_carregar_reservas') || 'A carregar reservas...'}</div>
+                  <div className="p-8 text-center text-slate-500 text-sm font-medium">A carregar reservas...</div>
                 ) : bookings.length === 0 ? (
                   <div className="p-10 text-center flex flex-col items-center justify-center">
                     <Calendar className="w-10 h-10 text-slate-200 mb-3" />
-                    <p className="text-slate-500 text-sm font-medium">{t('txt_este_cliente_ainda_n_o_efetuou') || 'Este cliente ainda não efetuou nenhuma reserva.'}</p>
+                    <p className="text-slate-500 text-sm font-medium">Este cliente ainda não efetuou nenhuma reserva.</p>
                   </div>
                 ) : (
                   <table className="w-full text-left">
                     <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider sticky top-0">
                       <tr>
-                        <th className="py-3 px-4">{t('txt_loja_servi_o') || 'Loja & Serviço'}</th>
-                        <th className="py-3 px-4">{t('txt_data_e_hora') || 'Data e Hora'}</th>
-                        <th className="py-3 px-4">{t('txt_valor_19') || 'Valor'}</th>
-                        <th className="py-3 px-4 text-center">{t('txt_pontos_20') || 'Pontos'}</th>
-                        <th className="py-3 px-4 text-right">{t('txt_status_21') || 'Status'}</th>
+                        <th className="py-3 px-4">Loja & Serviço</th>
+                        <th className="py-3 px-4">Data e Hora</th>
+                        <th className="py-3 px-4">Valor</th>
+                        <th className="py-3 px-4 text-center">Pontos</th>
+                        <th className="py-3 px-4 text-right">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
@@ -305,21 +302,21 @@ export default function ClientXRayModal({ isOpen, onClose, client, onUpdate }: C
             {/* Coupons Section */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col mt-6">
               <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
-                <h3 className="text-sm font-extrabold text-slate-900">{t('txt_cup_es_do_cliente') || 'Cupões do Cliente'}</h3>
+                <h3 className="text-sm font-extrabold text-slate-900">Cupões do Cliente</h3>
               </div>
               <div className="p-0 flex-1 overflow-y-auto">
                 {loading ? (
-                  <div className="p-8 text-center text-slate-500 text-sm font-medium">{t('txt_a_carregar_cup_es') || 'A carregar cupões...'}</div>
+                  <div className="p-8 text-center text-slate-500 text-sm font-medium">A carregar cupões...</div>
                 ) : coupons.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 text-sm font-medium">{t('txt_nenhum_cup_o_encontrado') || 'Nenhum cupão encontrado.'}</div>
+                  <div className="p-8 text-center text-slate-500 text-sm font-medium">Nenhum cupão encontrado.</div>
                 ) : (
                   <table className="w-full text-left">
                     <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider sticky top-0">
                       <tr>
-                        <th className="py-3 px-4">{t('txt_c_digo') || 'Código'}</th>
-                        <th className="py-3 px-4">{t('txt_valor_22') || 'Valor'}</th>
-                        <th className="py-3 px-4">{t('txt_validade_23') || 'Validade'}</th>
-                        <th className="py-3 px-4 text-right">{t('txt_status_24') || 'Status'}</th>
+                        <th className="py-3 px-4">Código</th>
+                        <th className="py-3 px-4">Valor</th>
+                        <th className="py-3 px-4">Validade</th>
+                        <th className="py-3 px-4 text-right">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">

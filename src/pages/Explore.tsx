@@ -6,10 +6,7 @@ import { fetchAllReviews } from "../utils/reviewsHelper";
 import { calculateDistanceInKm, getCoordinatesForCity } from "../utils/geoData";
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from "../utils/categoriesData";
 import { useAuth } from "../hooks/useAuth";
-import { useGlobalStore } from "../store/useGlobalStore";
-import { useFormatPrice } from "../utils/formatPrice";
 import { toggleFavorite, fetchCustomerFavorites } from "../utils/marketingHelper";
-import { useTranslation } from "react-i18next";
 import {
   Search, MapPin, Grid, Compass, Star, SlidersHorizontal, Sliders, CheckCircle2,
   Loader2, X, Navigation, List, Map as MapIcon, Heart
@@ -17,7 +14,11 @@ import {
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 // Removed obsolete local calculations
 
-
+const getCategoryDisplayName = (name: string) => {
+  if (name === "Wellness") return "Wellness & Spa";
+  if (name === "Ao domicílio") return "Ao Domicílio";
+  return name;
+};
 
 // Marcador Oficial Glamzo no Mapa
 const getCustomMarkerIcon = (rating: number, isHovered: boolean = false) => {
@@ -114,7 +115,6 @@ function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData:
 }
 
 export default function Explore() {
-    const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -148,12 +148,7 @@ export default function Explore() {
 
   const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get("category") || "All");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(searchParams.get("subcategory") || "All");
-  const { userLocation, setUserLocation } = useGlobalStore();
-  const userCoords = userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : null;
-  const setUserCoordsLocal = (coords: { latitude: number; longitude: number; } | null) => {
-    if (coords) setUserLocation({ lat: coords.latitude, lng: coords.longitude });
-    else setUserLocation(null);
-  };
+  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number; } | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
   const [mapZoom, setMapZoom] = useState<number>(6);
   const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
@@ -166,10 +161,21 @@ export default function Explore() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (useNearMe && userCoords) {
-      setLocalSearchLocation(t('near_you') || "Perto de Mim");
+    if (navigator.geolocation) {
+      setGeoLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+          setLocalSearchLocation("Perto de Mim");
+          setUseNearMe(true);
+          setGeoLocating(false);
+        },
+        () => {
+          setGeoLocating(false);
+        }
+      );
     }
-  }, [useNearMe, userCoords]);
+  }, []);
 
   const fetchExploreData = async () => {
     setLoading(true);
@@ -194,18 +200,8 @@ export default function Explore() {
       
       let loadedBiz = baseBiz.map(b => {
         const stats = analyticsData.find((a: any) => a.shop_id === b.id) || {};
-        
-        let simCurrency = b.currency || 'EUR';
-        if (!b.currency) {
-          const c = b.city?.toLowerCase() || '';
-          if (c.includes('nova iorque') || c.includes('new york') || c.includes('los angeles')) {
-            simCurrency = 'USD';
-          }
-        }
-        
         return {
            ...b,
-           currency: simCurrency,
            is_new: stats.is_new || false,
            is_popular: stats.is_popular || false,
            is_top_rated: stats.is_top_rated || false,
@@ -311,8 +307,8 @@ export default function Explore() {
         setGeoLocating(true);
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            setUserCoordsLocal({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-            setLocalSearchLocation(t('near_you') || "Perto de Mim");
+            setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+            setLocalSearchLocation("Perto de Mim");
             setUseNearMe(true);
             setGeoLocating(false);
           },
@@ -322,7 +318,7 @@ export default function Explore() {
           }
         );
       } else if (userCoords) {
-        setLocalSearchLocation(t('near_you') || "Perto de Mim");
+        setLocalSearchLocation("Perto de Mim");
         setUseNearMe(true);
       }
     }
@@ -331,7 +327,7 @@ export default function Explore() {
   const handleClearFilters = () => {
     setLocalSearchQuery(""); setSearchQuery("");
     setLocalSearchLocation(""); setSearchLocation("");
-    setUseNearMe(false); setUserCoordsLocal(null);
+    setUseNearMe(false); setUserCoords(null);
     setSelectedCategory("All");
     setSortBy("recomendados");
     setAbertoAgora(false);
@@ -429,11 +425,11 @@ export default function Explore() {
     // Social Proof Badge Logic (Mock)
     let badge = null;
     if (b.is_top_rated) {
-      badge = <span className="bg-[#0f172a] text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400"/>  {t('txt_top_rated') || 'Top Rated'}</span>;
+      badge = <span className="bg-[#0f172a] text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-400"/> Top Rated</span>;
     } else if (b.is_popular) {
-      badge = <span className="bg-rose-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">{t('txt_muito_procurado') || '🔥 Muito Procurado'}</span>;
+      badge = <span className="bg-rose-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">🔥 Muito Procurado</span>;
     } else if (b.is_new) {
-      badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/>  {t('txt_nova_loja') || 'Nova Loja'}</span>;
+      badge = <span className="bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Nova Loja</span>;
     }
     
     const isGrid = viewMode === 'grid';
@@ -456,7 +452,7 @@ export default function Explore() {
           />
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
             {b.is_promoted && (
-              <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">{t('txt_destaque_123') || 'Destaque'}</span>
+              <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">Destaque</span>
             )}
             {badge}
           </div>
@@ -498,7 +494,7 @@ export default function Explore() {
                   );
                 })
              ) : (
-                <span className="text-[11px] text-slate-500 font-medium py-1.5">{t('txt_sem_vagas_pr_ximas') || 'Sem vagas próximas'}</span>
+                <span className="text-[11px] text-slate-500 font-medium py-1.5">Sem vagas próximas</span>
              )}
           </div>
         </div>
@@ -513,39 +509,39 @@ export default function Explore() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">
-            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{t('all') || 'Todos'}</button>
+            <button onClick={() => setSelectedCategory("All")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === "All" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>Todos</button>
             {MAIN_CATEGORIES.map((cat) => (
-              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{t(cat.nameKey) || cat.name}</button>
+              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${selectedCategory === cat.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{getCategoryDisplayName(cat.name)}</button>
             ))}
           </div>
           <div className="ml-4 pl-4 border-l border-slate-200 hidden md:flex items-center gap-3">
              <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder={t('search_store') || "Pesquisar loja..."} className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
+                <input type="text" value={localSearchQuery} onChange={(e) => setLocalSearchQuery(e.target.value)} placeholder="Pesquisar loja..." className="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-500" />
              </div>
              <div className="hidden lg:flex items-center gap-2">
       <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="">{t('radius_all') || 'Raio: Todos'}</option>
-        <option value="5">{t('up_to') || 'Até'}  {t('txt_5_km') || '5 km'}</option>
-        <option value="10">{t('up_to') || 'Até'}  {t('txt_10_km') || '10 km'}</option>
-        <option value="25">{t('up_to') || 'Até'}  {t('txt_25_km') || '25 km'}</option>
-        <option value="50">{t('up_to') || 'Até'}  {t('txt_50_km') || '50 km'}</option>
+        <option value="">Raio: Todos</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
       </select>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-purple-500">
-        <option value="recomendados">{t('recommended') || 'Recomendados'}</option>
-        <option value="distancia">{t('distance_closest') || 'Distância: Mais Próximo'}</option>
-        <option value="preco_asc">{t('price_cheapest') || 'Preço: Mais barato primeiro'}</option>
-        <option value="rating">{t('best_rating') || 'Melhor Avaliação'}</option>
+        <option value="recomendados">Recomendados</option>
+        <option value="distancia">Distância: Mais Próximo</option>
+        <option value="preco_asc">Preço: Mais barato primeiro</option>
+        <option value="rating">Melhor Avaliação</option>
       </select>
       <button onClick={() => setAbertoAgora(!abertoAgora)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        {t('open_now_explore') || 'Aberto Agora'}
+        Aberto Agora
       </button>
       <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-        {t('only_4_stars') || 'Apenas 4+ ⭐'}
+        Apenas 4+ ⭐
       </button>
    </div>
    <button onClick={() => setIsDrawerOpen(true)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors lg:ml-2">
-     <SlidersHorizontal className="w-4 h-4" /> {t('filters') || 'Filtros'}
+     <SlidersHorizontal className="w-4 h-4" /> Filtros
    </button>
           </div>
           <div className="md:hidden ml-2 flex items-center">
@@ -560,7 +556,7 @@ export default function Explore() {
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">{t('explore') || 'Explorar'} ({sortedBusinesses.length})</h2>
+              <h2 className="text-xl font-black text-slate-900 font-['Outfit']">Explorar ({sortedBusinesses.length})</h2>
               
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
@@ -577,7 +573,7 @@ export default function Explore() {
            {loading ? (
               <div className="flex flex-col items-center justify-center flex-1 py-20">
                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin mb-4" />
-                <p className="text-sm font-medium text-slate-500">{t('loading_stores') || 'A carregar lojas...'}</p>
+                <p className="text-sm font-medium text-slate-500">A carregar lojas...</p>
               </div>
             ) : sortedBusinesses.length > 0 ? (
               <>
@@ -587,7 +583,7 @@ export default function Explore() {
                 {sortedBusinesses.length === queryLimit && (
                   <div className="text-center pt-8 pb-12">
                     <button onClick={() => setQueryLimit(queryLimit + 12)} className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm">
-                      {t('load_more') || 'Carregar mais'}
+                      Carregar mais
                     </button>
                   </div>
                 )}
@@ -597,9 +593,9 @@ export default function Explore() {
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mb-4">
                   <Search className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 font-['Outfit']">{t('txt_nenhum_espa_o_encontrado') || 'Nenhum espaço encontrado'}</h3>
-                <p className="text-xs text-slate-500 mt-2 max-w-sm">{t('txt_tente_limpar_os_filtros_ou_pes') || 'Tente limpar os filtros ou pesquisar noutra zona.'}</p>
-                <button onClick={handleClearFilters} className="mt-6 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">{t('txt_limpar_tudo') || 'Limpar Tudo'}</button>
+                <h3 className="text-lg font-bold text-slate-900 font-['Outfit']">Nenhum espaço encontrado</h3>
+                <p className="text-xs text-slate-500 mt-2 max-w-sm">Tente limpar os filtros ou pesquisar noutra zona.</p>
+                <button onClick={handleClearFilters} className="mt-6 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">Limpar Tudo</button>
               </div>
             )}
         </div>
@@ -647,8 +643,8 @@ export default function Explore() {
            ) : (
              <div className="flex flex-col items-center justify-center h-full bg-slate-100 text-slate-500 p-8 text-center">
                 <MapPin className="w-8 h-8 mb-3 opacity-50" />
-                <p className="text-sm font-bold">{t('txt_mapa_indispon_vel') || 'Mapa Indisponível'}</p>
-                <p className="text-xs mt-1">{t('txt_configure_a_api_key_do_google') || 'Configure a API Key do Google Maps.'}</p>
+                <p className="text-sm font-bold">Mapa Indisponível</p>
+                <p className="text-xs mt-1">Configure a API Key do Google Maps.</p>
              </div>
            )}
         </div>
@@ -661,9 +657,9 @@ export default function Explore() {
            className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors"
          >
            {viewModeMobile === 'list' ? (
-             <><MapIcon className="w-4 h-4" />  {t('txt_mostrar_mapa') || 'Mostrar Mapa'}</>
+             <><MapIcon className="w-4 h-4" /> Mostrar Mapa</>
            ) : (
-             <><List className="w-4 h-4" />  {t('txt_mostrar_lista') || 'Mostrar Lista'}</>
+             <><List className="w-4 h-4" /> Mostrar Lista</>
            )}
          </button>
       </div>
@@ -674,51 +670,49 @@ export default function Explore() {
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setIsDrawerOpen(false)} />
           <div className="w-full max-w-sm bg-white h-full shadow-2xl relative flex flex-col animate-slide-in-right font-['Inter']">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="font-bold text-slate-900 font-['Outfit']">{t('txt_filtros_124') || 'Filtros'}</h2>
+              <h2 className="font-bold text-slate-900 font-['Outfit']">Filtros</h2>
               <button onClick={() => setIsDrawerOpen(false)} aria-label="Fechar" className="p-2 bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                <div>
-                 <label className="block text-xs font-bold text-slate-700 mb-2">{t('txt_localiza_o') || 'Localização'}</label>
+                 <label className="block text-xs font-bold text-slate-700 mb-2">Localização</label>
                  <div className="relative mb-2">
                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                   <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder={t('txt_ex_lisboa') || 'Ex: Lisboa...'} className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+                   <input type="text" value={localSearchLocation} onChange={(e) => setLocalSearchLocation(e.target.value)} placeholder="Ex: Lisboa..." className="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
                  </div>
                  <button onClick={handleNearMeToggle} className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors ${useNearMe ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700'}`}>
-                    <Navigation className="w-4 h-4" />  {t('txt_usar_a_minha_localiza_o') || 'Usar a minha localização'}
-                                                   </button>
+                    <Navigation className="w-4 h-4" /> Usar a minha localização
+                 </button>
                </div>
                <div>
-      <label className="block text-xs font-bold text-slate-700 mb-2">{t('txt_raio_de_pesquisa') || 'Raio de Pesquisa'}</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Raio de Pesquisa</label>
       <select value={searchRadius !== null ? searchRadius.toString() : ""} onChange={(e) => setSearchRadius(e.target.value ? Number(e.target.value) : null)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
-        <option value="">{t('radius_all') || 'Raio: Todos'}</option>
-        <option value="5">{t('up_to') || 'Até'}  {t('txt_5_km') || '5 km'}</option>
-        <option value="10">{t('up_to') || 'Até'}  {t('txt_10_km') || '10 km'}</option>
-        <option value="25">{t('up_to') || 'Até'}  {t('txt_25_km') || '25 km'}</option>
-        <option value="50">{t('up_to') || 'Até'}  {t('txt_50_km') || '50 km'}</option>
+        <option value="">Todos</option>
+        <option value="5">Até 5 km</option>
+        <option value="10">Até 10 km</option>
+        <option value="25">Até 25 km</option>
+        <option value="50">Até 50 km</option>
       </select>
-      <label className="block text-xs font-bold text-slate-700 mb-2">{t('txt_ordena_o') || 'Ordenação'}</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Ordenação</label>
       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 mb-4">
-        <option value="recomendados">{t('recommended') || 'Recomendados'}</option>
-        <option value="distancia">{t('distance_closest') || 'Distância: Mais Próximo'}</option>
-        <option value="preco_asc">{t('price_cheapest') || 'Preço: Mais barato primeiro'}</option>
-        <option value="rating">{t('best_rating') || 'Melhor Avaliação'}</option>
+        <option value="recomendados">Recomendados</option>
+        <option value="distancia">Distância: Mais Próximo</option>
+        <option value="preco_asc">Preço: Mais barato primeiro</option>
+        <option value="rating">Melhor Avaliação</option>
       </select>
-      <label className="block text-xs font-bold text-slate-700 mb-2">{t('txt_filtros_r_pidos') || 'Filtros Rápidos'}</label>
+      <label className="block text-xs font-bold text-slate-700 mb-2">Filtros Rápidos</label>
       <div className="flex gap-2">
         <button onClick={() => setAbertoAgora(!abertoAgora)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${abertoAgora ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
-          
-                                                {t('txt_aberto_agora') || 'Aberto Agora'}
-                                              </button>
+          Aberto Agora
+        </button>
         <button onClick={() => setMinimo4Estrelas(!minimo4Estrelas)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-colors ${minimo4Estrelas ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
-          
-                                                {t('txt_apenas_4') || 'Apenas 4+ ⭐'}
-                                              </button>
+          Apenas 4+ ⭐
+        </button>
       </div>
    </div>
 </div>
             <div className="p-5 border-t border-slate-100">
-               <button onClick={() => setIsDrawerOpen(false)} className="w-full py-3.5 bg-purple-600 text-white rounded-xl text-sm font-bold shadow-md">{t('txt_aplicar_filtros') || 'Aplicar Filtros'}</button>
+               <button onClick={() => setIsDrawerOpen(false)} className="w-full py-3.5 bg-purple-600 text-white rounded-xl text-sm font-bold shadow-md">Aplicar Filtros</button>
             </div>
           </div>
         </div>

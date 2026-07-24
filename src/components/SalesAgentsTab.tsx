@@ -6,10 +6,8 @@ import { Phone } from 'lucide-react';
 import GestaoLeads from './GestaoLeads';
 import AgentLeadsModal from './AgentLeadsModal';
 import AgentStoresModal from './AgentStoresModal';
-import { useTranslation } from "react-i18next";
 
 export default function SalesAgentsTab() {
-    const { t } = useTranslation();
   const [agents, setAgents] = useState<SalesAgent[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -211,17 +209,16 @@ export default function SalesAgentsTab() {
       <GestaoLeads agents={agents} />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 pt-8">
         <div>
-          <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_equipas_de_vendas') || 'Equipas de Vendas'}</h3>
-          <p className="text-xs text-slate-600 mt-0.5">{t('txt_crie_equipas_e_adicione_comerc') || 'Crie equipas e adicione comerciais para monitorizar as inscrições.'}</p>
+          <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Equipas de Vendas</h3>
+          <p className="text-xs text-slate-600 mt-0.5">Crie equipas e adicione comerciais para monitorizar as inscrições.</p>
         </div>
         <button
           onClick={() => setShowTeamModal(true)}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          
-                            {t('txt_criar_equipa') || 'Criar Equipa'}
-                          </button>
+          Criar Equipa
+        </button>
       </div>
 
       {loading ? (
@@ -233,7 +230,7 @@ export default function SalesAgentsTab() {
           {allTeams.length === 0 && agentsWithoutTeam.length === 0 && (
             <div className="text-center p-12 bg-white rounded-3xl border border-slate-200/60 shadow-sm">
               <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500 font-medium">{t('txt_nenhuma_equipa_registada') || 'Nenhuma equipa registada.'}</p>
+              <p className="text-slate-500 font-medium">Nenhuma equipa registada.</p>
             </div>
           )}
 
@@ -245,7 +242,7 @@ export default function SalesAgentsTab() {
                   <div className="flex items-center gap-2">
     <h4 className="font-extrabold text-lg text-slate-900">{teamName}</h4>
     {teamAgents.length === 0 && (
-      <button onClick={() => handleDeleteTeam(teamName)} className="text-slate-300 hover:text-rose-500 transition-colors" title={t('txt_apagar_equipa_vazia') || 'Apagar Equipa Vazia'}>
+      <button onClick={() => handleDeleteTeam(teamName)} className="text-slate-300 hover:text-rose-500 transition-colors" title="Apagar Equipa Vazia">
         <Trash2 className="w-4 h-4" />
       </button>
     )}
@@ -257,28 +254,27 @@ export default function SalesAgentsTab() {
                     }}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-colors"
                   >
-                    <Plus className="w-3.5 h-3.5" />  {t('txt_adicionar_comercial') || 'Adicionar Comercial'}
-                                              </button>
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Comercial
+                  </button>
                 </div>
                 
                 {teamAgents.length === 0 ? (
                   <div className="p-6 text-center text-sm text-slate-500">
-                    
-                                                {t('txt_nenhum_comercial_nesta_equipa') || 'Nenhum comercial nesta equipa.'}
-                                              </div>
+                    Nenhum comercial nesta equipa.
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          <th className="p-4">{t('txt_comercial_46') || 'Comercial'}</th>
-                          <th className="p-4 text-center">{t('txt_cliques_47') || 'Cliques'}</th>
-                          <th className="p-4 text-center">{t('txt_leads_crm') || 'Leads CRM'}</th>
-                          <th className="p-4 text-center">{t('txt_inscri_es') || 'Inscrições'}</th>
-                          <th className="p-4 text-center">{t('txt_plano_pro') || 'Plano PRO'}</th>
-                          <th className="p-4 text-center">{t('txt_pro_terminal') || 'PRO + Terminal'}</th>
-                          <th className="p-4 text-right">{t('txt_faturado_48') || 'Faturado'}</th>
-                          <th className="p-4 text-right">{t('txt_link_49') || 'Link'}</th>
+                          <th className="p-4">Comercial</th>
+                          <th className="p-4 text-center">Cliques</th>
+                          <th className="p-4 text-center">Leads CRM</th>
+                          <th className="p-4 text-center">Inscrições</th>
+                          <th className="p-4 text-center">Plano PRO</th>
+                          <th className="p-4 text-center">PRO + Terminal</th>
+                          <th className="p-4 text-right">Faturado</th>
+                          <th className="p-4 text-right">Link</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
@@ -286,7 +282,7 @@ export default function SalesAgentsTab() {
                           const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0, assignedLeads: 0, contactedLeads: 0 };
                           return (
                             <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title={t('txt_ver_leads_atribu_das') || 'Ver Leads Atribuídas'}>
+                              <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
                                 {agent.name}
                               </td>
                               <td className="p-4 text-center font-bold text-blue-600">
@@ -298,18 +294,18 @@ export default function SalesAgentsTab() {
                               <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)}>
      <div className="flex flex-col items-center">
        <span>{perf.assignedLeads}</span>
-       <span className="text-[9px] text-emerald-600">{perf.contactedLeads}  {t('txt_cont') || 'cont.'}</span>
+       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
      </div>
    </td>
-   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.totalStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.proStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.terminalStores}</td>
+   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.totalStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.proStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.terminalStores}</td>
                               <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
                               <td className="p-4 text-right">
                                 <button
     onClick={() => copyToClipboard(agent.ref_code, agent.id)}
     className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-    title={t('txt_copiar_link_de_afiliado') || 'Copiar Link de Afiliado'}
+    title="Copiar Link de Afiliado"
   >
     {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
   </button>
@@ -321,14 +317,14 @@ export default function SalesAgentsTab() {
       setTimeout(() => setCopiedId(null), 2000);
     }}
     className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-    title={t('txt_copiar_link_do_crm_de_chamadas') || 'Copiar Link do CRM de Chamadas'}
+    title="Copiar Link do CRM de Chamadas"
   >
     {copiedId === 'crm_' + agent.id ? <Check className="w-3 h-3 text-blue-600" /> : <Phone className="w-3 h-3" />}
   </button>
                                 <button
                                   onClick={() => handleDeleteAgent(agent.id, agent.name)}
                                   className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                                  title={t('txt_apagar_comercial') || 'Apagar Comercial'}
+                                  title="Apagar Comercial"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -348,7 +344,7 @@ export default function SalesAgentsTab() {
           {agentsWithoutTeam.length > 0 && (
             <div className="bg-white border border-slate-200/60 rounded-3xl overflow-hidden shadow-sm">
               <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <h4 className="font-extrabold text-lg text-slate-600">{t('txt_sem_equipa') || 'Sem Equipa'}</h4>
+                <h4 className="font-extrabold text-lg text-slate-600">Sem Equipa</h4>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -357,7 +353,7 @@ export default function SalesAgentsTab() {
                       const perf = performance[agent.id] || { totalStores: 0, proStores: 0, terminalStores: 0, totalCommission: 0, assignedLeads: 0, contactedLeads: 0 };
                       return (
                         <tr key={agent.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title={t('txt_ver_leads_atribu_das') || 'Ver Leads Atribuídas'}>
+                          <td className="p-4 font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)} title="Ver Leads Atribuídas">
                                 {agent.name}
                               </td>
                               <td className="p-4 text-center font-bold text-blue-600">
@@ -369,18 +365,18 @@ export default function SalesAgentsTab() {
                               <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentLeads(agent)}>
      <div className="flex flex-col items-center">
        <span>{perf.assignedLeads}</span>
-       <span className="text-[9px] text-emerald-600">{perf.contactedLeads}  {t('txt_cont') || 'cont.'}</span>
+       <span className="text-[9px] text-emerald-600">{perf.contactedLeads} cont.</span>
      </div>
    </td>
-   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.totalStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.proStores}</td>
-                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title={t('txt_ver_lojas') || 'Ver Lojas'}>{perf.terminalStores}</td>
+   <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.totalStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.proStores}</td>
+                              <td className="p-4 text-center font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setViewAgentStores(agent)} title="Ver Lojas">{perf.terminalStores}</td>
                               <td className="p-4 text-right font-black text-emerald-600">{perf.totalCommission.toFixed(2)} €</td>
                               <td className="p-4 text-right">
                             <button
     onClick={() => copyToClipboard(agent.ref_code, agent.id)}
     className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-    title={t('txt_copiar_link_de_afiliado') || 'Copiar Link de Afiliado'}
+    title="Copiar Link de Afiliado"
   >
     {copiedId === agent.id ? <Check className="w-3 h-3 text-emerald-600" /> : <LinkIcon className="w-3 h-3" />}
   </button>
@@ -392,14 +388,14 @@ export default function SalesAgentsTab() {
       setTimeout(() => setCopiedId(null), 2000);
     }}
     className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-    title={t('txt_copiar_link_do_crm_de_chamadas') || 'Copiar Link do CRM de Chamadas'}
+    title="Copiar Link do CRM de Chamadas"
   >
     {copiedId === 'crm_' + agent.id ? <Check className="w-3 h-3 text-blue-600" /> : <Phone className="w-3 h-3" />}
   </button>
                             <button
                               onClick={() => handleDeleteAgent(agent.id, agent.name)}
                               className="inline-flex items-center justify-center w-7 h-7 ml-2 rounded bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                              title={t('txt_apagar_comercial') || 'Apagar Comercial'}
+                              title="Apagar Comercial"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -420,30 +416,29 @@ export default function SalesAgentsTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-black text-slate-900">{t('txt_nova_equipa') || 'Nova Equipa'}</h3>
+              <h3 className="text-lg font-black text-slate-900">Nova Equipa</h3>
               <button onClick={() => setShowTeamModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateTeam} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('txt_nome_da_equipa') || 'Nome da Equipa'}</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nome da Equipa</label>
                 <input
                   type="text"
                   required
                   value={newTeamName}
                   onChange={e => setNewTeamName(e.target.value)}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-bold"
-                  placeholder={t('txt_ex_equipa_norte') || 'Ex: Equipa Norte'}
+                  placeholder="Ex: Equipa Norte"
                 />
               </div>
               <button
                 type="submit"
                 className="w-full py-3 rounded-xl text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors flex justify-center"
               >
-                
-                                              {t('txt_criar_equipa') || 'Criar Equipa'}
-                                            </button>
+                Criar Equipa
+              </button>
             </form>
           </div>
         </div>
@@ -454,31 +449,31 @@ export default function SalesAgentsTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-black text-slate-900">{t('txt_novo_comercial_em') || 'Novo Comercial em "'}{selectedTeam}"</h3>
+              <h3 className="text-lg font-black text-slate-900">Novo Comercial em "{selectedTeam}"</h3>
               <button onClick={() => setShowAgentModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateAgent} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('txt_nome_completo') || 'Nome Completo'}</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nome Completo</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-bold"
-                  placeholder={t('txt_ex_jo_o_silva') || 'Ex: João Silva'}
+                  placeholder="Ex: João Silva"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('txt_telem_vel_opcional') || 'Telemóvel (Opcional)'}</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Telemóvel (Opcional)</label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-slate-50 focus:bg-white transition-all font-medium"
-                  placeholder={t('txt_ex_912345678') || 'Ex: 912345678'}
+                  placeholder="Ex: 912345678"
                 />
               </div>
               <button
@@ -487,9 +482,8 @@ export default function SalesAgentsTab() {
                 className="w-full py-3 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-black transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
               >
                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
-                
-                                              {t('txt_gerar_link_nico') || 'Gerar Link Único'}
-                                            </button>
+                Gerar Link Único
+              </button>
             </form>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 import { Review } from '../types';
-import { useTranslation } from "react-i18next";
 
 export async function fetchAllReviews(): Promise<Review[]> {
   try {

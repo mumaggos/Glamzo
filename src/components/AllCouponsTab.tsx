@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Search, Calendar, Tag, Filter } from 'lucide-react';
-import { useTranslation } from "react-i18next";
 
 export default function AllCouponsTab() {
-    const { t } = useTranslation();
   const [coupons, setCoupons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,8 +50,8 @@ export default function AllCouponsTab() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900">{t('txt_gest_o_global_de_cup_es') || 'Gestão Global de Cupões'}</h2>
-          <p className="text-sm text-slate-500 font-medium">{t('txt_controle_de_todos_os_cup_es_de') || 'Controle de todos os cupões de fidelidade emitidos.'}</p>
+          <h2 className="text-xl font-extrabold text-slate-900">Gestão Global de Cupões</h2>
+          <p className="text-sm text-slate-500 font-medium">Controle de todos os cupões de fidelidade emitidos.</p>
         </div>
       </div>
 
@@ -63,7 +61,7 @@ export default function AllCouponsTab() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder={t('txt_pesquisar_por_c_digo_cliente_o') || 'Pesquisar por código, cliente ou email...'} 
+              placeholder="Pesquisar por código, cliente ou email..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-500 transition-colors"
@@ -75,10 +73,10 @@ export default function AllCouponsTab() {
               onChange={(e) => setFilterStatus(e.target.value as any)}
               className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-purple-500"
             >
-              <option value="all">{t('txt_todos_os_estados') || 'Todos os Estados'}</option>
-              <option value="active">{t('txt_ativos_9') || 'Ativos'}</option>
-              <option value="used">{t('txt_usados_10') || 'Usados'}</option>
-              <option value="expired">{t('txt_expirados_11') || 'Expirados'}</option>
+              <option value="all">Todos os Estados</option>
+              <option value="active">Ativos</option>
+              <option value="used">Usados</option>
+              <option value="expired">Expirados</option>
             </select>
           </div>
         </div>
@@ -87,12 +85,12 @@ export default function AllCouponsTab() {
           <table className="w-full text-left">
             <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4">{t('txt_c_digo') || 'Código'}</th>
-                <th className="px-6 py-4">{t('txt_cliente_12') || 'Cliente'}</th>
-                <th className="px-6 py-4">{t('txt_valor_13') || 'Valor'}</th>
-                <th className="px-6 py-4">{t('txt_data_emiss_o') || 'Data Emissão'}</th>
-                <th className="px-6 py-4">{t('txt_validade_14') || 'Validade'}</th>
-                <th className="px-6 py-4 text-right">{t('txt_status_15') || 'Status'}</th>
+                <th className="px-6 py-4">Código</th>
+                <th className="px-6 py-4">Cliente</th>
+                <th className="px-6 py-4">Valor</th>
+                <th className="px-6 py-4">Data Emissão</th>
+                <th className="px-6 py-4">Validade</th>
+                <th className="px-6 py-4 text-right">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
@@ -100,17 +98,15 @@ export default function AllCouponsTab() {
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-600" />
-                    
-                                                          {t('txt_a_carregar_cup_es') || 'A carregar cupões...'}
-                                                        </td>
+                    A carregar cupões...
+                  </td>
                 </tr>
               ) : filteredCoupons.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                     <Tag className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    
-                                                              {t('txt_nenhum_cup_o_encontrado') || 'Nenhum cupão encontrado.'}
-                                                            </td>
+                    Nenhum cupão encontrado.
+                  </td>
                 </tr>
               ) : (
                 filteredCoupons.map((c) => {

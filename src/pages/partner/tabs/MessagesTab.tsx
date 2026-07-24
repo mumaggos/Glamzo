@@ -4,14 +4,12 @@ import UniversalInbox from "../../../components/UniversalInbox";
 import UniversalDisputes from "../../../components/UniversalDisputes";
 import { Business } from "../../../types";
 import { MessageSquare, ShieldAlert } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
 }
 
 export default function MessagesTab() {
-    const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [activeTab, setActiveTab] = useState<'mensagens' | 'disputas'>('mensagens');
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -67,9 +65,8 @@ export default function MessagesTab() {
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'mensagens' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
           <MessageSquare className="w-4 h-4" /> 
-           
-                            {t('txt_mensagens_217') || 'Mensagens'}
-                            {unreadMessages > 0 && (
+          Mensagens
+          {unreadMessages > 0 && (
             <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">{unreadMessages}</span>
           )}
         </button>
@@ -78,9 +75,8 @@ export default function MessagesTab() {
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'disputas' ? 'bg-rose-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
           <ShieldAlert className="w-4 h-4" /> 
-           
-                            {t('txt_disputas_218') || 'Disputas'}
-                            {pendingDisputes > 0 && (
+          Disputas
+          {pendingDisputes > 0 && (
             <span className="bg-white text-rose-600 text-[10px] px-2 py-0.5 rounded-full">{pendingDisputes}</span>
           )}
         </button>

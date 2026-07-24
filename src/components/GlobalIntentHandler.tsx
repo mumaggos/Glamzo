@@ -2,10 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { useTranslation } from "react-i18next";
 
 export function GlobalIntentHandler() {
-    const { t } = useTranslation();
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 

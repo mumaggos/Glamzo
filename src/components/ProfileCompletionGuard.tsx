@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { User, Phone, CheckCircle } from 'lucide-react';
-import { useTranslation } from "react-i18next";
 
 export function ProfileCompletionGuard() {
-    const { t } = useTranslation();
   const { user, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [fullName, setFullName] = useState("");

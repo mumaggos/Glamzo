@@ -3,7 +3,6 @@ import { useOutletContext } from "react-router-dom";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import StripeKycOnboarding from "../../../components/StripeKycOnboarding";
 import { Business } from "../../../types";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
@@ -11,7 +10,6 @@ interface PartnerContextType {
 }
 
 export default function FinanceSettingsTab() {
-    const { t } = useTranslation();
   const { business, user } = useOutletContext<PartnerContextType>();
   const [paymentsEnabled, setPaymentsEnabled] = useState(business?.stripe_payments_enabled || false);
 

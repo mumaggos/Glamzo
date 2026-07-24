@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -26,7 +25,6 @@ const defaultDraft = {
 };
 
 export default function Onboarding() {
-    const { t } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -243,112 +241,112 @@ export default function Onboarding() {
       case 1:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_1_dados_da_loja') || 'Passo 1: Dados da Loja'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 1: Dados da Loja</h2>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_nome_comercial') || 'Nome Comercial *'}</label>
-              <input type="text" value={draft.step1.name} onChange={e => updateDraft('step1', 'name', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:ring-2 focus:ring-purple-500" placeholder={t('txt_ex_glamour_spa') || 'Ex: Glamour Spa'} />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Nome Comercial *</label>
+              <input type="text" value={draft.step1.name} onChange={e => updateDraft('step1', 'name', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:ring-2 focus:ring-purple-500" placeholder="Ex: Glamour Spa" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_categoria_129') || 'Categoria'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Categoria</label>
                 <select value={draft.step1.category} onChange={e => updateDraft('step1', 'category', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
-                  <option value="Cabelo & Barbearia">{t('txt_cabelo_barbearia') || 'Cabelo & Barbearia'}</option>
-                  <option value="Nails & Beauty">{t('txt_nails_beauty') || 'Nails & Beauty'}</option>
-                  <option value="Estética">{t('txt_est_tica') || 'Estética'}</option>
-                  <option value="Bem-Estar">{t('txt_bem_estar_130') || 'Bem-Estar'}</option>
+                  <option value="Cabelo & Barbearia">Cabelo & Barbearia</option>
+                  <option value="Nails & Beauty">Nails & Beauty</option>
+                  <option value="Estética">Estética</option>
+                  <option value="Bem-Estar">Bem-Estar</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_telefone') || 'Telefone *'}</label>
-                <input type="text" value={draft.step1.phone} onChange={e => updateDraft('step1', 'phone', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder={t('txt_ex_912_345_678') || 'Ex: 912 345 678'} />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Telefone *</label>
+                <input type="text" value={draft.step1.phone} onChange={e => updateDraft('step1', 'phone', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Ex: 912 345 678" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_descri_o') || 'Descrição'}</label>
-              <textarea value={draft.step1.description} onChange={e => updateDraft('step1', 'description', e.target.value)} rows={3} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder={t('txt_apresente_o_seu_espa_o') || 'Apresente o seu espaço...'} />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Descrição</label>
+              <textarea value={draft.step1.description} onChange={e => updateDraft('step1', 'description', e.target.value)} rows={3} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Apresente o seu espaço..." />
             </div>
           </div>
         );
       case 2:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_2_morada_exata_para_o_ma') || 'Passo 2: Morada Exata (Para o Mapa)'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 2: Morada Exata (Para o Mapa)</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_distrito') || 'Distrito *'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Distrito *</label>
                 <select value={draft.step2.district} onChange={e => { updateDraft('step2', 'district', e.target.value); updateDraft('step2', 'city', PORTUGAL_GEO[e.target.value]?.[0] || ''); }} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
                   {Object.keys(PORTUGAL_GEO).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_concelho_cidade') || 'Concelho / Cidade *'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Concelho / Cidade *</label>
                 <select value={draft.step2.city} onChange={e => updateDraft('step2', 'city', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm">
                   {(PORTUGAL_GEO[draft.step2.district] || []).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_morada_rua_avenida') || 'Morada (Rua/Avenida) *'}</label>
-              <input type="text" value={draft.step2.address} onChange={e => updateDraft('step2', 'address', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder={t('txt_rua_de_exemplo') || 'Rua de Exemplo'} />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Morada (Rua/Avenida) *</label>
+              <input type="text" value={draft.step2.address} onChange={e => updateDraft('step2', 'address', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="Rua de Exemplo" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_n_mero') || 'Número *'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Número *</label>
                 <input type="text" value={draft.step2.doorNumber} onChange={e => updateDraft('step2', 'doorNumber', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="123" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('txt_c_digo_postal') || 'Código Postal *'}</label>
-                <input type="text" value={draft.step2.postalCode} onChange={e => updateDraft('step2', 'postalCode', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder={t('txt_1000_100_133') || '1000-100'} />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Código Postal *</label>
+                <input type="text" value={draft.step2.postalCode} onChange={e => updateDraft('step2', 'postalCode', e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm" placeholder="1000-100" />
               </div>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2">
               <MapIcon className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-800">{t('txt_esta_morada_ser_usada_para_col') || 'Esta morada será usada para colocar o seu estabelecimento no mapa e nas pesquisas de clientes próximos de si.'}</p>
+              <p className="text-xs text-blue-800">Esta morada será usada para colocar o seu estabelecimento no mapa e nas pesquisas de clientes próximos de si.</p>
             </div>
           </div>
         );
       case 3:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_3_imagens') || 'Passo 3: Imagens'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 3: Imagens</h2>
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-              <div><h4 className="text-sm font-bold text-slate-800">{t('txt_logo_da_loja') || 'Logo da Loja'}</h4><p className="text-xs text-slate-500">{t('txt_propor_o_1_1') || 'Proporção 1:1'}</p></div>
+              <div><h4 className="text-sm font-bold text-slate-800">Logo da Loja</h4><p className="text-xs text-slate-500">Proporção 1:1</p></div>
               <label className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer">
                 {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Carregar'}
                 <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'logo')} />
               </label>
             </div>
-            {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt={t('txt_logo_134') || 'Logo'} className="w-16 h-16 rounded-full object-cover border" />}
+            {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt="Logo" className="w-16 h-16 rounded-full object-cover border" />}
 
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center mt-4">
-              <div><h4 className="text-sm font-bold text-slate-800">{t('txt_capa_da_loja') || 'Capa da Loja'}</h4><p className="text-xs text-slate-500">{t('txt_propor_o_16_9') || 'Proporção 16:9'}</p></div>
+              <div><h4 className="text-sm font-bold text-slate-800">Capa da Loja</h4><p className="text-xs text-slate-500">Proporção 16:9</p></div>
               <label className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer">
                 {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Carregar'}
                 <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'cover')} />
               </label>
             </div>
-            {draft.step3.coverUrl && <img loading="lazy" src={draft.step3.coverUrl} alt={t('txt_capa_135') || 'Capa'} className="w-full h-32 rounded-xl object-cover border" />}
+            {draft.step3.coverUrl && <img loading="lazy" src={draft.step3.coverUrl} alt="Capa" className="w-full h-32 rounded-xl object-cover border" />}
           </div>
         );
       case 4:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_4_hor_rio') || 'Passo 4: Horário'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 4: Horário</h2>
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
               <Clock className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-              <p>{t('txt_configure_os_seus_hor_rios_de') || 'Configure os seus horários de funcionamento (Segunda a Domingo). Poderá definir pausas para almoço e copiar os horários entre dias.'}</p>
-              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">{t('txt_configurar_depois_no_dashboard') || 'Configurar depois no Dashboard'}</button>
+              <p>Configure os seus horários de funcionamento (Segunda a Domingo). Poderá definir pausas para almoço e copiar os horários entre dias.</p>
+              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Configurar depois no Dashboard</button>
             </div>
           </div>
         );
       case 5:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_5_servi_os_iniciais') || 'Passo 5: Serviços Iniciais'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 5: Serviços Iniciais</h2>
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
               <div className="flex gap-2 mb-3">
-                <input id="newServiceName" type="text" placeholder={t('txt_nome_ex_corte_homem') || 'Nome (Ex: Corte Homem)'} className="flex-1 px-3 py-2 border rounded-lg text-sm" />
-                <input id="newServicePrice" type="number" placeholder={t('txt_pre_o') || 'Preço (€)'} className="w-24 px-3 py-2 border rounded-lg text-sm" />
+                <input id="newServiceName" type="text" placeholder="Nome (Ex: Corte Homem)" className="flex-1 px-3 py-2 border rounded-lg text-sm" />
+                <input id="newServicePrice" type="number" placeholder="Preço (€)" className="w-24 px-3 py-2 border rounded-lg text-sm" />
                 <button onClick={() => {
                   const n = (document.getElementById('newServiceName') as HTMLInputElement).value;
                   const p = (document.getElementById('newServicePrice') as HTMLInputElement).value;
@@ -357,7 +355,7 @@ export default function Onboarding() {
                     (document.getElementById('newServiceName') as HTMLInputElement).value = '';
                     (document.getElementById('newServicePrice') as HTMLInputElement).value = '';
                   }
-                }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">{t('add') || 'Adicionar'}</button>
+                }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Adicionar</button>
               </div>
               <ul className="space-y-2">
                 {draft.step5.services.map((s: any, idx: number) => (
@@ -373,43 +371,43 @@ export default function Onboarding() {
       case 6:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_6_funcion_rios') || 'Passo 6: Funcionários'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 6: Funcionários</h2>
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-slate-500 text-sm">
               <Users className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-              <p>{t('txt_adicione_profissionais_sua_loj') || 'Adicione profissionais à sua loja, associe-os aos serviços que executam e defina os horários individuais.'}</p>
-              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">{t('txt_apenas_eu_adicionar_mais_tarde') || 'Apenas Eu (Adicionar mais tarde)'}</button>
+              <p>Adicione profissionais à sua loja, associe-os aos serviços que executam e defina os horários individuais.</p>
+              <button className="mt-3 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Apenas Eu (Adicionar mais tarde)</button>
             </div>
           </div>
         );
       case 7:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_7_plano_de_parceiro') || 'Passo 7: Plano de Parceiro'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 7: Plano de Parceiro</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div onClick={() => updateDraft('step7', 'plan', 'PRO')} className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${draft.step7.plan === 'PRO' ? 'border-purple-600 bg-purple-50/50' : 'border-slate-200 bg-white'}`}>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-black text-lg text-slate-900">{t('txt_pro_131') || 'PRO'}</h3>
+                  <h3 className="font-black text-lg text-slate-900">PRO</h3>
                   {draft.step7.plan === 'PRO' && <Check className="w-5 h-5 text-purple-600" />}
                 </div>
-                <p className="text-2xl font-black text-purple-600 mb-1">{t('txt_14_dias_gr_tis') || '14 dias grátis'}</p>
-                <p className="text-sm text-slate-500 mb-4">{t('txt_depois_29_90_m_s') || 'Depois 29.90€ / mês'}</p>
+                <p className="text-2xl font-black text-purple-600 mb-1">14 dias grátis</p>
+                <p className="text-sm text-slate-500 mb-4">Depois 29.90€ / mês</p>
                 <ul className="text-sm text-slate-700 space-y-2 mb-4 font-medium">
-                  <li>{t('txt_agenda_inteligente') || '✔️ Agenda Inteligente'}</li>
-                  <li>{t('txt_lembretes_sms') || '✔️ Lembretes SMS'}</li>
-                  <li>{t('txt_presen_a_no_marketplace') || '✔️ Presença no Marketplace'}</li>
+                  <li>✔️ Agenda Inteligente</li>
+                  <li>✔️ Lembretes SMS</li>
+                  <li>✔️ Presença no Marketplace</li>
                 </ul>
               </div>
               <div onClick={() => updateDraft('step7', 'plan', 'PRO_TERMINAL')} className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${draft.step7.plan === 'PRO_TERMINAL' ? 'border-purple-600 bg-purple-50/50' : 'border-slate-200 bg-white'}`}>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-black text-lg text-slate-900 flex items-center gap-2"><Tablet className="w-5 h-5" />  {t('txt_pro_terminal_17') || 'PRO + TERMINAL'}</h3>
+                  <h3 className="font-black text-lg text-slate-900 flex items-center gap-2"><Tablet className="w-5 h-5" /> PRO + TERMINAL</h3>
                   {draft.step7.plan === 'PRO_TERMINAL' && <Check className="w-5 h-5 text-purple-600" />}
                 </div>
-                <p className="text-2xl font-black text-purple-600 mb-1">{t('txt_14_dias_gr_tis') || '14 dias grátis'}</p>
-                <p className="text-sm text-slate-500 mb-4">{t('txt_depois_49_90_m_s') || 'Depois 49.90€ / mês'}</p>
+                <p className="text-2xl font-black text-purple-600 mb-1">14 dias grátis</p>
+                <p className="text-sm text-slate-500 mb-4">Depois 49.90€ / mês</p>
                 <ul className="text-sm text-slate-700 space-y-2 mb-4 font-medium">
-                  <li>{t('txt_tudo_do_plano_pro') || '✔️ Tudo do plano PRO'}</li>
-                  <li>{t('txt_terminal_f_sico_glamzo') || '✔️ Terminal Físico Glamzo'}</li>
-                  <li>{t('txt_cau_o_de_50_aplic_vel') || '✔️ Caução de 50€ aplicável'}</li>
+                  <li>✔️ Tudo do plano PRO</li>
+                  <li>✔️ Terminal Físico Glamzo</li>
+                  <li>✔️ Caução de 50€ aplicável</li>
                 </ul>
               </div>
             </div>
@@ -418,34 +416,32 @@ export default function Onboarding() {
       case 8:
         return (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_8_pagamentos_online') || 'Passo 8: Pagamentos Online'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 8: Pagamentos Online</h2>
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
               <CreditCard className="w-10 h-10 text-emerald-500 mb-4" />
-              <h3 className="font-bold text-slate-800 text-lg mb-2">{t('txt_pretende_receber_pagamentos_on') || 'Pretende receber pagamentos online?'}</h3>
-              <p className="text-sm text-slate-600 mb-6">{t('txt_permita_que_os_clientes_paguem') || 'Permita que os clientes paguem antecipadamente. Proteja-se contra faltas (no-shows).'}</p>
+              <h3 className="font-bold text-slate-800 text-lg mb-2">Pretende receber pagamentos online?</h3>
+              <p className="text-sm text-slate-600 mb-6">Permita que os clientes paguem antecipadamente. Proteja-se contra faltas (no-shows).</p>
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <button onClick={() => updateDraft('step8', 'onlinePayments', true)} className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-colors ${draft.step8.onlinePayments ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-700 border-slate-200'}`}>
-                  
-                                              {t('txt_sim_ativar_stripe') || 'Sim, ativar Stripe'}
-                                            </button>
+                  Sim, ativar Stripe
+                </button>
                 <button onClick={() => updateDraft('step8', 'onlinePayments', false)} className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-colors ${!draft.step8.onlinePayments ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-200'}`}>
-                  
-                                              {t('txt_n_o_apenas_no_local') || 'Não, apenas no local'}
-                                            </button>
+                  Não, apenas no local
+                </button>
               </div>
-              <p className="text-[10px] text-slate-500 mt-4">{t('txt_mesmo_sem_pagamentos_online_a') || '* Mesmo sem pagamentos online, a sua loja pode ficar ativa no marketplace.'}</p>
+              <p className="text-[10px] text-slate-500 mt-4">* Mesmo sem pagamentos online, a sua loja pode ficar ativa no marketplace.</p>
             </div>
           </div>
         );
       case 9:
         return (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-xl font-black text-slate-900 mb-4">{t('txt_passo_9_resumo_e_publica_o') || 'Passo 9: Resumo e Publicação'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-4">Passo 9: Resumo e Publicação</h2>
             <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-slate-100 overflow-hidden shrink-0 border">
-                  {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt={t('txt_logo_136') || 'Logo'} className="w-full h-full object-cover" />}
+                  {draft.step3.logoUrl && <img loading="lazy" src={draft.step3.logoUrl} alt="Logo" className="w-full h-full object-cover" />}
                 </div>
                 <div>
                   <h3 className="font-black text-lg text-slate-900">{draft.step1.name}</h3>
@@ -453,17 +449,16 @@ export default function Onboarding() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl">
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">{t('txt_plano') || 'Plano:'}</span> <span className="font-bold text-purple-700">{draft.step7.plan}</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">{t('txt_trial_18') || 'Trial:'}</span> <span className="font-bold text-emerald-600">{t('txt_ativo_14_dias') || 'Ativo (14 dias)'}</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">{t('txt_pagamentos') || 'Pagamentos:'}</span> <span className="font-bold">{draft.step8.onlinePayments ? 'Stripe Connect' : 'Apenas Local'}</span></div>
-                <div><span className="text-slate-500 block text-xs uppercase font-bold">{t('txt_marketplace') || 'Marketplace:'}</span> <span className="font-bold text-emerald-600">{t('txt_ativo_132') || 'Ativo'}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-bold">Plano:</span> <span className="font-bold text-purple-700">{draft.step7.plan}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-bold">Trial:</span> <span className="font-bold text-emerald-600">Ativo (14 dias)</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-bold">Pagamentos:</span> <span className="font-bold">{draft.step8.onlinePayments ? 'Stripe Connect' : 'Apenas Local'}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-bold">Marketplace:</span> <span className="font-bold text-emerald-600">Ativo</span></div>
               </div>
             </div>
             <button onClick={submitAll} disabled={submitting} className="w-full py-4 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white rounded-xl font-black text-lg uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl shadow-purple-500/20 disabled:opacity-50">
               {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
-              
-                                  {t('txt_colocar_loja_online') || 'Colocar Loja Online'}
-                                </button>
+              Colocar Loja Online
+            </button>
           </div>
         );
       default:
@@ -493,21 +488,20 @@ export default function Onboarding() {
               <div className="mt-10 pt-6 border-t border-slate-100 flex justify-between items-center">
                 {currentStep > 1 ? (
                   <button onClick={handleBack} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 px-4 py-2">
-                    <ArrowLeft className="w-4 h-4" />{t('back') || 'Voltar'}</button>
+                    <ArrowLeft className="w-4 h-4" /> Voltar
+                  </button>
                 ) : <div />}
                 
                 <button onClick={handleNext} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-sm transition-all">
-                  
-                                                    {t('txt_pr_ximo_passo') || 'Próximo Passo'} <ArrowRight className="w-4 h-4" />
+                  Próximo Passo <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             )}
             
             <div className="mt-8 text-center">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                
-                                              {t('txt_a_guardar_automaticamente_pode') || 'A guardar automaticamente... Pode sair e continuar mais tarde.'}
-                                            </p>
+                A guardar automaticamente... Pode sair e continuar mais tarde.
+              </p>
             </div>
           </div>
         </div>

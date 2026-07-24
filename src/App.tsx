@@ -7,7 +7,6 @@ import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
 
 import React, { useEffect, Suspense, lazy } from 'react';
-import i18n from './i18n';
 
 const Home = lazy(() => import('./pages/Home'));
 const Explore = lazy(() => import('./pages/Explore'));
@@ -56,8 +55,6 @@ const Sobre = lazy(() => import('./pages/info/Sobre'));
 const Contactos = lazy(() => import('./pages/info/Contactos'));
 import SupabaseSetupHelper from './components/SupabaseSetupHelper';
 import GlobalImpersonationBanner from './components/GlobalImpersonationBanner';
-import DeveloperPanel from './components/DeveloperPanel';
-import { useGlobalStore } from './store/useGlobalStore';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { Toaster } from 'react-hot-toast';
@@ -69,7 +66,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
-import { useTranslation } from "react-i18next";
 
 // IMPORTAÇÕES DIRETAS
 
@@ -131,7 +127,6 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 // CORREÇÃO AQUI: O Guarda agora respeita o Redirecionamento da Loja!
 function SessionGuard() {
-    const { t } = useTranslation();
   const { user, profile, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -196,7 +191,6 @@ function NotFoundScreen() {
 
 
 function GlobalRoleEnforcer() {
-    const { t } = useTranslation();
   const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -241,24 +235,7 @@ function GlobalRoleEnforcer() {
 }
 
 export default function App() {
-    const { t } = useTranslation();
   const [loadMessenger, setLoadMessenger] = React.useState(false);
-  const { setUserLocation, language } = useGlobalStore();
-
-  React.useEffect(() => {
-    if (i18n.language !== language) {
-      i18n.changeLanguage(language);
-    }
-  }, [language]);
-
-  React.useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log('Geolocation not granted or failed')
-      );
-    }
-  }, [setUserLocation]);
 
   React.useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -354,7 +331,6 @@ export default function App() {
             </main>
             <Footer />
             <CookieBanner />
-            <DeveloperPanel />
             {loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}
           </div>
         </AuthProvider>

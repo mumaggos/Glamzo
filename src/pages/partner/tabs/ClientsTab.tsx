@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Users, Search, Star, Clock, X, Phone, Mail, User, CalendarDays, Banknote } from "lucide-react";
 import { Business, Booking } from "../../../types";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
@@ -11,7 +10,6 @@ interface PartnerContextType {
 }
 
 const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenProfile: (c: any) => void }) => {
-    const { t } = useTranslation();
   return (
     <tr className="hover:bg-slate-50/50 transition-colors">
       <td className="py-4 px-6 flex items-center gap-3">
@@ -36,16 +34,14 @@ const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenPr
       </td>
       <td className="py-4 px-6 text-right">
          <button onClick={() => onOpenProfile(client)} className="text-[10px] font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">
-           
-                             {t('txt_ver_perfil') || 'Ver Perfil'}
-                           </button>
+           Ver Perfil
+         </button>
       </td>
     </tr>
   );
 });
 
 const ClientsTab = React.memo(function ClientsTab() {
-    const { t } = useTranslation();
   const { bookings } = useOutletContext<PartnerContextType>();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
@@ -124,22 +120,19 @@ const ClientsTab = React.memo(function ClientsTab() {
     <div className="space-y-6 max-w-[1600px] w-full mx-auto animate-fade-in text-slate-700">
       <div className="border-b border-slate-100 pb-5">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          
-                            {t('txt_livro_de_clientes_registados') || 'Livro de Clientes Registados'}
-                          </h3>
+          Livro de Clientes Registados
+        </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          
-                            {t('txt_hist_rico_autom_tico_de_visita') || 'Histórico automático de visitas e gastos individuais de cada pessoa atendida.'}
-                          </p>
+          Histórico automático de visitas e gastos individuais de cada pessoa atendida.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">
-              
-                                        {t('txt_total_clientes') || 'Total Clientes'}
-                                      </span>
+              Total Clientes
+            </span>
             <span className="text-2xl font-black text-slate-900 mt-1.5 block">
               {uniqueClientsMap.size}
             </span>
@@ -152,9 +145,8 @@ const ClientsTab = React.memo(function ClientsTab() {
         <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">
-              
-                                        {t('txt_ticket_m_dio_global') || 'Ticket Médio Global'}
-                                      </span>
+              Ticket Médio Global
+            </span>
             <span className="text-2xl font-black text-slate-900 mt-1.5 block">
               {averageTicket}
               <span className="text-sm font-bold text-slate-400 ml-1">€</span>
@@ -168,9 +160,8 @@ const ClientsTab = React.memo(function ClientsTab() {
         <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">
-              
-                                        {t('txt_atendimentos_realizados') || 'Atendimentos Realizados'}
-                                      </span>
+              Atendimentos Realizados
+            </span>
             <span className="text-2xl font-black text-slate-900 mt-1.5 block">
               {bookings.filter((b) => b.booking_status === "completed").length}
             </span>
@@ -187,7 +178,7 @@ const ClientsTab = React.memo(function ClientsTab() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder={t('txt_pesquisar_por_nome_ou_e_mail') || 'Pesquisar por nome ou e-mail...'}
+              placeholder="Pesquisar por nome ou e-mail..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 text-sm pl-10 pr-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/25"
@@ -200,10 +191,10 @@ const ClientsTab = React.memo(function ClientsTab() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-white border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
                 <tr>
-                  <th className="py-4.5 px-6">{t('txt_cliente_198') || 'Cliente'}</th>
-                  <th className="py-4.5 px-4 text-center">{t('txt_n_visitas') || 'Nº Visitas'}</th>
-                  <th className="py-4.5 px-4 text-right">{t('txt_fatura_o_total') || 'Faturação Total'}</th>
-                  <th className="py-4.5 px-6 text-right">{t('txt_ltima_visita') || 'Última Visita'}</th>
+                  <th className="py-4.5 px-6">Cliente</th>
+                  <th className="py-4.5 px-4 text-center">Nº Visitas</th>
+                  <th className="py-4.5 px-4 text-right">Faturação Total</th>
+                  <th className="py-4.5 px-6 text-right">Última Visita</th>
                   <th className="py-4.5 px-6"></th>
                 </tr>
               </thead>
@@ -214,9 +205,8 @@ const ClientsTab = React.memo(function ClientsTab() {
                 {clientsList.length === 0 && (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-slate-500">
-                      
-                                                                {t('txt_nenhum_cliente_encontrado') || 'Nenhum cliente encontrado.'}
-                                                              </td>
+                      Nenhum cliente encontrado.
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -231,8 +221,8 @@ const ClientsTab = React.memo(function ClientsTab() {
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50 shrink-0">
               <h2 className="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5 text-purple-600" />  {t('txt_perfil_do_cliente') || 'Perfil do Cliente'}
-                                            </h2>
+                <User className="w-5 h-5 text-purple-600" /> Perfil do Cliente
+              </h2>
               <button onClick={() => setSelectedClient(null)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -256,7 +246,7 @@ const ClientsTab = React.memo(function ClientsTab() {
                     <Phone className="w-4 h-4 text-slate-500" />
                   </div>
                   <div>
-                    <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{t('txt_telefone_199') || 'Telefone'}</span>
+                    <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Telefone</span>
                     <span className="block text-sm font-bold text-slate-700">{selectedClient.phone}</span>
                   </div>
                 </div>
@@ -265,7 +255,7 @@ const ClientsTab = React.memo(function ClientsTab() {
                   <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl">
                     <div className="flex items-center gap-2 text-purple-600 mb-2">
                       <CalendarDays className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{t('txt_reservas_200') || 'Reservas'}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Reservas</span>
                     </div>
                     <span className="block text-2xl font-black text-purple-900">{selectedClient.visits}</span>
                   </div>
@@ -273,7 +263,7 @@ const ClientsTab = React.memo(function ClientsTab() {
                   <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
                     <div className="flex items-center gap-2 text-emerald-600 mb-2">
                       <Banknote className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{t('txt_gasto_total') || 'Gasto Total'}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Gasto Total</span>
                     </div>
                     <span className="block text-2xl font-black text-emerald-900">{selectedClient.spent.toFixed(2)}€</span>
                   </div>

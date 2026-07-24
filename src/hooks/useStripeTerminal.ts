@@ -1,9 +1,7 @@
 import { useState, useCallback } from 'react';
 import { StripeTerminal, TerminalEventsEnum, TerminalConnectTypes } from '@capacitor-community/stripe-terminal';
-import { useTranslation } from "react-i18next";
 
 export function useStripeTerminal(businessId: string | undefined) {
-    const { t } = useTranslation();
   const [isInitializing, setIsInitializing] = useState(false);
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);

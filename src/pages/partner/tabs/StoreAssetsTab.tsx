@@ -3,14 +3,12 @@ import { useOutletContext } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, CheckCircle2, Globe, QrCode, Download } from "lucide-react";
 import { Business } from "../../../types";
-import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
 }
 
 export default function StoreAssetsTab() {
-    const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [copied, setCopied] = useState(false);
 

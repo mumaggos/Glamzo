@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-
 /**
  * Highly optimized browser-side Image compression and format conversion utility.
  * Compresses any image (JPG, PNG, GIF, etc.) to modern high-performance WebP format,

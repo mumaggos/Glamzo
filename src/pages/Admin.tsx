@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
 import SuperAdminClub from '../components/SuperAdminClub';
@@ -43,7 +42,6 @@ const PAGE_FALLBACKS: Record<string, string> = {
 };
 
 export default function Admin() {
-    const { t } = useTranslation();
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -1181,7 +1179,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-rose-500 gap-3">
         <Loader2 className="w-8 h-8 animate-spin" />
-        <span className="text-xs font-mono">{t('txt_verificando_privil_gios_admini') || 'Verificando privilégios administrativos unificados...'}</span>
+        <span className="text-xs font-mono">Verificando privilégios administrativos unificados...</span>
       </div>
     );
   }
@@ -1191,15 +1189,13 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-2xl space-y-4">
           <ShieldAlert className="w-14 h-14 text-rose-500 mx-auto" />
-          <h2 className="text-2xl font-black text-slate-900">{t('txt_console_administrativo_exclusi') || 'Console Administrativo Exclusivo'}</h2>
+          <h2 className="text-2xl font-black text-slate-900">Console Administrativo Exclusivo</h2>
           <p className="text-sm text-slate-600 leading-relaxed">
-            
-                                {t('txt_rea_de_administra_o_global_re') || 'Área de administração global regulada por chave mestra de produção. Apenas credenciais homologadas podem aceder virtualmente ao Painel.'}
-                              </p>
+            Área de administração global regulada por chave mestra de produção. Apenas credenciais homologadas podem aceder virtualmente ao Painel.
+          </p>
           <a href="/admin/login" className="inline-block mt-4 px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-slate-900 text-xs font-bold rounded-xl transition-all font-mono uppercase">
-            
-                                {t('txt_autenticar_administrador') || 'Autenticar Administrador'}
-                              </a>
+            Autenticar Administrador
+          </a>
         </div>
       </div>
     );
@@ -1272,42 +1268,42 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
           {/* Drawer content */}
           <div className="relative flex flex-col w-72 max-w-xs h-full bg-slate-50 border-r border-slate-200 p-5 shadow-2xl animate-fade-in text-slate-800 z-10 transition-transform">
             <div className="flex items-center justify-between pb-4 border-b border-purple-100 mb-4 shrink-0">
-              <button onClick={handleLogout} title={t('txt_voltar_ao_site_inicial_termina') || 'Voltar ao site inicial (Terminar Sessão)'} className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity">
+              <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity">
                 <GlamzoLogo size={28} glow={true} />
                 <div>
-                  <span className="font-extrabold text-slate-900 text-xs tracking-widest block leading-none">{t('txt_glamzo_logo') || 'GLAMZO LOGO'}</span>
-                  <span className="text-[8px] font-mono uppercase font-bold text-purple-600 tracking-wider">{t('txt_painel_de_admin') || 'Painel de Admin'}</span>
+                  <span className="font-extrabold text-slate-900 text-xs tracking-widest block leading-none">GLAMZO LOGO</span>
+                  <span className="text-[8px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Admin</span>
                 </div>
               </button>
               <button 
                 onClick={() => setIsMobileAdminSidebarOpen(false)}
                 className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer"
-                title={t('txt_fechar_menu') || 'Fechar Menu'}
+                title="Fechar Menu"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-3 bg-purple-950/20 border border-purple-900/35 rounded-xl mb-4 shrink-0">
-              <span className="block text-[8px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">{t('txt_status_de_conectividade') || 'Status de Conectividade'}</span>
-              <span className="text-slate-900 block text-xs font-bold font-sans">{t('txt_produ_o_supabase_real') || 'Produção Supabase Real'}</span>
+              <span className="block text-[8px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">Status de Conectividade</span>
+              <span className="text-slate-900 block text-xs font-bold font-sans">Produção Supabase Real</span>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-                <span className="text-[9px] text-purple-600 font-mono text-nowrap">{t('txt_canal_activo_master') || 'Canal Activo (Master)'}</span>
+                <span className="text-[9px] text-purple-600 font-mono text-nowrap">Canal Activo (Master)</span>
               </div>
             </div>
 
             {/* Scrolling Navigation Links */}
             <nav className="flex-1 space-y-1.5">
               {[
-                { id: 'users', label: t('admin_users') || 'Clientes Finais (CRM)', icon: Users },
+                { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
                 
-                { id: 'funnel', label: t('admin_funnel') || 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: t('admin_sales_teams') || 'Equipas de Vendas', icon: Briefcase },
-                { id: 'club', label: t('admin_club') || 'Gestão de Cupões', icon: Gift },
-                { id: 'payouts', label: t('admin_payouts') || 'Payouts & Planários', icon: Landmark },
-                { id: 'support', label: t('admin_support') || 'Disputas & Tickets', icon: Scale },
-                { id: 'terminal', label: t('admin_terminal') || 'Gestão de Lojas & Modo Deus', icon: Settings },
+                { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
+                { id: 'club', label: 'Gestão de Cupões', icon: Gift },
+                { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
+                { id: 'support', label: 'Disputas & Tickets', icon: Scale },
+                { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -1352,9 +1348,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                
-                                              {t('txt_terminar_sess_o') || 'Terminar Sessão'}
-                                            </button>
+                Terminar Sessão
+              </button>
             </div>
           </div>
         </div>
@@ -1364,33 +1359,33 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
       <aside className="hidden lg:flex w-64 border-r border-slate-200 bg-slate-50 flex-col justify-between shrink-0 h-full">
         <div>
           {/* Header Title branding */}
-          <button onClick={handleLogout} title={t('txt_voltar_ao_site_inicial_termina') || 'Voltar ao site inicial (Terminar Sessão)'} className="h-16 border-b border-slate-200 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-100 transition-colors cursor-pointer">
+          <button onClick={handleLogout} title="Voltar ao site inicial (Terminar Sessão)" className="h-16 border-b border-slate-200 flex items-center px-6 gap-3 w-full text-left hover:bg-slate-100 transition-colors cursor-pointer">
             <GlamzoLogo size={32} glow={true} />
             <div>
-              <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs">{t('txt_glamzo_logo') || 'GLAMZO LOGO'}</span>
-              <span className="text-[9px] font-mono uppercase font-bold text-purple-600 tracking-wider">{t('txt_painel_de_administra_o') || 'Painel de Administração'}</span>
+              <span className="font-extrabold text-slate-900 tracking-widest block leading-none text-xs">GLAMZO LOGO</span>
+              <span className="text-[9px] font-mono uppercase font-bold text-purple-600 tracking-wider">Painel de Administração</span>
             </div>
           </button>
 
           <div className="p-4 mx-4 my-2.5 bg-purple-950/20 border border-purple-900/35 rounded-xl text-xs">
-            <span className="block text-[9px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">{t('txt_status_de_conectividade') || 'Status de Conectividade'}</span>
-            <span className="text-slate-900 block font-bold">{t('txt_produ_o_supabase_real') || 'Produção Supabase Real'}</span>
+            <span className="block text-[9px] font-mono text-purple-405 uppercase tracking-wider font-extrabold mb-1">Status de Conectividade</span>
+            <span className="text-slate-900 block font-bold">Produção Supabase Real</span>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-              <span className="text-[10px] text-purple-600 font-mono text-nowrap">{t('txt_canal_de_controlo_de_seguran_a') || 'Canal de Controlo de Segurança'}</span>
+              <span className="text-[10px] text-purple-600 font-mono text-nowrap">Canal de Controlo de Segurança</span>
             </div>
           </div>
 
           {/* Navigation Links inside admin sidebar */}
           <nav className="p-3.5 space-y-1.5">
             {[
-              { id: 'users', label: t('admin_users') || 'Clientes Finais (CRM)', icon: Users },
-              { id: 'funnel', label: t('admin_funnel') || 'Funil & Abandonos ⚠️', icon: BadgeAlert },
-                { id: 'sales_teams', label: t('admin_sales_teams') || 'Equipas de Vendas', icon: Briefcase },
-              { id: 'payouts', label: t('admin_payouts') || 'Payouts & Planários', icon: Landmark },
-              { id: 'support', label: t('admin_support') || 'Disputas & Tickets', icon: Scale },
-              { id: 'terminal', label: t('admin_terminal') || 'Gestão de Lojas & Modo Deus', icon: Settings },
-              { id: 'analytics', label: t('admin_analytics') || 'Analytics Globais', icon: BarChart }
+              { id: 'users', label: 'Clientes Finais (CRM)', icon: Users },
+              { id: 'funnel', label: 'Funil & Abandonos ⚠️', icon: BadgeAlert },
+                { id: 'sales_teams', label: 'Equipas de Vendas', icon: Briefcase },
+              { id: 'payouts', label: 'Payouts & Planários', icon: Landmark },
+              { id: 'support', label: 'Disputas & Tickets', icon: Scale },
+              { id: 'terminal', label: 'Gestão de Lojas & Modo Deus', icon: Settings },
+              { id: 'analytics', label: 'Analytics Globais', icon: BarChart }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1421,11 +1416,10 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
         <div className="p-4 border-t border-slate-200 bg-slate-50/80">
           <div className="flex items-center gap-2.5 mb-3">
             <div className="w-8 h-8 rounded-full bg-purple-900 text-purple-200 flex items-center justify-center font-mono font-bold text-xs">
-              
-                                        {t('txt_ad_78') || 'AD'}
-                                      </div>
+              AD
+            </div>
             <div>
-              <span className="block text-xs font-black text-slate-900">{t('txt_administrador_79') || 'Administrador'}</span>
+              <span className="block text-xs font-black text-slate-900">Administrador</span>
               <span className="block text-[10px] text-slate-500 font-mono truncate max-w-[150px]">{user?.email || 'admin@gmail.com'}</span>
             </div>
           </div>
@@ -1434,9 +1428,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 hover:text-slate-900 rounded-lg transition-colors text-[11px] font-bold"
           >
             <LogOut className="w-3.5 h-3.5" />
-            
-                                  {t('txt_terminar_sess_o') || 'Terminar Sessão'}
-                                </button>
+            Terminar Sessão
+          </button>
         </div>
       </aside>
 
@@ -1450,13 +1443,13 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
             <button
               onClick={() => setIsMobileAdminSidebarOpen(true)}
               className="lg:hidden p-2 bg-[#120a21] border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition-all cursor-pointer"
-              title={t('txt_abrir_menu_administrativo') || 'Abrir Menu Administrativo'}
+              title="Abrir Menu Administrativo"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="text-left">
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <span>{t('txt_painel_administrador_real') || 'Painel Administrador Real'}</span>
+                <span>Painel Administrador Real</span>
                 <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-600 font-bold border border-purple-900/40">MASTER_ACCESS</span>
               </h2>
             </div>
@@ -1477,7 +1470,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
             className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-600 rounded-xl text-xs font-bold font-mono transition-all border border-slate-200 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{t('txt_sincronizar_produ_o') || 'Sincronizar Produção'}</span>
+            <span>Sincronizar Produção</span>
           </button>
           </div>
         </header>
@@ -1501,7 +1494,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
           {loading ? (
             <div className="h-96 flex flex-col items-center justify-center text-slate-500 gap-2.5">
               <RefreshCw className="w-8 h-8 text-purple-500 animate-spin" />
-              <span className="text-xs font-mono select-none">{t('txt_consolidando_ledger_de_faturam') || 'Consolidando ledger de faturamento e base cadastral unificada...'}</span>
+              <span className="text-xs font-mono select-none">Consolidando ledger de faturamento e base cadastral unificada...</span>
             </div>
           ) : (
             <>
@@ -1514,10 +1507,10 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                        <span>{t('txt_gest_o_integrada_de_parceiros') || 'Gestão Integrada de Parceiros'}</span>
-                        <span className="text-xs bg-purple-950 text-purple-700 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">{t('txt_pro_control') || '👑 PRO Control'}</span>
+                        <span>Gestão Integrada de Parceiros</span>
+                        <span className="text-xs bg-purple-950 text-purple-700 font-mono font-bold px-2.5 py-1 rounded-full border border-purple-500/20">👑 PRO Control</span>
                       </h3>
-                      <p className="text-xs text-slate-600 mt-0.5">{t('txt_ative_pro_manualmente_controle') || 'Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.'}</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Ative PRO manualmente, controle stripes, suspenda lojas ou apague contas de forma integral.</p>
                     </div>
 
                     <div className="relative w-full sm:max-w-xs">
@@ -1526,7 +1519,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        placeholder={t('txt_filtrar_por_nome_de_loja_ou_ci') || 'Filtrar por nome de loja ou cidade...'}
+                        placeholder="Filtrar por nome de loja ou cidade..."
                         className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2.5 rounded-xl text-slate-900 placeholder-slate-500 outline-none focus:border-purple-600"
                       />
                     </div>
@@ -1568,36 +1561,31 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                   <div className="flex items-center gap-2">
                                     <h4 className="font-black text-slate-900 text-base leading-snug">{sal.name}</h4>
                                     {sal.is_verified && (
-                                      <span className="w-2 h-2 rounded-full bg-purple-400" title={t('txt_verificado_106') || 'Verificado'} />
+                                      <span className="w-2 h-2 rounded-full bg-purple-400" title="Verificado" />
                                     )}
                                   </div>
                                   <span className="text-[10px] font-mono text-purple-600 hover:underline block cursor-pointer">
-                                    
-                                                                                    {t('txt_slug') || 'Slug: /'}{sal.slug}
+                                    Slug: /{sal.slug}
                                   </span>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-1 shrink-0">
                                   {isSuspended ? (
                                     <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-rose-950 text-rose-600 border border-rose-900/55">
-                                      
-                                                                                          {t('txt_suspenso_80') || 'Suspenso'}
-                                                                                        </span>
+                                      Suspenso
+                                    </span>
                                   ) : isPro ? (
                                     <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-purple-950 text-purple-700 border border-purple-900/40">
-                                      
-                                                                                              {t('txt_glamzo_pro_6') || '👑 Glamzo PRO'}
-                                                                                            </span>
+                                      👑 Glamzo PRO
+                                    </span>
                                   ) : isTrial ? (
                                     <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-900/40">
-                                      
-                                                                                                  {t('txt_trial') || 'Trial ('}{trialDaysVal}  {t('txt_dias_restantes') || 'Dias Restantes)'}
-                                                                                                </span>
+                                      Trial ({trialDaysVal} Dias Restantes)
+                                    </span>
                                   ) : (
                                     <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200">
-                                      
-                                                                                                      {t('txt_plano_free') || 'Plano FREE'}
-                                                                                                    </span>
+                                      Plano FREE
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -1605,12 +1593,12 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                               {/* Owner Account Details info panel */}
                               <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-5 p-3.5 bg-slate-50/50 rounded-xl border border-purple-100 text-[11px] font-mono">
                                 <div>
-                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">{t('txt_gestor_email') || 'Gestor / Email'}</span>
+                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Gestor / Email</span>
                                   <span className="text-slate-700 block truncate">{ownerProfile?.full_name || sal.name}</span>
                                   <span className="text-purple-700/80 block truncate">{ownerProfile?.email || sal.email || 'Não Consta'}</span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">{t('txt_inscrito_em') || 'Inscrito em'}</span>
+                                  <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-extrabold mb-1">Inscrito em</span>
                                   <span className="text-slate-600 block">{new Date(sal.created_at).toLocaleDateString('pt-PT')}</span>
                                   <span className="text-slate-500 text-[10px] block">{new Date(sal.created_at).toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'})}</span>
                                 </div>
@@ -1619,17 +1607,17 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                               {/* Stripe Connect stats */}
                               <div className="mt-4 p-3.5 bg-slate-50/40 rounded-xl border border-purple-100 space-y-1.5 text-[11px]">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-slate-600 font-bold">{t('txt_stripe_connect_id') || 'Stripe Connect ID:'}</span>
+                                  <span className="text-slate-600 font-bold">Stripe Connect ID:</span>
                                   <span className="font-mono text-slate-600 select-all">{sal.stripe_account_id || 'Não configurado'}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-500">{t('txt_cobran_as_ativas_charges_enabl') || 'Cobranças Ativas (charges_enabled):'}</span>
+                                  <span className="text-slate-500">Cobranças Ativas (charges_enabled):</span>
                                   <span className={sal.charges_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
                                     {sal.charges_enabled ? "SIM" : "NÃO"}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-500">{t('txt_pagamentos_ativos_payouts_enab') || 'Pagamentos Ativos (payouts_enabled):'}</span>
+                                  <span className="text-slate-500">Pagamentos Ativos (payouts_enabled):</span>
                                   <span className={sal.payouts_enabled ? "text-emerald-600 font-bold" : "text-slate-500"}>
                                     {sal.payouts_enabled ? "SIM" : "NÃO"}
                                   </span>
@@ -1648,7 +1636,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                     className="py-2.5 px-3 bg-slate-50 border border-slate-200 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg text-[10px] font-bold text-center uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
                                   >
                                     <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
-                                    <span>{t('txt_ver_dados') || 'Ver Dados'}</span>
+                                    <span>Ver Dados</span>
                                   </a>
 
                                   <button
@@ -1669,18 +1657,16 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                       onClick={() => handleRemoveProManual(sal.id)}
                                       className="py-2.5 px-3 bg-slate-50 hover:bg-rose-950/20 text-slate-600 hover:text-rose-400 border border-slate-200 hover:border-rose-900/35 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all animate-fade-in"
                                     >
-                                      
-                                                                                      {t('txt_remover_pro') || 'Remover PRO'}
-                                                                                    </button>
+                                      Remover PRO
+                                    </button>
                                   ) : (
                                     <button
                                       type="button"
                                       onClick={() => handleActivateProManual(sal.id)}
                                       className="py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all shadow-md shadow-purple-950/30"
                                     >
-                                      
-                                                                                          {t('txt_ativar_pro') || 'Ativar PRO'}
-                                                                                        </button>
+                                      Ativar PRO
+                                    </button>
                                   )}
 
                                   {isSuspended ? (
@@ -1689,18 +1675,16 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                       onClick={() => handleReactivatePartner(sal.id)}
                                       className="py-2.5 px-3 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 hover:text-slate-900 border border-emerald-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
                                     >
-                                      
-                                                                                      {t('txt_reativar_loja') || 'Reativar Loja'}
-                                                                                    </button>
+                                      Reativar Loja
+                                    </button>
                                   ) : (
                                     <button
                                       type="button"
                                       onClick={() => handleSuspendPartner(sal.id)}
                                       className="py-2.5 px-3 bg-rose-950/55 hover:bg-rose-900/60 text-rose-300 hover:text-slate-900 border border-rose-900/40 rounded-xl text-[10px] font-extrabold uppercase tracking-widest cursor-pointer transition-all"
                                     >
-                                      
-                                                                                          {t('txt_suspender_81') || 'Suspender'}
-                                                                                        </button>
+                                      Suspender
+                                    </button>
                                   )}
                                 </div>
 
@@ -1720,7 +1704,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                     className="w-full py-2.5 bg-rose-950/25 hover:bg-rose-600 text-rose-600 hover:text-slate-900 border border-rose-900/20 hover:border-transparent rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-1.5"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
-                                    <span>{t('txt_eliminar_conta') || 'Eliminar Conta'}</span>
+                                    <span>Eliminar Conta</span>
                                   </button>
                                 </div>
                               </div>
@@ -1743,8 +1727,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                   
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_clientes_finais_crm') || 'Clientes Finais (CRM)'}</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">{t('txt_mude_perfis_hier_rquicos_confi') || 'Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.'}</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Clientes Finais (CRM)</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Mude perfis hierárquicos, configure administradores ou regule pontos de fidelidade.</p>
                     </div>
 
                     <div className="relative w-full sm:max-w-xs">
@@ -1753,7 +1737,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        placeholder={t('txt_pesquise_por_e_mail_ou_nome') || 'Pesquise por e-mail ou nome...'}
+                        placeholder="Pesquise por e-mail ou nome..."
                         className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2 rounded-xl text-slate-900 placeholder-slate-650 outline-none focus:border-purple-600"
                       />
                     </div>
@@ -1764,7 +1748,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                     <div className="p-5 bg-purple-950/20 border border-purple-900 rounded-3xl space-y-3 max-w-md animate-fade-in text-xs font-semibold">
                       <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
                         <Coins className="w-4.5 h-4.5 text-purple-600" />
-                        <span>{t('txt_atribuir_pontos_gr_tis_de_fide') || 'Atribuir Pontos Grátis de Fidelidade'}</span>
+                        <span>Atribuir Pontos Grátis de Fidelidade</span>
                       </h4>
                       <div className="flex items-center gap-3">
                         <input 
@@ -1774,10 +1758,9 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                           className="w-28 bg-slate-50 border border-slate-200 p-2 rounded-xl text-slate-900 font-mono text-center outline-none focus:border-purple-600"
                         />
                         <button onClick={submitCreditAllocation} className="bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold px-4 py-2 rounded-xl cursor-pointer">
-                          
-                                                                                {t('txt_acrescentar_pontos_conta') || 'Acrescentar Pontos à Conta'}
-                                                                              </button>
-                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">{t('cancel') || 'Cancelar'}</button>
+                          Acrescentar Pontos à Conta
+                        </button>
+                        <button onClick={() => setPointsAllocUserId(null)} className="text-slate-600 hover:underline">Cancelar</button>
                       </div>
                     </div>
                   )}
@@ -1788,11 +1771,11 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                       <table className="w-full text-left">
                         <thead className="bg-slate-50 text-[10px] font-bold text-slate-450 uppercase tracking-widest border-b border-slate-105 border-slate-200">
                           <tr>
-                            <th className="py-4.5 px-6">{t('txt_cliente_cadastrado') || 'Cliente Cadastrado'}</th>
-                            <th className="py-4.5 px-4">{t('txt_e_mail_registado') || 'E-mail Registado'}</th>
-                            <th className="py-4.5 px-4">{t('txt_n_vel_administrativo_db') || 'Nível Administrativo (DB)'}</th>
-                            <th className="py-4.5 px-4 text-center">{t('txt_fidelidade_82') || 'Fidelidade'}</th>
-                            <th className="py-4.5 px-6 text-right">{t('txt_ac_es_gerais') || 'Acções Gerais'}</th>
+                            <th className="py-4.5 px-6">Cliente Cadastrado</th>
+                            <th className="py-4.5 px-4">E-mail Registado</th>
+                            <th className="py-4.5 px-4">Nível Administrativo (DB)</th>
+                            <th className="py-4.5 px-4 text-center">Fidelidade</th>
+                            <th className="py-4.5 px-6 text-right">Acções Gerais</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-105 divide-slate-900 text-xs">
@@ -1827,7 +1810,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                   className="px-2.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-purple-600 hover:text-purple-700 border border-slate-200 font-mono text-[10px] font-black cursor-pointer inline-flex items-center gap-1"
                                 >
                                   <Coins className="w-3 h-3" />
-                                  <span>{t('txt_gerir_pontos') || 'Gerir Pontos'}</span>
+                                  <span>Gerir Pontos</span>
                                 </button>
                               </td>
 
@@ -1838,27 +1821,27 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                     onChange={e => handleChangeRole(p.id, e.target.value as any)}
                                     className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg text-xs hover:border-purple-650 outline-none text-slate-600 cursor-pointer"
                                   >
-                                    <option value="customer">{t('txt_acesso_customer_cliente') || 'Acesso Customer (Cliente)'}</option>
-                                    <option value="business">{t('txt_acesso_business_parceiro') || 'Acesso Business (Parceiro)'}</option>
-                                    <option value="admin">{t('txt_acesso_admin_global_master') || 'Acesso Admin (Global MASTER)'}</option>
+                                    <option value="customer">Acesso Customer (Cliente)</option>
+                                    <option value="business">Acesso Business (Parceiro)</option>
+                                    <option value="admin">Acesso Admin (Global MASTER)</option>
                                   </select>
 
                                   <button
                                     onClick={() => handleStartEditUser(p)}
                                     className="p-1.5 bg-[#100b21]/80 hover:bg-purple-950/40 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 hover:border-purple-500/20 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
-                                    title={t('txt_editar_informa_es') || 'Editar Informações'}
+                                    title="Editar Informações"
                                   >
                                     <Settings className="w-3.5 h-3.5 text-purple-450" />
-                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">{t('edit') || 'Editar'}</span>
+                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">Editar</span>
                                   </button>
 
                                   <button
                                     onClick={() => handleDeleteUser(p.id)}
                                     className="p-1.5 bg-rose-50/80 hover:bg-rose-950/45 text-rose-600 hover:text-rose-300 rounded-lg border border-slate-200 hover:border-rose-950 transition-all cursor-pointer font-bold inline-flex items-center gap-1"
-                                    title={t('txt_eliminar_utilizador') || 'Eliminar Utilizador'}
+                                    title="Eliminar Utilizador"
                                   >
                                     <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">{t('txt_eliminar_83') || 'Eliminar'}</span>
+                                    <span className="text-[10px] uppercase font-mono hidden xl:inline">Eliminar</span>
                                   </button>
                                 </div>
                               </td>
@@ -1877,24 +1860,22 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                 <div id="admin-support" className="space-y-6 animate-fade-in w-full">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_centro_de_resolu_o_e_apoio') || 'Centro de Resolução e Apoio'}</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">{t('txt_comunique_se_com_clientes_ou_p') || 'Comunique-se com clientes ou parceiros. Avalie disputas e conflitos.'}</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Centro de Resolução e Apoio</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Comunique-se com clientes ou parceiros. Avalie disputas e conflitos.</p>
                     </div>
                     <div className="flex bg-slate-100 p-1 rounded-xl">
                       <button
                         onClick={() => setSupportSubTab('messages')}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${supportSubTab === 'messages' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
                       >
-                        
-                                                                          {t('txt_mensagens_84') || 'Mensagens'}
-                                                                        </button>
+                        Mensagens
+                      </button>
                       <button
                         onClick={() => setSupportSubTab('disputes')}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${supportSubTab === 'disputes' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-600 hover:text-slate-900'}`}
                       >
-                        
-                                                                          {t('txt_disputas_85') || 'Disputas'}
-                                                                          {disputes.filter(d => d.status === 'open' || d.status === 'in_review').length > 0 && (
+                        Disputas
+                        {disputes.filter(d => d.status === 'open' || d.status === 'in_review').length > 0 && (
                           <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">{disputes.filter(d => d.status === 'open' || d.status === 'in_review').length}</span>
                         )}
                       </button>
@@ -1922,8 +1903,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
               {activeTab === 'analytics' && (
                 <div id="admin-analytics" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_volume_de_neg_cios_central_str') || 'Volume de Negócios Central (Stripe Integrado)'}</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">{t('txt_m_tricas_globais_operacionais') || 'Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.'}</p>
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Volume de Negócios Central (Stripe Integrado)</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">Métricas globais operacionais e contabilidade corporativa real sob as chaves Supabase.</p>
                   </div>
 
                   {/* Summary aggregate cards */}
@@ -1933,7 +1914,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         <Users className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">{t('txt_profissionais_pro') || 'Profissionais PRO'}</span>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Profissionais PRO</span>
                         <span className="text-xl font-black text-slate-900 mt-1 block">{totalActiveSubscriptionsCount}</span>
                       </div>
                     </div>
@@ -1943,7 +1924,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         <Coins className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">{t('txt_volume_transacionado') || 'Volume Transacionado'}</span>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Volume Transacionado</span>
                         <span className="text-xl font-black text-slate-900 mt-1 block">{totalVolumeGrossCalculated.toFixed(2)} €</span>
                       </div>
                     </div>
@@ -1953,7 +1934,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         <Award className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">{t('txt_comiss_es_plataforma') || 'Comissões Plataforma'}</span>
+                        <span className="block text-[9px] font-mono text-slate-500 uppercase font-black leading-none">Comissões Plataforma</span>
                         <span className="text-xl font-black text-slate-900 mt-1 block">{(totalVolumeGrossCalculated * 0.05).toFixed(2)} €</span>
                       </div>
                     </div>
@@ -1963,7 +1944,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Platform users breakdown pie chart */}
                     <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">{t('txt_distribui_o_de_contas_de_acess') || 'Distribuição de Contas de Acesso'}</h4>
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Distribuição de Contas de Acesso</h4>
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <RBarChart data={[
@@ -1983,7 +1964,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
 
                     {/* Aggregate Platform Billing line diagram */}
                     <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-3 flex flex-col justify-between">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">{t('txt_gr_fico_volum_trico_transacion') || 'Gráfico Volumétrico Transacional Mensal'}</h4>
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Gráfico Volumétrico Transacional Mensal</h4>
                       <div className="h-64 flex items-center justify-center">
                         {getDynamicChartData().length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
@@ -1998,8 +1979,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         ) : (
                           <div className="text-center p-6 border border-dashed border-slate-200 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-slate-50/20">
                             <BarChart className="w-8 h-8 text-slate-500 mb-2" />
-                            <p className="text-slate-900 font-bold text-xs">{t('txt_sem_dados_dispon_veis') || 'Sem dados disponíveis'}</p>
-                            <p className="text-[10px] text-slate-500 mt-1">{t('txt_os_dados_ser_o_apresentados_ap') || 'Os dados serão apresentados após atividade real.'}</p>
+                            <p className="text-slate-900 font-bold text-xs">Sem dados disponíveis</p>
+                            <p className="text-[10px] text-slate-500 mt-1">Os dados serão apresentados após atividade real.</p>
                           </div>
                         )}
                       </div>
@@ -2015,8 +1996,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
         {activeTab === 'payouts' && (
                 <div id="admin-payouts" className="space-y-6 animate-fade-in">
                   <div className="border-b border-slate-200 pb-5">
-                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('txt_transfer_ncias_stripe_defini_o') || 'Transferências Stripe & Definição de Planos'}</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">{t('txt_processe_ordens_de_levantament') || 'Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.'}</p>
+                    <h3 className="text-xl font-extrabold tracking-tight text-slate-900">Transferências Stripe & Definição de Planos</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">Processe ordens de levantamento dos parceiros comerciais e configure os limites de taxas.</p>
                   </div>
 
                   {/* Partition payouts list and parameters definition */}
@@ -2026,7 +2007,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                     <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
                       <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none">
                         <Landmark className="w-5 h-5 text-purple-600" />
-                        <span>{t('txt_pedidos_de_transfer_ncia_receb') || 'Pedidos de Transferência Recebidos (BD)'}</span>
+                        <span>Pedidos de Transferência Recebidos (BD)</span>
                       </h4>
 
                       <div className="space-y-3.5 max-h-[400px] overflow-y-auto scrollbar-thin">
@@ -2034,8 +2015,8 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                           <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
                             <div>
                               <span className="block font-black text-sm text-slate-900 font-mono">{po.amount.toFixed(2)} €</span>
-                              <span className="text-[10px] text-purple-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">{t('txt_lojista') || 'Lojista:'} {po.business?.name || 'Pendente'}</span>
-                              <span className="text-[9px] text-slate-550 text-slate-500 font-mono mt-0.5 block">{t('txt_iban_registado_no_stripe_conne') || 'IBAN Registado no Stripe Connect'}</span>
+                              <span className="text-[10px] text-purple-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Lojista: {po.business?.name || 'Pendente'}</span>
+                              <span className="text-[9px] text-slate-550 text-slate-500 font-mono mt-0.5 block">IBAN Registado no Stripe Connect</span>
                             </div>
 
                             <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -2045,16 +2026,14 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                                     onClick={() => handleUpdatePayoutStatus(po.id, 'completed')}
                                     className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-bold text-[10px] rounded-lg transition-all cursor-pointer"
                                   >
-                                    
-                                                                                    {t('txt_autorizar_86') || 'Autorizar'}
-                                                                                  </button>
+                                    Autorizar
+                                  </button>
                                   <button 
                                     onClick={() => handleUpdatePayoutStatus(po.id, 'rejected')}
                                     className="px-2 py-1 bg-rose-950/20 text-rose-600 hover:bg-rose-955 rounded-lg text-[10px] cursor-pointer"
                                   >
-                                    
-                                                                                    {t('txt_recusar_87') || 'Recusar'}
-                                                                                  </button>
+                                    Recusar
+                                  </button>
                                 </>
                               ) : (
                                 <span className={`inline-block px-2.5 py-0.5 border rounded-full text-[9px] font-mono font-bold uppercase ${
@@ -2068,25 +2047,25 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                         ))}
 
                         {payoutRequests.length === 0 && (
-                          <p className="text-xs text-slate-500 font-mono text-center py-10">{t('txt_sem_ordens_de_transfer_ncia_pe') || 'Sem ordens de transferência pendentes.'}</p>
+                          <p className="text-xs text-slate-500 font-mono text-center py-10">Sem ordens de transferência pendentes.</p>
                         )}
 <h4 className="font-extrabold text-xs text-slate-600 uppercase tracking-wider flex items-center gap-1.5 leading-none mt-8">
                         <Landmark className="w-5 h-5 text-emerald-600" />
-                        <span>{t('txt_levantamentos_de_carteira_afil') || 'Levantamentos de Carteira (Afiliados/Clientes)'}</span>
+                        <span>Levantamentos de Carteira (Afiliados/Clientes)</span>
                       </h4>
                       <div className="space-y-3.5 max-h-[400px] overflow-y-auto scrollbar-thin">
                         {walletWithdrawals.map((w, idx) => (
                           <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
                             <div>
                               <span className="block font-black text-sm text-slate-900 font-mono">{w.amount.toFixed(2)} €</span>
-                              <span className="text-[10px] text-emerald-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">{t('txt_cliente_7') || 'Cliente:'} {w.customer?.full_name || 'Desconhecido'}</span>
+                              <span className="text-[10px] text-emerald-600 font-bold tracking-tight mt-0.5 block truncate max-w-[150px]">Cliente: {w.customer?.full_name || 'Desconhecido'}</span>
                               <span className="text-[9px] text-slate-500 font-mono mt-0.5 block">{w.method.toUpperCase()}: {w.details}</span>
                             </div>
                             <div className="flex items-center gap-2 self-end sm:self-auto">
                               {w.status === 'pending' ? (
                                 <>
-                                  <button onClick={() => handleProcessWalletWithdrawal(w.id, 'completed')} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-lg transition-all cursor-pointer">{t('txt_processado_88') || 'Processado'}</button>
-                                  <button onClick={() => handleProcessWalletWithdrawal(w.id, 'rejected')} className="px-2 py-1 bg-rose-100 text-rose-600 hover:bg-rose-200 rounded-lg text-[10px] cursor-pointer">{t('txt_rejeitar_89') || 'Rejeitar'}</button>
+                                  <button onClick={() => handleProcessWalletWithdrawal(w.id, 'completed')} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-lg transition-all cursor-pointer">Processado</button>
+                                  <button onClick={() => handleProcessWalletWithdrawal(w.id, 'rejected')} className="px-2 py-1 bg-rose-100 text-rose-600 hover:bg-rose-200 rounded-lg text-[10px] cursor-pointer">Rejeitar</button>
                                 </>
                               ) : (
                                 <span className={`font-bold text-[10px] uppercase ${w.status === 'completed' ? 'text-emerald-500' : 'text-rose-500'}`}>{w.status === 'completed' ? 'Concluído' : 'Rejeitado'}</span>
@@ -2094,7 +2073,7 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                             </div>
                           </div>
                         ))}
-                        {walletWithdrawals.length === 0 && <p className="text-[10px] text-slate-400 font-medium p-4 text-center">{t('txt_nenhum_pedido_de_levantamento') || 'Nenhum pedido de levantamento.'}</p>}
+                        {walletWithdrawals.length === 0 && <p className="text-[10px] text-slate-400 font-medium p-4 text-center">Nenhum pedido de levantamento.</p>}
                       </div>
                       </div>
                     </div>
@@ -2114,27 +2093,26 @@ const handleProcessWalletWithdrawal = async (id: string, status: string) => {
                 <div id="admin-cms" className="space-y-6 animate-fade-in font-sans">
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">{t('txt_cms_de_gest_o_da_homepage') || 'CMS de Gestão da Homepage'}</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">{t('txt_gerencie_os_cart_es_de_destaqu') || 'Gerencie os cartões de destaques da página inicial diretamente da base de dados e com uploads otimizados.'}</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">CMS de Gestão da Homepage</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Gerencie os cartões de destaques da página inicial diretamente da base de dados e com uploads otimizados.</p>
                     </div>
                     <button
                       onClick={fetchHomepageCards}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-600 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      <span>{t('txt_sincronizar_cards') || 'Sincronizar Cards'}</span>
+                      <span>Sincronizar Cards</span>
                     </button>
                   </div>
 
                   {/* Proactive Storage and avatars creation SQL query notice */}
                   <div className="p-5 bg-[#0a0515]/30 border border-slate-850 rounded-3xl space-y-3">
                     <div className="flex items-center gap-2 text-purple-600 font-extrabold text-xs uppercase tracking-wider font-mono">
-                      <span>{t('txt_query_sql_para_criar_o_bucket') || '🗄️ Query SQL para criar o Bucket "avatars" no Supabase Storage:'}</span>
+                      <span>🗄️ Query SQL para criar o Bucket "avatars" no Supabase Storage:</span>
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      
-                                                                    {t('txt_se_voc_presenciar_falhas_de_up') || 'Se você presenciar falhas de upload ou erros de "bucket não encontrado" ao definir fotos de equipe, imagens do CMS, ou avatares de perfis, copie o script abaixo e execute-o no seu painel'} <strong>{t('txt_sql_editor') || 'SQL Editor'}</strong>  {t('txt_do_supabase_ele_cria_o_bucket') || 'do Supabase. Ele cria o bucket'} <code>avatars</code>  {t('txt_e_define_as_regras_rls_correta') || 'e define as regras RLS corretas:'}
-                                                                  </p>
+                      Se você presenciar falhas de upload ou erros de "bucket não encontrado" ao definir fotos de equipe, imagens do CMS, ou avatares de perfis, copie o script abaixo e execute-o no seu painel <strong>SQL Editor</strong> do Supabase. Ele cria o bucket <code>avatars</code> e define as regras RLS corretas:
+                    </p>
                     <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed scrollbar-thin">
 {`-- 1. Criar o bucket publico "avatars" se nao existir
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -2179,13 +2157,13 @@ create policy "Permitir delete em avatars"
                     <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
                       <div className="flex items-center gap-2 text-purple-600 font-bold">
                         <AlertTriangle className="w-4 h-4" />
-                        <span>{t('txt_aviso_informa_o_operacional') || 'AVISO / INFORMAÇÃO OPERACIONAL'}</span>
+                        <span>AVISO / INFORMAÇÃO OPERACIONAL</span>
                       </div>
                       <p>{cmsError}</p>
                       
                       {cmsError.includes("tabela 'homepage_cards'") && (
                         <div className="space-y-2 mt-4">
-                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">{t('txt_query_sql_para_criar_a_tabela') || 'Query SQL para criar a tabela no Supabase editor:'}</span>
+                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a tabela no Supabase editor:</span>
                           <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
 {`-- Criar tabela homepage_cards para o CMS da Homepage da Glamzo
 create table if not exists public.homepage_cards (
@@ -2228,7 +2206,7 @@ create policy "Allow admins full operations on homepage_cards"
                       </h4>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">{t('txt_categoria_alvo_t_tulo_do_cart') || 'Categoria Alvo / Título do Cartão'}</label>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Categoria Alvo / Título do Cartão</label>
                         <select aria-label="Selecione uma opção"
                           required
                           value={cmsTitle}
@@ -2241,7 +2219,7 @@ create policy "Allow admins full operations on homepage_cards"
                           }}
                           className="w-full bg-[#0a0515] text-slate-700 border border-slate-200 px-3 py-3 rounded-xl text-xs focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
                         >
-                          <option value="" className="text-slate-650">{t('txt_selecione_uma_categoria_alvo') || '-- Selecione uma Categoria Alvo --'}</option>
+                          <option value="" className="text-slate-650">-- Selecione uma Categoria Alvo --</option>
                           {MAIN_CATEGORIES.map((cat) => (
                             <option key={cat.name} value={cat.name} className="bg-white text-slate-150">
                               {cat.emoji} {cat.name}
@@ -2252,17 +2230,17 @@ create policy "Allow admins full operations on homepage_cards"
 
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                         <div className="sm:col-span-8">
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">{t('txt_emoji_cone') || 'Emoji / Ícone'}</label>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Emoji / Ícone</label>
                           <input
                             type="text"
                             value={cmsEmoji}
                             onChange={(e) => setCmsEmoji(e.target.value)}
-                            placeholder={t('txt_ex') || 'Ex: 💇, 💅, ✨'}
+                            placeholder="Ex: 💇, 💅, ✨"
                             className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2.5 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-medium"
                           />
                         </div>
                         <div className="sm:col-span-4">
-                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">{t('txt_ordem_90') || 'Ordem'}</label>
+                          <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Ordem</label>
                           <input
                             type="number"
                             value={cmsDisplayOrder}
@@ -2273,19 +2251,19 @@ create policy "Allow admins full operations on homepage_cards"
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">{t('txt_subt_tulo_descri_o_breve') || 'Subtítulo / Descrição Breve'}</label>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1.5 pl-1">Subtítulo / Descrição Breve</label>
                         <textarea
                           required
                           rows={2}
                           value={cmsSubtitle}
                           onChange={(e) => setCmsSubtitle(e.target.value)}
-                          placeholder={t('txt_mais_de_30_sal_es_recomendados') || 'Mais de 30 salões recomendados com agendamento instantâneo.'}
+                          placeholder="Mais de 30 salões recomendados com agendamento instantâneo."
                           className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2.5 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-medium placeholder-slate-600 resize-none"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">{t('txt_imagem_do_cart_o_otimizado_con') || 'Imagem do Cartão (Otimizado/Conversão recomendada)'}</label>
+                        <label className="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Imagem do Cartão (Otimizado/Conversão recomendada)</label>
                         
                         {/* File selector input */}
                         <div className="mt-1.5 mb-2.5">
@@ -2303,11 +2281,11 @@ create policy "Allow admins full operations on homepage_cards"
                             {isUploadingCmsImage ? (
                               <>
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span>{t('txt_a_carregar_no_storage') || 'A carregar no Storage...'}</span>
+                                <span>A carregar no Storage...</span>
                               </>
                             ) : (
                               <>
-                                <span>{t('txt_enviar_nova_imagem') || '📤 Enviar Nova Imagem'}</span>
+                                <span>📤 Enviar Nova Imagem</span>
                               </>
                             )}
                           </label>
@@ -2319,7 +2297,7 @@ create policy "Allow admins full operations on homepage_cards"
                             type="text"
                             value={cmsImageUrl}
                             onChange={(e) => setCmsImageUrl(e.target.value)}
-                            placeholder={t('txt_copiar_url_gerada_ou_colar_url') || 'Copiar URL gerada ou colar URL de imagem...'}
+                            placeholder="Copiar URL gerada ou colar URL de imagem..."
                             className="w-full bg-[#0a0515] border border-slate-200 px-3 py-2 rounded-xl text-[11px] text-slate-900 focus:outline-none focus:border-purple-500"
                           />
                         </div>
@@ -2330,14 +2308,13 @@ create policy "Allow admins full operations on homepage_cards"
                         <div className="h-28 rounded-2xl overflow-hidden border border-slate-200 relative bg-slate-50">
                           <img loading="lazy"
                             src={cmsImageUrl}
-                            alt={t('txt_cms_preview') || 'CMS Preview'}
+                            alt="CMS Preview"
                             className="w-full h-full object-cover opacity-80"
                             referrerPolicy="no-referrer"
                           />
                           <div className="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[9px] text-purple-700 font-bold uppercase font-mono">
-                            
-                                                                                      {t('txt_preview_91') || 'Preview'}
-                                                                                    </div>
+                            Preview
+                          </div>
                         </div>
                       )}
 
@@ -2350,9 +2327,8 @@ create policy "Allow admins full operations on homepage_cards"
                           className="rounded bg-slate-50 border-slate-805 border-slate-200 text-purple-600 focus:ring-purple-500 w-4.5 h-4.5 cursor-pointer"
                         />
                         <label htmlFor="cms-active-checkbox" className="text-xs text-slate-600 font-bold cursor-pointer select-none">
-                          
-                                                                                {t('txt_card_ativo_na_homepage') || 'Card Ativo na Homepage'}
-                                                                              </label>
+                          Card Ativo na Homepage
+                        </label>
                       </div>
 
                       <div className="pt-3 flex gap-3">
@@ -2375,7 +2351,9 @@ create policy "Allow admins full operations on homepage_cards"
                               setCmsEmoji('✨');
                             }}
                             className="px-3 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
-                          >{t('cancel') || 'Cancelar'}</button>
+                          >
+                            Cancelar
+                          </button>
                         )}
                       </div>
                     </form>
@@ -2384,25 +2362,23 @@ create policy "Allow admins full operations on homepage_cards"
                     <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-center justify-between border-b border-slate-850 pb-3">
                         <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">
-                          
-                                                                                {t('txt_cart_es_ativos_da_homepage') || '🗄️ Cartões Ativos da Homepage ('}{homepageCards.length})
+                          🗄️ Cartões Ativos da Homepage ({homepageCards.length})
                         </h4>
                         <span className="text-[9px] font-mono uppercase bg-purple-950/40 text-purple-600 border border-purple-900/60 px-2 py-0.5 rounded-full font-bold">
-                          
-                                                                                {t('txt_total_92') || 'Total'} {homepageCards.length}
+                          Total {homepageCards.length}
                         </span>
                       </div>
 
                       {loadingCards ? (
                         <div className="h-44 flex flex-col items-center justify-center text-slate-600 gap-2">
                           <RefreshCw className="w-5 h-5 animate-spin text-purple-500" />
-                          <span className="text-[10px] font-mono">{t('txt_a_interrogar_a_tabela_homepage') || 'A interrogar a tabela homepage_cards...'}</span>
+                          <span className="text-[10px] font-mono">A interrogar a tabela homepage_cards...</span>
                         </div>
                       ) : homepageCards.length === 0 ? (
                         <div className="p-8 text-center bg-[#0a0515]/30 rounded-2xl border border-dashed border-slate-200">
                           <HelpCircle className="w-8 h-8 text-slate-705 text-slate-700 mx-auto mb-2" />
-                          <p className="text-slate-600 font-medium">{t('txt_nenhum_cart_o_din_mico_encontr') || 'Nenhum cartão dinâmico encontrado na base de dados.'}</p>
-                          <p className="text-slate-600 text-[11px] mt-1">{t('txt_a_p_gina_inicial_exibir_as_cat') || 'A página inicial exibirá as categorias estáticas como fallback seguro de performance.'}</p>
+                          <p className="text-slate-600 font-medium">Nenhum cartão dinâmico encontrado na base de dados.</p>
+                          <p className="text-slate-600 text-[11px] mt-1">A página inicial exibirá as categorias estáticas como fallback seguro de performance.</p>
                         </div>
                       ) : (
                         <div className="space-y-3.5">
@@ -2425,16 +2401,15 @@ create policy "Allow admins full operations on homepage_cards"
                                     <span className="font-extrabold text-slate-900 text-xs truncate uppercase tracking-tight">{card.title}</span>
                                     {!card.active && (
                                       <span className="px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 text-[8px] text-slate-500 uppercase font-mono font-bold">
-                                        
-                                                                                              {t('txt_inativo_93') || 'Inativo'}
-                                                                                            </span>
+                                        Inativo
+                                      </span>
                                     )}
                                   </div>
                                   <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 leading-normal">{card.subtitle}</p>
                                   <div className="flex items-center gap-3 text-[9px] font-mono text-slate-500 mt-1 align-middle">
-                                    <span className="text-purple-600 font-bold">{t('txt_ordem') || 'Ordem:'} {card.display_order}</span>
+                                    <span className="text-purple-600 font-bold">Ordem: {card.display_order}</span>
                                     <span>•</span>
-                                    <span className="text-slate-500">{t('txt_ltima_edi_o') || 'Última edição:'} {new Date(card.updated_at || card.created_at).toLocaleDateString('pt-PT')}</span>
+                                    <span className="text-slate-500">Última edição: {new Date(card.updated_at || card.created_at).toLocaleDateString('pt-PT')}</span>
                                   </div>
                                 </div>
                               </div>
@@ -2445,7 +2420,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     onClick={() => handleMoveOrder(card, 'up')}
                                     disabled={idx === 0}
                                     type="button"
-                                    title={t('txt_subir_ordem') || 'Subir Ordem'}
+                                    title="Subir Ordem"
                                     className="p-1 rounded bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▲
@@ -2454,7 +2429,7 @@ create policy "Allow admins full operations on homepage_cards"
                                     onClick={() => handleMoveOrder(card, 'down')}
                                     disabled={idx === homepageCards.length - 1}
                                     type="button"
-                                    title={t('txt_descer_ordem') || 'Descer Ordem'}
+                                    title="Descer Ordem"
                                     className="p-1 rounded bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 disabled:opacity-20 cursor-pointer text-[10px]"
                                   >
                                     ▼
@@ -2466,13 +2441,15 @@ create policy "Allow admins full operations on homepage_cards"
                                     onClick={() => handleEditCmsCard(card)}
                                     type="button"
                                     className="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-900/40 text-purple-700 text-[10px] font-bold cursor-pointer transition-all"
-                                    title={t('txt_editar_cart_o') || 'Editar Cartão'}
-                                  >{t('edit') || 'Editar'}</button>
+                                    title="Editar Cartão"
+                                  >
+                                    Editar
+                                  </button>
                                   <button
                                     onClick={() => handleDeleteCmsCard(card.id)}
                                     type="button"
                                     className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-850 border border-slate-200 text-red-400 hover:text-red-300 text-xs font-bold cursor-pointer transition-all"
-                                    title={t('txt_eliminar_cart_o') || 'Eliminar Cartão'}
+                                    title="Eliminar Cartão"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -2496,15 +2473,15 @@ create policy "Allow admins full operations on homepage_cards"
                 <div id="admin-pages" className="space-y-6 animate-fade-in font-sans">
                   <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">{t('txt_p_ginas_da_plataforma') || 'Páginas da Plataforma'}</h3>
-                      <p className="text-xs text-slate-600 mt-0.5">{t('txt_edite_os_termos_legais_pol_tic') || 'Edite os termos legais, políticas de privacidade e informações de apoio.'}</p>
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">Páginas da Plataforma</h3>
+                      <p className="text-xs text-slate-600 mt-0.5">Edite os termos legais, políticas de privacidade e informações de apoio.</p>
                     </div>
                     <button
                       onClick={fetchPlatformPages}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-850 border border-slate-850 rounded-xl text-slate-600 text-xs font-semibold font-mono cursor-pointer transition-all self-start"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      <span>{t('txt_sincronizar_94') || 'Sincronizar'}</span>
+                      <span>Sincronizar</span>
                     </button>
                   </div>
 
@@ -2512,13 +2489,13 @@ create policy "Allow admins full operations on homepage_cards"
                     <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-2xl text-purple-200 text-xs space-y-3 leading-relaxed">
                       <div className="flex items-center gap-2 text-purple-600 font-bold">
                         <AlertTriangle className="w-4 h-4" />
-                        <span>{t('txt_aviso_informa_o_operacional') || 'AVISO / INFORMAÇÃO OPERACIONAL'}</span>
+                        <span>AVISO / INFORMAÇÃO OPERACIONAL</span>
                       </div>
                       <p>{pagesError}</p>
                       
                       {pagesError.includes("platform_pages") && (
                         <div className="space-y-2 mt-4">
-                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">{t('txt_query_sql_para_criar_a_funcion') || 'Query SQL para criar a funcionalidade CMS e RPC Apagar Contas:'}</span>
+                          <span className="block text-[10px] text-slate-600 uppercase font-mono font-black">Query SQL para criar a funcionalidade CMS e RPC Apagar Contas:</span>
                           <pre className="bg-slate-50 text-emerald-600 p-4 rounded-xl overflow-x-auto text-[10px] font-mono select-all select-text leading-relaxed">
 {`-- 1. CMS de Plataforma
 create table if not exists public.platform_pages (
@@ -2563,7 +2540,7 @@ $$;`}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* PAGES LISTING */}
                     <div className="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 space-y-4">
-                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-850 pb-3">{t('txt_p_ginas_de_sistema') || 'Páginas de Sistema'}</h4>
+                      <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-850 pb-3">Páginas de Sistema</h4>
                       
                       <div className="flex flex-col gap-2">
                         {[
@@ -2603,12 +2580,12 @@ $$;`}
                       <div className="lg:col-span-8 bg-[#0a0515]/30 border border-slate-850 rounded-3xl p-5 sm:p-6 shadow-2xl">
                         <form onSubmit={handleSavePage} className="space-y-5">
                           <div className="flex justify-between items-end">
-                            <h4 className="font-extrabold text-xs text-purple-600 uppercase tracking-wider font-mono">{t('txt_editor_de_markup_da_p_gina') || 'Editor de Markup da Página'}</h4>
+                            <h4 className="font-extrabold text-xs text-purple-600 uppercase tracking-wider font-mono">Editor de Markup da Página</h4>
                             <span className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500 font-mono">/{editingPageSlug}</span>
                           </div>
 
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">{t('txt_t_tulo_da_p_gina_h1') || 'Título da Página (H1)'}</label>
+                            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Título da Página (H1)</label>
                             <input
                               type="text"
                               value={pageDraftTitle}
@@ -2620,16 +2597,16 @@ $$;`}
 
                           <div>
                             <div className="flex justify-between items-end mb-1.5">
-                              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">{t('txt_conte_do_suporta_html_b_sico') || 'Conteúdo (Suporta HTML Básico)'}</label>
+                              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Conteúdo (Suporta HTML Básico)</label>
                             </div>
                             <textarea
                               value={pageDraftContent}
                               onChange={e => setPageDraftContent(e.target.value)}
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors placeholder:text-slate-700 font-mono h-[400px] resize-y leading-relaxed"
                               required
-                              placeholder={t('txt_p_escreva_aqui_o_seu_texto_le') || '<p>Escreva aqui o seu texto legal ou de ajuda...</p>\n<h2>Títulos 2</h2>'}
+                              placeholder="<p>Escreva aqui o seu texto legal ou de ajuda...</p>\n<h2>Títulos 2</h2>"
                             />
-                            <p className="text-[10px] text-slate-600 mt-2">{t('txt_dica_use_lt_h2_gt_ou_lt_h3_gt') || 'Dica: Use &lt;h2&gt; ou &lt;h3&gt; para cabeçalhos e &lt;p&gt; para parágrafos. Tags como &lt;strong&gt; e &lt;ul&gt; &lt;li&gt; também são seguras.'}</p>
+                            <p className="text-[10px] text-slate-600 mt-2">Dica: Use &lt;h2&gt; ou &lt;h3&gt; para cabeçalhos e &lt;p&gt; para parágrafos. Tags como &lt;strong&gt; e &lt;ul&gt; &lt;li&gt; também são seguras.</p>
                           </div>
 
                           <div className="flex items-center gap-3 pt-2">
@@ -2644,15 +2621,17 @@ $$;`}
                               type="button"
                               onClick={() => setEditingPageSlug(null)}
                               className="px-4 py-2.5 bg-slate-100 hover:bg-slate-750 text-slate-350 rounded-xl text-xs font-semibold cursor-pointer"
-                            >{t('close') || 'Fechar'}</button>
+                            >
+                              Fechar
+                            </button>
                           </div>
                         </form>
                       </div>
                     ) : (
                       <div className="lg:col-span-8 bg-white/30 border border-slate-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
                         <FileText className="w-12 h-12 text-slate-800 mb-4" />
-                        <h4 className="text-slate-500 font-bold mb-2">{t('txt_editor_de_conte_do_est_tico') || 'Editor de Conteúdo Estático'}</h4>
-                        <p className="text-slate-600 text-xs">{t('txt_selecione_uma_p_gina_no_painel') || 'Selecione uma página no painel lateral à esquerda para iniciar a edição do seu conteúdo em direto na plataforma.'}</p>
+                        <h4 className="text-slate-500 font-bold mb-2">Editor de Conteúdo Estático</h4>
+                        <p className="text-slate-600 text-xs">Selecione uma página no painel lateral à esquerda para iniciar a edição do seu conteúdo em direto na plataforma.</p>
                       </div>
                     )}
                   </div>
@@ -2710,16 +2689,14 @@ $$;`}
                     <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
                         <h3 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                          <span>{t('txt_funil_de_convers_o_recupera_o') || 'Funil de Conversão & Recuperação de Leads'}</span>
+                          <span>Funil de Conversão & Recuperação de Leads</span>
                           <span className="text-xs bg-amber-50 text-amber-700 font-mono font-bold px-2.5 py-1 rounded-full border border-amber-200">
-                            
-                                                                    {t('txt_tracking_activo') || '⚠️ Tracking Activo'}
-                                                                  </span>
+                            ⚠️ Tracking Activo
+                          </span>
                         </h3>
                         <p className="text-xs text-slate-605 mt-0.5">
-                          
-                                                              {t('txt_identifique_parceiros_que_aban') || 'Identifique parceiros que abandonaram o registo a meio do assistente e estabeleça contacto para apoio ou fecho manual.'}
-                                                            </p>
+                          Identifique parceiros que abandonaram o registo a meio do assistente e estabeleça contacto para apoio ou fecho manual.
+                        </p>
                       </div>
 
                       <button
@@ -2728,7 +2705,7 @@ $$;`}
                         className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-105 border border-slate-200 rounded-xl text-slate-600 text-xs font-bold font-mono cursor-pointer transition-all self-start"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                        <span>{t('txt_sincronizar_leads') || 'Sincronizar Leads'}</span>
+                        <span>Sincronizar Leads</span>
                       </button>
                     </div>
 
@@ -2736,33 +2713,31 @@ $$;`}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Stat Card 1 */}
                       <div className="bg-white border border-slate-200 p-5 rounded-3xl">
-                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">{t('txt_leads_abandonadas') || 'Leads Abandonadas'}</span>
+                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">Leads Abandonadas</span>
                         <div className="flex items-baseline gap-2.5">
                           <span className="text-3xl font-black text-slate-900 tracking-tight">{totalAbandoned}</span>
                           <span className="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200/50 px-1.5 py-0.5 rounded-md">
-                            
-                                                                    {t('txt_onboarding_incompleto') || 'Onboarding Incompleto'}
-                                                                  </span>
+                            Onboarding Incompleto
+                          </span>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-2 font-medium">{t('txt_parceiros_registados_pendentes') || 'Parceiros registados pendentes de ativação comercial.'}</p>
+                        <p className="text-[10px] text-slate-500 mt-2 font-medium">Parceiros registados pendentes de ativação comercial.</p>
                       </div>
 
                       {/* Stat Card 2 */}
                       <div className="bg-white border border-slate-200 p-5 rounded-3xl">
-                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">{t('txt_taxa_de_convers_o') || 'Taxa de Conversão'}</span>
+                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">Taxa de Conversão</span>
                         <div className="flex items-baseline gap-2.5">
                           <span className="text-3xl font-black text-slate-900 tracking-tight">{conversionRate}%</span>
                           <span className="text-[10px] text-purple-705 font-bold bg-purple-950/20 border border-purple-900/35 px-1.5 py-0.5 rounded-md">
-                            
-                                                                    {t('txt_saas_target') || 'SaaS Target'}
-                                                                  </span>
+                            SaaS Target
+                          </span>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-2 font-medium">{t('txt_de_95') || 'De'} {totalRegistrations}  {t('txt_registos_totais_na_base_cadast') || 'registos totais na base cadastral.'}</p>
+                        <p className="text-[10px] text-slate-500 mt-2 font-medium">De {totalRegistrations} registos totais na base cadastral.</p>
                       </div>
 
                       {/* Stat Card 3 */}
                       <div className="bg-white border border-slate-200 p-5 rounded-3xl">
-                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">{t('txt_ponto_mais_cr_tico') || 'Ponto Mais Crítico'}</span>
+                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">Ponto Mais Crítico</span>
                         <div className="flex items-baseline gap-2.5">
                           <span className="text-sm font-black text-slate-900 truncate tracking-tight">{mostAbandonedStep}</span>
                         </div>
@@ -2773,12 +2748,12 @@ $$;`}
 
                       {/* Stat Card 4 */}
                       <div className="bg-white border border-slate-200 p-5 rounded-3xl">
-                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">{t('txt_fatura_o_recorrente_perdida') || 'Faturação Recorrente Perdida'}</span>
+                        <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider font-extrabold mb-1">Faturação Recorrente Perdida</span>
                         <div className="flex items-baseline gap-2.5">
                           <span className="text-3xl font-black text-rose-600 tracking-tight">{potentialRevenueLost.toFixed(2)} €</span>
                           <span className="text-[9px] text-slate-400 font-mono font-bold">/mês</span>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-2 font-medium">{t('txt_assumindo_o_plano_pro_base_19') || 'Assumindo o plano PRO base (19.90 €/mês por parceiro).'}</p>
+                        <p className="text-[10px] text-slate-500 mt-2 font-medium">Assumindo o plano PRO base (19.90 €/mês por parceiro).</p>
                       </div>
                     </div>
 
@@ -2786,31 +2761,29 @@ $$;`}
                     <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                         <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider font-mono">
-                          
-                                                              {t('txt_registo_detalhado_de_leads') || '📋 Registo Detalhado de Leads ('}{totalAbandoned})
+                          📋 Registo Detalhado de Leads ({totalAbandoned})
                         </h4>
                         <span className="text-[9px] font-mono uppercase bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-bold">
-                          
-                                                              {t('txt_pendentes_de_recupera_o') || 'Pendentes de Recuperação'}
-                                                            </span>
+                          Pendentes de Recuperação
+                        </span>
                       </div>
 
                       {totalAbandoned === 0 ? (
                         <div className="py-12 text-center">
                           <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                          <p className="text-slate-800 font-bold text-sm">{t('txt_sem_abandonos_registados') || 'Sem abandonos registados!'}</p>
-                          <p className="text-slate-500 text-xs mt-1">{t('txt_todos_os_seus_parceiros_conclu') || 'Todos os seus parceiros concluíram ou não iniciaram passos pendentes.'}</p>
+                          <p className="text-slate-800 font-bold text-sm">Sem abandonos registados!</p>
+                          <p className="text-slate-500 text-xs mt-1">Todos os seus parceiros concluíram ou não iniciaram passos pendentes.</p>
                         </div>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-slate-100 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                                <th className="py-3 px-4 font-bold">{t('txt_parceiro_dono') || 'Parceiro / Dono'}</th>
-                                <th className="py-3 px-4 font-bold">{t('txt_data_de_registo') || 'Data de Registo'}</th>
-                                <th className="py-3 px-4 font-bold">{t('txt_passo_abandonado') || 'Passo Abandonado'}</th>
-                                <th className="py-3 px-4 font-bold">{t('txt_contacto_principal') || 'Contacto Principal'}</th>
-                                <th className="py-3 px-4 text-right font-bold">{t('txt_a_es_de_recupera_o') || 'Ações de Recuperação'}</th>
+                                <th className="py-3 px-4 font-bold">Parceiro / Dono</th>
+                                <th className="py-3 px-4 font-bold">Data de Registo</th>
+                                <th className="py-3 px-4 font-bold">Passo Abandonado</th>
+                                <th className="py-3 px-4 font-bold">Contacto Principal</th>
+                                <th className="py-3 px-4 text-right font-bold">Ações de Recuperação</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-xs">
@@ -2837,7 +2810,7 @@ $$;`}
                                     {/* Partner / Owner */}
                                     <td className="py-3.5 px-4">
                                       <div className="font-extrabold text-slate-900">
-                                        {lead.name || <span className="text-slate-450 italic font-medium">{t('txt_estabelecimento_por_nomear') || 'Estabelecimento por nomear'}</span>}
+                                        {lead.name || <span className="text-slate-450 italic font-medium">Estabelecimento por nomear</span>}
                                       </div>
                                       <div className="text-[10px] text-slate-500 font-mono mt-0.5 select-all">
                                         {lead.email}
@@ -2869,7 +2842,7 @@ $$;`}
 
                                     {/* Main contact */}
                                     <td className="py-3.5 px-4 font-mono font-medium whitespace-nowrap">
-                                      {lead.phone || <span className="text-slate-400 italic font-medium">{t('txt_sem_telefone') || 'Sem telefone'}</span>}
+                                      {lead.phone || <span className="text-slate-400 italic font-medium">Sem telefone</span>}
                                     </td>
 
                                     {/* Action recovery buttons */}
@@ -2882,7 +2855,7 @@ $$;`}
                                             setSuccessMsg(`E-mail de ${lead.name || 'lead'} copiado para a área de transferência!`);
                                             setTimeout(() => setSuccessMsg(''), 3000);
                                           }}
-                                          title={t('txt_copiar_e_mail') || 'Copiar E-mail'}
+                                          title="Copiar E-mail"
                                           className="p-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition-all cursor-pointer"
                                         >
                                           <Settings className="w-3.5 h-3.5" />
@@ -2891,11 +2864,11 @@ $$;`}
                                         {/* Email Mailto button */}
                                         <a
                                           href={mailtoLink}
-                                          title={t('txt_enviar_email_de_recupera_o_man') || 'Enviar Email de Recuperação (Manual)'}
+                                          title="Enviar Email de Recuperação (Manual)"
                                           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-purple-950 hover:bg-purple-900 text-purple-700 border border-purple-900/40 rounded-xl transition-all font-bold text-[10px]"
                                         >
                                           <Mail className="w-3.5 h-3.5 text-purple-500" />
-                                          <span>{t('txt_e_mail_manual') || 'E-mail (Manual)'}</span>
+                                          <span>E-mail (Manual)</span>
                                         </a>
 
                                         {/* Resend Automated Email Button */}
@@ -2921,7 +2894,7 @@ $$;`}
                                             }
                                           }}
                                           disabled={sendingEmails[lead.email]}
-                                          title={t('txt_enviar_e_mail_de_recupera_o_au') || 'Enviar E-mail de Recuperação Automatizado'}
+                                          title="Enviar E-mail de Recuperação Automatizado"
                                           className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl transition-all font-bold text-[10px] border cursor-pointer ${
                                             sendingEmails[lead.email]
                                               ? 'bg-slate-100 text-slate-400 border-slate-200'
@@ -2931,12 +2904,12 @@ $$;`}
                                           {sendingEmails[lead.email] ? (
                                             <>
                                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                              <span>{t('txt_enviando') || 'Enviando...'}</span>
+                                              <span>Enviando...</span>
                                             </>
                                           ) : (
                                             <>
                                               <Mail className="w-3.5 h-3.5" />
-                                              <span>{t('txt_enviar_e_mail_de_recupera_o') || 'Enviar E-mail de Recuperação'}</span>
+                                              <span>Enviar E-mail de Recuperação</span>
                                             </>
                                           )}
                                         </button>
@@ -2947,16 +2920,15 @@ $$;`}
                                             href={waLink}
                                             target="_blank"
                                             rel="noreferrer"
-                                            title={t('txt_contactar_via_whatsapp') || 'Contactar via WhatsApp'}
+                                            title="Contactar via WhatsApp"
                                             className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/40 text-emerald-600 border border-emerald-900/40 rounded-xl transition-all font-bold text-[10px]"
                                           >
-                                            <span>{t('txt_whatsapp_96') || 'WhatsApp'}</span>
+                                            <span>WhatsApp</span>
                                           </a>
                                         ) : (
                                           <span className="px-2.5 py-1.5 text-slate-350 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold cursor-not-allowed">
-                                            
-                                                                                                        {t('txt_whatsapp_97') || 'WhatsApp'}
-                                                                                                      </span>
+                                            WhatsApp
+                                          </span>
                                         )}
                                       </div>
                                     </td>
@@ -2991,14 +2963,14 @@ $$;`}
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center text-slate-900 text-lg font-bold">
                   {selectedSalon.logo_url ? (
-                    <img loading="lazy" referrerPolicy="no-referrer" src={selectedSalon.logo_url} alt={t('txt_logo_107') || 'Logo'} className="w-full h-full object-cover" />
+                    <img loading="lazy" referrerPolicy="no-referrer" src={selectedSalon.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
                     selectedSalon.name.substring(0, 2).toUpperCase()
                   )}
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-slate-900 leading-tight">{selectedSalon.name}</h2>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">{t('txt_id') || 'ID:'} {selectedSalon.id}</p>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">ID: {selectedSalon.id}</p>
                 </div>
               </div>
               <button 
@@ -3011,10 +2983,10 @@ $$;`}
 
             {/* Navigation Tabs */}
             <div className="flex border-b border-slate-100 px-6 gap-6 bg-white shrink-0 overflow-x-auto custom-scrollbar">
-              <button onClick={() => setEliteTab('overview')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'overview' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>{t('txt_vis_o_geral') || 'Visão Geral'}</button>
-              <button onClick={() => setEliteTab('stripe')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'stripe' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>{t('txt_fatura_o_stripe') || 'Faturação Stripe'}</button>
-              <button onClick={() => setEliteTab('catalog')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'catalog' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>{t('txt_cat_logo_equipa') || 'Catálogo & Equipa'}</button>
-              <button onClick={() => { setEliteTab('edit'); handleStartEditSalon(selectedSalon); }} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'edit' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>{t('txt_editar_loja') || 'Editar Loja'}</button>
+              <button onClick={() => setEliteTab('overview')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'overview' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Visão Geral</button>
+              <button onClick={() => setEliteTab('stripe')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'stripe' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Faturação Stripe</button>
+              <button onClick={() => setEliteTab('catalog')} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'catalog' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Catálogo & Equipa</button>
+              <button onClick={() => { setEliteTab('edit'); handleStartEditSalon(selectedSalon); }} className={`py-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap ${eliteTab === 'edit' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-900'}`}>Editar Loja</button>
             </div>
 
             {/* Content Area */}
@@ -3030,28 +3002,28 @@ $$;`}
                     {selectedSalon.status === 'suspended' ? (
                       <button onClick={() => handleReactivatePartner(selectedSalon.id)} className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-emerald-300 transition-all flex flex-col gap-2 items-center text-center">
                         <CheckCircle className="w-6 h-6 text-emerald-500" />
-                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">{t('txt_reativar_conta') || 'Reativar Conta'}</span>
+                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">Reativar Conta</span>
                       </button>
                     ) : (
                       <button onClick={() => handleSuspendPartner(selectedSalon.id)} className="p-4 bg-white border border-slate-200 rounded-2xl hover:border-rose-300 transition-all flex flex-col gap-2 items-center text-center">
                         <AlertTriangle className="w-6 h-6 text-rose-500" />
-                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">{t('txt_suspender_conta') || 'Suspender Conta'}</span>
+                        <span className="font-bold text-[11px] text-slate-700 uppercase tracking-widest">Suspender Conta</span>
                       </button>
                     )}
                   </div>
 
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><MapPin className="w-4 h-4 text-purple-600" />  {t('txt_detalhes_contactos') || 'Detalhes & Contactos'}</h3>
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><MapPin className="w-4 h-4 text-purple-600" /> Detalhes & Contactos</h3>
                     <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div><p className="text-slate-500 font-bold mb-1">{t('txt_telefone_98') || 'Telefone'}</p><p className="font-mono text-slate-900">{selectedSalon.phone || 'N/A'}</p></div>
-                      <div><p className="text-slate-500 font-bold mb-1">{t('txt_email_p_blico') || 'Email Público'}</p><p className="font-mono text-slate-900 truncate">{selectedSalon.email || 'N/A'}</p></div>
-                      <div><p className="text-slate-500 font-bold mb-1">{t('txt_cidade_99') || 'Cidade'}</p><p className="font-bold text-slate-900 uppercase">{selectedSalon.city || 'N/A'}</p></div>
-                      <div><p className="text-slate-500 font-bold mb-1">{t('txt_morada_100') || 'Morada'}</p><p className="text-slate-900">{selectedSalon.address || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Telefone</p><p className="font-mono text-slate-900">{selectedSalon.phone || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Email Público</p><p className="font-mono text-slate-900 truncate">{selectedSalon.email || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Cidade</p><p className="font-bold text-slate-900 uppercase">{selectedSalon.city || 'N/A'}</p></div>
+                      <div><p className="text-slate-500 font-bold mb-1">Morada</p><p className="text-slate-900">{selectedSalon.address || 'N/A'}</p></div>
                     </div>
                   </div>
                   
                   <div className="bg-rose-50 border border-rose-100 p-5 rounded-2xl">
-                    <h3 className="font-black text-rose-900 text-sm flex items-center gap-2 mb-3"><Trash2 className="w-4 h-4" />  {t('txt_zona_de_perigo') || 'Zona de Perigo'}</h3>
+                    <h3 className="font-black text-rose-900 text-sm flex items-center gap-2 mb-3"><Trash2 className="w-4 h-4" /> Zona de Perigo</h3>
                     <button 
                       onClick={() => {
                         setDeleteAccountTarget({ ownerId: selectedSalon.owner_id, businessId: selectedSalon.id, name: selectedSalon.name });
@@ -3060,9 +3032,8 @@ $$;`}
                       }}
                       className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md shadow-rose-900/20"
                     >
-                      
-                                                                {t('txt_eliminar_conta_dados') || 'Eliminar Conta & Dados'}
-                                                              </button>
+                      Eliminar Conta & Dados
+                    </button>
                   </div>
                 </div>
               )}
@@ -3070,34 +3041,34 @@ $$;`}
               {eliteTab === 'stripe' && (
                 <div className="space-y-6">
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><Award className="w-4 h-4 text-purple-600" />  {t('txt_assinatura_101') || 'Assinatura'}</h3>
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><Award className="w-4 h-4 text-purple-600" /> Assinatura</h3>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{t('txt_plano_atual') || 'Plano Atual'}</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Plano Atual</p>
                         <p className="text-sm font-black text-slate-900">{selectedSalon.selected_plan_name || 'Comissionado Base'}</p>
                       </div>
                       {selectedSalon.is_premium ? (
-                        <button onClick={() => handleRemoveProManual(selectedSalon.id)} className="px-4 py-2 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold transition-all">{t('txt_remover_pro') || 'Remover PRO'}</button>
+                        <button onClick={() => handleRemoveProManual(selectedSalon.id)} className="px-4 py-2 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold transition-all">Remover PRO</button>
                       ) : (
-                        <button onClick={() => handleActivateProManual(selectedSalon.id)} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-900/20">{t('txt_ativar_pro') || 'Ativar PRO'}</button>
+                        <button onClick={() => handleActivateProManual(selectedSalon.id)} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-purple-900/20">Ativar PRO</button>
                       )}
                     </div>
                   </div>
 
                                     <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-blue-600" />  {t('txt_detalhes_stripe_connect') || 'Detalhes Stripe Connect'}</h3>
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><CreditCard className="w-4 h-4 text-blue-600" /> Detalhes Stripe Connect</h3>
                     <div className="space-y-3 text-xs">
-                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">{t('txt_account_id') || 'Account ID'}</span><span className="font-mono text-slate-900 font-bold">{selectedSalon.stripe_account_id || 'Não conectado'}</span></div>
-                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">{t('txt_cobran_as_charges_enabled') || 'Cobranças (charges_enabled)'}</span><span className={selectedSalon.charges_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.charges_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
-                      <div className="flex justify-between pb-1"><span className="text-slate-500 font-bold">{t('txt_repasses_payouts_enabled') || 'Repasses (payouts_enabled)'}</span><span className={selectedSalon.payouts_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.payouts_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
+                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">Account ID</span><span className="font-mono text-slate-900 font-bold">{selectedSalon.stripe_account_id || 'Não conectado'}</span></div>
+                      <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-bold">Cobranças (charges_enabled)</span><span className={selectedSalon.charges_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.charges_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
+                      <div className="flex justify-between pb-1"><span className="text-slate-500 font-bold">Repasses (payouts_enabled)</span><span className={selectedSalon.payouts_enabled ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>{selectedSalon.payouts_enabled ? 'ATIVO' : 'INATIVO'}</span></div>
                     </div>
                   </div>
 
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-slate-600" />  {t('txt_hist_rico_de_payouts_da_loja') || 'Histórico de Payouts da Loja'}</h3>
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-slate-600" /> Histórico de Payouts da Loja</h3>
                     <div className="space-y-2">
                       {payoutRequests.filter((p: any) => p.business_id === selectedSalon.id).length === 0 ? (
-                        <p className="text-xs text-slate-500">{t('txt_sem_hist_rico_de_payouts_para') || 'Sem histórico de payouts para esta loja.'}</p>
+                        <p className="text-xs text-slate-500">Sem histórico de payouts para esta loja.</p>
                       ) : (
                         payoutRequests.filter((p: any) => p.business_id === selectedSalon.id).map((po: any, idx: number) => (
                           <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -3122,34 +3093,34 @@ $$;`}
               {eliteTab === 'catalog' && (
                 <div className="flex flex-col items-center justify-center py-12 text-slate-500 bg-white border border-slate-200 rounded-3xl">
                   <Package className="w-12 h-12 mb-4 text-slate-300" />
-                  <p className="text-sm font-bold text-slate-900">{t('txt_cat_logo_ocultado_no_admin') || 'Catálogo Ocultado no Admin'}</p>
-                  <p className="text-xs mt-1 text-center max-w-xs">{t('txt_para_visualizar_servi_os_e_hor') || 'Para visualizar serviços e horários desta loja, abra a sua página de perfil.'}</p>
+                  <p className="text-sm font-bold text-slate-900">Catálogo Ocultado no Admin</p>
+                  <p className="text-xs mt-1 text-center max-w-xs">Para visualizar serviços e horários desta loja, abra a sua página de perfil.</p>
                   <a href={`/${selectedSalon.slug}`} target="_blank" rel="noopener noreferrer" className="mt-4 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />  {t('txt_abrir_p_gina_p_blica') || 'Abrir Página Pública'}
-                                                        </a>
+                    <ExternalLink className="w-4 h-4" /> Abrir Página Pública
+                  </a>
                 </div>
               )}
 
               {eliteTab === 'edit' && editingSalon?.id === selectedSalon.id && (
                 <form onSubmit={(e) => { e.preventDefault(); handleSaveEditSalon(e); }} className="space-y-4">
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_nome_do_sal_o') || 'Nome do Salão'}</label><input type="text" value={editSalonName} onChange={e => setEditSalonName(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
-                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_categoria_principal') || 'Categoria Principal'}</label><input type="text" value={editSalonCategory} onChange={e => setEditSalonCategory(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
-                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_descri_o_curta') || 'Descrição Curta'}</label><textarea value={editSalonDescription} onChange={e => setEditSalonDescription(e.target.value)} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 outline-none focus:border-purple-600 resize-none" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Nome do Salão</label><input type="text" value={editSalonName} onChange={e => setEditSalonName(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Categoria Principal</label><input type="text" value={editSalonCategory} onChange={e => setEditSalonCategory(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Descrição Curta</label><textarea value={editSalonDescription} onChange={e => setEditSalonDescription(e.target.value)} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 outline-none focus:border-purple-600 resize-none" /></div>
                   </div>
                   
                   <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_telefone_contacto') || 'Telefone Contacto'}</label><input type="text" value={editSalonPhone} onChange={e => setEditSalonPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Telefone Contacto</label><input type="text" value={editSalonPhone} onChange={e => setEditSalonPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_distrito_102') || 'Distrito'}</label><input type="text" value={editSalonDistrict} onChange={e => setEditSalonDistrict(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
-                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_cidade_103') || 'Cidade'}</label><input type="text" value={editSalonCity} onChange={e => setEditSalonCity(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Distrito</label><input type="text" value={editSalonDistrict} onChange={e => setEditSalonDistrict(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                      <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Cidade</label><input type="text" value={editSalonCity} onChange={e => setEditSalonCity(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
                     </div>
-                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">{t('txt_morada_completa') || 'Morada Completa'}</label><input type="text" value={editSalonAddress} onChange={e => setEditSalonAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
+                    <div><label className="block text-[11px] font-black uppercase text-slate-400 mb-1.5">Morada Completa</label><input type="text" value={editSalonAddress} onChange={e => setEditSalonAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-purple-600" /></div>
                   </div>
                   
                   <button type="submit" disabled={isSaving} className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md shadow-purple-900/20 flex items-center justify-center gap-2">
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                    <span>{t('txt_guardar_altera_es') || 'Guardar Alterações'}</span>
+                    <span>Guardar Alterações</span>
                   </button>
                 </form>
               )}
@@ -3172,14 +3143,14 @@ $$;`}
             <div className="border-b border-slate-200 pb-3">
               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-purple-600" />
-                <span>{t('txt_editar_utilizador') || 'Editar Utilizador'} {editingUser.email?.split('@')[0]}</span>
+                <span>Editar Utilizador {editingUser.email?.split('@')[0]}</span>
               </h3>
-              <p className="text-[11px] text-slate-600 mt-0.5">{t('txt_modifique_o_cadastro_base_de_u') || 'Modifique o cadastro base de utilizador na base de dados.'}</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">Modifique o cadastro base de utilizador na base de dados.</p>
             </div>
 
             <form onSubmit={handleSaveEditUser} className="space-y-4 text-xs font-semibold">
               <div>
-                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_nome_completo') || 'Nome Completo'}</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome Completo</label>
                 <input 
                   type="text" 
                   value={editUserName}
@@ -3190,7 +3161,7 @@ $$;`}
               </div>
 
               <div>
-                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_endere_o_de_e_mail') || 'Endereço de E-mail'}</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço de E-mail</label>
                 <input 
                   type="email" 
                   value={editUserEmail}
@@ -3201,15 +3172,15 @@ $$;`}
               </div>
 
               <div>
-                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_n_vel_de_privil_gios_fun_o') || 'Nível de Privilégios (Função)'}</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nível de Privilégios (Função)</label>
                 <select aria-label="Selecione uma opção" 
                   value={editUserRole}
                   onChange={e => setEditUserRole(e.target.value as any)}
                   className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 cursor-pointer"
                 >
-                  <option value="customer">{t('txt_customer_cliente_comum') || 'Customer (Cliente Comum)'}</option>
-                  <option value="business">{t('txt_business_propriet_rio_de_sal_o') || 'Business (Proprietário de Salão)'}</option>
-                  <option value="admin">{t('txt_admin_administrador_maestro') || 'Admin (Administrador Maestro)'}</option>
+                  <option value="customer">Customer (Cliente Comum)</option>
+                  <option value="business">Business (Proprietário de Salão)</option>
+                  <option value="admin">Admin (Administrador Maestro)</option>
                 </select>
               </div>
 
@@ -3218,14 +3189,15 @@ $$;`}
                   type="submit" 
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
-                  
-                                                    {t('txt_salvar_altera_es') || 'Salvar Alterações'}
-                                                  </button>
+                  Salvar Alterações
+                </button>
                 <button 
                   type="button" 
                   onClick={() => setEditingUser(null)}
                   className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >{t('cancel') || 'Cancelar'}</button>
+                >
+                  Cancelar
+                </button>
               </div>
             </form>
           </div>
@@ -3246,15 +3218,15 @@ $$;`}
             <div className="border-b border-slate-200 pb-3">
               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-indigo-400" />
-                <span>{t('txt_editar_estabelecimento') || 'Editar Estabelecimento:'} {editingSalon.name}</span>
+                <span>Editar Estabelecimento: {editingSalon.name}</span>
               </h3>
-              <p className="text-[11px] text-slate-600 mt-0.5">{t('txt_altere_as_informa_es_exibidas') || 'Altere as informações exibidas da loja comercial no ecossistema.'}</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">Altere as informações exibidas da loja comercial no ecossistema.</p>
             </div>
 
             <form onSubmit={handleSaveEditSalon} className="space-y-4 text-xs font-semibold max-h-[70vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_nome_do_sal_o') || 'Nome do Salão'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Nome do Salão</label>
                   <input 
                     type="text" 
                     value={editSalonName}
@@ -3264,25 +3236,25 @@ $$;`}
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_categoria_principal') || 'Categoria Principal'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Categoria Principal</label>
                   <select aria-label="Selecione uma opção" 
                     value={editSalonCategory}
                     onChange={e => setEditSalonCategory(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 cursor-pointer"
                   >
-                    <option value="Cabelo">{t('txt_cabelo_cabeleireiro_barbearia') || 'Cabelo (Cabeleireiro, Barbearia)'}</option>
-                    <option value="Unhas">{t('txt_unhas_manicure_pedicure') || 'Unhas (Manicure, Pedicure)'}</option>
-                    <option value="Sobrancelhas">{t('txt_sobrancelhas_design_threading') || 'Sobrancelhas (Design, Threading)'}</option>
-                    <option value="Estética">{t('txt_est_tica_facial_corporal') || 'Estética (Facial, Corporal)'}</option>
-                    <option value="Massagem">{t('txt_massagem_relaxamento_terap_uti') || 'Massagem (Relaxamento, Terapêutica)'}</option>
-                    <option value="Maquilhagem">{t('txt_maquilhagem_104') || 'Maquilhagem'}</option>
+                    <option value="Cabelo">Cabelo (Cabeleireiro, Barbearia)</option>
+                    <option value="Unhas">Unhas (Manicure, Pedicure)</option>
+                    <option value="Sobrancelhas">Sobrancelhas (Design, Threading)</option>
+                    <option value="Estética">Estética (Facial, Corporal)</option>
+                    <option value="Massagem">Massagem (Relaxamento, Terapêutica)</option>
+                    <option value="Maquilhagem">Maquilhagem</option>
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_contacto_telef_nico') || 'Contacto Telefónico'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Contacto Telefónico</label>
                   <input 
                     type="text" 
                     value={editSalonPhone}
@@ -3293,13 +3265,13 @@ $$;`}
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_concelho_distrito') || 'Concelho / Distrito'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Concelho / Distrito</label>
                   <input 
                     type="text" 
                     value={editSalonDistrict}
                     onChange={e => setEditSalonDistrict(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-655"
-                    placeholder={t('txt_ex_lisboa_porto_braga') || 'Ex: Lisboa, Porto, Braga...'}
+                    placeholder="Ex: Lisboa, Porto, Braga..."
                     required
                   />
                 </div>
@@ -3307,7 +3279,7 @@ $$;`}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_cidade_localidade') || 'Cidade / Localidade'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Cidade / Localidade</label>
                   <input 
                     type="text" 
                     value={editSalonCity}
@@ -3318,7 +3290,7 @@ $$;`}
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_endere_o_f_sico') || 'Endereço Físico'}</label>
+                  <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Endereço Físico</label>
                   <input 
                     type="text" 
                     value={editSalonAddress}
@@ -3330,12 +3302,12 @@ $$;`}
               </div>
 
               <div>
-                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">{t('txt_breve_descri_o_institucional') || 'Breve Descrição Institucional'}</label>
+                <label className="block text-slate-600 mb-1.5 uppercase font-mono tracking-wide text-[10px]">Breve Descrição Institucional</label>
                 <textarea 
                   value={editSalonDescription}
                   onChange={e => setEditSalonDescription(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-purple-650 h-24 resize-none font-sans"
-                  placeholder={t('txt_introduzir_slogan_ou_breve_tex') || 'Introduzir slogan ou breve texto explicativo...'}
+                  placeholder="Introduzir slogan ou breve texto explicativo..."
                 />
               </div>
 
@@ -3344,14 +3316,15 @@ $$;`}
                   type="submit" 
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
-                  
-                                                    {t('txt_salvar_loja') || 'Salvar Loja'}
-                                                  </button>
+                  Salvar Loja
+                </button>
                 <button 
                   type="button" 
                   onClick={() => setEditingSalon(null)}
                   className="flex-1 bg-slate-50 text-slate-450 hover:text-slate-900 py-3 border border-slate-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >{t('cancel') || 'Cancelar'}</button>
+                >
+                  Cancelar
+                </button>
               </div>
             </form>
           </div>
@@ -3377,37 +3350,34 @@ $$;`}
               <div className="w-12 h-12 bg-rose-950/50 rounded-full flex items-center justify-center text-rose-500 mx-auto border border-rose-500/20">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-black text-rose-500 uppercase tracking-wider">{t('txt_confirma_o_de_seguran_a') || 'Confirmação de Segurança'}</h3>
+              <h3 className="text-lg font-black text-rose-500 uppercase tracking-wider">Confirmação de Segurança</h3>
               <p className="text-xs text-slate-600">
-                
-                                              {t('txt_est_prestes_a_eliminar_definit') || 'Está prestes a eliminar DEFINITIVAMENTE a conta do parceiro'} <strong className="text-slate-900">{deleteAccountTarget.name}</strong>.
+                Está prestes a eliminar DEFINITIVAMENTE a conta do parceiro <strong className="text-slate-900">{deleteAccountTarget.name}</strong>.
               </p>
               <div className="p-3 bg-rose-950/20 border border-rose-900/30 rounded-xl text-left">
                 <p className="text-[10px] text-rose-300 font-bold leading-relaxed">
-                  
-                                                    {t('txt_aviso_master_esta_opera_o_exe') || '⚠️ AVISO MASTER: Esta operação executa uma limpeza em cascata integral e irreversível de:'}
-                                                  </p>
+                  ⚠️ AVISO MASTER: Esta operação executa uma limpeza em cascata integral e irreversível de:
+                </p>
                 <ul className="list-disc pl-4 text-[10px] text-slate-600 font-semibold mt-1.5 space-y-1">
-                  <li>{t('txt_todas_as_marca_es_e_hist_ricos') || 'Todas as marcações e históricos (bookings, payments)'}</li>
-                  <li>{t('txt_dados_operacionais_services_st') || 'Dados operacionais (services, staff, business hours, locations)'}</li>
-                  <li>{t('txt_recursos_de_fidelidade_e_marke') || 'Recursos de fidelidade e marketing (loyalty, campaigns)'}</li>
-                  <li>{t('txt_o_registo_de_subscri_o_e_liga') || 'O registo de subscrição e ligações de sincronismo Stripe'}</li>
-                  <li>{t('txt_o_utilizador_associado_de_form') || 'O utilizador associado de forma permanente no ecossistema'}</li>
+                  <li>Todas as marcações e históricos (bookings, payments)</li>
+                  <li>Dados operacionais (services, staff, business hours, locations)</li>
+                  <li>Recursos de fidelidade e marketing (loyalty, campaigns)</li>
+                  <li>O registo de subscrição e ligações de sincronismo Stripe</li>
+                  <li>O utilizador associado de forma permanente no ecossistema</li>
                 </ul>
               </div>
             </div>
 
             <div className="space-y-3.5 pt-2">
               <p className="text-[10px] text-slate-600 text-center font-bold">
-                
-                                              {t('txt_para_prosseguir_com_o_apagamen') || 'Para prosseguir com o apagamento definitivo, escreva'} <span className="text-rose-400 select-all font-mono">{t('txt_eliminar_105') || 'ELIMINAR'}</span>  {t('txt_abaixo') || 'abaixo:'}
-                                            </p>
+                Para prosseguir com o apagamento definitivo, escreva <span className="text-rose-400 select-all font-mono">ELIMINAR</span> abaixo:
+              </p>
 
               <input
                 type="text"
                 value={deleteAccountDoubleConfirmText}
                 onChange={(e) => setDeleteAccountDoubleConfirmText(e.target.value)}
-                placeholder={t('txt_escreva_eliminar_para_prossegu') || 'Escreva ELIMINAR para prosseguir'}
+                placeholder="Escreva ELIMINAR para prosseguir"
                 className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-900 outline-none focus:border-rose-600 text-center font-mono placeholder-slate-650"
               />
 
@@ -3418,9 +3388,8 @@ $$;`}
                   onClick={() => executeCompleteCascadeAccountDeletion(deleteAccountTarget.ownerId, deleteAccountTarget.businessId)}
                   className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-20 disabled:hover:bg-rose-600 text-slate-900 font-black py-3 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
                 >
-                  
-                                                    {t('txt_confirmar_elimina_o') || 'Confirmar Eliminação'}
-                                                  </button>
+                  Confirmar Eliminação
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -3429,7 +3398,9 @@ $$;`}
                     setDeleteAccountDoubleConfirmText('');
                   }}
                   className="flex-1 bg-slate-50 text-slate-600 hover:text-slate-900 py-3 border border-slate-850 rounded-xl transition-all cursor-pointer uppercase tracking-wider text-[10px]"
-                >{t('cancel') || 'Cancelar'}</button>
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
           </div>
