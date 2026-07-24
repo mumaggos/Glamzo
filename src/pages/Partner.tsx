@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -9,6 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function Partner() {
+  const { t } = useTranslation();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,7 +44,7 @@ export default function Partner() {
     }
   }, [user, profile, navigate]);
 
-  const faqs = [
+  const faqs = (t('partnerPage.faqs', { returnObjects: true }) as Array<{q: string, a: string}>) || [
     {
       q: "Como funcionam os 14 dias grátis?",
       a: "Pode testar a plataforma Glamzo sem qualquer compromisso durante 14 dias. Não lhe será cobrado nenhum valor durante este período. Se decidir que não é para si, basta cancelar com um clique antes do fim do período."
@@ -81,7 +83,7 @@ export default function Partner() {
           </h1>
           
           <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed mb-10">
-            A Glamzo é o ecossistema de elite focado a 100% no crescimento de Salões, Barbearias e SPAs. Agenda inteligente, pagamentos integrados e marketing automático.
+            A Glamzo é o ecossistema de elite focado a 100% no crescimento de Salões, Barbearias e SPAs. {t('partnerPage.planProFeat1')} inteligente, pagamentos integrados e marketing automático.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
@@ -139,11 +141,11 @@ export default function Partner() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             
-            {/* Bento 1: Agenda (Ocupa 2 colunas) */}
+            {/* Bento 1: {t('partnerPage.planProFeat1')} (Ocupa 2 colunas) */}
             <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-200/60 shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
               <div className="absolute top-0 right-0 p-8 opacity-5 transition-opacity group-hover:opacity-10"><Calendar className="w-32 h-32" /></div>
               <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 relative z-10"><Calendar className="w-6 h-6" /></div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">Agenda Inteligente</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.planProFeat1')} Inteligente</h3>
               <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-md">Controle horários, folgas e disponibilidades de cada profissional. O sistema previne cruzamentos, organiza as pausas e envia lembretes automáticos por si.</p>
             </div>
 
@@ -165,8 +167,8 @@ export default function Partner() {
             <div className="md:col-span-2 bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative text-white">
               <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-purple-500/20 blur-3xl rounded-full" />
               <div className="w-12 h-12 rounded-2xl bg-white/10 text-purple-400 flex items-center justify-center mb-6 relative z-10"><BarChart3 className="w-6 h-6" /></div>
-              <h3 className="text-xl font-black mb-2 relative z-10">Análise Financeira & Performance</h3>
-              <p className="text-sm text-slate-400 leading-relaxed relative z-10 max-w-md">Saiba exatamente quanto faturou por dia, qual o seu lucro líquido e qual o profissional que gera mais receita. Exporte faturas num clique.</p>
+              <h3 className="text-xl font-black mb-2 relative z-10">{t('partnerPage.feat4Title')}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed relative z-10 max-w-md">{t('partnerPage.feat4Desc')}</p>
             </div>
 
           </div>
@@ -178,15 +180,15 @@ export default function Partner() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">Invista no crescimento.</h2>
-            <p className="text-slate-500 text-sm">Sem taxas surpresa. Cancele quando quiser. Escolha o plano perfeito.</p>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">{t('partnerPage.pricingTitle')}</h2>
+            <p className="text-slate-500 text-sm">{t('partnerPage.pricingSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
             
             {/* Plano PRO (Base) */}
             <div className="bg-[#F8F9FC] border border-slate-200 p-8 sm:p-10 rounded-[2rem] relative transition-all">
-              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">100% Digital</span>
+              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">{t('partnerPage.planProDigital')}</span>
               <h3 className="text-2xl font-black text-slate-900 mt-2">Glamzo PRO</h3>
               
               <div className="mt-6 mb-8 flex items-end gap-2">
@@ -194,20 +196,20 @@ export default function Partner() {
                 <span className="text-sm text-slate-500 font-bold mb-1">/mês</span>
               </div>
               
-              <p className="text-sm text-slate-600 font-medium mb-8 h-10">O ecossistema essencial para lotar a sua agenda e gerir o seu espaço.</p>
+              <p className="text-sm text-slate-600 font-medium mb-8 h-10">{t('partnerPage.planProDesc')}</p>
 
               <ul className="space-y-4 text-sm text-slate-700 font-semibold mb-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Agenda</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Página Web SEO</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> Pagamentos Online e Tap-to-Pay no Telemóvel</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> <strong>Zero taxas por funcionário (Staff Ilimitado)</strong></li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat1')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat2')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat3')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> <strong>{t('partnerPage.planProFeat4')}</strong></li>
                 
               </ul>
 
               <Link to="/partner/signup" className="block w-full text-center bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-800 font-black py-4 rounded-2xl transition-all text-sm shadow-sm">
-                Teste 14 Dias Grátis
+                {t('partnerPage.planProBtn')}
               </Link>
-              <p className="mt-4 text-[10px] text-slate-500 text-center leading-tight">(Taxa transparente de processamento: 2% + 0.75€ por transação paga via cartão. Zero comissões de marketplace).</p>
+              <p className="mt-4 text-[10px] text-slate-500 text-center leading-tight">{t('partnerPage.planProDisclaimer')}</p>
             </div>
 
             {/* Plano TERMINAL (Destaque) */}
@@ -215,8 +217,8 @@ export default function Partner() {
               <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-bl-2xl shadow-lg">Mais Popular</div>
               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full group-hover:bg-purple-600/30 transition-all duration-500" />
               
-              <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> Opcional - Equipamento</span>
-              <h3 className="text-2xl font-black text-white mt-2">Terminal Físico Glamzo</h3>
+              <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> {t('partnerPage.planTermBadge')}</span>
+              <h3 className="text-2xl font-black text-white mt-2">{t('partnerPage.planTermTitle')}</h3>
               
               <div className="mt-6 mb-8 flex flex-col">
                 <div className="flex items-end gap-2">
@@ -226,21 +228,21 @@ export default function Partner() {
                 <div className="mt-3 flex flex-col gap-2">
                   
                   <span className="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg w-max">
-                    Portes e Impostos Incluídos
+                    {t('partnerPage.planTermShipping')}
                   </span>
                 </div>
               </div>
               
-              <p className="text-sm text-slate-300 font-medium mb-8 h-10">Esqueça os alugueres mensais. Compre a sua máquina e ela é sua para sempre.</p>
+              <p className="text-sm text-slate-300 font-medium mb-8 h-10">{t('partnerPage.planTermDesc')}</p>
 
               <ul className="space-y-4 text-sm text-white font-semibold mb-10 relative z-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Zero Mensalidades ou Fidelização</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Pagamentos Contactless e Chip</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Sincronização direta com a Agenda</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat1')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat2')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Sincronização direta com a {t('partnerPage.planProFeat1')}</li>
               </ul>
 
               <Link to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
-                Adicionar Terminal (Opcional)
+                {t('partnerPage.planTermBtn')}
               </Link>
             </div>
 
@@ -252,7 +254,7 @@ export default function Partner() {
       <section className="py-24 bg-[#F8F9FC]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black tracking-tight text-slate-900">Perguntas Frequentes</h2>
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">{t('partnerPage.faqTitle')}</h2>
           </div>
           
           <div className="space-y-4">
@@ -277,13 +279,13 @@ export default function Partner() {
       {/* 6. CTA Final Bar */}
       <section className="bg-slate-900 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-white mb-6">Pronto para transformar o seu espaço?</h2>
+          <h2 className="text-3xl font-black text-white mb-6">{t('partnerPage.ctaTitle')}</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/partner/signup" className="bg-white hover:bg-slate-100 text-slate-900 font-black py-4 px-8 rounded-2xl text-sm transition-colors shadow-xl">
-              Registar Agora
+              {t('partnerPage.ctaRegister')}
             </Link>
             <Link to="/partner/login" className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold py-4 px-8 rounded-2xl text-sm transition-colors">
-              Já tenho conta
+              {t('partnerPage.ctaLogin')}
             </Link>
           </div>
         </div>
