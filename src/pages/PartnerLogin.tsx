@@ -124,10 +124,10 @@ export default function PartnerLogin() {
           <Landmark className="w-6 h-6" />
         </div>
         <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
-          Parceiros Glamzo<span className="text-purple-600 font-black">.</span>
+          {t('partnerLoginContent.title')}<span className="text-purple-600 font-black">.</span>
         </h2>
         <p className="mt-2 text-xs text-slate-500 font-medium">
-          Aceda ao seu terminal de gestão de reservas, agenda comercial, faturamento e visibilidade profissional.
+          {t('partnerLoginContent.subtitle')}
         </p>
       </div>
 
@@ -150,7 +150,7 @@ export default function PartnerLogin() {
             
             <div>
               <label htmlFor="partner-email" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                E-mail Profissional
+                {t('partnerLoginContent.emailLabel')}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
@@ -171,7 +171,7 @@ export default function PartnerLogin() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="partner-password" className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Palavra-passe
+                  {t('partnerLoginContent.passwordLabel')}
                 </label>
                 <button
                   type="button"
@@ -179,7 +179,7 @@ export default function PartnerLogin() {
                   className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer disabled:opacity-55"
                   disabled={isResetting}
                 >
-                  Esqueceu-se da senha?
+                  {t('partnerLoginContent.forgotPassword')}
                 </button>
               </div>
               <div className="relative rounded-xl shadow-sm">

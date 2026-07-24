@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -8,6 +9,7 @@ import {
 } from 'lucide-react';
 
 export default function PartnerSignup() {
+  const { t } = useTranslation();
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -199,7 +201,7 @@ export default function PartnerSignup() {
 
         <div className="relative z-10 text-xs text-slate-400 border-t border-slate-800/60 pt-6 flex justify-between items-center">
           <span>&copy; {new Date().getFullYear()} Glamzo Technologies</span>
-          <span>Suporte Técnico 24/7</span>
+          <span>{t('partnerSignupContent.supportInfo')}</span>
         </div>
       </div>
 
@@ -209,10 +211,10 @@ export default function PartnerSignup() {
           
           <div className="space-y-3">
             <h2 className="text-3xl font-extrabold text-[#110724] tracking-tight font-display uppercase">
-              Acesso de Parceiro<span className="text-purple-600 font-black">.</span>
+              {t('partnerSignupContent.title')}<span className="text-purple-600 font-black">.</span>
             </h2>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Introduza o seu e-mail comercial. Enviaremos um código seguro de acesso imediato sem necessidade de passwords complexas.
+              {t('partnerSignupContent.subtitle')}
             </p>
           </div>
 
@@ -230,7 +232,7 @@ export default function PartnerSignup() {
 
           {user ? (
             <div className="space-y-6 text-center py-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-              <p className="text-sm font-bold text-slate-900">Sessão Ativa Detetada!</p>
+              <p className="text-sm font-bold text-slate-900">{t('partnerSignupContent.activeSessionTitle')}!</p>
               <p className="text-xs text-slate-600">
                 Está atualmente ligado como <span className="font-semibold text-purple-600">{profile?.full_name || user.email}</span>.
               </p>
@@ -240,7 +242,7 @@ export default function PartnerSignup() {
                   onClick={() => navigate('/partner/setup' + (refCode ? '?ref=' + refCode : ''))}
                   className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm text-xs uppercase tracking-wider cursor-pointer"
                 >
-                  <span>Continuar Configuração</span>
+                  <span>{t('partnerSignupContent.continueSetup')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
@@ -250,7 +252,7 @@ export default function PartnerSignup() {
                   }}
                   className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800"
                 >
-                  Utilizar Outra Conta (Sair)
+                  {t('partnerSignupContent.useAnotherAccount')}
                 </button>
               </div>
             </div>
@@ -260,7 +262,7 @@ export default function PartnerSignup() {
                 <form onSubmit={handleSendOTP} className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                      E-mail Comercial
+                      {t('partnerSignupContent.emailLabel')}
                     </label>
                     <div className="relative rounded-xl shadow-sm">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -272,7 +274,7 @@ export default function PartnerSignup() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800 placeholder:text-slate-400"
-                        placeholder="geral@oseunegocio.com"
+                        placeholder={t('partnerSignupContent.emailPlaceholder')}
                       />
                     </div>
                   </div>
@@ -285,24 +287,24 @@ export default function PartnerSignup() {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>A enviar código...</span>
+                        <span>{t('partnerSignupContent.sendCodeLoading')}</span>
                       </>
                     ) : (
                       <>
-                        <span>Receber Código de Acesso</span>
+                        <span>{t('partnerSignupContent.sendCodeBtn')}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
 
                   <div className="text-[11px] text-slate-400 text-center leading-relaxed">
-                    Ao continuar, concorda com os nossos{' '}
+                    {t('partnerSignupContent.termsAgreed1')}{' '}
                     <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:underline">
-                      Termos de Serviço
+                      {t('partnerSignupContent.termsOfService')}
                     </Link>{' '}
-                    e{' '}
+                    {t('partnerSignupContent.termsAgreed2')}{' '}
                     <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:underline">
-                      Política de Privacidade
+                      {t('partnerSignupContent.privacyPolicy')}
                     </Link>
                     .
                   </div>
@@ -312,13 +314,13 @@ export default function PartnerSignup() {
                   <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-100 text-xs text-purple-800 leading-relaxed flex items-start gap-2.5">
                     <Mail className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
                     <div>
-                      Enviámos um código de acesso seguro para o e-mail <span className="font-bold text-purple-900">{email}</span>. Verifique também a pasta de <strong>Spam / Lixo Comercial</strong>.
+                      {t('partnerSignupContent.codeSent1')} <span className="font-bold text-purple-900">{email}</span>{t('partnerSignupContent.codeSent2')} <strong>{t('partnerSignupContent.spamFolder')}</strong>.
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
-                      Código de 6 Dígitos
+                      {t('partnerSignupContent.codeLabel')}
                     </label>
                     <input
                       type="text"
@@ -326,14 +328,14 @@ export default function PartnerSignup() {
                       value={enteredCode}
                       onChange={(e) => setEnteredCode(e.target.value)}
                       className="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800"
-                      placeholder="000000"
+                      placeholder={t('partnerSignupContent.codePlaceholder')}
                       maxLength={6}
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
-                      Definir Palavra-passe
+                      {t('partnerSignupContent.passwordLabel')}
                     </label>
                     <div className="relative rounded-xl shadow-sm">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -345,7 +347,7 @@ export default function PartnerSignup() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="block w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-650 transition-all text-slate-800"
-                        placeholder="Mínimo de 6 caracteres"
+                        placeholder={t('partnerSignupContent.passwordPlaceholder')}
                         minLength={6}
                       />
                     </div>
@@ -360,11 +362,11 @@ export default function PartnerSignup() {
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>A verificar código...</span>
+                          <span>{t('partnerSignupContent.verifyLoading')}</span>
                         </>
                       ) : (
                         <>
-                          <span>Confirmar e Aceder</span>
+                          <span>{t('partnerSignupContent.verifyBtn')}</span>
                           <Check className="w-4 h-4" />
                         </>
                       )}
@@ -380,7 +382,7 @@ export default function PartnerSignup() {
                         className="inline-flex items-center gap-1 font-bold text-slate-500 hover:text-slate-800"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Alterar E-mail</span>
+                        <span>{t('partnerSignupContent.changeEmail')}</span>
                       </button>
 
                       <button
@@ -388,7 +390,7 @@ export default function PartnerSignup() {
                         onClick={handleSendOTP}
                         className="font-bold text-purple-600 hover:text-purple-700 hover:underline"
                       >
-                        Reenviar Código
+                        {t('partnerSignupContent.resendCode')}
                       </button>
                     </div>
                   </div>
@@ -398,9 +400,9 @@ export default function PartnerSignup() {
           )}
 
           <p className="text-center text-xs text-slate-500 border-t border-slate-100 pt-6">
-            Deseja aceder como cliente?{' '}
+            {t('partnerSignupContent.clientLoginPrompt')}{' '}
             <Link to="/login" className="font-bold text-purple-600 hover:text-purple-700">
-              Ir para Login Geral
+              {t('partnerSignupContent.clientLoginLink')}
             </Link>
           </p>
 
