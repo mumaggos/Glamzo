@@ -27,7 +27,7 @@ interface UniversalInboxProps {
 }
 
 export default function UniversalInbox({ myId, myType }: UniversalInboxProps) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);

@@ -3,8 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 export default function PaymentSuccess() {
+    const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const businessIdParam = searchParams.get("biz_id");

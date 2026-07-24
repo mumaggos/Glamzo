@@ -15,7 +15,7 @@ interface PartnerContextType {
 }
 
 export default function StaffTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { business, staff, bookings, loadLayoutData } = useOutletContext<PartnerContextType>();
   const [metricsStaff, setMetricsStaff] = useState<Staff | null>(null);
   const [metricsFilter, setMetricsFilter] = useState<"day" | "week" | "month" | "year">("day");

@@ -6,8 +6,10 @@ import {
   Building2, ArrowRight, ArrowLeft, Check, Sparkles, 
   Mail, Loader2, KeyRound, Star, Calendar, ShieldCheck
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 export default function PartnerSignup() {
+    const { t } = useTranslation();
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

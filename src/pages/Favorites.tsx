@@ -6,7 +6,7 @@ import { Heart, Search, MapPin, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Favorites() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user, authLoading } = useAuth();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<any[]>([]);

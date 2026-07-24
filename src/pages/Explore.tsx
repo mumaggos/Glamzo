@@ -114,8 +114,8 @@ function calculateImmediateSlots(shopId: string, hoursData: any[], bookingsData:
 }
 
 export default function Explore() {
+    const { t } = useTranslation();
   const { user } = useAuth();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewModeMobile, setViewModeMobile] = useState<"list" | "map">("list");

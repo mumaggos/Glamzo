@@ -4,6 +4,7 @@ import { Calendar, Clock, Scissors, User } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 const ReservationRow = React.memo(({ booking }: { booking: any }) => {
+    const { t } = useTranslation();
   return (
     <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
@@ -60,6 +61,7 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
 });
 
 const ReservationsTab = React.memo(function ReservationsTab() {
+    const { t } = useTranslation();
   const { bookings } = useOutletContext<any>();
   const [filter, setFilter] = useState("hoje");
   const [customStartDate, setCustomStartDate] = useState(() => {

@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 export function DashboardCalendar({ business, bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
     const { t } = useTranslation();
-  
   const columns = useMemo(() => {
     const baseDate = selectedAgendaDate ? new Date(selectedAgendaDate) : new Date();
     

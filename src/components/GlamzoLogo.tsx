@@ -18,6 +18,7 @@ export default function GlamzoLogo({
   glow = true,
   forceDark = false
 }: GlamzoLogoProps) {
+    const { t } = useTranslation();
   
   const customStyles = (
     <style dangerouslySetInnerHTML={{ __html: `

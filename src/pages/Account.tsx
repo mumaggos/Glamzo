@@ -17,7 +17,7 @@ import { User, KeyRound, MessageSquare, ShieldAlert, Search, Scissors, Mail, Cal
 import { toggleFavorite } from '../utils/marketingHelper';
 
 export default function Account() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user, profile, updateProfile, refreshProfile, loading: authLoading } = useAuth();
 
   const [walletBalance, setWalletBalance] = useState<number | null>(null);

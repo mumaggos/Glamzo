@@ -29,7 +29,6 @@ export function DashboardOverview({
   setActiveTab
 }: DashboardOverviewProps) {
     const { t } = useTranslation();
-
   // Simple stats calculation for today
   
   

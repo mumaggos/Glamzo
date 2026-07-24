@@ -26,7 +26,7 @@ const defaultDraft = {
 };
 
 export default function Onboarding() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 

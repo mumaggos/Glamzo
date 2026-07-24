@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import DynamicLegalPage from '../../components/DynamicLegalPage';
 
 export default function Cookies() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   return (
     <DynamicLegalPage 
       slug="politica-de-cookies"

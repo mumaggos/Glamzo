@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { realtimeService } from './realtimeService';
+import { useTranslation } from "react-i18next";
 
 export interface AdminCoupon {
   id: string;

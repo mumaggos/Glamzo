@@ -4,10 +4,9 @@ import { useGlobalStore } from '../store/useGlobalStore';
 import { useTranslation } from 'react-i18next';
 
 export default function DeveloperPanel() {
+    const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const { language, currency, setLanguage, setCurrency, setUserLocation } = useGlobalStore();
-  const { t } = useTranslation();
-
   if (!isOpen) {
     return (
       <button

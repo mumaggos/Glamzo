@@ -22,7 +22,7 @@ interface BookingModalProps {
 const BookingModal = React.memo(function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState('');

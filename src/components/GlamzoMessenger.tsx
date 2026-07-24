@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 
 export default function GlamzoMessenger() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isStoreOnline, setIsStoreOnline] = useState(false);

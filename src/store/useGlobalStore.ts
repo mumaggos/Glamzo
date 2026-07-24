@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useTranslation } from "react-i18next";
 
 interface GlobalState {
   language: 'pt' | 'en' | 'es' | 'fr' | 'de';

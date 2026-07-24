@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function GlamzoClubModal({ isOpen, onClose, user, profile, currentPoints: propCurrentPoints, currentBalance: propCurrentBalance, onPointsUpdate }: Props) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'pontos' | 'trocar' | 'afiliados' | 'levantamentos'>('pontos');
   
   // Data States

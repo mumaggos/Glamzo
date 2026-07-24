@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './i18n';
 import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
+import { useTranslation } from "react-i18next";
 
 // Highly optimized Safari / iOS WebKit identification for hardware-safe styling overrides
 try {

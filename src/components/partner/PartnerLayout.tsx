@@ -36,7 +36,7 @@ const playNotificationSound = () => {
 };
 
 export default function PartnerLayout() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user, profile, signOut, loading: authLoading } = useAuth();
 
   useEffect(() => {

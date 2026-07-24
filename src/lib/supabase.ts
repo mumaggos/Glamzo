@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { useTranslation } from "react-i18next";
 
 const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || 'https://fkpywjkatsxkgrmboald.supabase.co/';
 let envAnon = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;

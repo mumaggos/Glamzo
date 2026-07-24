@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
 export default function Footer() {
+    const { t } = useTranslation();
   const location = useLocation();
-  const { t } = useTranslation();
   const isDashboardOrAdmin = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff') || location.pathname.startsWith('/partner/dashboard') || location.pathname.startsWith('/chamadas');
   
   if (isDashboardOrAdmin) return null;

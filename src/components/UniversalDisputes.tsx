@@ -22,7 +22,7 @@ interface UniversalDisputesProps {
 }
 
 export default function UniversalDisputes({ myId, myType }: UniversalDisputesProps) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);

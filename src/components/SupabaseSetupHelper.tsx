@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Database, Copy, Check, Terminal, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 export default function SupabaseSetupHelper() {
+    const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const sqlCode = `-- 1. Create profiles table linked to Supabase Auth

@@ -1,6 +1,8 @@
 import { useGlobalStore } from '../store/useGlobalStore';
+import { useTranslation } from "react-i18next";
 
 export const useFormatPrice = () => {
+    const { t } = useTranslation();
   const defaultCurrency = useGlobalStore((state) => state.currency);
 
   return (amount: number, specificCurrency?: string): string => {

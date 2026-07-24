@@ -11,6 +11,7 @@ interface PartnerContextType {
 }
 
 export default function MessagesTab() {
+    const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [activeTab, setActiveTab] = useState<'mensagens' | 'disputas'>('mensagens');
   const [unreadMessages, setUnreadMessages] = useState(0);

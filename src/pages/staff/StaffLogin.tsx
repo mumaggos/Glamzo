@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabase";
 import { Scissors, Share, PlusSquare, Download } from "lucide-react";
 
 export default function StaffLogin() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

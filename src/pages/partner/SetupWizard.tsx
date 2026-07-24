@@ -15,6 +15,7 @@ const API_KEY =
   "";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
+    const { t } = useTranslation();
   const map = useMap();
   useEffect(() => {
     if (map && coordinates) {
@@ -75,7 +76,7 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
 };
 
 export default function SetupWizard() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

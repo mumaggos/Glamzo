@@ -5,8 +5,8 @@ import { User, LogOut, Briefcase, Search, Heart, Home as HomeIcon } from 'lucide
 import GlamzoLogo from './GlamzoLogo';
 
 export default function Navbar() {
+    const { t } = useTranslation();
   const { user, profile, signOut } = useAuth();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 

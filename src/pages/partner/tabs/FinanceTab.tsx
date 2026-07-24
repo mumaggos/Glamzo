@@ -12,7 +12,7 @@ interface PartnerContextType {
 
 
 const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSelectedInvoice: any }> = ({ staffMember, staffLedgers, setSelectedInvoice }) => {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
   
@@ -77,7 +77,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
 }
 
 export default function FinanceTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { business, staff } = useOutletContext<PartnerContextType>();
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);

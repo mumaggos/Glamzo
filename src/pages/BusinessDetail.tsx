@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export default function BusinessDetail() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const [searchParams] = useSearchParams();
 const { slug } = useParams<{ slug: string }>();

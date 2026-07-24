@@ -43,7 +43,7 @@ const PAGE_FALLBACKS: Record<string, string> = {
 };
 
 export default function Admin() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 

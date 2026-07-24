@@ -8,7 +8,7 @@ import { optimizeImageBeforeUpload } from "../../utils/imageOptimizer";
 import { Staff, Booking, Service } from "../../types";
 
 export default function StaffDashboard() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const [staff, setStaff] = useState<Staff | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);

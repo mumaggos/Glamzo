@@ -17,7 +17,7 @@ interface PartnerContextType {
 }
 
 export default function ServicesTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { business, categories, services, loadLayoutData, isLoadingData } = useOutletContext<PartnerContextType>();
   const formatPrice = useFormatPrice();
 

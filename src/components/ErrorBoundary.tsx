@@ -1,4 +1,3 @@
-
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { useTranslation } from 'react-i18next';
 
@@ -25,7 +24,7 @@ class ErrorBoundaryInner extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      return (this as any).props.fallback || <div className="p-4 bg-rose-50 text-rose-600 rounded-xl">{(this as any).props.t('error_occurred') || 'Ocorreu um erro ao carregar este componente.'}</div>;
+      return (this as any).props.fallback || <div className="p-4 bg-rose-50 text-rose-600 rounded-xl">{(this as any).props.t ? (this as any).props.t('error_occurred') : 'Ocorreu um erro ao carregar este componente.'}</div>;
     }
     return (this as any).props.children;
   }

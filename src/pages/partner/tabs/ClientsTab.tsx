@@ -11,6 +11,7 @@ interface PartnerContextType {
 }
 
 const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenProfile: (c: any) => void }) => {
+    const { t } = useTranslation();
   return (
     <tr className="hover:bg-slate-50/50 transition-colors">
       <td className="py-4 px-6 flex items-center gap-3">
@@ -44,6 +45,7 @@ const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenPr
 });
 
 const ClientsTab = React.memo(function ClientsTab() {
+    const { t } = useTranslation();
   const { bookings } = useOutletContext<PartnerContextType>();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<any | null>(null);

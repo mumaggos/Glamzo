@@ -10,7 +10,7 @@ interface PartnerContextType {
 }
 
 export default function HoursTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [hours, setHours] = useState<BusinessHours[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);

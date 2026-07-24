@@ -69,6 +69,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
+import { useTranslation } from "react-i18next";
 
 // IMPORTAÇÕES DIRETAS
 
@@ -130,6 +131,7 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 // CORREÇÃO AQUI: O Guarda agora respeita o Redirecionamento da Loja!
 function SessionGuard() {
+    const { t } = useTranslation();
   const { user, profile, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -194,6 +196,7 @@ function NotFoundScreen() {
 
 
 function GlobalRoleEnforcer() {
+    const { t } = useTranslation();
   const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -238,6 +241,7 @@ function GlobalRoleEnforcer() {
 }
 
 export default function App() {
+    const { t } = useTranslation();
   const [loadMessenger, setLoadMessenger] = React.useState(false);
   const { setUserLocation, language } = useGlobalStore();
 

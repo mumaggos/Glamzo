@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { useTranslation } from "react-i18next";
 
 /**
  * Generates a clean web-safe slug for business URLs without appending random salt.

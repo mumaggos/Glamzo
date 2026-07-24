@@ -73,7 +73,9 @@ const footerStyles = {
 };
 
 // 1. Verificação de Email
-export const VerificationCodeEmail = ({ userName, code }: { userName: string, code: string }) => (
+export const VerificationCodeEmail = ({ userName, code }: { userName: string, code: string }) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_o_teu_c_digo_de_verifica_o_gla') || 'O teu código de verificação Glamzo'}</Preview>
@@ -100,8 +102,11 @@ export const VerificationCodeEmail = ({ userName, code }: { userName: string, co
     </Body>
   </Html>
 );
+};
 
-export const VerificationEmail = ({ userName, confirmationLink }: { userName: string, confirmationLink: string }) => (
+export const VerificationEmail = ({ userName, confirmationLink }: { userName: string, confirmationLink: string }) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_confirma_o_teu_email_na_glamzo') || 'Confirma o teu email na Glamzo'}</Preview>
@@ -124,9 +129,12 @@ export const VerificationEmail = ({ userName, confirmationLink }: { userName: st
     </Body>
   </Html>
 );
+};
 
 // 2. Recuperação de Palavra-passe
-export const PasswordResetEmail = ({ resetLink }: { resetLink: string }) => (
+export const PasswordResetEmail = ({ resetLink }: { resetLink: string }) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_recupera_o_de_palavra_passe_gl') || 'Recuperação de Palavra-passe - Glamzo'}</Preview>
@@ -149,9 +157,12 @@ export const PasswordResetEmail = ({ resetLink }: { resetLink: string }) => (
     </Body>
   </Html>
 );
+};
 
 // 3. Marcação Confirmada
-export const BookingConfirmationEmail = ({ shopName, serviceName, professionalName, date, time, price, reference }: any) => (
+export const BookingConfirmationEmail = ({ shopName, serviceName, professionalName, date, time, price, reference }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_a_tua_marca_o_est_confirmada') || 'A tua marcação está confirmada!'}</Preview>
@@ -177,9 +188,12 @@ export const BookingConfirmationEmail = ({ shopName, serviceName, professionalNa
     </Body>
   </Html>
 );
+};
 
 // 4. Marcação Cancelada
-export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reason }: any) => (
+export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reason }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_a_tua_marca_o_foi_cancelada') || 'A tua marcação foi cancelada'}</Preview>
@@ -202,9 +216,12 @@ export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reaso
     </Body>
   </Html>
 );
+};
 
 // 5. Nova Marcação Recebida (Parceiro)
-export const NewBookingEmail = ({ customerName, serviceName, date, time, price }: any) => (
+export const NewBookingEmail = ({ customerName, serviceName, date, time, price }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_nova_marca_o_na_glamzo') || 'Nova marcação na Glamzo'}</Preview>
@@ -228,9 +245,12 @@ export const NewBookingEmail = ({ customerName, serviceName, date, time, price }
     </Body>
   </Html>
 );
+};
 
 // 6. Subscrição Glamzo PRO Ativada (Parceiro)
-export const SubscriptionActivatedEmail = ({ planName, activationDate, nextBillingDate, dashboardUrl }: any) => (
+export const SubscriptionActivatedEmail = ({ planName, activationDate, nextBillingDate, dashboardUrl }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_bem_vindo_ao') || 'Bem-vindo ao'} {planName}!</Preview>
@@ -253,9 +273,12 @@ export const SubscriptionActivatedEmail = ({ planName, activationDate, nextBilli
     </Body>
   </Html>
 );
+};
 
 // 7. Fatura da Subscrição (Parceiro)
-export const InvoiceEmail = ({ planName = "Glamzo PRO", amount, date, invoiceNumber, downloadUrl }: any) => (
+export const InvoiceEmail = ({ planName = "Glamzo PRO", amount, date, invoiceNumber, downloadUrl }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_fatura_da_subscri_o_glamzo') || 'Fatura da Subscrição Glamzo:'} {invoiceNumber}</Preview>
@@ -278,9 +301,12 @@ export const InvoiceEmail = ({ planName = "Glamzo PRO", amount, date, invoiceNum
     </Body>
   </Html>
 );
+};
 
 // 8. Falha de Pagamento (Parceiro)
-export const PaymentFailedEmail = ({ planName = "Glamzo PRO", explanation, updatePaymentUrl, suspensionDate }: any) => (
+export const PaymentFailedEmail = ({ planName = "Glamzo PRO", explanation, updatePaymentUrl, suspensionDate }: any) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_aviso_falha_no_pagamento_da_su') || 'Aviso: Falha no pagamento da subscrição'}</Preview>
@@ -305,8 +331,11 @@ export const PaymentFailedEmail = ({ planName = "Glamzo PRO", explanation, updat
     </Body>
   </Html>
 );
+};
 
-export const StaffCredentialsEmail = ({ shopName, email, password, loginUrl }: { shopName: string, email: string, password: string, loginUrl: string }) => (
+export const StaffCredentialsEmail = ({ shopName, email, password, loginUrl }: { shopName: string, email: string, password: string, loginUrl: string }) => {
+  const { t } = useTranslation();
+  return  (
   <Html>
     <Head />
     <Preview>{t('txt_os_teus_dados_de_acesso_ao_gla') || 'Os teus dados de acesso ao Glamzo'}</Preview>
@@ -328,3 +357,4 @@ export const StaffCredentialsEmail = ({ shopName, email, password, loginUrl }: {
     </Body>
   </Html>
 );
+};

@@ -9,7 +9,7 @@ import { Star, MessageSquare, Reply, Loader2, Send } from 'lucide-react';
 import { fetchReviewsForBusiness } from '../../../utils/reviewsHelper';
 
 export default function PartnerReviewsTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const { user } = useAuth();
   const [business, setBusiness] = useState<Business | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);

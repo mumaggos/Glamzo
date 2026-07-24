@@ -4,6 +4,7 @@ import { DashboardOverview } from "../../../components/DashboardOverview";
 import { Business, Booking, Staff, Service, Review } from "../../../types";
 import { fetchReviewsForBusiness } from "../../../utils/reviewsHelper";
 import { Sparkles, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PartnerContextType {
   business: Business | null;
@@ -16,6 +17,7 @@ interface PartnerContextType {
 }
 
 export default function OverviewTab() {
+    const { t } = useTranslation();
   const { business, bookings, services, staff } = useOutletContext<PartnerContextType>();
   const [reviews, setReviews] = React.useState<Review[]>([]);
   React.useEffect(() => {

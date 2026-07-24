@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
+import { useTranslation } from "react-i18next";
 
 export async function resolvePartnerRoute(user: User | null, profileRole: string | null, supabase: any): Promise<string> {
-  
   if (!user) {
     return '/partner/login';
   }

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useFormatPrice } from "../../../utils/formatPrice";
 
 export default function AgendaTab() {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { business, user, services, staff, bookings, businessHours, loadLayoutData } = useOutletContext<any>();
 

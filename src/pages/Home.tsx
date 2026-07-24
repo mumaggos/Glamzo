@@ -67,9 +67,9 @@ const optimizeUnsplashUrl = (url: string | null) => {
 };
 
 export default function Home() {
+    const { t } = useTranslation();
   const navigate = useNavigate();
   const formatPrice = useFormatPrice();
-  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");

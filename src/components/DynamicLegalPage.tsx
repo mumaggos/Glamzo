@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ContentLayout from './ContentLayout';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from "react-i18next";
 
 interface DynamicLegalPageProps {
   slug: string;
@@ -15,6 +16,7 @@ export default function DynamicLegalPage({
   defaultContent, 
   defaultLastUpdated 
 }: DynamicLegalPageProps) {
+    const { t } = useTranslation();
   const [pageData, setPageData] = useState<{ title: string; content: string; updated_at: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
