@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-let content = fs.readFileSync('src/pages/Explore.tsx', 'utf8');
+let content = fs.readFileSync('src/pages/Favorites.tsx', 'utf8');
 
 if (!content.includes('import SeoHead')) {
   content = content.replace("import React,", "import SeoHead from '../components/SeoHead';\nimport React,");
@@ -8,11 +8,10 @@ if (!content.includes('import SeoHead')) {
 
 const returnStart = content.indexOf('return (');
 if (returnStart > -1 && !content.includes('<SeoHead')) {
-  // Let's find the first tag inside return (
   const insertIndex = content.indexOf('>', returnStart) + 1;
-  const seoTag = `\n      <SeoHead title={t('explore.exploreTitle') + " - Glamzo"} description="Encontre os melhores salões e serviços." />`;
+  const seoTag = `\n      <SeoHead title="Favoritos - Glamzo" description="Os teus salões e serviços favoritos na Glamzo." />`;
   content = content.substring(0, insertIndex) + seoTag + content.substring(insertIndex);
 }
 
-fs.writeFileSync('src/pages/Explore.tsx', content);
-console.log('Patched Explore.tsx');
+fs.writeFileSync('src/pages/Favorites.tsx', content);
+console.log('Patched Favorites.tsx');

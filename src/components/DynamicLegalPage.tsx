@@ -1,3 +1,4 @@
+import SeoHead from './SeoHead';
 import React, { useEffect, useState } from 'react';
 import ContentLayout from './ContentLayout';
 import { supabase } from '../lib/supabase';
@@ -44,6 +45,7 @@ export default function DynamicLegalPage({
   if (loading) {
     return (
       <ContentLayout title={defaultTitle} lastUpdated={defaultLastUpdated}>
+        <SeoHead title={pageData?.title || defaultTitle} description="Termos e políticas legais da Glamzo." />
         <div className="animate-pulse flex flex-col gap-4">
           <div className="h-4 bg-slate-200 rounded w-3/4"></div>
           <div className="h-4 bg-slate-200 rounded w-full"></div>
@@ -61,6 +63,7 @@ export default function DynamicLegalPage({
         title={pageData.title} 
         lastUpdated={new Date(pageData.updated_at).toLocaleDateString('pt-PT')}
       >
+        <SeoHead title={pageData?.title || defaultTitle} description="Termos e políticas legais da Glamzo." />
         <div dangerouslySetInnerHTML={{ __html: pageData.content }} />
       </ContentLayout>
     );
@@ -68,6 +71,7 @@ export default function DynamicLegalPage({
 
   return (
     <ContentLayout title={defaultTitle} lastUpdated={defaultLastUpdated}>
+        <SeoHead title={pageData?.title || defaultTitle} description="Termos e políticas legais da Glamzo." />
       {defaultContent}
     </ContentLayout>
   );

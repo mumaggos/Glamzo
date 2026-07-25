@@ -1,3 +1,4 @@
+import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -60,15 +61,14 @@ export default function Favorites() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+      <div className="min-h-[50vh] flex items-center justify-center"> <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold mb-6 transition-colors">
+      <SeoHead title="Favoritos - Glamzo" description="Os teus salões e serviços favoritos na Glamzo." /> <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold mb-6 transition-colors">
         <ArrowLeft className="w-5 h-5" />
         <span>Voltar</span>
       </button>

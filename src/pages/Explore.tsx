@@ -1,3 +1,4 @@
+import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -504,7 +505,7 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Barra de Filtros Topo */}
+      <SeoHead title={t('explore.exploreTitle') + " - Glamzo"} description="Encontre os melhores salões e serviços." /> {/* Barra de Filtros Topo */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">

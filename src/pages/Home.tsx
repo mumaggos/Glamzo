@@ -1,3 +1,4 @@
+import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect, useMemo, useRef } from "react"; 
 import { useNavigate, Link, useSearchParams } from "react-router-dom"; 
 import { supabase } from "../lib/supabase"; 
@@ -309,7 +310,8 @@ export default function Home() {
   // Cartão Minimalista de Elite (Estilo Airbnb) 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
     <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
-      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100"> 
+      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
+      <SeoHead title={t('home.heroTitle1') + " " + t('home.heroTitle2')} description={t('home.heroSubtitle')} /> 
         <img  
           src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
           alt={b.name}  

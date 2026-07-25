@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Globe, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -11,9 +11,26 @@ export default function Footer() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
+  const navigate = useNavigate();
   const changeLanguage = (lng: string) => { 
-    i18n.changeLanguage(lng); 
-    setIsLangOpen(false);
+     i18n.changeLanguage(lng);
+     setIsLangOpen(false);
+     
+     // Build the new URL
+     const pathParts = location.pathname.split('/');
+     const supportedLangs = ['pt', 'en', 'es', 'fr'];
+     let newPath = location.pathname;
+     
+     if (pathParts[1] && supportedLangs.includes(pathParts[1])) {
+        pathParts[1] = lng;
+        newPath = pathParts.join('/');
+     } else {
+        newPath = '/' + lng + (location.pathname === '/' ? '' : location.pathname);
+     }
+     if (lng === 'pt') {
+       newPath = newPath.replace(/^\/pt/, '') || '/';
+     }
+     navigate(newPath + location.search + location.hash, { replace: true });
   };
 
   useEffect(() => {
