@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { useLocation, Outlet } from 'react-router-dom';
+import { useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function LanguageUpdater() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   useEffect(() => {
@@ -16,12 +17,12 @@ export default function LanguageUpdater() {
         i18n.changeLanguage(urlLang);
       }
     } else {
-      // Se não há prefixo de idioma suportado no URL (ex: /explore, /), forçar 'pt'
-      if (i18n.language !== 'pt' && !i18n.language.startsWith('pt')) {
-        i18n.changeLanguage('pt');
+      const currentLang = i18n.language || 'pt';
+      if (!currentLang.startsWith('pt')) {
+        navigate(`/${currentLang}${location.pathname === '/' ? '' : location.pathname}${location.search}${location.hash}`, { replace: true });
       }
     }
-  }, [location.pathname, i18n]);
+  }, [location.pathname, i18n, navigate, location.search, location.hash]);
 
   return <Outlet />;
 }

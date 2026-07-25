@@ -2,7 +2,7 @@ import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useLocation  } from 'react-router-dom';
+import { useLocation, useNavigate  } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Globe, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
@@ -14,6 +14,7 @@ export default function Footer() {
   const langRef = useRef<HTMLDivElement>(null);
 
   const navigate = useLocalizedNavigate();
+  const nativeNavigate = useNavigate();
   const changeLanguage = (lng: string) => { 
      i18n.changeLanguage(lng);
      setIsLangOpen(false);
@@ -32,7 +33,7 @@ export default function Footer() {
      if (lng === 'pt') {
        newPath = newPath.replace(/^\/pt/, '') || '/';
      }
-     navigate(newPath + location.search + location.hash, { replace: true });
+     nativeNavigate(newPath + location.search + location.hash, { replace: true });
   };
 
   useEffect(() => {
