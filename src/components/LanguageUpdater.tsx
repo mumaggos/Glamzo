@@ -1,25 +1,27 @@
 import React, { useEffect } from 'react';
-import { useParams, Outlet } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function LanguageUpdater() {
-  const { lang } = useParams<{ lang?: string }>();
+  const location = useLocation();
   const { i18n } = useTranslation();
 
   useEffect(() => {
     const supportedLangs = ['pt', 'en', 'es', 'fr'];
-    if (lang && supportedLangs.includes(lang)) {
-      if (i18n.language !== lang) {
-        i18n.changeLanguage(lang);
+    const pathParts = location.pathname.split('/');
+    const urlLang = pathParts[1];
+
+    if (urlLang && supportedLangs.includes(urlLang)) {
+      if (i18n.language !== urlLang) {
+        i18n.changeLanguage(urlLang);
       }
-    } else if (!lang) {
-      // If there's no language in the URL, default to pt if not already
-      // Or we can let i18n detector decide. We will rely on detector, but if we wanted to enforce / for pt:
+    } else {
+      // Se não há prefixo de idioma suportado no URL (ex: /explore, /), forçar 'pt'
       if (i18n.language !== 'pt' && !i18n.language.startsWith('pt')) {
         i18n.changeLanguage('pt');
       }
     }
-  }, [lang, i18n]);
+  }, [location.pathname, i18n]);
 
   return <Outlet />;
 }

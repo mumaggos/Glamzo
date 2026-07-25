@@ -135,8 +135,8 @@ export default function Partner() {
       <section className="py-24 bg-[#F8F9FC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">Tudo o que precisa num só lugar.</h2>
-            <p className="text-slate-500 text-sm max-w-xl mx-auto">O ecossistema perfeito desenhado para lhe devolver o tempo e aumentar o faturamento do seu espaço.</p>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">{t('partnerPage.featuresTitle')}</h2>
+            <p className="text-slate-500 text-sm max-w-xl mx-auto">{t('partnerPage.featuresSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -146,21 +146,21 @@ export default function Partner() {
               <div className="absolute top-0 right-0 p-8 opacity-5 transition-opacity group-hover:opacity-10"><Calendar className="w-32 h-32" /></div>
               <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 relative z-10"><Calendar className="w-6 h-6" /></div>
               <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.planProFeat1')} Inteligente</h3>
-              <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-md">Controle horários, folgas e disponibilidades de cada profissional. O sistema previne cruzamentos, organiza as pausas e envia lembretes automáticos por si.</p>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-md">{t('partnerPage.feat1Desc')}</p>
             </div>
 
             {/* Bento 2: Pagamentos */}
             <div className="bg-white rounded-3xl p-8 border border-slate-200/60 shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 relative z-10"><ShieldCheck className="w-6 h-6" /></div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">Glamzo Pay</h3>
-              <p className="text-sm text-slate-500 leading-relaxed relative z-10">Fim aos cancelamentos falsos. Cobre os serviços online com MBWay, Apple Pay e Cartão diretamente na plataforma.</p>
+              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.feat2Title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10">{t('partnerPage.feat2Desc')}</p>
             </div>
 
             {/* Bento 3: Marketing */}
             <div className="bg-white rounded-3xl p-8 border border-slate-200/60 shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
               <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-6 relative z-10"><Megaphone className="w-6 h-6" /></div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">Marketing & Vales</h3>
-              <p className="text-sm text-slate-500 leading-relaxed relative z-10">Crie cupões de desconto para atrair clientes em dias lentos e construa uma rede de fidelização sólida.</p>
+              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.feat3Title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10">{t('partnerPage.feat3Desc')}</p>
             </div>
 
             {/* Bento 4: Analytics (Ocupa 2 colunas) */}
@@ -193,7 +193,7 @@ export default function Partner() {
               
               <div className="mt-6 mb-8 flex items-end gap-2">
                 <span className="text-5xl font-black text-slate-900 tracking-tighter">19.90€</span>
-                <span className="text-sm text-slate-500 font-bold mb-1">/mês</span>
+                <span className="text-sm text-slate-500 font-bold mb-1">{t('partnerPage.perMonth')}</span>
               </div>
               
               <p className="text-sm text-slate-600 font-medium mb-8 h-10">{t('partnerPage.planProDesc')}</p>
@@ -214,7 +214,7 @@ export default function Partner() {
 
             {/* Plano TERMINAL (Destaque) */}
             <div className="bg-slate-900 border border-purple-500 p-8 sm:p-10 rounded-[2.5rem] relative shadow-2xl shadow-purple-900/20 transform md:scale-105 z-10 overflow-hidden group">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-bl-2xl shadow-lg">Mais Popular</div>
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-bl-2xl shadow-lg">{t('partnerPage.mostPopular')}</div>
               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full group-hover:bg-purple-600/30 transition-all duration-500" />
               
               <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> {t('partnerPage.planTermBadge')}</span>
@@ -223,7 +223,7 @@ export default function Partner() {
               <div className="mt-6 mb-8 flex flex-col">
                 <div className="flex items-end gap-2">
                   <span className="text-5xl font-black text-white tracking-tighter">99€</span>
-                  <span className="text-sm text-slate-400 font-bold mb-1">Único</span>
+                  <span className="text-sm text-slate-400 font-bold mb-1">{t('partnerPage.oneTime')}</span>
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
                   

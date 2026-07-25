@@ -1,52 +1,20 @@
 const fs = require('fs');
-let partner = fs.readFileSync('src/pages/Partner.tsx', 'utf8');
 
-if (!partner.includes('useTranslation')) {
-  partner = partner.replace("import { Link,", "import { useTranslation } from 'react-i18next';\nimport { Link,");
-  partner = partner.replace("export default function Partner() {", "export default function Partner() {\n  const { t } = useTranslation();");
-}
+let content = fs.readFileSync('src/pages/Partner.tsx', 'utf8');
 
-const stringsToReplace = [
-  ["O Software de Gestão e Marketplace para a Indústria da Beleza", "heroTitle"],
-  ["Aumente a sua faturação, proteja a sua agenda contra faltas de comparência e atraia novos clientes. Sem mensalidades, sem comissões ocultas.", "heroSubtitle"],
-  ["Tudo o que precisa para crescer.", "featuresTitle"],
-  ["Gestão de Agenda", "feat1Title"],
-  ["Controlo total sobre marcações, bloqueio de horários e gestão de equipas num só lugar.", "feat1Desc"],
-  ["Marketplace Exclusivo", "feat2Title"],
-  ["Seja descoberto por milhares de clientes na sua zona. Página web otimizada para o Google.", "feat2Desc"],
-  ["Proteção Anti-Faltas", "feat3Title"],
-  ["Cobranças de sinais automáticas e políticas de cancelamento que protegem o seu tempo.", "feat3Desc"],
-  ["Análise Financeira & Performance", "feat4Title"],
-  ["Saiba exatamente quanto faturou por dia, qual o seu lucro líquido e qual o profissional que gera mais receita. Exporte faturas num clique.", "feat4Desc"],
-  ["Invista no crescimento.", "pricingTitle"],
-  ["Sem taxas surpresa. Cancele quando quiser. Escolha o plano perfeito.", "pricingSubtitle"],
-  ["100% Digital", "planProDigital"],
-  ["O ecossistema essencial para lotar a sua agenda e gerir o seu espaço.", "planProDesc"],
-  ["Agenda", "planProFeat1"],
-  ["Página Web SEO", "planProFeat2"],
-  ["Pagamentos Online e Tap-to-Pay no Telemóvel", "planProFeat3"],
-  ["Zero taxas por funcionário (Staff Ilimitado)", "planProFeat4"],
-  ["Teste 14 Dias Grátis", "planProBtn"],
-  ["(Taxa transparente de processamento: 2% + 0.75€ por transação paga via cartão. Zero comissões de marketplace).", "planProDisclaimer"],
-  ["Opcional - Equipamento", "planTermBadge"],
-  ["Terminal Físico Glamzo", "planTermTitle"],
-  ["Portes e Impostos Incluídos", "planTermShipping"],
-  ["Esqueça os alugueres mensais. Compre a sua máquina e ela é sua para sempre.", "planTermDesc"],
-  ["Zero Mensalidades ou Fidelização", "planTermFeat1"],
-  ["Pagamentos Contactless e Chip", "planTermFeat2"],
-  ["Sincronização direta com a Agenda", "planTermFeat3"],
-  ["Adicionar Terminal (Opcional)", "planTermBtn"],
-  ["Perguntas Frequentes", "faqTitle"],
-  ["Pronto para transformar o seu espaço?", "ctaTitle"],
-  ["Registar Agora", "ctaRegister"],
-  ["Já tenho conta", "ctaLogin"]
-];
+content = content.replace(/>Tudo o que precisa num só lugar\.</g, ">{t('partnerPage.featuresTitle')}<");
+content = content.replace(/>O ecossistema perfeito desenhado para lhe devolver o tempo e aumentar o faturamento do seu espaço\.</g, ">{t('partnerPage.featuresSubtitle')}<");
+content = content.replace(/>Controle horários, folgas e disponibilidades de cada profissional\. O sistema previne cruzamentos, organiza as pausas e envia lembretes automáticos por si\.</g, ">{t('partnerPage.feat1Desc')}<");
 
-for (const [str, key] of stringsToReplace) {
-  partner = partner.split(str).join(`{t('partnerPage.${key}')}`);
-}
+content = content.replace(/>Glamzo Pay</g, ">{t('partnerPage.feat2Title')}<");
+content = content.replace(/>Fim aos cancelamentos falsos\. Cobre os serviços online com MBWay, Apple Pay e Cartão diretamente na plataforma\.</g, ">{t('partnerPage.feat2Desc')}<");
 
-partner = partner.replace("const faqs = [", "const faqs = (t('partnerPage.faqs', { returnObjects: true }) as Array<{q: string, a: string}>) || [");
+content = content.replace(/>Marketing & Vales</g, ">{t('partnerPage.feat3Title')}<");
+content = content.replace(/>Crie cupões de desconto para atrair clientes em dias lentos e construa uma rede de fidelização sólida\.</g, ">{t('partnerPage.feat3Desc')}<");
 
-fs.writeFileSync('src/pages/Partner.tsx', partner);
-console.log("Partner patched!");
+content = content.replace(/>Mais Popular</g, ">{t('partnerPage.mostPopular')}<");
+content = content.replace(/>\/mês</g, ">{t('partnerPage.perMonth')}<");
+content = content.replace(/>Único</g, ">{t('partnerPage.oneTime')}<");
+
+fs.writeFileSync('src/pages/Partner.tsx', content);
+console.log('Patched Partner.tsx');
