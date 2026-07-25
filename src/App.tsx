@@ -179,41 +179,41 @@ function NotFoundScreen() {
   const appRoutes = (
     <>
       
-                  <Route path="/" element={<Home />} />
-                  <Route path="/explore" element={<Explore />} />
-                  <Route path="/favorites" element={<Favorites />} />
+                  <Route index element={<Home />} />
+                  <Route path="explore" element={<Explore />} />
+                  <Route path="favorites" element={<Favorites />} />
                   
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/update-password" element={<UpdatePassword />} />
-                  <Route path="/account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="signup" element={<Signup />} />
+                  <Route path="update-password" element={<UpdatePassword />} />
+                  <Route path="account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
 
-                  <Route path="/termos-e-condicoes" element={<Termos />} />
-                  <Route path="/politica-de-privacidade" element={<Privacidade />} />
-                  <Route path="/politica-de-cookies" element={<Cookies />} />
-                  <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
-                  <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
-                  <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
+                  <Route path="termos-e-condicoes" element={<Termos />} />
+                  <Route path="politica-de-privacidade" element={<Privacidade />} />
+                  <Route path="politica-de-cookies" element={<Cookies />} />
+                  <Route path="politica-de-cancelamentos" element={<Cancelamentos />} />
+                  <Route path="politica-de-pagamentos" element={<Pagamentos />} />
+                  <Route path="seguranca-e-protecao-de-dados" element={<Seguranca />} />
                   
-                  <Route path="/faq-cliente" element={<FaqCliente />} />
-                  <Route path="/faq-parceiro" element={<FaqParceiro />} />
-                  <Route path="/sobre-nos" element={<Sobre />} />
-                  <Route path="/contactos" element={<Contactos />} />
+                  <Route path="faq-cliente" element={<FaqCliente />} />
+                  <Route path="faq-parceiro" element={<FaqParceiro />} />
+                  <Route path="sobre-nos" element={<Sobre />} />
+                  <Route path="contactos" element={<Contactos />} />
 
-                  <Route path="/partner" element={<Partner />} />
-                  <Route path="/chamadas/:vendedorId" element={<ChamadasCRM />} />
-                  <Route path="/partner/login" element={<PartnerLogin />} />
-                  <Route path="/partner/signup" element={<PartnerSignup />} />
+                  <Route path="partner" element={<Partner />} />
+                  <Route path="chamadas/:vendedorId" element={<ChamadasCRM />} />
+                  <Route path="partner/login" element={<PartnerLogin />} />
+                  <Route path="partner/signup" element={<PartnerSignup />} />
                   
-                  <Route path="/partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
-                  <Route path="/setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
-                  <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
+                  <Route path="partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
+                  <Route path="setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
+                  <Route path="setup" element={<Navigate to="/partner/setup" replace />} />
 
-                  <Route path="/staff/login" element={<StaffLogin />} />
-                  <Route path="/staff/dashboard" element={<StaffDashboard />} />
+                  <Route path="staff/login" element={<StaffLogin />} />
+                  <Route path="staff/dashboard" element={<StaffDashboard />} />
                   
-                  <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
-                  <Route path="/partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
+                  <Route path="dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+                  <Route path="partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
                     <Route index element={<Navigate to="agenda" replace />} />
                     <Route path="overview" element={<OverviewTab />} />
                     <Route path="agenda" element={<AgendaTab />} />
@@ -235,13 +235,13 @@ function NotFoundScreen() {
                     <Route path="subscricao" element={<SubscriptionTab />} />
                   </Route>
 
-                  <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
+                  <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
+                  <Route path="admin/login" element={<AdminLogin />} />
+                  <Route path="admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
 
-                  <Route path="/business/:slug" element={<BusinessDetail />} />
-                  <Route path="/store/:slug" element={<BusinessDetail />} />
-                  <Route path="/:slug" element={<BusinessDetail />} />
+                  <Route path="business/:slug" element={<BusinessDetail />} />
+                  <Route path="store/:slug" element={<BusinessDetail />} />
+                  <Route path=":slug" element={<BusinessDetail />} />
                   
                   <Route path="*" element={<NotFoundScreen />} />
 
@@ -320,66 +320,6 @@ export default function App() {
 
   if (!isSupabaseConfigured) return <SupabaseSetupHelper />;
 
-  const appRoutes = (
-    <>
-      <Route path="/" element={<Home />} />
-      <Route path="/explore" element={<Explore />} />
-      <Route path="/favorites" element={<Favorites />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/update-password" element={<UpdatePassword />} />
-      <Route path="/account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
-      <Route path="/termos-e-condicoes" element={<Termos />} />
-      <Route path="/politica-de-privacidade" element={<Privacidade />} />
-      <Route path="/politica-de-cookies" element={<Cookies />} />
-      <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
-      <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
-      <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
-      <Route path="/faq-cliente" element={<FaqCliente />} />
-      <Route path="/faq-parceiro" element={<FaqParceiro />} />
-      <Route path="/sobre-nos" element={<Sobre />} />
-      <Route path="/contactos" element={<Contactos />} />
-      <Route path="/partner" element={<Partner />} />
-      <Route path="/chamadas/:vendedorId" element={<ChamadasCRM />} />
-      <Route path="/partner/login" element={<PartnerLogin />} />
-      <Route path="/partner/signup" element={<PartnerSignup />} />
-      <Route path="/partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
-      <Route path="/setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
-      <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
-      <Route path="/staff/login" element={<StaffLogin />} />
-      <Route path="/staff/dashboard" element={<StaffDashboard />} />
-      <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
-      <Route path="/partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="agenda" replace />} />
-        <Route path="overview" element={<OverviewTab />} />
-        <Route path="agenda" element={<AgendaTab />} />
-        <Route path="reservas" element={<ReservationsTab />} />
-        <Route path="clientes" element={<ClientsTab />} />
-        <Route path="equipa" element={<StaffTab />} />
-        <Route path="servicos" element={<ServicesTab />} />
-        <Route path="horarios" element={<HoursTab />} />
-        <Route path="avaliacoes" element={<PartnerReviewsTab />} />
-        <Route path="campanhas" element={<MarketingTab />} />
-        <Route path="financeiro" element={<FinanceTab />} />
-        <Route path="financeiro/configuracoes" element={<FinanceSettingsTab />} />
-        <Route path="financeiro/repasses" element={<PayoutsHistoryTab />} />
-        <Route path="financeiro/hardware" element={<HardwareManagerTab />} />
-        <Route path="website" element={<StoreAssetsTab />} />
-        <Route path="mensagens" element={<MessagesTab />} />
-        <Route path="tablet" element={<TabletTab />} />
-        <Route path="configuracoes" element={<SettingsTab />} />
-        <Route path="subscricao" element={<SubscriptionTab />} />
-      </Route>
-      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
-      <Route path="/business/:slug" element={<BusinessDetail />} />
-      <Route path="/store/:slug" element={<BusinessDetail />} />
-      <Route path="/:slug" element={<BusinessDetail />} />
-      <Route path="*" element={<NotFoundScreen />} />
-    </>
-  );
-
   return (
     <ErrorBoundary>
       <Toaster position="top-center" />
@@ -398,10 +338,118 @@ export default function App() {
               <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>}>
                 <Routes>
                   <Route element={<LanguageUpdater />}>
-                    {appRoutes}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/explore" element={<Explore />} />
+                    <Route path="/favorites" element={<Favorites />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/update-password" element={<UpdatePassword />} />
+                    <Route path="/account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
+                    <Route path="/termos-e-condicoes" element={<Termos />} />
+                    <Route path="/politica-de-privacidade" element={<Privacidade />} />
+                    <Route path="/politica-de-cookies" element={<Cookies />} />
+                    <Route path="/politica-de-cancelamentos" element={<Cancelamentos />} />
+                    <Route path="/politica-de-pagamentos" element={<Pagamentos />} />
+                    <Route path="/seguranca-e-protecao-de-dados" element={<Seguranca />} />
+                    <Route path="/faq-cliente" element={<FaqCliente />} />
+                    <Route path="/faq-parceiro" element={<FaqParceiro />} />
+                    <Route path="/sobre-nos" element={<Sobre />} />
+                    <Route path="/contactos" element={<Contactos />} />
+                    <Route path="/partner" element={<Partner />} />
+                    <Route path="/chamadas/:vendedorId" element={<ChamadasCRM />} />
+                    <Route path="/partner/login" element={<PartnerLogin />} />
+                    <Route path="/partner/signup" element={<PartnerSignup />} />
+                    <Route path="/partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
+                    <Route path="/setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
+                    <Route path="/setup" element={<Navigate to="/partner/setup" replace />} />
+                    <Route path="/staff/login" element={<StaffLogin />} />
+                    <Route path="/staff/dashboard" element={<StaffDashboard />} />
+                    <Route path="/dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+                    <Route path="/partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
+                      <Route index element={<Navigate to="agenda" replace />} />
+                      <Route path="overview" element={<OverviewTab />} />
+                      <Route path="agenda" element={<AgendaTab />} />
+                      <Route path="reservas" element={<ReservationsTab />} />
+                      <Route path="clientes" element={<ClientsTab />} />
+                      <Route path="equipa" element={<StaffTab />} />
+                      <Route path="servicos" element={<ServicesTab />} />
+                      <Route path="horarios" element={<HoursTab />} />
+                      <Route path="avaliacoes" element={<PartnerReviewsTab />} />
+                      <Route path="campanhas" element={<MarketingTab />} />
+                      <Route path="financeiro" element={<FinanceTab />} />
+                      <Route path="financeiro/configuracoes" element={<FinanceSettingsTab />} />
+                      <Route path="financeiro/repasses" element={<PayoutsHistoryTab />} />
+                      <Route path="financeiro/hardware" element={<HardwareManagerTab />} />
+                      <Route path="website" element={<StoreAssetsTab />} />
+                      <Route path="mensagens" element={<MessagesTab />} />
+                      <Route path="tablet" element={<TabletTab />} />
+                      <Route path="configuracoes" element={<SettingsTab />} />
+                      <Route path="subscricao" element={<SubscriptionTab />} />
+                    </Route>
+                    <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
+                    <Route path="/business/:slug" element={<BusinessDetail />} />
+                    <Route path="/store/:slug" element={<BusinessDetail />} />
+                    <Route path="/:slug" element={<BusinessDetail />} />
+                    <Route path="*" element={<NotFoundScreen />} />
                   </Route>
                   <Route path="/:lang" element={<LanguageUpdater />}>
-                    {appRoutes}
+                    <Route path="" element={<Home />} />
+                    <Route path="explore" element={<Explore />} />
+                    <Route path="favorites" element={<Favorites />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="signup" element={<Signup />} />
+                    <Route path="update-password" element={<UpdatePassword />} />
+                    <Route path="account" element={<ProtectedRoute allowedRoles={['customer']}><Account /></ProtectedRoute>} />
+                    <Route path="termos-e-condicoes" element={<Termos />} />
+                    <Route path="politica-de-privacidade" element={<Privacidade />} />
+                    <Route path="politica-de-cookies" element={<Cookies />} />
+                    <Route path="politica-de-cancelamentos" element={<Cancelamentos />} />
+                    <Route path="politica-de-pagamentos" element={<Pagamentos />} />
+                    <Route path="seguranca-e-protecao-de-dados" element={<Seguranca />} />
+                    <Route path="faq-cliente" element={<FaqCliente />} />
+                    <Route path="faq-parceiro" element={<FaqParceiro />} />
+                    <Route path="sobre-nos" element={<Sobre />} />
+                    <Route path="contactos" element={<Contactos />} />
+                    <Route path="partner" element={<Partner />} />
+                    <Route path="chamadas/:vendedorId" element={<ChamadasCRM />} />
+                    <Route path="partner/login" element={<PartnerLogin />} />
+                    <Route path="partner/signup" element={<PartnerSignup />} />
+                    <Route path="partner/setup" element={<ProtectedRoute allowedRoles={['business']}><SetupWizard /></ProtectedRoute>} />
+                    <Route path="setup/payment-success" element={<ProtectedRoute allowedRoles={['business']}><PaymentSuccess /></ProtectedRoute>} />
+                    <Route path="setup" element={<Navigate to="/partner/setup" replace />} />
+                    <Route path="staff/login" element={<StaffLogin />} />
+                    <Route path="staff/dashboard" element={<StaffDashboard />} />
+                    <Route path="dashboard" element={<Navigate to="/partner/dashboard" replace />} />
+                    <Route path="partner/dashboard" element={<ProtectedRoute allowedRoles={['business', 'admin']}><PartnerLayout /></ProtectedRoute>}>
+                      <Route index element={<Navigate to="agenda" replace />} />
+                      <Route path="overview" element={<OverviewTab />} />
+                      <Route path="agenda" element={<AgendaTab />} />
+                      <Route path="reservas" element={<ReservationsTab />} />
+                      <Route path="clientes" element={<ClientsTab />} />
+                      <Route path="equipa" element={<StaffTab />} />
+                      <Route path="servicos" element={<ServicesTab />} />
+                      <Route path="horarios" element={<HoursTab />} />
+                      <Route path="avaliacoes" element={<PartnerReviewsTab />} />
+                      <Route path="campanhas" element={<MarketingTab />} />
+                      <Route path="financeiro" element={<FinanceTab />} />
+                      <Route path="financeiro/configuracoes" element={<FinanceSettingsTab />} />
+                      <Route path="financeiro/repasses" element={<PayoutsHistoryTab />} />
+                      <Route path="financeiro/hardware" element={<HardwareManagerTab />} />
+                      <Route path="website" element={<StoreAssetsTab />} />
+                      <Route path="mensagens" element={<MessagesTab />} />
+                      <Route path="tablet" element={<TabletTab />} />
+                      <Route path="configuracoes" element={<SettingsTab />} />
+                      <Route path="subscricao" element={<SubscriptionTab />} />
+                    </Route>
+                    <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
+                    <Route path="admin/login" element={<AdminLogin />} />
+                    <Route path="admin/logistica" element={<ProtectedRoute allowedRoles={['admin']}><SuperAdminLogistics /></ProtectedRoute>} />
+                    <Route path="business/:slug" element={<BusinessDetail />} />
+                    <Route path="store/:slug" element={<BusinessDetail />} />
+                    <Route path=":slug" element={<BusinessDetail />} />
+                    <Route path="*" element={<NotFoundScreen />} />
                   </Route>
                 </Routes>
               </Suspense>
