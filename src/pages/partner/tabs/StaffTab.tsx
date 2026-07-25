@@ -28,7 +28,7 @@ export default function StaffTab() {
     off_days: [] as number[],
     email: "",
     phone: "",
-    temp_password: "",
+    temp_password: ""
   });
   const [createdStaffAuth, setCreatedStaffAuth] = useState<{ email: string; temp_password: string; } | null>(null);
 
@@ -56,7 +56,7 @@ export default function StaffTab() {
           cacheControl:
             "public, max-age=31536000, stale-while-revalidate=86400, immutable",
           contentType: "image/webp",
-          upsert: true,
+          upsert: true
         });
 
       if (uploadErr) {
@@ -64,7 +64,7 @@ export default function StaffTab() {
       }
 
       const {
-        data: { publicUrl },
+        data: { publicUrl }
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
       setStaffForm((prev) => ({ ...prev, avatar_url: publicUrl }));
@@ -93,7 +93,7 @@ export default function StaffTab() {
         off_days: staffForm.off_days.join(','),
         email: staffForm.email || null,
         phone: staffForm.phone || null,
-        temp_password: staffForm.temp_password || null,
+        temp_password: staffForm.temp_password || null
       };
 
       if (editingStaff) {
@@ -263,7 +263,7 @@ export default function StaffTab() {
                 off_days: [],
                 email: "",
                 phone: "",
-                temp_password: "",
+                temp_password: ""
               });
             setShowStaffModal(true);
           }}
@@ -348,7 +348,7 @@ export default function StaffTab() {
                         off_days: st.off_days ? st.off_days.split(',').map(Number).filter(n => !isNaN(n)) : [],
                         email: st.email || "",
                         phone: st.phone || "",
-                        temp_password: st.temp_password || "",
+                        temp_password: st.temp_password || ""
                       });
                       setShowStaffModal(true);
                     }}
@@ -516,7 +516,7 @@ export default function StaffTab() {
                   onChange={(e) =>
                     setStaffForm((prev) => ({
                       ...prev,
-                      full_name: e.target.value,
+                      full_name: e.target.value
                     }))
                   }
                   placeholder="Ex: João Silva"
@@ -534,7 +534,7 @@ export default function StaffTab() {
                   onChange={(e) =>
                     setStaffForm((prev) => ({
                       ...prev,
-                      role_title: e.target.value,
+                      role_title: e.target.value
                     }))
                   }
                   placeholder="Ex: Barber Master, Colorista Senior..."
@@ -578,7 +578,7 @@ export default function StaffTab() {
                       onChange={(e) =>
                         setStaffForm((prev) => ({
                           ...prev,
-                          email: e.target.value,
+                          email: e.target.value
                         }))
                       }
                       placeholder="Ex: funcionario@loja.pt"
@@ -595,7 +595,7 @@ export default function StaffTab() {
                       onChange={(e) =>
                         setStaffForm((prev) => ({
                           ...prev,
-                          temp_password: e.target.value,
+                          temp_password: e.target.value
                         }))
                       }
                       placeholder="Deixe vazio para gerar auto"
@@ -620,7 +620,7 @@ export default function StaffTab() {
                       onChange={(e) =>
                         setStaffForm((prev) => ({
                           ...prev,
-                          phone: e.target.value,
+                          phone: e.target.value
                         }))
                       }
                       placeholder="Ex: 910 000 000"
@@ -722,7 +722,7 @@ export default function StaffTab() {
                   onChange={(e) =>
                     setStaffForm((prev) => ({
                       ...prev,
-                      is_active: e.target.checked,
+                      is_active: e.target.checked
                     }))
                   }
                   className="w-4 h-4 text-rose-600 rounded cursor-pointer"

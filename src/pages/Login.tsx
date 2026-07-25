@@ -1,13 +1,15 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import {  Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function Login() {
   const { signIn, signInWithGoogle, resetPassword, user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
 
   // 1. Guardar Intenção de Redirecionamento de forma Permanente
@@ -268,9 +270,9 @@ export default function Login() {
 
           <p className="mt-6 text-center text-xs font-bold text-slate-600">
             Ainda não tem conta?{' '}
-            <Link to={`/signup${window.location.search}`} className="text-purple-600 hover:text-purple-700">
+            <LocalizedLink to={`/signup${window.location.search}`} className="text-purple-600 hover:text-purple-700">
               Registe-se Grátis
-            </Link>
+            </LocalizedLink>
           </p>
 
         </div>

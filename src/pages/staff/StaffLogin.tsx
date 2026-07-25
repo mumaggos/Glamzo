@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {  } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Scissors, Share, PlusSquare, Download } from "lucide-react";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 export default function StaffLogin() {
   const [email, setEmail] = useState("");
@@ -11,7 +12,7 @@ export default function StaffLogin() {
   const [showInstallHelp, setShowInstallHelp] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {

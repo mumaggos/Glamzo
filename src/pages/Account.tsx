@@ -1,3 +1,4 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -1002,12 +1003,12 @@ export default function Account() {
           </button>
         )})}
         
-        <Link to="/explore" className="flex flex-col items-center px-4 -mt-6">
+        <LocalizedLink to="/explore" className="flex flex-col items-center px-4 -mt-6">
           <div className="bg-gradient-to-r from-purple-600 to-rose-500 p-4 rounded-full shadow-lg shadow-purple-500/40 text-white mb-1">
             <Compass className="w-6 h-6" />
           </div>
           <span className="text-[10px] font-black text-slate-800">Explorar</span>
-        </Link>
+        </LocalizedLink>
 
         {[
           { id: 'favoritos', icon: Heart, label: 'Favoritos' },

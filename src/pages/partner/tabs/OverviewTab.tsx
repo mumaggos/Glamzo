@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useOutletContext  } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DashboardOverview } from "../../../components/DashboardOverview";
 import { Business, Booking, Staff, Service, Review } from "../../../types";
 import { fetchReviewsForBusiness } from "../../../utils/reviewsHelper";
 import { Sparkles, Trophy } from "lucide-react";
+import { useLocalizedNavigate } from '../../../hooks/useLocalizedNavigate';
 
 interface PartnerContextType {
   business: Business | null;
@@ -25,7 +26,7 @@ export default function OverviewTab() {
       fetchReviewsForBusiness(business.id).then(res => setReviews(res || []));
     }
   }, [business?.id]);
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   // Rotas corrigidas para a navegação interna da app
   const handleSetActiveTab = (tab: string) => {
@@ -36,7 +37,7 @@ export default function OverviewTab() {
       'equipa': '/partner/dashboard/equipa',
       'horario': '/partner/dashboard/horarios',
       'financas': '/partner/dashboard/financeiro',
-      'reservas': '/partner/dashboard/reservas',
+      'reservas': '/partner/dashboard/reservas'
     };
     if (routeMap[tab]) {
       navigate(routeMap[tab]);

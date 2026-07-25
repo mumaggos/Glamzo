@@ -37,23 +37,26 @@ const translations = {
   }
 };
 
-for (const lang of ['en', 'es', 'fr', 'pt']) {
-  const marker = `"partnerPage": {`;
-  // We want to insert right after `"partnerPage": {` for each language
-  // But wait, the file has `"partnerPage": {` for each language.
+for (const lang of Object.keys(translations)) {
+  const transObj = translations[lang];
+  let transStr = '';
+  for (const key in transObj) {
+    transStr += `      "${key}": "${transObj[key]}",\n`;
+  }
   
-  // We can do a string replace using a regex that captures the language block.
-  // Actually, let's just do a simple replace since `"partnerPage": {` appears once per language block.
-  // Wait, let's find the exact block for the language.
-  
-  const searchStr = `"${lang}": {\n    "translation": {\n      "categories": {`;
-  // The file structure:
-  // "en": {
-  //   "translation": {
-  //     "categories": { ... },
-  //     "partnerPage": {
-  //       "heroTitle": ...
-  
-  // Let's just find `"partnerPage": {` in the file.
-  // We can split by `"partnerPage": {`
+  const searchStr = `"${lang}": {\n    "translation": {\n`;
+  if (content.includes(searchStr)) {
+    // Find the next "partnerPage": {
+    const searchIdx = content.indexOf(searchStr);
+    const partnerIdx = content.indexOf('"partnerPage": {', searchIdx);
+    
+    if (partnerIdx !== -1) {
+      // Insert after `"partnerPage": {\n`
+      const insertIdx = content.indexOf('\n', partnerIdx) + 1;
+      content = content.slice(0, insertIdx) + transStr + content.slice(insertIdx);
+    }
+  }
 }
+
+fs.writeFileSync(file, content);
+console.log("Updated i18n");

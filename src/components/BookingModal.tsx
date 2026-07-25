@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import SecurityBadge from './SecurityBadge';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   X, Calendar, Clock, User, CreditCard, Check, 
   ChevronRight, ArrowLeft, Loader2, Sparkles, Smile, ShieldCheck, AlertCircle 
@@ -20,7 +21,7 @@ interface BookingModalProps {
 const BookingModal = React.memo(function BookingModal({
   isOpen, onClose, business, services, user, profile, initialSelectedService
 }: BookingModalProps) {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
@@ -384,7 +385,7 @@ const handleConfirmReservation = async () => {
               businessName: business.name,
               successUrl: `${window.location.origin}/account?status=success`,
               cancelUrl: `${window.location.origin}/account?status=cancelled`,
-              couponCode: (appliedPromo && appliedPromo.type === 'reward') ? appliedPromo.code : null,
+              couponCode: (appliedPromo && appliedPromo.type === 'reward') ? appliedPromo.code : null
             })
           });
 

@@ -1,8 +1,10 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, 
@@ -12,7 +14,7 @@ import {
 export default function Partner() {
   const { t } = useTranslation();
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
 
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -74,35 +76,35 @@ export default function Partner() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-purple-50 border border-purple-100 rounded-full text-xs font-black tracking-widest text-purple-600 mb-8 uppercase shadow-sm">
             <Sparkles className="w-4 h-4 text-purple-500" />
-            <span>O Software N.º 1 para Beleza em Portugal</span>
+            <span>{t("partnerPage.heroPill", "O Software N.º 1 para Beleza em Portugal")}</span>
           </div>
           
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-slate-900 leading-[1.05] max-w-5xl mx-auto mb-6">
-            Lote a sua agenda, <br />
-            <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-500 bg-clip-text text-transparent">Multiplique o seu lucro.</span>
+            {t("partnerPage.heroTitle1", "Lote a sua agenda, ")}<br />
+            <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-500 bg-clip-text text-transparent">{t("partnerPage.heroTitle2", "Multiplique o seu lucro.")}</span>
           </h1>
           
           <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed mb-10">
-            A Glamzo é o ecossistema de elite focado a 100% no crescimento de Salões, Barbearias e SPAs. {t('partnerPage.planProFeat1')} inteligente, pagamentos integrados e marketing automático.
+            {t("partnerPage.heroSubtitle", "A Glamzo é o ecossistema de elite focado a 100% no crescimento de Salões, Barbearias e SPAs. Agenda inteligente, pagamentos integrados e marketing automático.")}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
-            <Link
+            <LocalizedLink
               to="/partner/signup"
               className="w-full sm:w-auto bg-slate-900 hover:bg-black text-white font-black py-4 px-8 rounded-2xl text-sm tracking-wide transition-all flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20 hover:scale-[1.02]"
             >
-              <span>Começar 14 Dias Grátis</span>
+              <span>{t("partnerPage.planProBtn", "Teste 14 Dias Grátis")}</span>
               <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
+            </LocalizedLink>
+            <LocalizedLink
               to="/partner/login"
               className="w-full sm:w-auto bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold px-8 py-4 rounded-2xl text-sm transition-colors flex justify-center"
             >
-              Iniciar Sessão
-            </Link>
+              {t("navbar.signIn", "Iniciar Sessão")}
+            </LocalizedLink>
           </div>
           <p className="text-xs text-slate-400 mt-5 font-medium flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Sem compromisso. Cancele quando quiser.
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> {t("partnerPage.cancelAnytime", "Sem compromisso. Cancele quando quiser.")}
           </p>
         </div>
       </section>
@@ -113,19 +115,19 @@ export default function Partner() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-800/50">
             <div>
               <div className="text-4xl font-black text-white">+40%</div>
-              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Aumento de Marcações</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{t("partnerPage.metric1", "Aumento de Marcações")}</div>
             </div>
             <div>
               <div className="text-4xl font-black text-emerald-400">-90%</div>
-              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Redução de No-Shows</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{t("partnerPage.metric2", "Redução de No-Shows")}</div>
             </div>
             <div>
               <div className="text-4xl font-black text-white">2.5h</div>
-              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Poupadas por Dia</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{t("partnerPage.metric3", "Poupadas por Dia")}</div>
             </div>
             <div>
               <div className="text-4xl font-black text-purple-400">+143%</div>
-              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Retenção de Clientes</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{t("partnerPage.metric4", "Retenção de Clientes")}</div>
             </div>
           </div>
         </div>
@@ -145,7 +147,7 @@ export default function Partner() {
             <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-200/60 shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
               <div className="absolute top-0 right-0 p-8 opacity-5 transition-opacity group-hover:opacity-10"><Calendar className="w-32 h-32" /></div>
               <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 relative z-10"><Calendar className="w-6 h-6" /></div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.planProFeat1')} Inteligente</h3>
+              <h3 className="text-xl font-black text-slate-900 mb-2 relative z-10">{t('partnerPage.heroPill2', 'Gestão de Agenda Inteligente')}</h3>
               <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-md">{t('partnerPage.feat1Desc')}</p>
             </div>
 
@@ -206,9 +208,9 @@ export default function Partner() {
                 
               </ul>
 
-              <Link to="/partner/signup" className="block w-full text-center bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-800 font-black py-4 rounded-2xl transition-all text-sm shadow-sm">
+              <LocalizedLink to="/partner/signup" className="block w-full text-center bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-800 font-black py-4 rounded-2xl transition-all text-sm shadow-sm">
                 {t('partnerPage.planProBtn')}
-              </Link>
+              </LocalizedLink>
               <p className="mt-4 text-[10px] text-slate-500 text-center leading-tight">{t('partnerPage.planProDisclaimer')}</p>
             </div>
 
@@ -238,12 +240,12 @@ export default function Partner() {
               <ul className="space-y-4 text-sm text-white font-semibold mb-10 relative z-10">
                 <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat1')}</li>
                 <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat2')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> Sincronização direta com a {t('partnerPage.planProFeat1')}</li>
+                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat3', 'Sincronização direta com a Gestão de Agenda')}</li>
               </ul>
 
-              <Link to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
+              <LocalizedLink to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
                 {t('partnerPage.planTermBtn')}
-              </Link>
+              </LocalizedLink>
             </div>
 
           </div>
@@ -281,12 +283,12 @@ export default function Partner() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-black text-white mb-6">{t('partnerPage.ctaTitle')}</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/partner/signup" className="bg-white hover:bg-slate-100 text-slate-900 font-black py-4 px-8 rounded-2xl text-sm transition-colors shadow-xl">
+            <LocalizedLink to="/partner/signup" className="bg-white hover:bg-slate-100 text-slate-900 font-black py-4 px-8 rounded-2xl text-sm transition-colors shadow-xl">
               {t('partnerPage.ctaRegister')}
-            </Link>
-            <Link to="/partner/login" className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold py-4 px-8 rounded-2xl text-sm transition-colors">
+            </LocalizedLink>
+            <LocalizedLink to="/partner/login" className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold py-4 px-8 rounded-2xl text-sm transition-colors">
               {t('partnerPage.ctaLogin')}
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </section>

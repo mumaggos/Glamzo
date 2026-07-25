@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { slugify, generateUniqueSlug } from '../utils/slugify';
 import { PORTUGAL_GEO, getCoordinatesForCity } from '../utils/geoData';
 import { optimizeImageBeforeUpload } from '../utils/imageOptimizer';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   Building2, ArrowLeft, ArrowRight, Check, Store, Sparkles, 
   MapPin, Phone, Globe, Image as ImageIcon, FileText, Loader2, Compass, Map as MapIcon,
@@ -26,7 +27,7 @@ const defaultDraft = {
 
 export default function Onboarding() {
   const { user, profile, refreshProfile } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 9;

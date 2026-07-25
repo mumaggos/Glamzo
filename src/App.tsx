@@ -59,7 +59,7 @@ const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
 
 import { Toaster } from 'react-hot-toast';
 import LanguageUpdater from './components/LanguageUpdater';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import Navbar from './components/Navbar';
@@ -67,6 +67,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
+import { useLocalizedNavigate } from './hooks/useLocalizedNavigate';
 
 // IMPORTAÇÕES DIRETAS
 
@@ -130,7 +131,7 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 function SessionGuard() {
   const { user, profile, loading, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     if (loading || !user || !profile) return;
@@ -268,7 +269,7 @@ function NotFoundScreen() {
 function GlobalRoleEnforcer() {
   const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     if (loading || !user || !profile) return;

@@ -41,7 +41,7 @@ export default function SettingsTab() {
     city: business?.city || "",
     phone: business?.phone || "",
     email: business?.email || "",
-    currency: business?.currency || "EUR",
+    currency: business?.currency || "EUR"
   });
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function SettingsTab() {
         city: business.city || "",
         phone: business.phone || "",
         email: business.email || "",
-        currency: business.currency || "EUR",
+        currency: business.currency || "EUR"
       });
     }
   }, [business]);

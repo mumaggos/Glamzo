@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { KeyRound, Check, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { useAuth } from '../hooks/useAuth';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function UpdatePassword() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { profile } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

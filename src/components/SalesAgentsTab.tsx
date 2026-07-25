@@ -6,6 +6,7 @@ import { Phone } from 'lucide-react';
 import GestaoLeads from './GestaoLeads';
 import AgentLeadsModal from './AgentLeadsModal';
 import AgentStoresModal from './AgentStoresModal';
+import { LocalizedLink } from '../components/LocalizedLink';
 
 export default function SalesAgentsTab() {
   const [agents, setAgents] = useState<SalesAgent[]>([]);

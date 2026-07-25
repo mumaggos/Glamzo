@@ -222,7 +222,7 @@ export default function SubscriptionTab() {
       const res = await fetch("/api/stripe/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id, planName: planName, skipTrial: hasUsedTrial }),
+        body: JSON.stringify({ businessId: business.id, planName: planName, skipTrial: hasUsedTrial })
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -262,7 +262,7 @@ export default function SubscriptionTab() {
       const res = await fetch("/api/stripe/cancel-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id }),
+        body: JSON.stringify({ businessId: business.id })
       });
       if (!res.ok) {
         const errData = await res.json();
@@ -287,7 +287,7 @@ export default function SubscriptionTab() {
       const res = await fetch("/api/stripe/create-portal-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id }),
+        body: JSON.stringify({ businessId: business.id })
       });
       if (!res.ok) {
         const errData = await res.json();
@@ -314,7 +314,7 @@ export default function SubscriptionTab() {
       const res = await fetch("/api/stripe/connect/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId: business.id }),
+        body: JSON.stringify({ businessId: business.id })
       });
       
       let data;
@@ -377,7 +377,7 @@ export default function SubscriptionTab() {
       const { error } = await supabase.from("payouts").insert({
         business_id: business.id,
         amount: payoutAmount,
-        status: "pending",
+        status: "pending"
       });
       if (error) throw error;
       setPayoutSuccess(`Pedido de levantamento de ${payoutAmount.toFixed(2)}€ submetido com sucesso.`);

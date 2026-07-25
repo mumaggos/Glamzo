@@ -20,7 +20,7 @@ export default function HardwareManagerTab() {
       const res = await fetch('/api/stripe/terminal/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId: business.id }),
+        body: JSON.stringify({ businessId: business.id })
       });
       const data = await res.json();
       if (data.url) {

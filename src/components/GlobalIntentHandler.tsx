@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export function GlobalIntentHandler() {
   const { user, profile, loading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     if (!loading && user && profile) {

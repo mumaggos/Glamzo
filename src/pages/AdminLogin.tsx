@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { ShieldCheck, Eye, EyeOff, KeyRound, Mail, Loader2, Compass } from 'lucide-react';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function AdminLogin() {
   const { signIn, signOut, signUp, user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {

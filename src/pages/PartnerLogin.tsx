@@ -1,14 +1,16 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import {  Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, KeyRound, Mail, Sparkles, Loader2, Landmark } from 'lucide-react';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function PartnerLogin() {
   const { t } = useTranslation();
   const { signIn, signOut, resetPassword, user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   React.useEffect(() => {
     if (!authLoading && user && profile) {
@@ -225,9 +227,9 @@ export default function PartnerLogin() {
 
           <p className="mt-8 text-center text-xs text-slate-500">
             {t('partnerLoginContent.notPartnerYet')}{' '}
-            <Link to="/partner/signup" className="font-bold text-purple-600 hover:text-purple-700">
+            <LocalizedLink to="/partner/signup" className="font-bold text-purple-600 hover:text-purple-700">
               {t('partnerLoginContent.registerSalon')}
-            </Link>
+            </LocalizedLink>
           </p>
 
         </div>

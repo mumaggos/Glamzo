@@ -20,7 +20,7 @@ export default function StripeKycOnboarding({ businessId, ownerId, onComplete }:
         const response = await fetch('/api/stripe/create-custom-account', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ businessId, ownerId }),
+          body: JSON.stringify({ businessId, ownerId })
         });
 
         if (!response.ok) {
@@ -39,8 +39,8 @@ export default function StripeKycOnboarding({ businessId, ownerId, onComplete }:
           appearance: {
             variables: {
               colorPrimary: '#7c3aed', // Purple-600 to match Glamzo
-            },
-          },
+            }
+          }
         });
 
         setStripeConnectInstance(instance);

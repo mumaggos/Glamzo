@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import Papa from 'papaparse';
 import { Upload, Users, Trash2, Key, Link as LinkIcon, Check, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SalesAgent } from '../types';
+import { LocalizedLink } from '../components/LocalizedLink';
 
 interface GestaoLeadsProps {
   agents: SalesAgent[];

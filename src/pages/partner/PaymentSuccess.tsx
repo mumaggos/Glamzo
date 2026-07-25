@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams  } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const businessIdParam = searchParams.get("biz_id");
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -33,7 +34,7 @@ export default function PaymentSuccess() {
         const res = await fetch("/api/stripe/verify-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ businessId: bizId, sessionId: sessionId || undefined }),
+          body: JSON.stringify({ businessId: bizId, sessionId: sessionId || undefined })
         });
 
         const data = await res.json();

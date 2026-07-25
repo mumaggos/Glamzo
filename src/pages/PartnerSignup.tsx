@@ -1,8 +1,10 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import {  Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   Building2, ArrowRight, ArrowLeft, Check, Sparkles, 
   Mail, Loader2, KeyRound, Star, Calendar, ShieldCheck
@@ -11,7 +13,7 @@ import {
 export default function PartnerSignup() {
   const { t } = useTranslation();
   const { signOut, user, profile, refreshProfile } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
 
@@ -299,13 +301,13 @@ export default function PartnerSignup() {
 
                   <div className="text-[11px] text-slate-400 text-center leading-relaxed">
                     {t('partnerSignupContent.termsAgreed1')}{' '}
-                    <Link to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:underline">
+                    <LocalizedLink to="/termos-e-condicoes" target="_blank" className="font-semibold text-purple-600 hover:underline">
                       {t('partnerSignupContent.termsOfService')}
-                    </Link>{' '}
+                    </LocalizedLink>{' '}
                     {t('partnerSignupContent.termsAgreed2')}{' '}
-                    <Link to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:underline">
+                    <LocalizedLink to="/politica-de-privacidade" target="_blank" className="font-semibold text-purple-600 hover:underline">
                       {t('partnerSignupContent.privacyPolicy')}
-                    </Link>
+                    </LocalizedLink>
                     .
                   </div>
                 </form>
@@ -401,9 +403,9 @@ export default function PartnerSignup() {
 
           <p className="text-center text-xs text-slate-500 border-t border-slate-100 pt-6">
             {t('partnerSignupContent.clientLoginPrompt')}{' '}
-            <Link to="/login" className="font-bold text-purple-600 hover:text-purple-700">
+            <LocalizedLink to="/login" className="font-bold text-purple-600 hover:text-purple-700">
               {t('partnerSignupContent.clientLoginLink')}
-            </Link>
+            </LocalizedLink>
           </p>
 
         </div>

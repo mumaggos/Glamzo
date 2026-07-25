@@ -1,9 +1,11 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation  } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Globe, ChevronDown, ChevronUp } from 'lucide-react';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function Footer() {
   const location = useLocation();
@@ -11,7 +13,7 @@ export default function Footer() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const changeLanguage = (lng: string) => { 
      i18n.changeLanguage(lng);
      setIsLangOpen(false);
@@ -91,29 +93,29 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-slate-900 mb-4">{t('footer.company')}</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/sobre-nos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.about')}</Link></li>
-              <li><Link to="/contactos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.contacts')}</Link></li>
-              <li><Link to="/faq-cliente" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.faqCustomer')}</Link></li>
-              <li><Link to="/faq-parceiro" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.faqPartner')}</Link></li>
+              <li><LocalizedLink to="/sobre-nos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.about')}</LocalizedLink></li>
+              <li><LocalizedLink to="/contactos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.contacts')}</LocalizedLink></li>
+              <li><LocalizedLink to="/faq-cliente" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.faqCustomer')}</LocalizedLink></li>
+              <li><LocalizedLink to="/faq-parceiro" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.faqPartner')}</LocalizedLink></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-slate-900 mb-4">{t('footer.legalSupport')}</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/termos-e-condicoes" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.termsAndConditions')}</Link></li>
-              <li><Link to="/politica-de-privacidade" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.privacyPolicy')}</Link></li>
-              <li><Link to="/politica-de-pagamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.paymentTerms')}</Link></li>
-              <li><Link to="/politica-de-cancelamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.cancellations')}</Link></li>
+              <li><LocalizedLink to="/termos-e-condicoes" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.termsAndConditions')}</LocalizedLink></li>
+              <li><LocalizedLink to="/politica-de-privacidade" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.privacyPolicy')}</LocalizedLink></li>
+              <li><LocalizedLink to="/politica-de-pagamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.paymentTerms')}</LocalizedLink></li>
+              <li><LocalizedLink to="/politica-de-cancelamentos" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.cancellations')}</LocalizedLink></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-slate-900 mb-4">{t('footer.forPartners')}</h3>
             <ul className="flex flex-col gap-2 text-sm text-slate-600">
-              <li><Link to="/partner" className="hover:text-purple-600 font-medium text-slate-900 focus:outline-none focus:underline">{t('footer.discoverPro')}</Link></li>
-              <li><Link to="/partner/login" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.partnerLogin')}</Link></li>
-              <li><Link to="/partner/signup" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.registerSalon')}</Link></li>
+              <li><LocalizedLink to="/partner" className="hover:text-purple-600 font-medium text-slate-900 focus:outline-none focus:underline">{t('footer.discoverPro')}</LocalizedLink></li>
+              <li><LocalizedLink to="/partner/login" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.partnerLogin')}</LocalizedLink></li>
+              <li><LocalizedLink to="/partner/signup" className="hover:text-purple-600 focus:outline-none focus:underline">{t('footer.registerSalon')}</LocalizedLink></li>
             </ul>
           </div>
         </div>

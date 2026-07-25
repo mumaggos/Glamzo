@@ -6,7 +6,7 @@ const LOGO_URL = 'https://glamzo.pt/logo.png'; // Placeholder fallback until rea
 
 const mainStyles = {
   backgroundColor: '#f9fafb',
-  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
 };
 
 const containerStyles = {
@@ -15,13 +15,13 @@ const containerStyles = {
   padding: '40px',
   borderRadius: '8px',
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-  maxWidth: '600px',
+  maxWidth: '600px'
 };
 
 const logoStyles = {
   margin: '0 auto 24px',
   display: 'block',
-  height: '40px',
+  height: '40px'
 };
 
 const headingStyles = {
@@ -29,14 +29,14 @@ const headingStyles = {
   fontSize: '24px',
   fontWeight: '600',
   textAlign: 'center' as const,
-  marginBottom: '24px',
+  marginBottom: '24px'
 };
 
 const textStyles = {
   color: '#374151',
   fontSize: '16px',
   lineHeight: '24px',
-  marginBottom: '16px',
+  marginBottom: '16px'
 };
 
 const buttonStyles = {
@@ -49,7 +49,7 @@ const buttonStyles = {
   display: 'block',
   fontWeight: '500',
   margin: '32px auto',
-  width: 'fit-content',
+  width: 'fit-content'
 };
 
 
@@ -57,18 +57,18 @@ const infoCardStyles = {
   backgroundColor: '#f3f4f6',
   padding: '16px',
   borderRadius: '8px',
-  marginBottom: '24px',
+  marginBottom: '24px'
 };
 
 const hrStyles = {
   borderColor: '#e5e7eb',
-  margin: '32px 0',
+  margin: '32px 0'
 };
 
 const footerStyles = {
   color: '#9ca3af',
   fontSize: '14px',
-  textAlign: 'center' as const,
+  textAlign: 'center' as const
 };
 
 // 1. Verificação de Email

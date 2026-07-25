@@ -13,7 +13,7 @@ export function useStripeTerminal(businessId: string | undefined) {
     const res = await fetch('/api/stripe/terminal/connection-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessId }),
+      body: JSON.stringify({ businessId })
     });
     if (!res.ok) throw new Error('Failed to fetch connection token');
     const data = await res.json();
@@ -95,7 +95,7 @@ export function useStripeTerminal(businessId: string | undefined) {
     const captureRes = await fetch('/api/stripe/terminal/capture-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ businessId, paymentIntentId }),
+      body: JSON.stringify({ businessId, paymentIntentId })
     });
     if (!captureRes.ok) throw new Error('Failed to capture payment');
     
@@ -111,6 +111,6 @@ export function useStripeTerminal(businessId: string | undefined) {
     isDiscovering,
     isConnecting,
     status,
-    error,
+    error
   };
 }

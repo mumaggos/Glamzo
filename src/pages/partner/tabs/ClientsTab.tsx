@@ -78,7 +78,7 @@ const ClientsTab = React.memo(function ClientsTab() {
           phone: phone,
           visits: 1,
           spent: spentAmount,
-          lastVisit: lastV,
+          lastVisit: lastV
         });
       } else {
         const prev = map.get(custId)!;
@@ -86,7 +86,7 @@ const ClientsTab = React.memo(function ClientsTab() {
           ...prev,
           visits: prev.visits + 1,
           spent: prev.spent + spentAmount,
-          lastVisit: prev.lastVisit > lastV ? prev.lastVisit : lastV,
+          lastVisit: prev.lastVisit > lastV ? prev.lastVisit : lastV
         });
       }
     });

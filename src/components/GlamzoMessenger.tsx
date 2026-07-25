@@ -121,7 +121,7 @@ export default function GlamzoMessenger() {
        const newMsg = {
          sender_id: userId,
          receiver_id: ownerId,
-         content: text.trim(),
+         content: text.trim()
        };
        
        const { data: insertedMsg, error: insertError } = await supabase.from('messages').insert([newMsg]).select().single();

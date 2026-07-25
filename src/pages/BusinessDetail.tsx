@@ -1,6 +1,7 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
 import { Helmet } from "react-helmet-async";
-import { useParams, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Business, Review } from '../types';
 import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
@@ -11,6 +12,7 @@ import toast from 'react-hot-toast';
 import ErrorBoundary from '../components/ErrorBoundary';
 import SecurityBadge from '../components/SecurityBadge';
 import { toggleFavorite, isFavorite, reportReview, createDispute } from '../utils/marketingHelper';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   MapPin, Phone, Mail, Globe, Calendar, CheckCircle2, 
   ArrowLeft, Loader2, Share2, Compass, MessageSquare,
@@ -23,7 +25,7 @@ export default function BusinessDetail() {
   const [searchParams] = useSearchParams();
 const { slug } = useParams<{ slug: string }>();
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
 
   const [business, setBusiness] = useState<Business | null>(null);
@@ -342,9 +344,9 @@ const { slug } = useParams<{ slug: string }>();
 
           {/* Top Actions */}
           <div className="absolute top-6 left-4 sm:left-8 z-10">
-            <Link to="/explore" className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">
+            <LocalizedLink to="/explore" className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">
               <ArrowLeft className="w-4 h-4 text-purple-600" /> <span className="hidden sm:inline">Voltar</span>
-            </Link>
+            </LocalizedLink>
           </div>
           <div className="absolute top-6 right-4 sm:right-8 z-10 flex gap-2">
             <button onClick={handleToggleFavorite} className="flex items-center gap-2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg transition-all">

@@ -1,6 +1,7 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams  } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase";
 import { Business, Review } from "../types";
@@ -14,6 +15,7 @@ import {
   Loader2, X, Navigation, List, Map as MapIcon, Heart
 } from "lucide-react";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 // Removed obsolete local calculations
 
 const getCategoryDisplayName = (name: string, t: any) => { return t(`categories.${name}`, { defaultValue: name }); };
@@ -116,7 +118,7 @@ export default function Explore() {
   const { t, i18n } = useTranslation();
   const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewModeMobile, setViewModeMobile] = useState<"list" | "map">("list");
   const [viewLayout, setViewLayout] = useState<"list" | "grid">("list");
@@ -437,7 +439,7 @@ export default function Explore() {
     const availableSlots = Array.isArray(b.available_slots) ? b.available_slots : [];
 
     return (
-      <Link key={b.id}
+      <LocalizedLink key={b.id}
          to={`/business/${b.slug}`}
          id={`shop-card-${b.id}`}
         onMouseEnter={() => setHoveredShopId(b.id)}
@@ -498,7 +500,7 @@ export default function Explore() {
              )}
           </div>
         </div>
-      </Link>
+      </LocalizedLink>
     );
   };
 

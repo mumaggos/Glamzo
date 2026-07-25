@@ -3,7 +3,7 @@ import UniversalInbox from '../components/UniversalInbox';
 import UniversalDisputes from '../components/UniversalDisputes';
 import SuperAdminClub from '../components/SuperAdminClub';
 import SalesAgentsTab from '../components/SalesAgentsTab';
-import { useNavigate } from 'react-router-dom';
+import {  } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import ClientXRayModal from '../components/ClientXRayModal';
@@ -17,6 +17,7 @@ import { MAIN_CATEGORIES } from '../utils/categoriesData';
 import { financeService } from '../utils/financeService';
 import GlamzoLogo from '../components/GlamzoLogo';
 import { sendAbandonedCartEmail } from '../utils/communicationHelper';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { 
   Shield, Users, Search, MessageSquare, RefreshCw, AlertTriangle, ArrowUpRight, Check, 
   ShieldAlert, Loader2, Landmark, HelpCircle, Tag, Smartphone, CheckCircle, 
@@ -43,7 +44,7 @@ const PAGE_FALLBACKS: Record<string, string> = {
 
 export default function Admin() {
   const { user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -321,7 +322,7 @@ const [walletWithdrawals, setWalletWithdrawals] = useState<any[]>([]);
         .upload(filePath, optimized.blob, {
           cacheControl: 'public, max-age=31536000, stale-while-revalidate=86400, immutable',
           contentType: 'image/webp',
-          upsert: true,
+          upsert: true
         });
 
       if (uploadErr) {

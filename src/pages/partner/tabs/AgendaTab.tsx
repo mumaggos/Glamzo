@@ -126,7 +126,7 @@ export default function AgendaTab() {
         total_price: manualBookingType === "block" ? 0 : svcPrice, 
         original_service_price: manualBookingType === "block" ? 0 : svcPrice,
         payment_method: "local",
-        payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes,
+        payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes
       });
 
       if (error) throw error;

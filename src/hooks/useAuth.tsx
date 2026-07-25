@@ -369,9 +369,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: {
         data: {
           full_name: fullName,
-          role: role,
-        },
-      },
+          role: role
+        }
+      }
     });
 
     if (suError) {
@@ -407,7 +407,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data, error: siError } = await supabase.auth.signInWithPassword({
       email,
-      password,
+      password
     });
 
     if (siError) {
@@ -428,8 +428,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error: gError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
-      },
+        redirectTo: window.location.origin
+      }
     });
 
     if (gError) {
@@ -462,7 +462,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: `${window.location.origin}/update-password`
     });
 
     if (resetErr) {
@@ -512,7 +512,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         resetPassword,
         updateProfile,
-        refreshProfile,
+        refreshProfile
       }}
     >
       {children}

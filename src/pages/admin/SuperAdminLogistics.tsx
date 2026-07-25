@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {  } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { Package, Truck, CheckCircle2, Store, Search, AlertCircle, MapPin } from "lucide-react";
 import { Business } from "../../types";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 export default function SuperAdminLogistics() {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

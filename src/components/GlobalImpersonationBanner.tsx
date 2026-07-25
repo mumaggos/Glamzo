@@ -26,7 +26,7 @@ export default function GlobalImpersonationBanner() {
         // Directly set session, overwriting the current one
         await supabase.auth.setSession({
           access_token: backupSession.access_token,
-          refresh_token: backupSession.refresh_token,
+          refresh_token: backupSession.refresh_token
         }).catch(err => {
           console.error("Session restore error:", err);
         });

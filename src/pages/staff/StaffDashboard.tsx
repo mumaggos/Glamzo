@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {  } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { DashboardCalendar } from "../../components/DashboardCalendar";
 import { LogOut, Calendar, Clock, User, Scissors, Settings, Camera, Plus, X, Trash2 } from "lucide-react";
 import { optimizeImageBeforeUpload } from "../../utils/imageOptimizer";
 import { Staff, Booking, Service } from "../../types";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState<Staff | null>(null);
@@ -35,7 +36,7 @@ export default function StaffDashboard() {
   const [settingsError, setSettingsError] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     const session = localStorage.getItem('staff_session');
@@ -79,7 +80,7 @@ export default function StaffDashboard() {
         customer_id: fallbackCustomerId, business_id: staff.business_id, service_id: finalServiceId, staff_id: staff.id,
         booking_date: manualDate, start_time: manualStartTime, end_time: endTimeStr,
         total_price: manualBookingType === "block" ? 0 : svcPrice, payment_method: "local",
-        payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes,
+        payment_status: manualBookingType === "block" ? "paid" : "unpaid", booking_status: "confirmed", notes: payloadNotes
       };
       const response = await fetch('/api/staff/bookings/create', {
          method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -176,7 +177,7 @@ export default function StaffDashboard() {
         .from("avatars")
         .upload(filePath, optimized.blob, {
           cacheControl: "public, max-age=31536000",
-          contentType: "image/webp",
+          contentType: "image/webp"
         });
         
       if (uploadErr) throw uploadErr;

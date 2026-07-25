@@ -26,7 +26,7 @@ export default function ServicesTab() {
     duration_minutes: 45,
     category_id: "",
     image_url: "",
-    is_active: true,
+    is_active: true
   });
   const [customCategoryName, setCustomCategoryName] = useState("");
   const [isAddingCustomCategory, setIsAddingCustomCategory] = useState(false);
@@ -70,7 +70,7 @@ export default function ServicesTab() {
             duration_minutes: Number(serviceForm.duration_minutes),
             category_id: finalCategoryId,
             image_url: serviceForm.image_url || null,
-            is_active: serviceForm.is_active,
+            is_active: serviceForm.is_active
           })
           .eq("id", editingService.id);
         if (error) throw error;
@@ -84,7 +84,7 @@ export default function ServicesTab() {
           duration_minutes: Number(serviceForm.duration_minutes),
           category_id: finalCategoryId,
           image_url: serviceForm.image_url || null,
-          is_active: serviceForm.is_active,
+          is_active: serviceForm.is_active
         });
         if (error) throw error;
         setGlobalSuccess("Novo serviço adicionado com sucesso.");
@@ -146,7 +146,7 @@ export default function ServicesTab() {
               duration_minutes: 45,
               category_id: categories.length > 0 ? categories[0].id : "",
               image_url: "",
-              is_active: true,
+              is_active: true
             });
             setShowServiceModal(true);
           }}
@@ -228,7 +228,7 @@ export default function ServicesTab() {
                         duration_minutes: svc.duration_minutes,
                         category_id: svc.category_id || "",
                         image_url: svc.image_url || "",
-                        is_active: svc.is_active,
+                        is_active: svc.is_active
                       });
                       setShowServiceModal(true);
                     }}
@@ -298,7 +298,7 @@ export default function ServicesTab() {
                     onChange={(e) =>
                       setServiceForm({
                         ...serviceForm,
-                        price: e.target.value as any,
+                        price: e.target.value as any
                       })
                     }
                   />
@@ -311,7 +311,7 @@ export default function ServicesTab() {
                     onChange={(e) =>
                       setServiceForm({
                         ...serviceForm,
-                        duration_minutes: Number(e.target.value),
+                        duration_minutes: Number(e.target.value)
                       })
                     }
                   >

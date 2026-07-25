@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {  useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
@@ -8,6 +8,7 @@ import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -71,14 +72,14 @@ const POPULAR_SERVICES_BY_CATEGORY: Record<string, { name: string; duration: num
     { name: 'Penteado de Noiva', duration: 90, price: 80 },
     { name: 'Maquilhagem para Convidados', duration: 45, price: 40 },
     { name: 'Packs de Casamento Completo', duration: 180, price: 250 },
-  ],
+  ]
 };
 
 export default function SetupWizard() {
     const { t, i18n } = useTranslation();
     const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
   
@@ -236,7 +237,7 @@ export default function SetupWizard() {
          fetch("/api/stripe/verify-subscription", {
            method: "POST",
            headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ businessId: business.id, sessionId }),
+           body: JSON.stringify({ businessId: business.id, sessionId })
          }).catch(() => {});
       }
       navigate('/partner/setup', { replace: true });

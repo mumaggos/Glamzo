@@ -1,3 +1,4 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -41,7 +42,7 @@ export default function CookieBanner() {
                 <h3 className="font-bold text-slate-900 mb-1">Valorizamos a sua privacidade</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   Utilizamos cookies essenciais para o funcionamento seguro da plataforma. Poderemos usar também cookies analíticos para melhorar a sua experiência. 
-                  Consulte a nossa <Link to="/politica-de-cookies" className="text-purple-600 font-medium hover:underline">Política de Cookies</Link>.
+                  Consulte a nossa <LocalizedLink to="/politica-de-cookies" className="text-purple-600 font-medium hover:underline">Política de Cookies</LocalizedLink>.
                 </p>
               </div>
             </div>

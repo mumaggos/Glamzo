@@ -68,7 +68,7 @@ export const realtimeService = {
         await fetch('/api/realtime/broadcast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event, payload }),
+          body: JSON.stringify({ event, payload })
         });
       }
     } catch (e) {
@@ -108,7 +108,7 @@ export const realtimeService = {
       title,
       content,
       channel,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
     };
 
     notifications.unshift(newNotification);
@@ -152,7 +152,7 @@ export const realtimeService = {
         customer_id: customerId,
         customer_name: customerName,
         last_message: 'Início da conversa',
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       sessions.unshift(session);
       localStorage.setItem('glamzo_chat_sessions', JSON.stringify(sessions));
@@ -179,7 +179,7 @@ export const realtimeService = {
       sender_type: senderType,
       sender_name: senderName,
       message,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
     };
 
     messages.push(newMsg);
@@ -235,7 +235,7 @@ export const realtimeService = {
       description,
       chat_history: '',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     tickets.unshift(newTicket);
@@ -315,7 +315,7 @@ export const realtimeService = {
       template: templateName,
       params,
       timestamp: new Date().toISOString(),
-      contentHtml: this.generateEmailMarkup(templateName, params),
+      contentHtml: this.generateEmailMarkup(templateName, params)
     };
     
     emails.unshift(newMail);
@@ -327,7 +327,7 @@ export const realtimeService = {
         await fetch('/api/emails/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newMail),
+          body: JSON.stringify(newMail)
         });
       }
     } catch (_) {}

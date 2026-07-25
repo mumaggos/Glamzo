@@ -1,14 +1,16 @@
+import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import {  Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { UserRole } from '../types';
 import { supabase } from '../lib/supabase';
 import { Eye, EyeOff, User, Mail, Loader2 } from 'lucide-react';
 import GlamzoLogo from '../components/GlamzoLogo';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 
 export default function Signup() {
   const { signUp, user, profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
 
   // 1. Guardar Intenção de Redirecionamento na Memória (Essencial para não perder o cliente)
@@ -173,12 +175,12 @@ export default function Signup() {
               <p>{errorMsg}</p>
               {(errorMsg.toLowerCase().includes('associado') || errorMsg.toLowerCase().includes('inicie sessão')) && (
                 <div className="mt-2">
-                  <Link 
+                  <LocalizedLink 
                     to={`/login${window.location.search ? window.location.search + '&' : '?'}email=${encodeURIComponent(email)}`} 
                     className="inline-flex items-center gap-1 text-rose-700 hover:text-rose-800 font-black hover:underline"
                   >
                     <span>Ir para Login &rarr;</span>
-                  </Link>
+                  </LocalizedLink>
                 </div>
               )}
             </div>
@@ -282,9 +284,9 @@ export default function Signup() {
                   />
                   <label htmlFor="terms" className="text-xs text-slate-500 leading-relaxed font-medium">
                     Li e aceito os{' '}
-                    <Link to="/termos-e-condicoes" target="_blank" className="font-bold text-purple-600 hover:text-purple-700">Termos e Condições</Link>
+                    <LocalizedLink to="/termos-e-condicoes" target="_blank" className="font-bold text-purple-600 hover:text-purple-700">Termos e Condições</LocalizedLink>
                     {' '}e a{' '}
-                    <Link to="/politica-de-privacidade" target="_blank" className="font-bold text-purple-600 hover:text-purple-700">Política de Privacidade</Link>.
+                    <LocalizedLink to="/politica-de-privacidade" target="_blank" className="font-bold text-purple-600 hover:text-purple-700">Política de Privacidade</LocalizedLink>.
                   </label>
                 </div>
 
@@ -357,9 +359,9 @@ export default function Signup() {
 
           <p className="mt-6 text-center text-xs font-bold text-slate-600">
             Deseja entrar numa conta existente?{' '}
-            <Link to={`/login${window.location.search}`} className="text-purple-600 hover:text-purple-700">
+            <LocalizedLink to={`/login${window.location.search}`} className="text-purple-600 hover:text-purple-700">
               Iniciar Sessão
-            </Link>
+            </LocalizedLink>
           </p>
 
         </div>

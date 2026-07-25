@@ -22,6 +22,12 @@ i18n
         "Cabelo & Barbearia": "Hair & Barbershop"
       },
       "partnerPage": {
+      "heroPill": "The #1 Beauty Software",
+      "heroPill2": "Smart Schedule Management",
+      "metric1": "Increase in Bookings",
+      "metric2": "No-Show Reduction",
+      "metric3": "Saved per Day",
+      "metric4": "Client Retention",
       "heroTitle": "The Management Software and Marketplace for the Beauty Industry",
       "heroSubtitle": "Increase your revenue, protect your schedule against no-shows and attract new clients. No monthly fees, no hidden commissions.",
       "featuresTitle": "Everything you need in one place.",
@@ -770,6 +776,12 @@ i18n
         "Cabelo & Barbearia": "Cabello y Barbería"
       },
       "partnerPage": {
+      "heroPill": "El Software #1 de Belleza",
+      "heroPill2": "Gestión Inteligente de Agenda",
+      "metric1": "Aumento de Reservas",
+      "metric2": "Reducción de Ausencias",
+      "metric3": "Ahorradas al Día",
+      "metric4": "Retención de Clientes",
       "heroTitle": "El Software de Gestión y Marketplace para la Industria de la Belleza",
       "heroSubtitle": "Aumenta tus ingresos, protege tu agenda contra las inasistencias y atrae nuevos clientes. Sin cuotas mensuales, sin comisiones ocultas.",
       "featuresTitle": "Todo lo que necesitas en un solo lugar.",
@@ -1518,6 +1530,12 @@ i18n
         "Cabelo & Barbearia": "Coiffure & Barbier"
       },
       "partnerPage": {
+      "heroPill": "Le Logiciel Beauté N°1",
+      "heroPill2": "Gestion Intelligente d'Agenda",
+      "metric1": "Augmentation des Réservations",
+      "metric2": "Réduction des Absences",
+      "metric3": "Économisées par Jour",
+      "metric4": "Rétention Client",
       "heroTitle": "Le Logiciel de Gestion et Marketplace pour l'Industrie de la Beauté",
       "heroSubtitle": "Augmentez vos revenus, protégez votre agenda contre les absences et attirez de nouveaux clients. Sans frais mensuels, sans commissions cachées.",
       "featuresTitle": "Tout ce dont vous avez besoin en un seul endroit.",
@@ -2266,6 +2284,12 @@ i18n
         "Cabelo & Barbearia": "Cabelo & Barbearia"
       },
       "partnerPage": {
+      "heroPill": "O Software N.º 1 para Beleza em Portugal",
+      "heroPill2": "Gestão de Agenda Inteligente",
+      "metric1": "Aumento de Marcações",
+      "metric2": "Redução de No-Shows",
+      "metric3": "Poupadas por Dia",
+      "metric4": "Retenção de Clientes",
       "heroTitle": "O Software de Gestão e Marketplace para a Indústria da Beleza",
       "heroSubtitle": "Aumente a sua faturação, proteja a sua agenda contra faltas de comparência e atraia novos clientes. Sem mensalidades, sem comissões ocultas.",
       "featuresTitle": "Tudo o que precisa num só lugar.",
@@ -3000,13 +3024,16 @@ i18n
   }
 },
     detection: {
-      order: ['path', 'localStorage', 'cookie', 'navigator', 'htmlTag', 'subdomain'],
-      caches: ['localStorage', 'cookie'],
+      order: ["path", "localStorage", "cookie", "navigator"],
+      lookupFromPathIndex: 0,
+      caches: ['localStorage', 'cookie']
     },
     fallbackLng: 'pt',
+    supportedLngs: ['pt', 'en', 'es', 'fr'],
+    nonExplicitSupportedLngs: true,
     interpolation: {
-      escapeValue: false,
-    },
+      escapeValue: false
+    }
   });
 
 export default i18n;

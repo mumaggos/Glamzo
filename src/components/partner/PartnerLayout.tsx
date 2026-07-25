@@ -1,5 +1,6 @@
+import { LocalizedLink } from '../../components/LocalizedLink';
 import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
+import { Outlet, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
@@ -7,6 +8,7 @@ import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
 import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
+import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 
 const playNotificationSound = () => {
@@ -58,7 +60,7 @@ export default function PartnerLayout() {
     const interval = setInterval(updatePresence, 60000);
     return () => clearInterval(interval);
   }, [user]);
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -309,12 +311,12 @@ export default function PartnerLayout() {
                 );
               }
               return (
-                <Link key={tab.id} to={tab.path} onClick={() => setIsMobileSidebarOpen(false)} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
+                <LocalizedLink key={tab.id} to={tab.path} onClick={() => setIsMobileSidebarOpen(false)} className={`w-full flex items-center px-4 py-3 text-sm rounded-2xl font-bold transition-all ${isActive ? "bg-purple-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}>
                   <tab.icon className="w-4 h-4 mr-3 shrink-0" /> {tab.label}
                   {tab.id === "mensagens" && unreadMessages > 0 && (
                     <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
                   )}
-                </Link>
+                </LocalizedLink>
               );
             })}
           </nav>
@@ -348,13 +350,13 @@ export default function PartnerLayout() {
                 );
               }
               return (
-                <Link key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
+                <LocalizedLink key={tab.id} to={tab.path} className={`w-full flex items-center justify-between px-4 py-3 text-xs rounded-2xl font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
                   <div className="flex items-center gap-3"><tab.icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span>
                     {tab.id === "mensagens" && unreadMessages > 0 && (
                       <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadMessages}</span>
                     )}
                   </div>
-                </Link>
+                </LocalizedLink>
               );
             })}
           </nav>
@@ -363,7 +365,7 @@ export default function PartnerLayout() {
       <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
         {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && showStripeWarning && (
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
-            {t('partner.stripeWarning')} <Link to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2 hover:text-rose-100 transition-colors">{t('partner.stripeLink')}</Link>
+            {t('partner.stripeWarning')} <LocalizedLink to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2 hover:text-rose-100 transition-colors">{t('partner.stripeLink')}</LocalizedLink>
           </div>
         )}
         <div className="relative z-[99999] h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
@@ -440,10 +442,10 @@ export default function PartnerLayout() {
           </div>
         ) : (
           <>
-            <Link to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabOverview')}</span></Link>
-            <Link to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabClients')}</span></Link>
-            <Link to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></Link>
-            <Link to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabBookings')}</span></Link>
+            <LocalizedLink to="/partner/dashboard/overview" className="flex flex-col items-center p-2"><LayoutDashboard className={`w-6 h-6 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('overview') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabOverview')}</span></LocalizedLink>
+            <LocalizedLink to="/partner/dashboard/clientes" className="flex flex-col items-center p-2"><UsersRound className={`w-6 h-6 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('clientes') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabClients')}</span></LocalizedLink>
+            <LocalizedLink to="/partner/dashboard/agenda" className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-600/30 border-4 border-[#F8F9FC]"><Calendar className="w-6 h-6" /></LocalizedLink>
+            <LocalizedLink to="/partner/dashboard/reservas" className="flex flex-col items-center p-2"><CheckSquare className={`w-6 h-6 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-400'}`} /><span className={`text-[10px] font-bold mt-1 ${location.pathname.includes('reservas') ? 'text-purple-600' : 'text-slate-500'}`}>{t('partner.tabBookings')}</span></LocalizedLink>
             <button onClick={() => setIsMobileSidebarOpen(true)} className="flex flex-col items-center p-2"><Menu className="w-6 h-6 text-slate-400" /><span className="text-[10px] font-bold mt-1 text-slate-400">{t('partner.menu')}</span></button>
           </>
         )}

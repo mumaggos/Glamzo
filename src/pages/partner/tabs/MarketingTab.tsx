@@ -14,7 +14,7 @@ export default function MarketingTab() {
     discount_percent: "",
     discount_value: "",
     valid_until: "",
-    is_active: true,
+    is_active: true
   });
 
   const loadCoupons = async () => {
@@ -56,7 +56,7 @@ export default function MarketingTab() {
         discount_percent: couponForm.discount_percent ? parseFloat(couponForm.discount_percent) : null,
         discount_value: couponForm.discount_value ? parseFloat(couponForm.discount_value) : null,
         valid_until: couponForm.valid_until || null,
-        is_active: couponForm.is_active,
+        is_active: couponForm.is_active
       };
 
       const { data, error } = await supabase
@@ -74,7 +74,7 @@ export default function MarketingTab() {
         discount_percent: "",
         discount_value: "",
         valid_until: "",
-        is_active: true,
+        is_active: true
       });
       loadCoupons(); // Refresh to be safe
     } catch (err) {
