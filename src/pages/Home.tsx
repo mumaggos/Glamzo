@@ -1,6 +1,8 @@
 import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect, useMemo, useRef } from "react"; 
-import { useNavigate, Link, useSearchParams } from "react-router-dom"; 
+import { Link, useSearchParams } from "react-router-dom";
+import { LocalizedLink } from '../components/LocalizedLink';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate'; 
 import { supabase } from "../lib/supabase"; 
 import { fetchAllReviews } from "../utils/reviewsHelper"; 
 import { 
@@ -66,7 +68,7 @@ const optimizeUnsplashUrl = (url: string | null) => {
 };
 
 export default function Home() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
@@ -309,7 +311,7 @@ export default function Home() {
 
   // Cartão Minimalista de Elite (Estilo Airbnb) 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
-    <Link to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
+    <LocalizedLink to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
       <SeoHead title={t('home.heroTitle1') + " " + t('home.heroTitle2')} description={t('home.heroSubtitle')} /> 
         <img  
@@ -352,7 +354,7 @@ export default function Home() {
         <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${b.startPrice}€` : t('home.free')}</span> 
         <span className="text-sm text-slate-500">{t('home.basePrice')}</span> 
       </div> 
-    </Link> 
+    </LocalizedLink> 
   ); 
 
   return ( 

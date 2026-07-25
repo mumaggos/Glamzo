@@ -1,4 +1,6 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { LocalizedLink } from './LocalizedLink';
+import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
 import { useAuth } from '../hooks/useAuth';
 import { User, LogOut, Briefcase, Search, Heart, Home as HomeIcon } from 'lucide-react';
 import GlamzoLogo from './GlamzoLogo';
@@ -6,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -47,23 +49,23 @@ export default function Navbar() {
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
             {/* Logo */}
-            <Link to="/">
+            <LocalizedLink to="/">
               <GlamzoLogo size={32} withText={true} forceDark={!isDarkNavbar} />
-            </Link>
+            </LocalizedLink>
 
             {/* Middle Links - Desktop */}
             <div className="hidden md:flex items-center gap-6">
               {isPartnerPage ? (
-                <Link to="/" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-all tracking-wide`}>
+                <LocalizedLink to="/" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-600 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-all tracking-wide`}>
                   {t('navbar.viewMarketplace')}
-                </Link>
+                </LocalizedLink>
               ) : (
                 <>
-                  <Link to="/explore" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
+                  <LocalizedLink to="/explore" className={`text-xs font-semibold ${isDarkNavbar ? 'text-slate-300 hover:text-purple-400' : 'text-slate-600 hover:text-purple-600'} transition-all tracking-wide uppercase`}>
                     {t('navbar.explorePartners')}
-                  </Link>
+                  </LocalizedLink>
                   {user && profile?.role === 'customer' && (
-                    <Link 
+                    <LocalizedLink 
                       to="/partner" 
                       className={`text-[10px] font-bold ${
                         isDarkNavbar 
@@ -72,12 +74,12 @@ export default function Navbar() {
                       } px-3.5 py-1.5 transition-all rounded-full tracking-wider`}
                     >
                       {t('navbar.partnerArea')}
-                    </Link>
+                    </LocalizedLink>
                   )}
                   {profile?.role === 'business' && (
-                    <Link to="/dashboard" className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-all">
+                    <LocalizedLink to="/dashboard" className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-all">
                       {t('navbar.salonPanel')}
-                    </Link>
+                    </LocalizedLink>
                   )}
                 </>
               )}
@@ -97,7 +99,7 @@ export default function Navbar() {
                   </span>
 
                   {/* Profile Target */}
-                  <Link
+                  <LocalizedLink
                     to={getProfileTargetRoute()}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
                       isDarkNavbar 
@@ -118,7 +120,7 @@ export default function Navbar() {
                     <span className="max-w-[90px] truncate font-medium">
                       {profile?.full_name || user.email?.split('@')[0]}
                     </span>
-                  </Link>
+                  </LocalizedLink>
 
                   {/* Sign Out */}
                   <button
@@ -135,18 +137,18 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Link
+                  <LocalizedLink
                     to={isPartnerPage ? "/partner/login" : "/login"}
                     className={`text-xs sm:text-sm px-3.5 py-2 ${isDarkNavbar ? 'text-slate-300 hover:text-white' : 'text-slate-650 hover:text-slate-900'} transition-all font-medium`}
                   >
                     {t('navbar.signIn')}
-                  </Link>
-                  <Link
+                  </LocalizedLink>
+                  <LocalizedLink
                     to={isPartnerPage ? "/partner/signup" : "/signup"}
                     className="text-xs sm:text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md shadow-purple-950/20 transition-all hover:scale-[1.01]"
                   >
                     {isPartnerPage ? t('navbar.register') : t('navbar.createAccount')}
-                  </Link>
+                  </LocalizedLink>
                 </div>
               )}
             </div>
