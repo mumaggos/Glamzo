@@ -22,6 +22,8 @@ i18n
         "Cabelo & Barbearia": "Hair & Barbershop"
       },
       "partnerPage": {
+      "partnerHeroTitle1": "Fill your schedule, ",
+      "partnerHeroTitle2": "Multiply your profit.",
       "heroPill": "The #1 Beauty Software",
       "heroPill2": "Smart Schedule Management",
       "metric1": "Increase in Bookings",
@@ -776,6 +778,8 @@ i18n
         "Cabelo & Barbearia": "Cabello y Barbería"
       },
       "partnerPage": {
+      "partnerHeroTitle1": "Llena tu agenda, ",
+      "partnerHeroTitle2": "Multiplica tus beneficios.",
       "heroPill": "El Software #1 de Belleza",
       "heroPill2": "Gestión Inteligente de Agenda",
       "metric1": "Aumento de Reservas",
@@ -1530,6 +1534,8 @@ i18n
         "Cabelo & Barbearia": "Coiffure & Barbier"
       },
       "partnerPage": {
+      "partnerHeroTitle1": "Remplissez votre agenda, ",
+      "partnerHeroTitle2": "Multipliez vos bénéfices.",
       "heroPill": "Le Logiciel Beauté N°1",
       "heroPill2": "Gestion Intelligente d'Agenda",
       "metric1": "Augmentation des Réservations",
@@ -2284,6 +2290,8 @@ i18n
         "Cabelo & Barbearia": "Cabelo & Barbearia"
       },
       "partnerPage": {
+      "partnerHeroTitle1": "Lote a sua agenda, ",
+      "partnerHeroTitle2": "Multiplique o seu lucro.",
       "heroPill": "O Software N.º 1 para Beleza em Portugal",
       "heroPill2": "Gestão de Agenda Inteligente",
       "metric1": "Aumento de Marcações",

@@ -80,12 +80,12 @@ export default function Partner() {
           </div>
           
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-slate-900 leading-[1.05] max-w-5xl mx-auto mb-6">
-            {t("partnerPage.heroTitle1", "Lote a sua agenda, ")}<br />
-            <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-500 bg-clip-text text-transparent">{t("partnerPage.heroTitle2", "Multiplique o seu lucro.")}</span>
+            {t("partnerPage.partnerHeroTitle1", "Lote a sua agenda, ")}<br />
+            <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-500 bg-clip-text text-transparent">{t("partnerPage.partnerHeroTitle2", "Multiplique o seu lucro.")}</span>
           </h1>
           
           <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed mb-10">
-            {t("partnerPage.heroSubtitle", "A Glamzo é o ecossistema de elite focado a 100% no crescimento de Salões, Barbearias e SPAs. Agenda inteligente, pagamentos integrados e marketing automático.")}
+            {t("partnerPage.heroSubtitle")}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto">
