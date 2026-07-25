@@ -41,7 +41,8 @@ export default function SettingsTab() {
     city: business?.city || "",
     phone: business?.phone || "",
     email: business?.email || "",
-    currency: business?.currency || "EUR"
+    currency: business?.currency || "EUR",
+    timezone: business?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Lisbon"
   });
 
   useEffect(() => {
@@ -279,6 +280,20 @@ export default function SettingsTab() {
                       <option value="GBP">{t('settings.currencyGbp')}</option>
                       <option value="USD">{t('settings.currencyUsd')}</option>
                       <option value="BRL">{t('settings.currencyBrl')}</option>
+                    </select>
+                  </div>
+
+                  
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fuso Horário / Timezone</label>
+                    <select
+                      value={formData.timezone}
+                      onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 outline-none rounded-xl p-3 text-sm font-medium focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    >
+                      {(Intl as any).supportedValuesOf('timeZone').map(tz => (
+                        <option key={tz} value={tz}>{tz}</option>
+                      ))}
                     </select>
                   </div>
 

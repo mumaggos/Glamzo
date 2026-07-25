@@ -1,8 +1,25 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { CreditCard, Banknote, User } from 'lucide-react';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export function DashboardCalendar({ business, bookings, staff, businessHours, selectedStaffFilter, agendaMode, selectedAgendaDate, onDateSelect, onBookingClick }: any) {
   
+  
+  const shopTz = business?.timezone || 'Europe/Lisbon';
+  const tzBookings = useMemo(() => {
+    return (bookings || []).map((b: any) => {
+      if (b.start_datetime) {
+        return {
+          ...b,
+          booking_date: formatInTimeZone(b.start_datetime, shopTz, 'yyyy-MM-dd'),
+          start_time: formatInTimeZone(b.start_datetime, shopTz, 'HH:mm'),
+          end_time: b.end_datetime ? formatInTimeZone(b.end_datetime, shopTz, 'HH:mm') : b.end_time
+        };
+      }
+      return b;
+    });
+  }, [bookings, shopTz]);
+
   const columns = useMemo(() => {
     const baseDate = selectedAgendaDate ? new Date(selectedAgendaDate) : new Date();
     
@@ -84,8 +101,10 @@ export function DashboardCalendar({ business, bookings, staff, businessHours, se
     }
   }, [hours]); 
 
-  const currentHourNum = now.getHours();
-  const currentMinute = now.getMinutes();
+  
+  const currentHourNum = parseInt(formatInTimeZone(now, shopTz, 'HH'), 10);
+  const currentMinute = parseInt(formatInTimeZone(now, shopTz, 'mm'), 10);
+
 
   return (
     <div className="flex flex-col h-[65vh] md:h-[75vh] min-h-[500px] md:min-h-[700px] bg-white p-2 md:p-4 overflow-hidden rounded-3xl border border-slate-200/50 shadow-sm">
@@ -138,7 +157,7 @@ export function DashboardCalendar({ business, bookings, staff, businessHours, se
               
               {columns.map((col: any) => {
                 const colStaffId = col.isStaff ? col.id : selectedStaffFilter;
-                const slotBookings = bookings.filter((b: any) => b.booking_date === col.dateStr && parseInt(b.start_time) === hour && (colStaffId === 'all' || b.staff_id === colStaffId || b.staff_id === null));
+                const slotBookings = tzBookings.filter((b: any) => b.booking_date === col.dateStr && parseInt(b.start_time) === hour && (colStaffId === 'all' || b.staff_id === colStaffId || b.staff_id === null));
                 
                 return (
                   <div 

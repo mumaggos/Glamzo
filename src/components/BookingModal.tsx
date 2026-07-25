@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { createUTCBookingTimestamp } from '../utils/timezone';
 import {  } from 'react-router-dom';
 import SecurityBadge from './SecurityBadge';
 import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
@@ -318,8 +319,13 @@ const handleConfirmReservation = async () => {
       if (!matchedSlot) throw new Error('Este horário acabou de ser reservado por outro utilizador. Por favor escolha outra hora.');
 
       const finalStaffId = selectedStaff === 'any' ? (finalStaffIdForBooking || matchedSlot?.assignedStaffId) : selectedStaff.id;
+      
       const dateStr = [selectedDate.getFullYear(), String(selectedDate.getMonth() + 1).padStart(2, '0'), String(selectedDate.getDate()).padStart(2, '0')].join('-');
       const endTimeStr = minutesToTime(timeToMinutes(selectedTime) + totalServicesDuration);
+
+      const shopTz = business.timezone || 'Europe/Lisbon';
+      const startDatetimeUTC = createUTCBookingTimestamp(dateStr, selectedTime, shopTz);
+      const endDatetimeUTC = createUTCBookingTimestamp(dateStr, endTimeStr, shopTz);
 
       const finalPriceToPay = Math.max(0, Number((totalServicesPrice - getDiscountAmount()).toFixed(2)));
       
@@ -334,6 +340,7 @@ const handleConfirmReservation = async () => {
 
       const { data, error } = await supabase.from('bookings').insert({
         customer_id: user.id, business_id: business.id, service_id: selectedServices[0].id, staff_id: finalStaffId,
+        start_datetime: startDatetimeUTC, end_datetime: endDatetimeUTC,
         booking_date: dateStr, start_time: selectedTime, end_time: endTimeStr, total_price: finalPriceToPay,
         original_service_price: totalServicesPrice,
         discount_applied: getDiscountAmount(),

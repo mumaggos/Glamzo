@@ -7,6 +7,8 @@ import { Calendar, Sparkles, X, Bell, Plus, CheckCircle, Trash2, ChevronLeft, Ch
 import { processBookingPoints } from '../../../utils/rewardsHelper';
 import { DashboardCalendar } from "../../../components/DashboardCalendar";
 import { useTranslation } from "react-i18next";
+import { createUTCBookingTimestamp } from '../../../utils/timezone';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export default function AgendaTab() {
     const { t } = useTranslation();
@@ -15,6 +17,20 @@ export default function AgendaTab() {
   const [agendaMode, setAgendaMode] = useState<"day" | "3days" | "week">("day");
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<string>((() => { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'); })());
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>("all");
+
+  const shopTz = business?.timezone || 'Europe/Lisbon';
+  const tzBookings = bookings ? bookings.map((b: any) => {
+    if (b.start_datetime) {
+      return {
+        ...b,
+        booking_date: formatInTimeZone(b.start_datetime, shopTz, 'yyyy-MM-dd'),
+        start_time: formatInTimeZone(b.start_datetime, shopTz, 'HH:mm'),
+        end_time: b.end_datetime ? formatInTimeZone(b.end_datetime, shopTz, 'HH:mm') : b.end_time
+      };
+    }
+    return b;
+  }) : [];
+
   
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
@@ -102,7 +118,7 @@ export default function AgendaTab() {
         return true;
       };
 
-      const bookingsOnDay = bookings.filter((b: any) => b.booking_date === manualDate && b.booking_status !== 'cancelled');
+      const bookingsOnDay = tzBookings.filter((b: any) => b.booking_date === manualDate && b.booking_status !== 'cancelled');
       const targetStaffId = (manualStaffId === "all" || manualStaffId === "") ? null : manualStaffId;
       
       let hasOverlap = bookingsOnDay.some(b => checkOverlap(b, targetStaffId));
@@ -113,6 +129,10 @@ export default function AgendaTab() {
          return;
       }
       
+            const shopTz = business?.timezone || 'Europe/Lisbon';
+      const startDatetimeUTC = createUTCBookingTimestamp(manualDate, manualStartTime, shopTz);
+      const endDatetimeUTC = createUTCBookingTimestamp(manualDate, endTimeStr, shopTz);
+
       const payloadNotes = manualBookingType === "block" 
         ? `🛑 BLOQUEIO: ${manualReason}` 
         : `Manual: ${manualClientName} ${manualNotes}`;
@@ -123,6 +143,7 @@ export default function AgendaTab() {
       const { error } = await supabase.from("bookings").insert({
         customer_id: user.id, business_id: business.id, service_id: finalServiceId, staff_id: targetStaffId,
         booking_date: manualDate, start_time: manualStartTime, end_time: endTimeStr,
+        start_datetime: startDatetimeUTC, end_datetime: endDatetimeUTC,
         total_price: manualBookingType === "block" ? 0 : svcPrice, 
         original_service_price: manualBookingType === "block" ? 0 : svcPrice,
         payment_method: "local",

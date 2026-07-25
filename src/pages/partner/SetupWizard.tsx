@@ -129,6 +129,7 @@ export default function SetupWizard() {
   const [currency, setCurrency] = useState('EUR');
   const [district, setDistrict] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Lisbon');
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
   const [setupByGlamzo, setSetupByGlamzo] = useState(false);
@@ -900,6 +901,21 @@ export default function SetupWizard() {
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.storeName')}</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium" placeholder={t('setupWizard.storeNamePlaceholder')} />
+              </div>
+
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Fuso Horário / Timezone</label>
+                <select 
+                  value={timezone} 
+                  onChange={e => setTimezone(e.target.value)} 
+                  className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-slate-800"
+                >
+                  {(Intl as any).supportedValuesOf('timeZone').map(tz => (
+                    <option key={tz} value={tz}>{tz}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-500 mt-1">Este será o fuso horário usado no calendário do salão.</p>
               </div>
 
               <div>

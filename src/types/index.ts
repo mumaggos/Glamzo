@@ -15,6 +15,7 @@ export interface UserProfile {
 }
 
 export interface Business {
+  timezone?: string;
   id: string;
   owner_id: string;
   name: string;
@@ -121,6 +122,8 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' 
 export type PaymentStatus = 'unpaid' | 'paid' | 'refunded';
 
 export interface Booking {
+  start_datetime?: string;
+  end_datetime?: string;
   id: string;
   customer_id: string;
   business_id: string;

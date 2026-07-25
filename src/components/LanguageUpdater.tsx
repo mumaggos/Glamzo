@@ -18,11 +18,11 @@ export default function LanguageUpdater() {
       }
     } else {
       const currentLang = i18n.language || 'pt';
-      if (!currentLang.startsWith('pt')) {
+      if (currentLang !== 'pt' && !currentLang.startsWith('pt')) {
         navigate(`/${currentLang}${location.pathname === '/' ? '' : location.pathname}${location.search}${location.hash}`, { replace: true });
       }
     }
-  }, [location.pathname, i18n, navigate, location.search, location.hash]);
+  }, [location.pathname]);
 
   return <Outlet />;
 }
