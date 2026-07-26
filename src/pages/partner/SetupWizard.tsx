@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
+import { AddressAutocomplete } from "../../components/AddressAutocomplete";
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
 import { toast } from 'react-hot-toast';
@@ -124,6 +125,7 @@ export default function SetupWizard() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('Portugal');
   const [doorNumber, setDoorNumber] = useState('');
   const [city, setCity] = useState('');
   const [currency, setCurrency] = useState('EUR');
@@ -152,6 +154,32 @@ export default function SetupWizard() {
     const draft = { step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo };
     // localStorage removed
   }, [step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo, loading]);
+
+  
+  const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
+    if (place.name || place.formatted_address) {
+      setAddress(place.name || place.formatted_address || '');
+    }
+    
+    if (place.geometry?.location) {
+      setCoordinates({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
+    }
+
+    if (place.address_components) {
+      let pc = '', c = '', ct = '', d = '';
+      for (const component of place.address_components) {
+        const types = component.types;
+        if (types.includes('postal_code')) pc = component.long_name;
+        if (types.includes('locality') || types.includes('postal_town')) c = component.long_name;
+        if (types.includes('country')) ct = component.long_name;
+        if (types.includes('administrative_area_level_1')) d = component.long_name;
+      }
+      if (pc) setPostalCode(pc);
+      if (c) setCity(c);
+      if (ct) setCountry(ct);
+      if (d) setDistrict(d);
+    }
+  };
 
   const handleHourChange = (weekday: number, field: string, value: any) => {
     setBusinessHours(prev => prev.map(h => h.weekday === weekday ? { ...h, [field]: value } : h));
@@ -355,6 +383,7 @@ export default function SetupWizard() {
         setPhone(currentBiz.phone || draft?.phone || '');
         setEmail(currentBiz.email || draft?.email || '');
         setAddress(currentBiz.address || draft?.address || '');
+        setCountry(currentBiz.country || draft?.country || 'Portugal');
         setDoorNumber(currentBiz.door_number || draft?.doorNumber || '');
         setCity(currentBiz.city || draft?.city || '');
         setCurrency(currentBiz.currency || draft?.currency || (navigator.language.includes('US') ? 'USD' : navigator.language.includes('GB') ? 'GBP' : 'EUR'));
@@ -506,7 +535,7 @@ export default function SetupWizard() {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
-          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, currency, slug, setup_step: 2,
+          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode, country, currency, slug, setup_step: 2,
           category, logo_url: logoUrl, cover_url: coverUrl,
           latitude: lat, longitude: lng,
           onboarding_step: 2
@@ -810,6 +839,7 @@ export default function SetupWizard() {
   ];
 
   return (
+    <APIProvider apiKey={API_KEY || ''} language={currentLangCode}>
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -948,14 +978,25 @@ export default function SetupWizard() {
               <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.address')}</label>
-                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.addressPlaceholder')} />
+                  <AddressAutocomplete 
+                    value={address} 
+                    onChange={setAddress} 
+                    onPlaceSelect={handlePlaceSelect} 
+                    className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
+                    placeholder={t('setupWizard.addressPlaceholder')} 
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.door')}</label>
                   <input type="text" value={doorNumber} onChange={e => setDoorNumber(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.doorPlaceholder')} />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">País</label>
+                  <input type="text" value={country} onChange={e => setCountry(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="País" />
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.postalCode')}</label>
                   <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.postalCodePlaceholder')} />
@@ -996,7 +1037,7 @@ export default function SetupWizard() {
                 <p className="text-xs text-slate-500 mb-2.5">{t('setupWizard.mapHint')}</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
                   {API_KEY ? (
-                    <APIProvider apiKey={API_KEY} language={currentLangCode}>
+                    <>
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
@@ -1029,7 +1070,7 @@ export default function SetupWizard() {
                           </div>
                         </AdvancedMarker>
                       </Map>
-                    </APIProvider>
+                    </>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
                       <MapPin className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
@@ -1439,5 +1480,6 @@ export default function SetupWizard() {
         )}
       </div>
     </div>
+    </APIProvider>
   );
 }

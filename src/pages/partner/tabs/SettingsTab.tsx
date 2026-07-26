@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { APIProvider } from "@vis.gl/react-google-maps";
+import { AddressAutocomplete } from "../../../components/AddressAutocomplete";
 import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound } from "lucide-react";
 import { Business } from "../../../types";
 import { supabase } from "../../../lib/supabase";
@@ -10,6 +12,7 @@ interface PartnerContextType {
   loadLayoutData: () => void;
 }
 
+const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 export default function SettingsTab() {
   const { t } = useTranslation();
   const { business, loadLayoutData } = useOutletContext<PartnerContextType>();
@@ -33,12 +36,14 @@ export default function SettingsTab() {
   const [globalMessage, setGlobalMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   // Estados dos Formulários
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(business?.latitude ? {lat: business.latitude, lng: business.longitude} : null);
   const [formData, setFormData] = useState({
     name: business?.name || "",
     address: business?.address || "",
     door_number: business?.door_number || "",
     postal_code: business?.postal_code || "",
     city: business?.city || "",
+    country: business?.country || "Portugal",
     phone: business?.phone || "",
     email: business?.email || "",
     currency: business?.currency || "EUR",
@@ -89,13 +94,33 @@ export default function SettingsTab() {
     setTimeout(() => setGlobalMessage(null), 5000);
   };
 
+  
+  const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
+    let newFormData = { ...formData };
+    if (place.name || place.formatted_address) {
+      newFormData.address = place.name || place.formatted_address || '';
+    }
+    if (place.geometry?.location) {
+      setCoordinates({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
+    }
+    if (place.address_components) {
+      for (const component of place.address_components) {
+        const types = component.types;
+        if (types.includes('postal_code')) newFormData.postal_code = component.long_name;
+        if (types.includes('locality') || types.includes('postal_town')) newFormData.city = component.long_name;
+        if (types.includes('country')) newFormData.country = component.long_name;
+      }
+    }
+    setFormData(newFormData);
+  };
+
   const handleSaveDados = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingDados(true);
     try {
       
       // Remover campos que não existem na tabela
-      const payloadToSave = { ...formData };
+      const payloadToSave = { ...formData, latitude: coordinates?.lat || business.latitude, longitude: coordinates?.lng || business.longitude };
       if ('currency' in payloadToSave) delete payloadToSave.currency;
       
       const { error } = await supabase.from('businesses').update(payloadToSave).eq('id', business.id);
@@ -220,6 +245,7 @@ export default function SettingsTab() {
   };
 
   return (
+    <APIProvider apiKey={API_KEY || ''} language={localStorage.getItem('i18nextLng') || 'pt'}>
     <div className="animate-fade-in w-full max-w-5xl mx-auto space-y-8 text-slate-700 py-6 pb-20">
       
       {globalMessage && (
@@ -268,8 +294,15 @@ export default function SettingsTab() {
               <form onSubmit={handleSaveDados} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.storeName')}</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
-                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.fullAddress')}</label><input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.fullAddress')}</label>
+<AddressAutocomplete 
+  value={formData.address} 
+  onChange={v => setFormData({...formData, address: v})} 
+  onPlaceSelect={handlePlaceSelect} 
+  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" 
+/></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.doorNumber')}</label><input type="text" value={formData.door_number} onChange={e => setFormData({...formData, door_number: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
+                  <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">País</label><input type="text" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.postalCode')}</label><input type="text" value={formData.postal_code} onChange={e => setFormData({...formData, postal_code: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.city')}</label><input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.phone')}</label><input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
@@ -423,8 +456,4 @@ export default function SettingsTab() {
             </div>
           )}
 
-        </div>
-      </div>
-    </div>
-  );
-}
+        </div></div></div></APIProvider>);}
