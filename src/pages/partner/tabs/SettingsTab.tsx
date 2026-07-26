@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { APIProvider } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { AddressAutocomplete } from "../../../components/AddressAutocomplete";
-import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound } from "lucide-react";
+import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound, MapPin } from "lucide-react";
 import { Business } from "../../../types";
 import { supabase } from "../../../lib/supabase";
 
@@ -13,6 +13,17 @@ interface PartnerContextType {
 }
 
 const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+
+const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
+  const map = useMap();
+  React.useEffect(() => {
+    if (map && coordinates) {
+      map.panTo(coordinates);
+    }
+  }, [map, coordinates]);
+  return null;
+};
+
 export default function SettingsTab() {
   const { t } = useTranslation();
   const { business, loadLayoutData } = useOutletContext<PartnerContextType>();
@@ -94,7 +105,47 @@ export default function SettingsTab() {
     setTimeout(() => setGlobalMessage(null), 5000);
   };
 
-    const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
+  
+  const triggerGeocoding = async () => {
+    if (!formData.address || !formData.city) return;
+    try {
+      const fullAddress = `${formData.address} ${formData.door_number ? formData.door_number + ',' : ''} ${formData.postal_code} ${formData.city}, Portugal`;
+      let lat = null;
+      let lng = null;
+      
+      if (API_KEY) {
+        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          lat = data.results[0].geometry.location.lat;
+          lng = data.results[0].geometry.location.lng;
+        }
+      } else {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lng = parseFloat(data[0].lon);
+        }
+      }
+      
+      if (lat && lng) {
+        setCoordinates({ lat, lng });
+      }
+    } catch (e) {
+      console.warn('Geocoding error:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!formData.address || !formData.city || !formData.postal_code) return;
+    const delayDebounceFn = setTimeout(() => {
+      triggerGeocoding();
+    }, 1500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [formData.address, formData.door_number, formData.city, formData.postal_code]);
+
+  const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
     let newFormData = { ...formData };
     let pc = '', c = '', ct = '', route = '', streetNumber = '';
 
@@ -328,6 +379,50 @@ export default function SettingsTab() {
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.city')}</label><input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.phone')}</label><input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
 
+                  <div className="space-y-2 md:col-span-2 pt-2">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.exactLocation', 'Localização Exata')}</label>
+                    <p className="text-xs text-slate-500 mb-2.5">{t('setupWizard.mapHint', 'Arraste o pino para a localização exata da sua porta.')}</p>
+                    <div className="h-64 rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100 shadow-inner">
+                      {API_KEY ? (
+                        <>
+                          <Map
+                            defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
+                            defaultZoom={coordinates ? 16 : 7}
+                            mapId="SETTINGS_WIZARD_MAP_LOCATION"
+                            onClick={(e) => {
+                              if (e.detail.latLng) {
+                                setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
+                              }
+                            }}
+                            disableDefaultUI
+                            style={{ width: '100%', height: '100%' }}
+                          >
+                            <MapUpdater coordinates={coordinates} />
+                            <AdvancedMarker 
+                              position={coordinates || { lat: 39.3999, lng: -8.2245 }}
+                              draggable
+                              onDragEnd={(e) => {
+                                if (e.latLng) {
+                                  setCoordinates({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                                }
+                              }}
+                            >
+                              <div className="relative flex flex-col items-center">
+                                <div className="bg-purple-600 text-white p-2 rounded-full shadow-xl border-2 border-white">
+                                  <MapPin className="w-5 h-5 fill-current" />
+                                </div>
+                              </div>
+                            </AdvancedMarker>
+                          </Map>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                          <MapPin className="w-8 h-8 text-slate-400 mb-2 animate-pulse" />
+                          <span className="text-sm font-bold text-slate-700">{t('setupWizard.mapPreview', 'Mapa')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.currencyLabel', 'Moeda (Currency)')}</label>
                     <select
