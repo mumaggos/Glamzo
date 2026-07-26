@@ -94,23 +94,34 @@ export default function SettingsTab() {
     setTimeout(() => setGlobalMessage(null), 5000);
   };
 
-  
-  const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
+    const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
     let newFormData = { ...formData };
-    if (place.name || place.formatted_address) {
-      newFormData.address = place.name || place.formatted_address || '';
-    }
+    let pc = '', c = '', ct = '', route = '', streetNumber = '';
+
     if (place.geometry?.location) {
       setCoordinates({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
     }
+    
     if (place.address_components) {
       for (const component of place.address_components) {
         const types = component.types;
-        if (types.includes('postal_code')) newFormData.postal_code = component.long_name;
-        if (types.includes('locality') || types.includes('postal_town')) newFormData.city = component.long_name;
-        if (types.includes('country')) newFormData.country = component.long_name;
+        if (types.includes('route')) route = component.long_name;
+        if (types.includes('street_number')) streetNumber = component.long_name;
+        if (types.includes('postal_code')) pc = component.long_name;
+        if (types.includes('locality') || types.includes('postal_town') || types.includes('administrative_area_level_2')) c = component.long_name;
+        if (types.includes('country')) ct = component.long_name;
       }
     }
+
+    const newAddress = [route, streetNumber].filter(Boolean).join(', ');
+    if (newAddress) newFormData.address = newAddress;
+    else if (place.name) newFormData.address = place.name;
+    else if (place.formatted_address) newFormData.address = place.formatted_address.split(',')[0];
+
+    if (pc) newFormData.postal_code = pc;
+    if (c) newFormData.city = c;
+    if (ct) newFormData.country = ct;
+    
     setFormData(newFormData);
   };
 

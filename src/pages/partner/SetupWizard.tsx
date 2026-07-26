@@ -151,34 +151,40 @@ export default function SetupWizard() {
   
   useEffect(() => {
     if (loading) return;
-    const draft = { step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo };
-    // localStorage removed
-  }, [step, name, phone, email, address, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo, loading]);
+    const draft = { step, name, phone, email, address, country, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo };
+    localStorage.setItem('setupWizardDraft', JSON.stringify(draft));
+  }, [step, name, phone, email, address, country, doorNumber, city, district, postalCode, category, logoUrl, businessHours, setupByGlamzo, loading]);
 
-  
-  const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
-    if (place.name || place.formatted_address) {
-      setAddress(place.name || place.formatted_address || '');
-    }
-    
+    const handlePlaceSelect = (place: google.maps.places.PlaceResult) => {
+    let newAddress = '';
+    let pc = '', c = '', ct = '', d = '', route = '', streetNumber = '';
+
     if (place.geometry?.location) {
       setCoordinates({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
     }
 
     if (place.address_components) {
-      let pc = '', c = '', ct = '', d = '';
       for (const component of place.address_components) {
         const types = component.types;
+        if (types.includes('route')) route = component.long_name;
+        if (types.includes('street_number')) streetNumber = component.long_name;
         if (types.includes('postal_code')) pc = component.long_name;
-        if (types.includes('locality') || types.includes('postal_town')) c = component.long_name;
+        if (types.includes('locality') || types.includes('postal_town') || types.includes('administrative_area_level_2')) c = component.long_name;
         if (types.includes('country')) ct = component.long_name;
         if (types.includes('administrative_area_level_1')) d = component.long_name;
       }
-      if (pc) setPostalCode(pc);
-      if (c) setCity(c);
-      if (ct) setCountry(ct);
-      if (d) setDistrict(d);
     }
+
+    newAddress = [route, streetNumber].filter(Boolean).join(', ');
+    
+    if (newAddress) setAddress(newAddress);
+    else if (place.name) setAddress(place.name);
+    else if (place.formatted_address) setAddress(place.formatted_address.split(',')[0] || '');
+
+    if (pc) setPostalCode(pc);
+    if (c) setCity(c);
+    if (ct) setCountry(ct);
+    if (d) setDistrict(d);
   };
 
   const handleHourChange = (weekday: number, field: string, value: any) => {
@@ -377,7 +383,11 @@ export default function SetupWizard() {
         }
         
         
-        const draft: any = null;
+        let draft: any = null;
+        try {
+          const stored = localStorage.getItem('setupWizardDraft');
+          if (stored) draft = JSON.parse(stored);
+        } catch(e) {}
 
         setName(currentBiz.name || draft?.name || '');
         setPhone(currentBiz.phone || draft?.phone || '');

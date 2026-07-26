@@ -127,3 +127,34 @@ img, button, a {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Hide Google Places Autocomplete "Powered by Google" logo */
+.pac-container::after {
+    display: none !important;
+}
+
+/* Make autocomplete dropdown look nicer */
+.pac-container {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    font-family: inherit;
+    margin-top: 4px;
+}
+.pac-item {
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-top: 1px solid #f1f5f9;
+}
+.pac-item:hover {
+    background-color: #f8fafc;
+}
+.pac-item-query {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+.pac-icon {
+    margin-top: 2px;
+}

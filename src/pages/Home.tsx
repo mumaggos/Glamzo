@@ -85,6 +85,21 @@ export default function Home() {
   const [querySuggestions, setQuerySuggestions] = useState<any[]>([]);
   const [servicesData, setServicesData] = useState<any[]>([]);
 
+  
+  useEffect(() => {
+    // Attempt to get user location on mount for the map
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          // Silent fallback, just default location
+        }
+      );
+    }
+  }, []);
+
   useEffect(() => {
     supabase.from("services").select("id, name, business_id").eq("is_active", true).then(res => {
       if (res.data) setServicesData(res.data);
@@ -599,8 +614,8 @@ export default function Home() {
             <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
               <APIProvider apiKey={API_KEY} language={currentLangCode}> 
                 <Map 
-                  defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
-                  defaultZoom={userCoords ? 13 : 8} 
+                  center={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
+                  zoom={userCoords ? 13 : 8} 
                   disableDefaultUI 
                   clickableIcons={false} 
                   styles={mapStyles} 
