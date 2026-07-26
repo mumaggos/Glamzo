@@ -97,7 +97,7 @@ export default function SettingsTab() {
       if (error) throw error;
       showMessage('success', t('settings.succDataUpdated')); loadLayoutData();
     } catch (err) {
-      showMessage('error', t('settings.errDataUpdate'));
+      showMessage('error', t('settings.errDataUpdate') + ": " + (err as any).message);
     } finally {
       setSavingDados(false);
     }
