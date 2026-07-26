@@ -337,9 +337,8 @@ export default function Home() {
 
   // Cartão Minimalista de Elite (Estilo Airbnb) 
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
-    <LocalizedLink to={`/business/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
+    <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-      <SeoHead title={t('home.heroTitle1') + " " + t('home.heroTitle2')} description={t('home.heroSubtitle')} /> 
         <img  
           src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
           alt={b.name}  
@@ -384,7 +383,8 @@ export default function Home() {
   ); 
 
   return ( 
-    <div className="min-h-[100dvh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950"> 
+    <div className="min-h-[100dvh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950">
+      <SeoHead title="Glamzo | Plataforma & Agendamentos de Beleza Premium" description="Glamzo é a plataforma líder em beleza em Portugal. Agende cabeleireiro, barbeiro, manicures, estética e massagens online com rapidez e segurança." /> 
        
       {/* 1. HERO SECTION & PESQUISA (IDENTIDADE GLAMZO REFINADA) */} 
       <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-[#fafbfc]"> 
@@ -426,7 +426,7 @@ export default function Home() {
               {showQuerySuggestions && Array.isArray(querySuggestions) && querySuggestions.length > 0 && (
                 <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 text-left overflow-y-auto max-h-60 custom-scrollbar">
                   {querySuggestions.map((s, idx) => (
-                    <button key={idx} onMouseDown={() => navigate(`/business/${s?.slug}`)} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-slate-800 text-sm flex items-center gap-2 border-b border-slate-50 transition-colors last:border-0">
+                    <button key={idx} onMouseDown={() => navigate(`/${s?.slug}`)} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-slate-800 text-sm flex items-center gap-2 border-b border-slate-50 transition-colors last:border-0">
                       <Search className="w-4 h-4 text-slate-400" />
                       <span className="truncate">{s?.text || ""}</span>
                     </button>
@@ -641,7 +641,7 @@ export default function Home() {
                       position={{ lat: b.lat, lng: b.lng }} 
                       title={b.name} 
                       icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 20, y: 50 } }} 
-                      onClick={() => navigate("/business/" + b.slug)} 
+                      onClick={() => navigate("/" + b.slug)} 
                     /> 
                   ))} 
                 </Map> 

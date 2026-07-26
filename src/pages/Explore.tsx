@@ -440,7 +440,7 @@ export default function Explore() {
 
     return (
       <LocalizedLink key={b.id}
-         to={`/business/${b.slug}`}
+         to={`/${b.slug}`}
          id={`shop-card-${b.id}`}
         onMouseEnter={() => setHoveredShopId(b.id)}
         onMouseLeave={() => setHoveredShopId(null)}
@@ -490,7 +490,7 @@ export default function Explore() {
                   // If the RPC doesn't return dates, we can omit it or use today's date placeholder
                   const slotDate = typeof slot === 'string' ? new Date().toISOString().split('T')[0] : slot.date;
                   return (
-                    <button key={idx} onClick={(e) => { e.preventDefault(); navigate(`/business/${b.slug}?date=${slotDate}&time=${slotTime}`); }} className="shrink-0 px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 hover:border-purple-200 rounded-lg text-[11px] font-bold transition-colors">
+                    <button key={idx} onClick={(e) => { e.preventDefault(); navigate(`/${b.slug}?date=${slotDate}&time=${slotTime}`); }} className="shrink-0 px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 hover:border-purple-200 rounded-lg text-[11px] font-bold transition-colors">
                       {slotTime}
                     </button>
                   );

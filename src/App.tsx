@@ -395,7 +395,9 @@ export default function App() {
                     <Route path="/:slug" element={<BusinessDetail />} />
                     <Route path="*" element={<NotFoundScreen />} />
                   </Route>
-                  <Route path="/:lang" element={<LanguageUpdater />}>
+                  {['en', 'es', 'fr'].map(lang => (
+                  <React.Fragment key={lang}>
+                  <Route path={`/${lang}`} element={<LanguageUpdater />}>
                     <Route path="" element={<Home />} />
                     <Route path="explore" element={<Explore />} />
                     <Route path="favorites" element={<Favorites />} />
@@ -451,7 +453,9 @@ export default function App() {
                     <Route path="store/:slug" element={<BusinessDetail />} />
                     <Route path=":slug" element={<BusinessDetail />} />
                     <Route path="*" element={<NotFoundScreen />} />
-                  </Route>
+                                    </Route>
+                  </React.Fragment>
+                  ))}
                 </Routes>
               </Suspense>
             </main>

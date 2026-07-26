@@ -11,6 +11,8 @@ interface SeoHeadProps {
 }
 
 export default function SeoHead({ title, description, image, url, schema }: SeoHeadProps) {
+  const globalDesc = description.length > 155 ? description.substring(0, 152) + '...' : description;
+  const ogDesc = description.length > 120 ? description.substring(0, 117) + '...' : description;
   const location = useLocation();
   const currentPath = location.pathname;
   const supportedLangs = ['pt', 'en', 'es', 'fr'];
@@ -26,15 +28,15 @@ export default function SeoHead({ title, description, image, url, schema }: SeoH
 
   const domain = 'https://glamzo.pt';
   const ogUrl = url || `${domain}${currentPath}`;
-  const ogImage = image || `${domain}/default-og.jpg`;
+  const ogImage = image || `${domain}/favicon-v2.svg`;
 
   return (
     <Helmet>
       <title>{title}</title>
-      <meta name="description" content={description} />
+      <meta name="description" content={globalDesc} />
       
       <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:description" content={ogDesc} />
       <meta property="og:url" content={ogUrl} />
       <meta property="og:site_name" content="Glamzo" />
       <meta property="og:image" content={ogImage} />

@@ -5,6 +5,7 @@ import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase';
 import { Business, Review } from '../types';
 import { fetchReviewsForBusiness, submitReview } from '../utils/reviewsHelper';
+import { getCountryIsoCode } from '../utils/countryIsoHelper';
 import { startChatSession, fetchMessagesForSession, submitMessage } from '../utils/communicationHelper';
 import { useAuth } from '../hooks/useAuth';
 import BookingModal from '../components/BookingModal';
@@ -304,8 +305,8 @@ const { slug } = useParams<{ slug: string }>();
   const getSeoData = () => {
     if (!business) return null;
     const title = `${business.name} - Reserva Online | Glamzo`;
-    const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários disponíveis, serviços e preços online no Glamzo.`;
-    const image = business.cover_url || business.logo_url || 'https://glamzo.pt/default-og.jpg';
+    const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários, serviços e preços no Glamzo.`;
+    const image = business.cover_url || business.logo_url || 'https://glamzo.pt/favicon-v2.svg';
     const schema = {
       "@context": "https://schema.org",
       "@type": ["BeautySalon", "LocalBusiness"],
@@ -316,7 +317,7 @@ const { slug } = useParams<{ slug: string }>();
         "streetAddress": `${business.address} ${business.door_number || ''}`.trim(),
         "addressLocality": business.city,
         "postalCode": business.postal_code,
-        "addressCountry": business.country || 'Portugal'
+        "addressCountry": getCountryIsoCode(business.country)
       },
       "geo": {
         "@type": "GeoCoordinates",

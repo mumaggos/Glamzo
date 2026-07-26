@@ -1,7 +1,14 @@
 const fs = require('fs');
-
 let content = fs.readFileSync('src/components/LanguageUpdater.tsx', 'utf8');
 
-// I will make it accept the rest of the url instead of Outlet, and just use Navigate or something else...
-// Oh wait, Outlet is correct. We just need to remove absolute paths from the children, but absolute paths on the root Routes children are fine.
-// Wait! If the route is `/:lang/*`, then the children shouldn't be absolute from `/`, they should be relative. Let's just fix React Router's limitation by not using nested routes if it complains.
+// Change the LanguageUpdater to NOT navigate on the server/bots OR default to not navigating aggressively
+// If the user lands on /, don't redirect them unless they explicitly change languages
+// actually the bot doesn't execute js anyway, but wait, PageSpeed Insights DOES execute JS!
+
+content = content.replace(
+    "navigate(`/${currentLang}${location.pathname === '/' ? '' : location.pathname}${location.search}${location.hash}`, { replace: true });",
+    "// Disable aggressive language redirect that causes 404s for bots\n        // navigate(`/${currentLang}${location.pathname === '/' ? '' : location.pathname}${location.search}${location.hash}`, { replace: true });"
+);
+
+fs.writeFileSync('src/components/LanguageUpdater.tsx', content);
+console.log("Fixed LanguageUpdater");

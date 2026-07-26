@@ -2,6 +2,18 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+
+function getCountryIsoCode(countryName) {
+  if (!countryName) return 'PT';
+  const name = countryName.toLowerCase().trim();
+  const map = {
+    'portugal': 'PT', 'brasil': 'BR', 'brazil': 'BR', 'espanha': 'ES', 'spain': 'ES',
+    'frança': 'FR', 'france': 'FR', 'reino unido': 'GB', 'united kingdom': 'GB',
+    'estados unidos': 'US', 'united states': 'US'
+  };
+  return map[name] || 'PT';
+}
+
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
@@ -3211,8 +3223,8 @@ async function startServer() {
             const htmlData = await fs.promises.readFile(indexPath, 'utf8');
             
             const title = `${business.name} - Reserva Online | Glamzo`;
-            const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários disponíveis, serviços e preços online no Glamzo.`;
-            const img = business.cover_url || business.logo_url || 'https://glamzo.pt/default-og.jpg';
+            const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários, serviços e preços no Glamzo.`;
+            const img = business.cover_url || business.logo_url || 'https://glamzo.pt/favicon-v2.svg';
             const url = `https://glamzo.pt/${potentialSlug}`;
 
             const metaTags = `
@@ -3237,7 +3249,7 @@ async function startServer() {
                 "streetAddress": `${business.address} ${business.door_number || ''}`.trim(),
                 "addressLocality": business.city,
                 "postalCode": business.postal_code,
-                "addressCountry": business.country || 'Portugal'
+                "addressCountry": getCountryIsoCode(business.country)
               },
               "geo": {
                 "@type": "GeoCoordinates",
