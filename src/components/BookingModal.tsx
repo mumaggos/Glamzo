@@ -136,10 +136,11 @@ const [step, setStep] = useState(1);
     for (let slotStart = startMin; slotStart <= slotLimit; slotStart += 15) {
       const slotEnd = slotStart + duration;
 
-      const slotDateTime = new Date(selectedDate);
-      slotDateTime.setHours(Math.floor(slotStart / 60), slotStart % 60, 0, 0);
+      const shopTz = business?.timezone || 'Europe/Lisbon';
+      const slotUtcStr = createUTCBookingTimestamp(dateStr, minutesToTime(slotStart), shopTz);
+      const slotMs = new Date(slotUtcStr).getTime();
       
-      if (slotDateTime.getTime() <= cutoffTimeMs) {
+      if (slotMs <= cutoffTimeMs) {
         continue; 
       }
 

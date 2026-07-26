@@ -511,7 +511,10 @@ export default function SetupWizard() {
           latitude: lat, longitude: lng,
           onboarding_step: 2
         };
-        const { error } = await supabase.from('businesses').update(updateData).eq('id', business.id);
+        
+        const payloadToSave = { ...updateData };
+        if ('currency' in payloadToSave) delete payloadToSave.currency;
+        const { error } = await supabase.from('businesses').update(payloadToSave).eq('id', business.id);
         
         if (error) {
           if (error.code === '42703' || error.message?.includes('setup_step')) {

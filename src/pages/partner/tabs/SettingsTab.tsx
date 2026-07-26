@@ -93,7 +93,12 @@ export default function SettingsTab() {
     e.preventDefault();
     setSavingDados(true);
     try {
-      const { error } = await supabase.from('businesses').update(formData).eq('id', business.id);
+      
+      // Remover campos que não existem na tabela
+      const payloadToSave = { ...formData };
+      if ('currency' in payloadToSave) delete payloadToSave.currency;
+      
+      const { error } = await supabase.from('businesses').update(payloadToSave).eq('id', business.id);
       if (error) throw error;
       showMessage('success', t('settings.succDataUpdated')); loadLayoutData();
     } catch (err) {
