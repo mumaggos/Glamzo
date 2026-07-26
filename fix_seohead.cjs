@@ -1,4 +1,6 @@
-import React from 'react';
+const fs = require('fs');
+
+let seoHead = `import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
@@ -25,8 +27,8 @@ export default function SeoHead({ title, description, image, url, schema }: SeoH
   if (!basePath.startsWith('/')) basePath = '/' + basePath;
 
   const domain = 'https://glamzo.pt';
-  const ogUrl = url || `${domain}${currentPath}`;
-  const ogImage = image || `${domain}/default-og.jpg`;
+  const ogUrl = url || \`\${domain}\${currentPath}\`;
+  const ogImage = image || \`\${domain}/default-og.jpg\`;
 
   return (
     <Helmet>
@@ -42,13 +44,13 @@ export default function SeoHead({ title, description, image, url, schema }: SeoH
       <meta name="twitter:card" content="summary_large_image" />
 
       {supportedLangs.map((lang) => {
-        const langPrefix = lang === 'pt' ? '' : `/${lang}`;
-        const href = `${domain}${langPrefix}${basePath === '/' ? '' : basePath}`;
+        const langPrefix = lang === 'pt' ? '' : \`/\${lang}\`;
+        const href = \`\${domain}\${langPrefix}\${basePath === '/' ? '' : basePath}\`;
         return (
           <link key={lang} rel="alternate" hrefLang={lang} href={href} />
         );
       })}
-      <link rel="alternate" hrefLang="x-default" href={`${domain}${basePath}`} />
+      <link rel="alternate" hrefLang="x-default" href={\`\${domain}\${basePath}\`} />
       
       {schema && (
         <script type="application/ld+json">
@@ -58,3 +60,6 @@ export default function SeoHead({ title, description, image, url, schema }: SeoH
     </Helmet>
   );
 }
+`;
+
+fs.writeFileSync('src/components/SeoHead.tsx', seoHead);

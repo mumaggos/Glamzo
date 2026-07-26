@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import BookingModal from '../components/BookingModal';
 import toast from 'react-hot-toast';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SeoHead from '../components/SeoHead';
 import SecurityBadge from '../components/SecurityBadge';
 import { toggleFavorite, isFavorite, reportReview, createDispute } from '../utils/marketingHelper';
 import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
@@ -300,6 +301,36 @@ const { slug } = useParams<{ slug: string }>();
   let finalRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length : 5.0;
   let finalReviewsCount = reviews.length;
 
+  const getSeoData = () => {
+    if (!business) return null;
+    const title = `${business.name} - Reserva Online | Glamzo`;
+    const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários disponíveis, serviços e preços online no Glamzo.`;
+    const image = business.cover_url || business.logo_url || 'https://glamzo.pt/default-og.jpg';
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": ["BeautySalon", "LocalBusiness"],
+      "name": business.name,
+      "image": image,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": `${business.address} ${business.door_number || ''}`.trim(),
+        "addressLocality": business.city,
+        "postalCode": business.postal_code,
+        "addressCountry": business.country || 'Portugal'
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": business.latitude,
+        "longitude": business.longitude
+      },
+      "telephone": business.phone,
+      "priceRange": "€€"
+    };
+    return { title, desc, image, schema };
+  };
+  const seoData = getSeoData();
+
+
   const now = new Date();
   const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > now);
 
@@ -325,7 +356,10 @@ const { slug } = useParams<{ slug: string }>();
   }
 
   return (
+
+
     <>
+      {seoData && <SeoHead title={seoData.title} description={seoData.desc} image={seoData.image} schema={seoData.schema} />}
       <Helmet>
         <title>{business.name} - Reservas Online | Glamzo</title>
         {business.logo_url && <link rel="icon" href={business.logo_url} />}
