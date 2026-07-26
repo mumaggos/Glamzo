@@ -113,11 +113,21 @@ export default function SettingsTab() {
       }
     }
 
-    const newAddress = [route, streetNumber].filter(Boolean).join(', ');
-    if (newAddress) newFormData.address = newAddress;
-    else if (place.name) newFormData.address = place.name;
-    else if (place.formatted_address) newFormData.address = place.formatted_address.split(',')[0];
+    let finalDoorNumber = streetNumber;
 
+    if (route) {
+        newFormData.address = route;
+    } else if (place.name) {
+        newFormData.address = place.name.replace(/\d+/g, '').trim().replace(/,$/, '');
+        if (!finalDoorNumber) {
+            const match = place.name.match(/\d+/);
+            if (match) finalDoorNumber = match[0];
+        }
+    } else if (place.formatted_address) {
+        newFormData.address = place.formatted_address.split(',')[0].replace(/\d+/g, '').trim();
+    }
+
+    if (finalDoorNumber) newFormData.door_number = finalDoorNumber;
     if (pc) newFormData.postal_code = pc;
     if (c) newFormData.city = c;
     if (ct) newFormData.country = ct;

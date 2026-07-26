@@ -175,12 +175,22 @@ export default function SetupWizard() {
       }
     }
 
-    newAddress = [route, streetNumber].filter(Boolean).join(', ');
+    // Set address to route only, and doorNumber to streetNumber if available
+    let finalDoorNumber = streetNumber;
     
-    if (newAddress) setAddress(newAddress);
-    else if (place.name) setAddress(place.name);
-    else if (place.formatted_address) setAddress(place.formatted_address.split(',')[0] || '');
+    if (route) {
+        setAddress(route);
+    } else if (place.name) {
+        setAddress(place.name.replace(/\d+/g, '').trim().replace(/,$/, ''));
+        if (!finalDoorNumber) {
+            const match = place.name.match(/\d+/);
+            if (match) finalDoorNumber = match[0];
+        }
+    } else if (place.formatted_address) {
+        setAddress(place.formatted_address.split(',')[0].replace(/\d+/g, '').trim());
+    }
 
+    if (finalDoorNumber) setDoorNumber(finalDoorNumber);
     if (pc) setPostalCode(pc);
     if (c) setCity(c);
     if (ct) setCountry(ct);

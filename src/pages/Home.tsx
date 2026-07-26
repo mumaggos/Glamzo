@@ -10,11 +10,22 @@ import {
   ChevronRight, ChevronLeft, Map as MapIcon,  
   ShieldCheck, Loader2, ArrowRight, Heart, CalendarCheck, Zap, Star 
 , Tag } from "lucide-react"; 
-import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps"; 
+import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 import { useTranslation } from "react-i18next";
 
-const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || ""; 
+const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+
+const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (map && coordinates) {
+      map.panTo(coordinates);
+    }
+  }, [map, coordinates]);
+  return null;
+};
+ 
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
 const HOME_CATEGORIES = [ 
@@ -613,9 +624,10 @@ export default function Home() {
           API_KEY ? ( 
             <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
               <APIProvider apiKey={API_KEY} language={currentLangCode}> 
+                <MapUpdater coordinates={userCoords} />
                 <Map 
-                  center={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
-                  zoom={userCoords ? 13 : 8} 
+                  defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
+                  defaultZoom={userCoords ? 13 : 8} 
                   disableDefaultUI 
                   clickableIcons={false} 
                   styles={mapStyles} 
