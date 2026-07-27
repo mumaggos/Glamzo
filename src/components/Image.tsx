@@ -6,7 +6,7 @@ export type ImageProps = ComponentProps<'img'> & {
   priority?: boolean;
 }
 
-export function Image({ src, alt, fill, priority, className, ...props }: ImageProps) {
+export function Image({ src, alt, fill, priority, className, sizes, ...props }: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [optimizedSrc, setOptimizedSrc] = useState<string | undefined>(src);
 
@@ -21,9 +21,11 @@ export function Image({ src, alt, fill, priority, className, ...props }: ImagePr
   return (
     <img
       src={optimizedSrc}
-      alt={alt}
+      alt={alt || ""}
+      sizes={sizes}
       loading={priority ? 'eager' : 'lazy'}
       decoding={priority ? 'sync' : 'async'}
+      fetchPriority={priority ? 'high' : 'auto'}
       onLoad={() => setIsLoaded(true)}
       className={`
         ${fill ? 'absolute inset-0 w-full h-full object-cover' : ''} 
