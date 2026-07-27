@@ -233,6 +233,12 @@ export default function PartnerLayout() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${business.owner_id}` }, payload => {
         if (payload.eventType === 'INSERT') {
           playNotificationSound();
+          setNotifications(prev => [{
+            id: Date.now(),
+            title: t('partner.newMessages') || 'Nova Mensagem',
+            desc: 'Recebeu uma nova mensagem',
+            time: t('partner.timeNow') || 'Agora'
+          }, ...prev]);
         }
         // Trigger layout refresh on any message insert/update (like marking as read)
         loadLayoutData();
@@ -240,6 +246,12 @@ export default function PartnerLayout() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings', filter: `business_id=eq.${business.id}` }, payload => {
         if (payload.eventType === 'INSERT') {
           playNotificationSound();
+          setNotifications(prev => [{
+            id: Date.now() + 1,
+            title: 'Nova Reserva',
+            desc: 'Foi adicionada uma nova reserva à sua agenda',
+            time: t('partner.timeNow') || 'Agora'
+          }, ...prev]);
         }
         loadLayoutData();
       })
