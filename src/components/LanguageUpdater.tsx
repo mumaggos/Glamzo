@@ -17,8 +17,10 @@ export default function LanguageUpdater() {
         i18n.changeLanguage(urlLang);
       }
     } else {
-      const currentLang = i18n.language || 'pt';
-      if (currentLang !== 'pt' && !currentLang.startsWith('pt')) {
+      let currentLang = i18n.language || 'pt';
+      if (currentLang.includes('-')) currentLang = currentLang.split('-')[0];
+      if (!supportedLangs.includes(currentLang)) currentLang = 'pt';
+      if (currentLang !== 'pt') {
         navigate(`/${currentLang}${location.pathname === '/' ? '' : location.pathname}${location.search}${location.hash}`, { replace: true });
       }
     }
