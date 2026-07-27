@@ -49,6 +49,7 @@ export default function AgendaTab() {
   const [isUpdatingBooking, setIsUpdatingBooking] = useState(false);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isProcessingTerminal, setIsProcessingTerminal] = useState(false);
   const [disputeReason, setDisputeReason] = useState('Cliente não compareceu');
   const [disputeDescription, setDisputeDescription] = useState('');
   const [submittingDispute, setSubmittingDispute] = useState(false);
@@ -191,6 +192,39 @@ export default function AgendaTab() {
     }
   };
 
+
+  
+  const handleStripeTerminalPayment = async () => {
+    if (!selectedBooking) return;
+    setIsProcessingTerminal(true);
+    try {
+      const res = await fetch("/api/stripe/terminal/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          bookingId: selectedBooking.id, 
+          businessId: business?.id,
+          amount: selectedBooking.service?.price
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao comunicar com o terminal. Certifique-se que o leitor está ligado.');
+      
+      setToastNotification({
+        visible: true,
+        title: "Pagamento Concluído",
+        desc: "O pagamento foi processado com sucesso no terminal físico."
+      });
+      
+      setIsPaymentModalOpen(false);
+      setTimeout(() => setSelectedBooking(null), 1500);
+      loadLayoutData();
+    } catch (e: any) {
+      alert("Falha: " + e.message);
+    } finally {
+      setIsProcessingTerminal(false);
+    }
+  };
 
   const handleUpdateBookingStatus = async (status: string) => {
     if (!selectedBooking) return;
@@ -383,12 +417,12 @@ export default function AgendaTab() {
                 </div>
               </button>
 
-              <button onClick={() => console.log('Iniciar Fluxo Capacitor Stripe Terminal')} className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-blue-600 hover:bg-blue-50 transition-all text-left">
+              <button onClick={handleStripeTerminalPayment} disabled={isProcessingTerminal} className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-blue-600 hover:bg-blue-50 transition-all text-left disabled:opacity-50">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                   <CreditCard className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-lg">{t('agenda.physicalTerminalBtn')}</h4>
+                  <h4 className="font-bold text-slate-900 text-lg">{isProcessingTerminal ? 'A processar no leitor...' : t('agenda.physicalTerminalBtn')}</h4>
                   <p className="text-sm text-slate-500 mt-1">{t('agenda.terminalDesc')}</p>
                 </div>
               </button>

@@ -39,6 +39,10 @@ export interface Business {
   is_verified: boolean;
   min_booking_notice?: number | null;
   cancellation_policy?: string | null;
+  no_show_policy_enabled?: boolean | null;
+  no_show_fee_type?: string | null;
+  no_show_fee_value?: number | null;
+  cancellation_window_hours?: number | null;
   booking_end_margin?: number | null;
   subscription_status?: string;
   trial_ends_at?: string | null;

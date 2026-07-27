@@ -4,6 +4,7 @@ import { Outlet, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useAuth } from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
 import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
@@ -135,14 +136,22 @@ export default function PartnerLayout() {
     setIsLoadingData(true);
     if (!user) return;
     try {
-      const { data: bData } = await supabase.from("businesses").select("*").eq("owner_id", user.id).maybeSingle();
+      const { data: bData, error: bError } = await supabase.from("businesses").select("*").eq("owner_id", user.id).maybeSingle();
+      if (bError) {
+        toast.error('Erro ao carregar loja: ' + bError.message);
+        return;
+      }
       if (!bData) { navigate("/partner/setup", { replace: true }); return; }
       setBusiness(bData);
 
-      const { data: tData } = await supabase.from("hardware_orders").select("*").eq("business_id", bData.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: tData, error: tError } = await supabase.from("hardware_orders").select("*").eq("business_id", bData.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (tError) {
+        toast.error('Erro ao carregar equipamento: ' + tError.message);
+        return;
+      }
       if (tData) setTabletOrder(tData);
 
-      const [{ data: catData }, { data: svData }, { data: stData }, { data: bkData }, { data: bhData }] = await Promise.all([
+      const [catRes, svRes, stRes, bkRes, bhRes] = await Promise.all([
         supabase.from("service_categories").select("*").eq("business_id", bData.id).order("order_index"),
         supabase.from("services").select("*").eq("business_id", bData.id).order("name"),
         supabase.from("staff").select("*").eq("business_id", bData.id).eq("is_active", true).order("full_name"),
@@ -164,16 +173,31 @@ export default function PartnerLayout() {
         supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);
 
-      setCategories(catData || []); setServices(svData || []); setStaff(stData || []); setBookings(bkData || []);
-      setBusinessHours(bhData || []);
-      setBookingsTodayCount((bkData || []).filter(b => b.booking_date === new Date().toISOString().split("T")[0]).length);
+      if (catRes.error) { toast.error('Erro ao carregar categorias: ' + catRes.error.message); return; }
+      if (svRes.error) { toast.error('Erro ao carregar serviços: ' + svRes.error.message); return; }
+      if (stRes.error) { toast.error('Erro ao carregar equipa: ' + stRes.error.message); return; }
+      if (bkRes.error) { toast.error('Erro ao carregar reservas: ' + bkRes.error.message); return; }
+      if (bhRes.error) { toast.error('Erro ao carregar horários: ' + bhRes.error.message); return; }
 
-      const { data: messagesData } = await supabase
+      setCategories(catRes.data); 
+      setServices(svRes.data); 
+      setStaff(stRes.data); 
+      setBookings(bkRes.data);
+      setBusinessHours(bhRes.data);
+      
+      setBookingsTodayCount((bkRes.data).filter(b => b.booking_date === new Date().toISOString().split("T")[0]).length);
+
+      const { data: messagesData, error: msgError } = await supabase
         .from("messages")
         .select("id, sender_id, receiver_id, is_read, content")
         .eq("receiver_id", user.id)
         .eq("is_read", false);
         
+      if (msgError) {
+         toast.error('Erro ao carregar mensagens: ' + msgError.message);
+         return;
+      }
+
       if (messagesData && messagesData.length > 0) {
         setUnreadMessages(messagesData.length);
         
@@ -187,39 +211,18 @@ export default function PartnerLayout() {
         // Add a notification for unread messages
         const dismissedMsgCount = parseInt(sessionStorage.getItem('dismissed_messages_count') || '0');
         if (messagesData.length > dismissedMsgCount) {
-          setNotifications(prev => { const others = prev.filter(n => n.id !== 999); return [...others, {
-            id: 999,
-            title: t('partner.newMessagesTitle'),
-            desc: t('partner.newMessagesDesc', { count: messagesData.length }),
-            time: t('partner.timeNow')
-          }]; });
+          setNotifications(prev => { const others = prev.filter(n => n.id !== 999); return [...others, { id: 999, title: t('partner.newMessages'), desc: `Tem ${messagesData.length} mensagens não lidas`, time: t('partner.timeNow') }]; });
         }
       } else {
         setUnreadMessages(0);
-        setNotifications(prev => prev.filter(n => n.id !== 999));
-        sessionStorage.removeItem('dismissed_messages_count');
+        setUnreadCountByCustomer({});
       }
-
-      const { data: disputesData } = await supabase
-        .from("disputes")
-        .select("id")
-        .eq("business_id", bData.id)
-        .in("status", ["open", "in_review"]);
-      if (disputesData && disputesData.length > 0) {
-        if (sessionStorage.getItem('dismissed_disputes_count') !== disputesData.length.toString()) {
-          setNotifications(prev => { const others = prev.filter(n => n.id !== 888); return [...others, {
-            id: 888,
-            title: t('partner.openDisputesTitle'),
-            desc: t('partner.openDisputesDesc', { count: disputesData.length }),
-            time: t('partner.timeNow')
-          }]; });
-        }
-      } else {
-        setNotifications(prev => prev.filter(n => n.id !== 888));
-        sessionStorage.removeItem('dismissed_disputes_count');
-      }
-
-    } catch (err) { console.error(err); } finally { setIsLoadingData(false); }
+    } catch (err) { 
+      toast.error('Falha de sistema ao carregar painel');
+      console.error(err); 
+    } finally { 
+      setIsLoadingData(false); 
+    }
   };
 
   useEffect(() => { setIsMobileSidebarOpen(false); setIsNotificationsOpen(false); }, [location.pathname]);
