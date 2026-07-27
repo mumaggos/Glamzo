@@ -1,6 +1,6 @@
-import FinanceSettingsTab from "./pages/partner/tabs/FinanceSettingsTab";
-import PayoutsHistoryTab from "./pages/partner/tabs/PayoutsHistoryTab";
-import HardwareManagerTab from "./pages/partner/tabs/HardwareManagerTab";
+const FinanceSettingsTab = lazy(() => import('./pages/partner/tabs/FinanceSettingsTab'));
+const PayoutsHistoryTab = lazy(() => import('./pages/partner/tabs/PayoutsHistoryTab'));
+const HardwareManagerTab = lazy(() => import('./pages/partner/tabs/HardwareManagerTab'));
 
 import { Compass } from 'lucide-react';
 import { GlobalIntentHandler } from './components/GlobalIntentHandler';

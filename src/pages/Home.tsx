@@ -10,22 +10,12 @@ import {
   ChevronRight, ChevronLeft, Map as MapIcon,  
   ShieldCheck, Loader2, ArrowRight, Heart, CalendarCheck, Zap, Star 
 , Tag } from "lucide-react"; 
-import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps"; 
+import { lazy, Suspense } from "react";
+import { Image } from "../components/Image"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 import { useTranslation } from "react-i18next";
+const HomeMap = lazy(() => import("../components/HomeMap"));
 
-const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
-
-const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (map && coordinates) {
-      map.panTo(coordinates);
-    }
-  }, [map, coordinates]);
-  return null;
-};
- 
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
 const HOME_CATEGORIES = [ 
@@ -35,48 +25,11 @@ const HOME_CATEGORIES = [
   { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Estética" }, 
   { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Wellness" }, 
   { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=75&fm=webp", url: "/explore?category=Noivas %26 Eventos" } 
-]; 
+];
 
 const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"]; 
 
-const mapStyles = [ 
-  { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] }, 
-  { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] }, 
-  { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }, 
-  { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "on" }] } 
-]; 
 
-// O Novo Marcador Oficial em Gota (Estilo Uber / Glamzo #9333ea) 
-const getCustomMarkerIcon = (rating: number) => {
-  const finalRating = rating > 0 ? rating : 5.0;
-  const ratingText = `${finalRating.toFixed(1)}`;
-  const bgColor = "#9333ea"; 
-  const textColor = "#ffffff";
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-      <g filter="drop-shadow(0px 4px 4px rgba(0,0,0,0.25))">
-        <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="1.5"/>
-        <text x="20" y="21" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
-          ${ratingText}
-        </text>
-        <text x="20" y="28" fill="${textColor}" font-size="7px" font-family="Outfit, system-ui, sans-serif" font-weight="bold" text-anchor="middle">
-          ★
-        </text>
-      </g>
-    </svg>
-  `;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg.trim())}`;
-};
-
-
-const optimizeUnsplashUrl = (url: string | null) => {
-  if (!url) return null;
-  if (url.includes('unsplash.com')) {
-    if (!url.includes('w=')) return `${url}?auto=format&fit=crop&w=400&q=75`;
-    return url;
-  }
-  return url;
-};
 
 export default function Home() {
   const navigate = useLocalizedNavigate();
@@ -339,10 +292,10 @@ export default function Home() {
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
     <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <img  
-          src={optimizeUnsplashUrl(b.cover_url) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
+        <Image  
+          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=75&fm=webp"}  
           alt={b.name}  
-          loading="lazy"  
+          fill  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
         /> 
          
@@ -511,7 +464,7 @@ export default function Home() {
                 onClick={() => navigate(cat.url)}  
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
               > 
-                <img src={cat.image} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
+                <Image src={cat.image} alt="" fill className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
                   {t(`categories.${cat.name}`, { defaultValue: cat.name })}
@@ -620,45 +573,15 @@ export default function Home() {
           </button> 
         </div> 
 
-        {mapVisible ? ( 
-          API_KEY ? ( 
-            <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100"> 
-              <APIProvider apiKey={API_KEY} language={currentLangCode}> 
-                <MapUpdater coordinates={userCoords} />
-                <Map 
-                  defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }} 
-                  defaultZoom={userCoords ? 13 : 8} 
-                  disableDefaultUI 
-                  clickableIcons={false} 
-                  styles={mapStyles} 
-                  options={{ clickableIcons: false, styles: mapStyles }} 
-                  style={{ width: '100%', height: '100%' }} 
-                > 
-                  {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />} 
-                  {mapBusinesses.map((b: any) => ( 
-                    <Marker  
-                      key={b.id}  
-                      position={{ lat: b.lat, lng: b.lng }} 
-                      title={b.name} 
-                      icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 20, y: 50 } }} 
-                      onClick={() => navigate("/" + b.slug)} 
-                    /> 
-                  ))} 
-                </Map> 
-              </APIProvider> 
-            </div> 
-          ) : ( 
-            <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-50 flex flex-col items-center justify-center text-slate-400 font-medium p-4 text-center"> 
-              <MapIcon className="w-10 h-10 mb-2 text-slate-300 animate-pulse" />  
-              <span className="text-sm font-bold text-slate-700">{t('home.mapStores')}</span> 
-              <span className="text-xs text-slate-500 mt-1 max-w-xs">{t('home.mapApiNotConfigured')}</span> 
-            </div> 
-          ) 
-        ) : ( 
-          <div className="h-[500px] bg-slate-100 rounded-3xl flex items-center justify-center"> 
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" /> 
-          </div> 
-        )} 
+        {mapVisible ? (
+          <Suspense fallback={<div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 animate-pulse" />}>
+            <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} />
+          </Suspense>
+        ) : (
+          <div className="h-[500px] bg-slate-100 rounded-3xl flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+          </div>
+        )}
       </section> 
 
     </div> 

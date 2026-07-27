@@ -170,7 +170,7 @@ export default function SetupWizard() {
         if (types.includes('street_number')) streetNumber = component.long_name;
         if (types.includes('postal_code')) pc = component.long_name;
         if (types.includes('locality') || types.includes('postal_town') || types.includes('administrative_area_level_2')) c = component.long_name;
-        if (types.includes('country')) ct = component.long_name;
+        if (types.includes('country')) ct = component.short_name || component.long_name;
         if (types.includes('administrative_area_level_1')) d = component.long_name;
       }
     }
