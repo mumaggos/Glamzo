@@ -250,7 +250,7 @@ export default function SetupWizard() {
 
 
   // Step 3: Plan
-  const [selectedPlan, setSelectedPlan] = useState<'PRO' | 'TERMINAL'>('PRO');
+  const [wantsTerminal, setWantsTerminal] = useState(false);
   const [shippingName, setShippingName] = useState('');
   const [shippingPhone, setShippingPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
@@ -455,7 +455,7 @@ export default function SetupWizard() {
         
         const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', currentBiz.id).maybeSingle();
         if (order) {
-          setSelectedPlan('TERMINAL');
+          setWantsTerminal(true);
           setShippingName(order.shipping_name || '');
           setShippingPhone(order.shipping_phone || '');
           setShippingAddress(order.shipping_address || '');
@@ -626,7 +626,7 @@ export default function SetupWizard() {
         console.warn('Autosave step 3 failed:', err);
       }
     } else if (step === 4) {
-      if (selectedPlan === 'TERMINAL') {
+      if (wantsTerminal) {
         if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
           setErrorMsg(t('setupWizard.errShippingData'));
           return;
@@ -635,15 +635,17 @@ export default function SetupWizard() {
       
       setLoading(true);
       try {
-        try {
-          await supabase.from('businesses').update({ 
-            selected_plan: selectedPlan === 'TERMINAL' ? 'app_tablet' : 'app',
-            tablet_requested: selectedPlan === 'TERMINAL'
-          }).eq('id', business.id);
-        } catch(e) {}
+        const { error: updateError } = await supabase.from('businesses').update({ 
+          selected_plan: wantsTerminal ? 'app_tablet' : 'pro',
+          tablet_requested: wantsTerminal
+        }).eq('id', business.id);
+
+        if (updateError) {
+          throw new Error('Falha ao atualizar o plano: ' + updateError.message);
+        }
         
-        if (selectedPlan === 'TERMINAL') {
-           await supabase.from('tablet_orders').upsert({
+        if (wantsTerminal) {
+           const { error: tabletError } = await supabase.from('tablet_orders').upsert({
              business_id: business.id,
              shipping_name: shippingName.trim(),
              shipping_phone: shippingPhone.trim(),
@@ -652,20 +654,18 @@ export default function SetupWizard() {
              shipping_postal_code: shippingPostalCode.trim(),
              status: 'pending'
            }, { onConflict: 'business_id' });
+
+           if (tabletError) {
+             throw new Error('Falha ao processar encomenda do terminal: ' + tabletError.message);
+           }
         }
 
-        // Autosave onboarding step as 4
-        try {
-          await supabase.from('businesses').upsert({
-            id: business.id,
-            owner_id: user.id,
-            name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
-            category, logo_url: logoUrl, cover_url: coverUrl,
-            latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
-            onboarding_step: 4, setup_step: 4
-          });
-        } catch (err) {
-          console.warn('Autosave step 3 failed:', err);
+        const { error: upsertError } = await supabase.from('businesses').update({
+          onboarding_step: 4
+        }).eq('id', business.id);
+
+        if (upsertError) {
+          throw new Error('Falha ao atualizar estado de onboarding: ' + upsertError.message);
         }
 
         // Check trial_used from database to ensure no trial repetition
@@ -689,7 +689,7 @@ export default function SetupWizard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             businessId: business.id,
-            planName: selectedPlan,
+            planName: wantsTerminal ? 'TERMINAL' : 'PRO',
             successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
             cancelUrl: window.location.origin + '/partner/setup?checkout_canceled=true',
             force_no_trial: trialUsed
@@ -1311,52 +1311,50 @@ export default function SetupWizard() {
 
         {step === 4 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('setupWizard.choosePlanTitle')}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Plano Pro e Equipamento</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div 
-                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${selectedPlan === 'PRO' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
-                onClick={() => setSelectedPlan('PRO')}
-              >
-                {selectedPlan === 'PRO' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">{t('setupWizard.planPro')}</h3>
+            <div className="grid grid-cols-1 gap-6 mb-8">
+              <div className="relative p-6 rounded-2xl border-2 border-purple-600 bg-purple-50/50 shadow-md">
+                <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>
+                <h3 className="text-lg font-bold text-slate-900">Aderir ao Plano Pro</h3>
                 <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">{t('setupWizard.perMonth')}</span></div>
                 <div className="mb-4">
                   <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">{t('setupWizard.free14Days')}</span>
                 </div>
                 <ul className="space-y-2 mt-4 text-sm text-slate-600">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureAgendaSeo')}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureTapToPay')}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>{t('setupWizard.featureZeroFees')}</strong></li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Agenda Inteligente e SEO</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Pagamentos por MB Way e Cartões (Tap to Pay)</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>Comissões Zero</strong></li>
                 </ul>
               </div>
 
               <div 
-                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${selectedPlan === 'TERMINAL' ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
-                onClick={() => setSelectedPlan('TERMINAL')}
+                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${wantsTerminal ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
+                onClick={() => setWantsTerminal(!wantsTerminal)}
               >
                 <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
                   {t('setupWizard.recommendedBadge')}
-                                                  </div>
-                {selectedPlan === 'TERMINAL' && <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>}
-                <h3 className="text-lg font-bold text-slate-900">{t('setupWizard.planTerminal')}</h3>
+                </div>
+                <div className={`absolute top-4 right-4 ${wantsTerminal ? 'text-purple-600' : 'text-slate-300'}`}>
+                   {wantsTerminal ? <CheckCircle className="w-6 h-6" /> : <div className="w-6 h-6 rounded-full border-2 border-slate-300"></div>}
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Terminal de Pagamentos Dedicado</h3>
                 <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> {t('setupWizard.uniquePayment')}</span></div>
                 <div className="mb-4 flex flex-col gap-1">
-                  
                   <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">{t('setupWizard.featureShippingIncluded')}</span>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureNoFidelity')}</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureContactless')}</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Pagamentos diretos para o terminal físico</li>
+                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Contactless, Chip e Banda Magnética</li>
                   <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureDirectIntegration')}</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
                   {t('setupWizard.terminalForever')}
-                                                  </div>
+                </div>
               </div>
             </div>
 
-            {selectedPlan === 'TERMINAL' && (
+            {wantsTerminal && (
               <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
                 <h4 className="font-bold text-slate-900 mb-4">{t('setupWizard.shippingDataTitle')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1369,11 +1367,7 @@ export default function SetupWizard() {
               </div>
             )}
             
-            {selectedPlan === 'PRO' ? (
-    <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectFree')}</p>
-  ) : (
-    <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectPay')}</p>
-  )}
+            <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectPay')}</p>
             
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
               <button
@@ -1391,7 +1385,7 @@ export default function SetupWizard() {
                 onClick={handleNext}
                 className="w-full px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{selectedPlan === 'TERMINAL' ? t('setupWizard.proceedToPayment') : t('setupWizard.start14DaysFree')}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{wantsTerminal ? t('setupWizard.proceedToPayment') : t('setupWizard.start14DaysFree')}</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
           </div>
