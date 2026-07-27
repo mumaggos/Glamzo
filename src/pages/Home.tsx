@@ -294,10 +294,9 @@ export default function Home() {
   const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
     <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <Image  
+        <Image fill  
           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp"}  
           alt={b.name}  
-          fill  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
         /> 
          

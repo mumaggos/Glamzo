@@ -1,4 +1,5 @@
 import { LocalizedLink } from '../components/LocalizedLink';
+import { Image } from "../components/Image";
 import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams  } from "react-router-dom";
@@ -447,7 +448,7 @@ export default function Explore() {
         className={`group flex ${viewMode === 'list' ? 'flex-col sm:flex-row' : 'flex-col'} w-full cursor-pointer bg-white rounded-2xl overflow-hidden transition-all font-['Inter'] ${isHighlighted ? 'ring-2 ring-purple-600 shadow-xl scale-[1.02] z-10' : 'border border-slate-100 shadow-sm hover:shadow-md'}`}
       >
         <div className={`relative ${viewMode === 'list' ? 'w-full sm:w-2/5 aspect-[16/10] sm:aspect-[4/3]' : 'w-full aspect-[16/10]'} bg-slate-100 shrink-0`}>
-          <img loading="lazy" 
+          <Image fill 
             src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
             alt={b.name}  
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
