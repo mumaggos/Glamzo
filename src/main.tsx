@@ -1,4 +1,4 @@
-import {StrictMode} from 'react';
+import {StrictMode, Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
 import './i18n';
 import App from './App.tsx';
@@ -10,6 +10,7 @@ try {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                    /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                    (navigator.vendor && navigator.vendor.includes('Apple'));
+  
   if (isSafari) {
     document.documentElement.classList.add('safari-ios');
   }
@@ -19,9 +20,11 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* @ts-ignore */}
-      <HelmetProvider>
-      <App />
+    {/* @ts-ignore */}  
+    <HelmetProvider>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>}>
+        <App />
+      </Suspense>
     </HelmetProvider>
   </StrictMode>,
 );

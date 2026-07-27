@@ -14,17 +14,19 @@ import { lazy, Suspense } from "react";
 import { Image } from "../components/Image"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 import { useTranslation } from "react-i18next";
-const HomeMap = lazy(() => import("../components/HomeMap"));
+
+const HomeBelowFold = lazy(() => import('../components/HomeBelowFold'));
+
 
 
 // Categorias Fotográficas Premium (Estilo Treatwell) 
 const HOME_CATEGORIES = [ 
-  { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Cabelo %26 Barbearia" }, 
-  { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" }, 
-  { name: "Nails & Beauty", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Nails %26 Beauty" }, 
-  { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Estética" }, 
-  { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Wellness" }, 
-  { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=200&q=50&fm=webp", url: "/explore?category=Noivas %26 Eventos" } 
+  { name: "Cabeleireiro", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Cabelo %26 Barbearia" }, 
+  { name: "Barbearia", image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Cabelo %26 Barbearia&subcategory=Barbearia" }, 
+  { name: "Nails & Beauty", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Nails %26 Beauty" }, 
+  { name: "Estética", image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Estética" }, 
+  { name: "Wellness & Spa", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Wellness" }, 
+  { name: "Noivas", image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=400&q=60&fm=webp", url: "/explore?category=Noivas %26 Eventos" } 
 ];
 
 const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funchal", "Ponta Delgada"]; 
@@ -293,7 +295,7 @@ export default function Home() {
     <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
       <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
         <Image  
-          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=200&q=50&fm=webp"}  
+          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp"}  
           alt={b.name}  
           fill  
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"  
@@ -448,142 +450,23 @@ export default function Home() {
         </div> 
       </section> 
 
-      {/* 2. CATEGORIAS FOTOGRÁFICAS PREMIUM */} 
-      <section className="pb-12 pt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"> 
-        <div className="flex items-center justify-between mb-6"> 
-          <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.whatAreYouLookingFor')}</h2> 
-        </div> 
-        <div className="relative group"> 
-          <button onClick={() => scrollCategories('left')} aria-label="Ver categorias anteriores" className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
-            <ChevronLeft className="w-5 h-5" /> 
-          </button> 
-          <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 no-scrollbar snap-x scroll-smooth"> 
-            {HOME_CATEGORIES.map((cat, index) => ( 
-              <button  
-                key={cat.name}  
-                onClick={() => navigate(cat.url)}  
-                className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all" 
-              > 
-                <Image src={cat.image} alt="" fill className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" /> 
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" /> 
-                <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
-                  {t(`categories.${cat.name}`, { defaultValue: cat.name })}
-                </span> 
-              </button> 
-            ))} 
-          </div> 
-          <button onClick={() => scrollCategories('right')} aria-label="Ver próximas categorias" className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-600 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all"> 
-            <ChevronRight className="w-5 h-5" /> 
-          </button> 
-        </div> 
-      </section> 
 
-      {/* 3. CONTEÚDO DINÂMICO */} 
-      <div className="space-y-16 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden"> 
-        {loading ? ( 
-          <div className="flex justify-center items-center py-20"> 
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" /> 
-          </div> 
-        ) : ( 
-          <> 
-            {locaisProximos.length > 0 && ( 
-              <section> 
-                <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.nearYou')}</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.nearYouSubtitle')}</p> 
-                </div> 
-                <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {locaisProximos.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
-                </div> 
-              </section> 
-            )} 
+      <Suspense fallback={<div className="h-96 w-full flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+        <HomeBelowFold 
+          HOME_CATEGORIES={HOME_CATEGORIES}
+          loading={loading}
+          locaisProximos={locaisProximos}
+          recomendados={recomendados}
+          novasLojas={novasLojas}
+          BusinessCard={BusinessCard}
+          mapRef={mapRef}
+          mapVisible={mapVisible}
+          userCoords={userCoords}
+          mapBusinesses={mapBusinesses}
+          currentLangCode={currentLangCode}
+        />
+      </Suspense>
+    </div>
+  );
+}
 
-            {recomendados.length > 0 && ( 
-              <section> 
-                <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.recommendedForYou')}</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.recommendedForYouSubtitle')}</p> 
-                </div> 
-                <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {recomendados.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
-                </div> 
-              </section> 
-            )} 
-
-            {novasLojas.length > 0 && ( 
-              <section> 
-                <div className="mb-6"> 
-                  <h2 className="text-2xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.justArrived')}</h2> 
-                  <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.justArrivedSubtitle')}</p> 
-                </div> 
-                <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"> 
-                  {novasLojas.map(b => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)} 
-                </div> 
-              </section> 
-            )} 
-          </> 
-        )} 
-      </div> 
-
-      {/* 4. PROPOSTA DE VALOR REAIS */} 
-      <section className="py-16 sm:py-24 bg-purple-50/40 border-y border-purple-100 font-['Inter']"> 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
-          <div className="text-center max-w-2xl mx-auto mb-16"> 
-            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-[#0f172a] mb-4 font-['Outfit']">{t('home.whyBookWithGlamzo')}</h2> 
-            <p className="text-slate-600 text-base">{t('home.whyBookWithGlamzoSubtitle')}</p> 
-          </div> 
-           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16"> 
-            <div className="flex flex-col items-center text-center"> 
-              <div className="w-14 h-14 bg-white text-purple-600 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
-                <CalendarCheck className="w-7 h-7" /> 
-              </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('home.feature1Title')}</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">{t('home.feature1Desc')}</p> 
-            </div> 
-             
-            <div className="flex flex-col items-center text-center"> 
-              <div className="w-14 h-14 bg-white text-rose-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
-                <Star className="w-7 h-7" /> 
-              </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('home.feature2Title')}</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">{t('home.feature2Desc')}</p> 
-            </div> 
-             
-            <div className="flex flex-col items-center text-center"> 
-              <div className="w-14 h-14 bg-white text-emerald-500 shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center mb-6"> 
-                <ShieldCheck className="w-7 h-7" /> 
-              </div> 
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3 font-['Outfit']">{t('home.feature3Title')}</h3> 
-              <p className="text-slate-500 leading-relaxed text-sm">{t('home.feature3Desc')}</p> 
-            </div> 
-          </div> 
-        </div> 
-      </section> 
-
-      {/* 5. MAPA INTELIGENTE GEOGRÁFICO */} 
-      <section ref={mapRef} className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']"> 
-        <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4"> 
-          <div> 
-            <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.exploreOnMap')}</h2> 
-            <p className="text-slate-500 mt-2">{t('home.exploreOnMapSubtitle')}</p> 
-          </div> 
-          <button onClick={() => navigate('/explore?view=map')} className="text-sm font-bold text-purple-600 hover:text-purple-700 bg-purple-50 px-5 py-2.5 rounded-xl transition-colors"> 
-            {t('home.viewFullMap')} 
-          </button> 
-        </div> 
-
-        {mapVisible ? (
-          <Suspense fallback={<div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 animate-pulse" />}>
-            <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} />
-          </Suspense>
-        ) : (
-          <div className="h-[500px] bg-slate-100 rounded-3xl flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
-          </div>
-        )}
-      </section> 
-
-    </div> 
-  ); 
-} 

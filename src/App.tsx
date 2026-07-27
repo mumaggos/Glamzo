@@ -1,13 +1,22 @@
-const FinanceSettingsTab = lazy(() => import('./pages/partner/tabs/FinanceSettingsTab'));
-const PayoutsHistoryTab = lazy(() => import('./pages/partner/tabs/PayoutsHistoryTab'));
-const HardwareManagerTab = lazy(() => import('./pages/partner/tabs/HardwareManagerTab'));
-
 import { Compass } from 'lucide-react';
 import { GlobalIntentHandler } from './components/GlobalIntentHandler';
 import { ProfileCompletionGuard } from './components/ProfileCompletionGuard';
-
 import React, { useEffect, Suspense, lazy } from 'react';
+const SupabaseSetupHelper = lazy(() => import('./components/SupabaseSetupHelper'));
+import GlobalImpersonationBanner from './components/GlobalImpersonationBanner';
+import { Toaster } from 'react-hot-toast';
+const LanguageUpdater = lazy(() => import('./components/LanguageUpdater'));
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { isSupabaseConfigured } from './lib/supabase';
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
+import { useLocalizedNavigate } from './hooks/useLocalizedNavigate';
 
+const FinanceSettingsTab = lazy(() => import('./pages/partner/tabs/FinanceSettingsTab'));
+const PayoutsHistoryTab = lazy(() => import('./pages/partner/tabs/PayoutsHistoryTab'));
+const HardwareManagerTab = lazy(() => import('./pages/partner/tabs/HardwareManagerTab'));
 const Home = lazy(() => import('./pages/Home'));
 const Explore = lazy(() => import('./pages/Explore'));
 const BusinessDetail = lazy(() => import('./pages/BusinessDetail'));
@@ -53,21 +62,13 @@ const FaqCliente = lazy(() => import('./pages/info/FaqCliente'));
 const FaqParceiro = lazy(() => import('./pages/info/FaqParceiro'));
 const Sobre = lazy(() => import('./pages/info/Sobre'));
 const Contactos = lazy(() => import('./pages/info/Contactos'));
-import SupabaseSetupHelper from './components/SupabaseSetupHelper';
-import GlobalImpersonationBanner from './components/GlobalImpersonationBanner';
 const GlamzoMessenger = lazy(() => import('./components/GlamzoMessenger'));
+const Footer = lazy(() => import('./components/Footer'));
+const CookieBanner = lazy(() => import('./components/CookieBanner'));
 
-import { Toaster } from 'react-hot-toast';
-import LanguageUpdater from './components/LanguageUpdater';
-import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
-import { AuthProvider, useAuth } from './hooks/useAuth';
-import { isSupabaseConfigured } from './lib/supabase';
-import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
-import ScrollToTop from './components/ScrollToTop';
-import Footer from './components/Footer';
-import CookieBanner from './components/CookieBanner';
-import { useLocalizedNavigate } from './hooks/useLocalizedNavigate';
+
+
+
 
 // IMPORTAÇÕES DIRETAS
 
@@ -459,8 +460,8 @@ export default function App() {
                 </Routes>
               </Suspense>
             </main>
-            <Footer />
-            <CookieBanner />
+            <Suspense fallback={<div className="h-64 bg-slate-50"></div>}><Footer /></Suspense>
+            <Suspense fallback={null}><CookieBanner /></Suspense>
             {loadMessenger && <Suspense fallback={null}><GlamzoMessenger /></Suspense>}
           </div>
         </AuthProvider>
