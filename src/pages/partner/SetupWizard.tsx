@@ -445,7 +445,7 @@ export default function SetupWizard() {
           }
           
           if (targetStep === 3 && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
-            targetStep = 4;
+            targetStep = 5;
           }
           setStep(targetStep);
         }
@@ -474,11 +474,11 @@ export default function SetupWizard() {
     if (!business) return;
     
     let targetStep = newStep;
-    if (targetStep === 3 && (business.subscription_active || business.stripe_subscription_id)) {
-      if (step === 4) { 
-        targetStep = 2; 
+    if (targetStep === 4 && (business.subscription_active || business.stripe_subscription_id)) {
+      if (step === 5) { 
+        targetStep = 3; 
       } else {
-        targetStep = 4; 
+        targetStep = 5; 
       }
     }
 
@@ -551,7 +551,7 @@ export default function SetupWizard() {
         }
 
         let slug = business.slug;
-        if (slug.startsWith('loja-') && name) {
+        if (slug?.startsWith('loja-') && name) {
           slug = await generateUniqueSlug(name);
         }
         const updateData = {
@@ -857,6 +857,26 @@ export default function SetupWizard() {
     { num: 5, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
     { num: 6, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
   ];
+
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!business) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Erro de Inicialização</h2>
+        <p className="text-slate-500 mb-6">Não foi possível carregar ou criar o seu perfil de parceiro.</p>
+        {errorMsg && <p className="text-red-500 mb-6">{errorMsg}</p>}
+        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-purple-600 text-white rounded-xl font-bold">Tentar Novamente</button>
+      </div>
+    );
+  }
 
   return (
     <APIProvider apiKey={API_KEY || ''} language={currentLangCode}>

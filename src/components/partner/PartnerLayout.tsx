@@ -78,6 +78,7 @@ export default function PartnerLayout() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [businessHours, setBusinessHours] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   const [showStripeWarning, setShowStripeWarning] = useState(() => {
     return sessionStorage.getItem('stripeWarningShown') !== 'true';
   });
@@ -138,7 +139,7 @@ export default function PartnerLayout() {
     try {
       const { data: bData, error: bError } = await supabase.from("businesses").select("*").eq("owner_id", user.id).maybeSingle();
       if (bError) {
-        toast.error('Erro ao carregar loja: ' + bError.message);
+        setLoadingError('Erro ao carregar loja: ' + bError.message);
         return;
       }
       if (!bData) { navigate("/partner/setup", { replace: true }); return; }
@@ -173,11 +174,11 @@ export default function PartnerLayout() {
         supabase.from("business_hours").select("*").eq("business_id", bData.id)
       ]);
 
-      if (catRes.error) { toast.error('Erro ao carregar categorias: ' + catRes.error.message); return; }
-      if (svRes.error) { toast.error('Erro ao carregar serviços: ' + svRes.error.message); return; }
-      if (stRes.error) { toast.error('Erro ao carregar equipa: ' + stRes.error.message); return; }
-      if (bkRes.error) { toast.error('Erro ao carregar reservas: ' + bkRes.error.message); return; }
-      if (bhRes.error) { toast.error('Erro ao carregar horários: ' + bhRes.error.message); return; }
+      if (catRes.error) { setLoadingError('Erro ao carregar categorias: ' + catRes.error.message); return; }
+      if (svRes.error) { setLoadingError('Erro ao carregar serviços: ' + svRes.error.message); return; }
+      if (stRes.error) { setLoadingError('Erro ao carregar equipa: ' + stRes.error.message); return; }
+      if (bkRes.error) { setLoadingError('Erro ao carregar reservas: ' + bkRes.error.message); return; }
+      if (bhRes.error) { setLoadingError('Erro ao carregar horários: ' + bhRes.error.message); return; }
 
       setCategories(catRes.data); 
       setServices(svRes.data); 
@@ -295,6 +296,16 @@ export default function PartnerLayout() {
     ...(tabletOrder ? [{ id: "tablet", label: t('partner.tabTerminal'), icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),
     { id: "configuracoes", label: t('partner.tabSettings'), icon: Settings, path: "/partner/dashboard/configuracoes" },
   ];
+
+  if (loadingError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FC] p-6 text-center">
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Algo correu mal</h2>
+        <p className="text-slate-500 mb-6">{loadingError}</p>
+        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-purple-600 text-white rounded-xl font-bold">Tentar Novamente</button>
+      </div>
+    );
+  }
 
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 

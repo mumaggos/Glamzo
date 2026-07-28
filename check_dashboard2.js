@@ -13,8 +13,7 @@ import puppeteer from 'puppeteer';
   
   try {
     await page.goto('http://localhost:3000/en/partner/dashboard', { waitUntil: 'networkidle2' });
-    console.log('Navigated to /en/partner/dashboard');
-    await new Promise(r => setTimeout(r, 2000));
+    console.log('Final URL:', page.url());
   } catch (e) { console.log('Error navigating:', e); }
   
   await browser.close();

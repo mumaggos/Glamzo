@@ -123,10 +123,7 @@ const CookieBanner = lazy(() => import('./components/CookieBanner'));
 
 
 
-// ErrorBoundary was causing type issues with React 19 types, using a simple fallback for now.
-const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
-};
+import ErrorBoundary from './components/ErrorBoundary';
 
 // CORREÇÃO AQUI: O Guarda agora respeita o Redirecionamento da Loja!
 function SessionGuard() {

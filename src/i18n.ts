@@ -12,7 +12,7 @@ i18n
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
     detection: {
-      order: ["path", "localStorage", "cookie", "navigator"],
+      order: ["path", "localStorage", "cookie"],
       lookupFromPathIndex: 0,
       caches: ['localStorage', 'cookie']
     },
