@@ -67,7 +67,7 @@ export default function Account() {
         } catch (e) {
            console.error(e);
         }
-        setSearchParams({}, { replace: true });
+        window.history.replaceState({}, '', window.location.pathname);
       };
       handleCheckoutReturn();
     }

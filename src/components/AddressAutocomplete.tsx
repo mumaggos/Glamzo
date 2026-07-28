@@ -35,11 +35,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       fields: ['geometry', 'name', 'formatted_address', 'address_components']
     };
 
+    let instance;
     try {
-      const autocompleteInstance = new places.Autocomplete(inputRef.current, options);
-      setAutocomplete(autocompleteInstance);
-      autocompleteInstance.addListener('place_changed', () => {
-        const place = autocompleteInstance.getPlace();
+      instance = new places.Autocomplete(inputRef.current, options);
+      setAutocomplete(instance);
+      instance.addListener('place_changed', () => {
+        const place = instance.getPlace();
         if (place && place.formatted_address) {
           onPlaceSelect(place);
           onChange(place.formatted_address);
@@ -48,21 +49,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     } catch (err) {
       console.warn("Failed to initialize Autocomplete", err);
     }
-    // We already do setAutocomplete above if successful
-    return;
-    setAutocomplete(autocompleteInstance);
-
-    autocompleteInstance.addListener('place_changed', () => {
-      const place = autocompleteInstance.getPlace();
-      if (place && place.formatted_address) {
-        onPlaceSelect(place);
-      }
-    });
 
     // Cleanup
     return () => {
-      if (autocompleteInstance) {
-        google.maps.event.clearInstanceListeners(autocompleteInstance);
+      if (instance && window.google) {
+        window.google.maps.event.clearInstanceListeners(instance);
       }
     };
   }, [places, onPlaceSelect]);

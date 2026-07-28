@@ -392,7 +392,7 @@ export default function SettingsTab() {
                           <Map
                             defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                             defaultZoom={coordinates ? 16 : 7}
-                            mapId={import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || ""}
+                            mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || ""}
                             onClick={(e) => {
                               if (e.detail.latLng) {
                                 setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });

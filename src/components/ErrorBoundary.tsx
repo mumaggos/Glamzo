@@ -9,7 +9,10 @@ interface State {
   error: Error | null;
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
+export default class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+  }
   public state: State = {
     hasError: false,
     error: null
@@ -39,6 +42,6 @@ export default class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return (this as any).props.children;
   }
 }

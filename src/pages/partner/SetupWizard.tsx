@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
-const API_KEY = typeof import.meta.env !== "undefined" ? (import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "") : "";
+const API_KEY = typeof (import.meta as any).env !== "undefined" ? ((import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "") : "";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
   const map = useMap();
@@ -747,6 +747,9 @@ export default function SetupWizard() {
 
   const triggerStripeOnboarding = async () => {
     if (!business) return;
+    
+    console.log("Triggering stripe onboarding. Business ID:", business.id, "Owner ID:", user?.id);
+    
     setLoading(true);
     try {
       const createResponse = await fetch('/api/stripe/create-custom-account', {
@@ -1075,7 +1078,7 @@ export default function SetupWizard() {
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
-                        mapId={import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || ""}
+                        mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || ""}
                         onClick={(e) => {
                           if (e.detail.latLng) {
                             setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });

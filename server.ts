@@ -631,6 +631,7 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
   
   try {
     const { businessId, ownerId, companyName, taxId, iban } = req.body;
+    console.log("Recebendo payload para create-custom-account:", req.body);
     if (!businessId || !ownerId) {
       return res.status(400).json({ error: "businessId and ownerId are required" });
     }
@@ -638,11 +639,14 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
     
 
     const { data: business, error: dbErr } = await getSupabaseAdmin().from("businesses")
-      .select("stripe_account_id, email, name, country_code")
+      .select("stripe_account_id, email, name")
       .eq("id", businessId)
       .single();
+    
+    console.log("Resultado da query de business:", { business, dbErr });
 
     if (dbErr || !business) {
+      console.error("Error fetching business:", dbErr);
       return res.status(404).json({ error: "Business not found" });
     }
 
@@ -652,8 +656,8 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
     if (!stripeAccountId) {
       
       const accountParams: any = {
-        type: 'custom',
-        country: business.country_code || 'PT',
+        type: 'express',
+        country: 'PT',
         email: business.email || undefined,
         capabilities: {
           card_payments: { requested: true },
@@ -678,7 +682,7 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
       if (iban) {
         accountParams.external_account = {
           object: 'bank_account',
-          country: business.country_code || 'PT',
+          country: 'PT',
           currency: 'eur',
           account_number: iban
         };
