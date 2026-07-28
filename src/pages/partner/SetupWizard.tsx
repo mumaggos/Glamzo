@@ -81,7 +81,7 @@ export default function SetupWizard() {
     const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
   
   const [loading, setLoading] = useState(true);
@@ -266,9 +266,19 @@ export default function SetupWizard() {
     const status = searchParams.get('status');
     const stepParam = searchParams.get('step');
     const checkoutSuccess = searchParams.get('checkout_success');
+    const checkoutCanceled = searchParams.get('checkout_canceled');
     const sessionId = searchParams.get('session_id');
 
-    if (!status && !stepParam && !checkoutSuccess && !searchParams.get('checkout_canceled')) return;
+    if (!status && !stepParam && !checkoutSuccess && !checkoutCanceled) return;
+
+    // Prevents infinite loop if status is somehow not cleared
+    const newParams = new URLSearchParams(searchParams);
+    if (status) newParams.delete('status');
+    if (stepParam) newParams.delete('step');
+    if (checkoutSuccess) newParams.delete('checkout_success');
+    if (checkoutCanceled) newParams.delete('checkout_canceled');
+    if (sessionId) newParams.delete('session_id');
+    
 
     if (checkoutSuccess === 'true') {
       setSuccessMsg(t('setupWizard.errSubscriptionSuccess'));
@@ -299,13 +309,13 @@ export default function SetupWizard() {
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
-      window.history.replaceState({}, document.title, '/partner/setup');
+      setSearchParams(newParams, { replace: true });
     } else if (status === 'connect_refresh') {
       setErrorMsg(t('setupWizard.errStripeConnectInterrupt'));
       if (stepParam) {
          setStep(parseInt(stepParam));
       }
-      window.history.replaceState({}, document.title, '/partner/setup');
+      setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, business]);
 
@@ -1081,7 +1091,7 @@ export default function SetupWizard() {
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
-                        mapId="SETUP_WIZARD_MAP_LOCATION"
+                        mapId={import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"}
                         onClick={(e) => {
                           if (e.detail.latLng) {
                             setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });

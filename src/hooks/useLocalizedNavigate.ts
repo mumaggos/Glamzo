@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
 
 export function useLocalizedNavigate() {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
 
-  return (to: string | number | { pathname: string; [key: string]: any }, options?: any) => {
+  return useCallback((to: string | number | { pathname: string; [key: string]: any }, options?: any) => {
     if (typeof to === 'number') return navigate(to);
+    
     const currentLang = i18n.language || 'pt';
     const isDefaultLang = currentLang.startsWith('pt');
     
@@ -34,5 +36,5 @@ export function useLocalizedNavigate() {
     } else {
         navigate({ ...to, pathname: path }, options);
     }
-  };
+  }, [navigate, i18n.language]);
 }

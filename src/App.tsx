@@ -133,8 +133,13 @@ function SessionGuard() {
 
   useEffect(() => {
     if (loading || !user || !profile) return;
-
-    const path = location.pathname;
+    let path = location.pathname;
+    const pathParts = path.split('/');
+    if (pathParts[1] && ['pt', 'en', 'es', 'fr'].includes(pathParts[1])) {
+      path = '/' + pathParts.slice(2).join('/');
+    }
+    if (path === '//' || path === '') path = '/';
+    
     const isAuthPage = ['/login', '/partner/login', '/admin/login', '/partner/signup', '/signup'].includes(path);
     
     // Loja (Business): Impedir acesso ao /login se já estiver logado
@@ -146,22 +151,20 @@ function SessionGuard() {
     }
 
     if (isAuthPage) {
-      // 1º Verificar se há memória de redirecionamento para a Loja!
       const returnTo = localStorage.getItem('returnTo');
       if (returnTo) {
         localStorage.removeItem('returnTo');
         navigate(returnTo, { replace: true });
-        return; // Pára a execução para não ser expulso para a Home!
+        return; 
       }
-
+      
       const savedRedirect = sessionStorage.getItem('post_login_redirect');
       if (savedRedirect) {
         sessionStorage.removeItem('post_login_redirect');
         navigate(savedRedirect, { replace: true });
-        return; // Pára a execução para não ser expulso para a Home!
+        return; 
       }
       
-      // 2º Se não houver, segue o comportamento normal
       if (profile.role === 'business') navigate('/partner/dashboard', { replace: true });
       else if (profile.role === 'admin') navigate('/admin', { replace: true });
       else if (profile.role === 'staff') navigate('/staff/dashboard', { replace: true });
@@ -271,8 +274,12 @@ function GlobalRoleEnforcer() {
 
   useEffect(() => {
     if (loading || !user || !profile) return;
-
-    const path = location.pathname;
+    let path = location.pathname;
+    const pathParts = path.split('/');
+    if (pathParts[1] && ['pt', 'en', 'es', 'fr'].includes(pathParts[1])) {
+      path = '/' + pathParts.slice(2).join('/');
+    }
+    if (path === '//' || path === '') path = '/';
     
     const isPartnerRoute = path.startsWith('/partner') || path.startsWith('/setup') || path.startsWith('/dashboard');
     const isStaffRoute = path.startsWith('/staff');
@@ -301,7 +308,6 @@ function GlobalRoleEnforcer() {
           }
        }
     };
-
     enforceSeparation();
   }, [location.pathname, user, profile, loading, signOut, navigate]);
 

@@ -36,7 +36,12 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
   // 2. Guest protection: Redirect unauthenticated requests to login page base on directory path
   if (!user) {
-    const path = location.pathname;
+    let path = location.pathname;
+    const pathParts = path.split('/');
+    if (pathParts[1] && ['pt', 'en', 'es', 'fr'].includes(pathParts[1])) {
+      path = '/' + pathParts.slice(2).join('/');
+    }
+    if (path === '//' || path === '') path = '/';
     if (path.startsWith('/admin')) {
       return <Navigate to="/admin/login" replace />;
     }
