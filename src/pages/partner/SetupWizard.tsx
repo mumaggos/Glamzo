@@ -245,20 +245,10 @@ export default function SetupWizard() {
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
   // Step 4: Billing & KYC
-  const [legalName, setLegalName] = useState('');
-  const [nif, setNif] = useState('');
-  const [iban, setIban] = useState('');
-
+      
 
   // Step 3: Plan
-  const [wantsTerminal, setWantsTerminal] = useState(false);
-  const [shippingName, setShippingName] = useState('');
-  const [shippingPhone, setShippingPhone] = useState('');
-  const [shippingAddress, setShippingAddress] = useState('');
-  const [shippingPostalCode, setShippingPostalCode] = useState('');
-  const [shippingCity, setShippingCity] = useState('');
-  const [tabletOrderId, setTabletOrderId] = useState<string | null>(null);
-
+              
   useEffect(() => {
     fetchBusiness();
   }, [user]);
@@ -465,16 +455,7 @@ export default function SetupWizard() {
         const { data: svcs } = await supabase.from('services').select('*').eq('business_id', currentBiz.id);
         if (svcs) setServices(svcs);
         
-        const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', currentBiz.id).maybeSingle();
-        if (order) {
-          setTabletOrderId(order.id);
-          setWantsTerminal(true);
-          setShippingName(order.shipping_name || '');
-          setShippingPhone(order.shipping_phone || '');
-          setShippingAddress(order.shipping_address || '');
-          setShippingPostalCode(order.shipping_postal_code || '');
-          setShippingCity(order.shipping_city || '');
-        }
+        
       }
     } catch (err: any) {
       setErrorMsg(t('setupWizard.errSetupPrepare') + err.message);
@@ -639,77 +620,44 @@ export default function SetupWizard() {
         console.warn('Autosave step 3 failed:', err);
       }
     } else if (step === 4) {
-      // Step 4 is handled directly by triggerStripeOnboarding and updateSetupStep(5)
-    } else if (step === 5) {
-      if (wantsTerminal) {
-        if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
-          setErrorMsg(t('setupWizard.errShippingData'));
-          return;
-        }
-      }
-      
       setLoading(true);
       try {
         const { error: updateError } = await supabase.from('businesses').update({ 
-          selected_plan: wantsTerminal ? 'app_tablet' : 'pro',
-          tablet_requested: wantsTerminal
+          selected_plan: 'pro',
+          tablet_requested: false
         }).eq('id', business.id);
+        
         if (updateError) {
           throw new Error('Falha ao atualizar o plano: ' + updateError.message);
         }
         
-        if (wantsTerminal) {
-           let tabletError = null;
-           if (tabletOrderId) {
-             const res = await supabase.from('tablet_orders').update({
-               shipping_name: shippingName.trim(),
-               shipping_phone: shippingPhone.trim(),
-               shipping_address: shippingAddress.trim(),
-               shipping_city: shippingCity.trim(),
-               shipping_postal_code: shippingPostalCode.trim(),
-               status: 'pending'
-             }).eq('id', tabletOrderId);
-             tabletError = res.error;
-           } else {
-             const res = await supabase.from('tablet_orders').insert({
-               business_id: business.id,
-               shipping_name: shippingName.trim(),
-               shipping_phone: shippingPhone.trim(),
-               shipping_address: shippingAddress.trim(),
-               shipping_city: shippingCity.trim(),
-               shipping_postal_code: shippingPostalCode.trim(),
-               deposit_amount: 0,
-               status: 'pending'
-             }).select('id').single();
-             tabletError = res.error;
-             if (res.data) setTabletOrderId(res.data.id);
-           }
-           if (tabletError) {
-             throw new Error('Falha ao processar encomenda do terminal: ' + tabletError.message);
-           }
+        // redirect to stripe checkout
+        const res = await fetch("/api/stripe/create-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ businessId: business.id, planName: 'pro', skipTrial: false })
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to create checkout session");
         }
-
-        const { error: upsertError } = await supabase.from('businesses').update({
-          onboarding_step: 6,
-          setup_step: 6
-        }).eq('id', business.id);
-
-        if (upsertError) {
-          throw new Error('Falha ao atualizar estado de onboarding: ' + upsertError.message);
+        
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+          return; // don't set loading false, wait for redirect
+        } else {
+          throw new Error("No URL returned from checkout session creation");
         }
-
-        // Move to final step
-        setBusiness({ ...business, onboarding_step: 6, setup_step: 6 });
-        setStep(6);
       } catch (err: any) {
-        console.warn('Step 5 failed:', err);
+        console.warn('Step 4 failed:', err);
         setErrorMsg(err.message);
-      } finally {
         setLoading(false);
       }
     }
   };
-
+  
   const handleMagicSetup = async () => {
     if (!user || !business) return;
     if (!name || !phone || !address || !city || !postalCode || !district) {
@@ -745,52 +693,7 @@ export default function SetupWizard() {
     }
   };
 
-  const triggerStripeOnboarding = async () => {
-    if (!business) return;
-    
-    console.log("Triggering stripe onboarding. Business ID:", business.id, "Owner ID:", user?.id);
-    
-    setLoading(true);
-    try {
-      const createResponse = await fetch('/api/stripe/create-custom-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: business.id,
-          ownerId: user?.id,
-          companyName: legalName,
-          taxId: nif,
-          iban: iban
-        })
-      });
-
-      if (!createResponse.ok) {
-         const createData = await createResponse.json();
-         throw new Error(createData.error || 'Falha ao criar conta Stripe');
-      }
-
-      const response = await fetch('/api/stripe/connect/onboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: business.id,
-          businessEmail: business.email,
-          businessName: business.name,
-          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=4',
-          refreshUrl: window.location.origin + '/partner/setup?status=connect_refresh&step=4'
-        })
-      });
-      const data = await response.json();
-      if (response.ok && data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'Failed to create connect session');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message);
-      setLoading(false);
-    }
-  };
+  ;
 
   const publishBusiness = async () => {
     if (!business) return;
@@ -851,8 +754,7 @@ export default function SetupWizard() {
     { num: 2, title: 'Horários', icon: <Clock className="w-4 h-4" /> },
     { num: 3, title: 'Serviços', icon: <Scissors className="w-4 h-4" /> },
     { num: 4, title: 'Plano', icon: <CreditCard className="w-4 h-4" /> },
-    { num: 5, title: 'Pagamentos', icon: <Landmark className="w-4 h-4" /> },
-    { num: 6, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
+    { num: 5, title: 'Revisão', icon: <CheckCircle className="w-4 h-4" /> }
   ];
 
   
@@ -1327,71 +1229,8 @@ export default function SetupWizard() {
         )}
 
         {step === 4 && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Landmark className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Dados de Faturação e KYC</h2>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
-              Para receber pagamentos online e poder encomendar o seu terminal, precisamos de validar a sua entidade comercial através da Stripe.
-            </p>
-
-            {(business?.charges_enabled && business?.details_submitted) ? (
-               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
-                 <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                 <h3 className="font-bold text-emerald-900">Identidade Verificada</h3>
-                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta Stripe está pronta a receber pagamentos.</p>
-                 <button
-                    onClick={() => updateSetupStep(5)}
-                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
-                  >
-                    <span>Continuar</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-               </div>
-            ) : (
-              <div className="max-w-md mx-auto text-left space-y-4 mb-8">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome Legal da Empresa / Titular</label>
-                  <input type="text" value={legalName} onChange={e => setLegalName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Glamzo Unipessoal Lda" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">NIF</label>
-                  <input type="text" value={nif} onChange={e => setNif(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 500000000" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">IBAN</label>
-                  <input type="text" value={iban} onChange={e => setIban(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="PT50..." />
-                </div>
-
-                <div className="pt-4">
-                  <button
-                    onClick={triggerStripeOnboarding}
-                    disabled={loading || !legalName.trim() || !nif.trim() || !iban.trim()}
-                    className="w-full px-8 py-3.5 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Verificar Identidade na Stripe</span><ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
-              <button
-                type="button"
-                onClick={() => updateSetupStep(3)}
-                disabled={loading}
-                className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Voltar</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Plano Pro e Equipamento</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Plano Pro</h2>
             
             <div className="grid grid-cols-1 gap-6 mb-8">
               <div className="relative p-6 rounded-2xl border-2 border-purple-600 bg-purple-50/50 shadow-md">
@@ -1400,7 +1239,7 @@ export default function SetupWizard() {
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="mt-1">
-                    <input type="radio" checked={!wantsTerminal} onChange={() => setWantsTerminal(false)} className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
+                    <input type="radio" checked={true} readOnly className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
@@ -1411,40 +1250,12 @@ export default function SetupWizard() {
                   </div>
                 </div>
               </div>
-
-              <div className="relative p-6 rounded-2xl border-2 border-slate-200 hover:border-slate-300 bg-white transition-colors cursor-pointer" onClick={() => setWantsTerminal(true)}>
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <input type="radio" checked={wantsTerminal} onChange={() => setWantsTerminal(true)} className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-slate-700" />
-                      Software + Terminal Físico
-                    </h3>
-                    <p className="text-sm text-slate-600 mt-1 mb-3">59€ / mês. Inclui o terminal de pagamento Android de última geração com impressora integrada.</p>
-                  </div>
-                </div>
-              </div>
             </div>
-
-            {wantsTerminal && (
-              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
-                <h4 className="font-bold text-slate-900 mb-4">Dados de Envio</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Nome de Envio" value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Telemóvel" value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Morada" value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
-                  <input type="text" placeholder="Código Postal" value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder="Cidade" value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                </div>
-              </div>
-            )}
             
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
               <button
                 type="button"
-                onClick={() => updateSetupStep(4)}
+                onClick={() => updateSetupStep(3)}
                 disabled={loading}
                 className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
               >
@@ -1457,13 +1268,13 @@ export default function SetupWizard() {
                 onClick={handleNext}
                 className="w-full px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{wantsTerminal ? 'Confirmar Pedido' : 'Começar 14 Dias Grátis'}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Começar 14 Dias Grátis</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
           </div>
         )}
 
-        {step === 6 && (
+        {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-6 text-center tracking-tight">{t('setupWizard.allReadyTitle')}</h2>
             <div className="max-w-md mx-auto space-y-4 mb-8">
@@ -1472,21 +1283,14 @@ export default function SetupWizard() {
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
-                  <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.servicesStep')}{services.length})</span>
+                  <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.servicesStep')}</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl border bg-emerald-50 border-emerald-200">
                   <span className="font-semibold text-sm text-emerald-900">{t('setupWizard.subscribedPlanStep')}</span>
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                 </div>
-                <div className={`flex items-center justify-between p-4 rounded-xl border ${business?.charges_enabled ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
-                  <span className={`font-semibold text-sm ${business?.charges_enabled ? 'text-emerald-900' : 'text-amber-900'}`}>
-                    {t('setupWizard.onlinePaymentsStep')}
-                                                    </span>
-                  {business?.charges_enabled ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <span className="text-xs text-amber-700 font-bold px-2 py-1 bg-amber-200 rounded">{t('setupWizard.laterLabel')}</span>}
-                </div>
             </div>
-
             <div className="text-center">
               <button
                 onClick={publishBusiness}
@@ -1499,7 +1303,7 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {step < 6 && (
+        {step < 5 && (
           <div className="mt-8 flex items-center gap-4">
              {step > 1 && step !== 4 && (
                 <button

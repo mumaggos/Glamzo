@@ -9,6 +9,7 @@ import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
 import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
+import { StripeActivationBanner } from "./StripeActivationBanner";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
 
@@ -389,11 +390,7 @@ export default function PartnerLayout() {
       </aside>
 
       <main className="flex-1 flex flex-col h-full relative isolate overflow-x-hidden w-full">
-        {business && business.subscription_active !== false && business.subscription_status !== 'canceled' && !business.stripe_account_id && showStripeWarning && (
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-3 text-center text-sm font-bold shadow-sm relative z-[999999] animate-in fade-in slide-in-from-top-4">
-            {t('partner.stripeWarning')} <LocalizedLink to="/partner/dashboard/subscricao" className="underline decoration-2 underline-offset-2 hover:text-rose-100 transition-colors">{t('partner.stripeLink')}</LocalizedLink>
-          </div>
-        )}
+        
         <div className="relative z-[99999] h-16 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-md pt-4 border-b border-slate-100/50">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 hidden lg:block">{t('partner.goodMorning')} <span className="text-purple-600">{profile?.full_name?.split(" ")[0] || t('partner.professional')}</span> 👋</h2>
