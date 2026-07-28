@@ -1269,7 +1269,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     }
 
     if (!priceId) {
-      priceId = "price_1TbVJUPCXoqZhOLwXn2JIGem"; // ultimate hardcoded fallback
+      priceId = "price_1TyF4kPCXoqZhOLwq6FdV8U1"; // ultimate hardcoded fallback
     }
 
     console.log(
@@ -1320,6 +1320,12 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
         const customer = await stripe.customers.create({
           email: business.email || undefined,
           name: business.name,
+          address: {
+            line1: business.address || undefined,
+            city: business.city || undefined,
+            postal_code: business.postal_code || undefined,
+            country: 'PT'
+          },
           metadata: { businessId: businessId },
         });
         customerId = customer.id;
@@ -1381,18 +1387,7 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
           quantity: 1,
         },
       ];
-      if (isTerminal) {
-        lineItems.push({
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'Terminal Físico Stripe Reader'
-            },
-            unit_amount: 9900
-          },
-          quantity: 1
-        });
-      }
+      
 
       const sessionPayload = {
         customer: customerId,

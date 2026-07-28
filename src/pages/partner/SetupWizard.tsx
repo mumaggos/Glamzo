@@ -980,7 +980,7 @@ export default function SetupWizard() {
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
-                        mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || ""}
+                        mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"}
                         onClick={(e) => {
                           if (e.detail.latLng) {
                             setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
@@ -995,7 +995,7 @@ export default function SetupWizard() {
                           draggable
                           onDragEnd={(e) => {
                             if (e.latLng) {
-                              setCoordinates({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                              setCoordinates({ lat: typeof e.latLng.lat === "function" ? e.latLng.lat() : e.latLng.lat, lng: typeof e.latLng.lng === "function" ? e.latLng.lng() : e.latLng.lng });
                             }
                           }}
                         >
@@ -1233,21 +1233,16 @@ export default function SetupWizard() {
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Plano Pro</h2>
             
             <div className="grid grid-cols-1 gap-6 mb-8">
-              <div className="relative p-6 rounded-2xl border-2 border-purple-600 bg-purple-50/50 shadow-md">
+              <div className="relative p-6 rounded-2xl border-2 border-purple-600 bg-purple-50/50 shadow-md flex items-start gap-4">
                 <div className="absolute top-0 right-0 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl uppercase tracking-wider">
                   Recomendado
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <input type="radio" checked={true} readOnly className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-purple-600" />
-                      Apenas Software (14 dias grátis)
-                    </h3>
-                    <p className="text-sm text-slate-600 mt-1">29€ / mês ou 299€ / ano após período grátis. Acesso total a todas as funcionalidades do Glamzo Business.</p>
-                  </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-xl text-slate-900 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    Plano Pro (14 dias grátis)
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-2">19,90€ / mês após período grátis. Acesso total a todas as funcionalidades do Glamzo Business.</p>
                 </div>
               </div>
             </div>
