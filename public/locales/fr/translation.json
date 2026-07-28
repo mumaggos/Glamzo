@@ -750,5 +750,52 @@
     "eliteInsight": "Insight d'Élite",
     "starService": "Votre service vedette est",
     "congratsKeepItUp": "– félicitations ! Continuez cet excellent travail pour continuer à gagner."
+  },
+  "auth": {
+    "signup": {
+      "fullNameLabel": "Nom Complet",
+      "fullNamePlaceholder": "Votre prénom et nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "exemple@glamzo.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Créez un mot de passe sécurisé",
+      "confirmPasswordLabel": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Entrez à nouveau le mot de passe",
+      "terms1": "J'ai lu et j'accepte les",
+      "terms2": "Termes et Conditions",
+      "terms3": "et la",
+      "terms4": "Politique de Confidentialité",
+      "processing": "Traitement...",
+      "next": "Suivant",
+      "goToLogin": "Aller à la connexion",
+      "verifyTitle": "Vérifiez votre email",
+      "verifyDesc1": "Nous avons envoyé un code à",
+      "verifyDesc2": "Vérifiez également vos spams.",
+      "codePlaceholder": "000000",
+      "verifyBtn": "Vérifier et se connecter",
+      "resendCode": "Renvoyer un nouveau code",
+      "correctData": "Corriger les données",
+      "orRegisterWith": "Ou s'inscrire avec",
+      "googleRegister": "S'inscrire avec Google",
+      "errFillAll": "Veuillez remplir tous les champs obligatoires.",
+      "errPasswordMismatch": "Les mots de passe ne correspondent pas.",
+      "errAcceptTerms": "Veuillez accepter les Termes et Conditions.",
+      "codeSent": "Nous avons envoyé un code à votre email. Veuillez l'entrer ci-dessous pour terminer l'inscription.",
+      "newCodeSent": "Nouveau code envoyé ! Vérifiez votre email.",
+      "errResend": "Erreur lors du renvoi du code."
+    },
+    "login": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "exemple@glamzo.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Mot de passe oublié ?",
+      "loggingIn": "Connexion en cours...",
+      "loginBtn": "Se connecter",
+      "orLoginWith": "Ou",
+      "googleLogin": "Se connecter avec Google",
+      "errFillAll": "Veuillez remplir tous les champs.",
+      "pwdRecoverySent": "Instructions de récupération envoyées à votre email."
+    }
   }
 }

@@ -750,5 +750,52 @@
     "eliteInsight": "Elite Insight",
     "starService": "Your star service is",
     "congratsKeepItUp": "– congratulations! Keep up the excellent work to keep earning."
+  },
+  "auth": {
+    "signup": {
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Your first and last name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "example@glamzo.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a strong password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Enter the password again",
+      "terms1": "I read and accept the",
+      "terms2": "Terms and Conditions",
+      "terms3": "and the",
+      "terms4": "Privacy Policy",
+      "processing": "Processing...",
+      "next": "Next",
+      "goToLogin": "Go to Login",
+      "verifyTitle": "Verify your email",
+      "verifyDesc1": "We sent a code to",
+      "verifyDesc2": "Also check your Spam folder.",
+      "codePlaceholder": "000000",
+      "verifyBtn": "Verify and Login",
+      "resendCode": "Resend new code",
+      "correctData": "Correct data",
+      "orRegisterWith": "Or register with",
+      "googleRegister": "Sign up with Google",
+      "errFillAll": "Please fill in all required fields.",
+      "errPasswordMismatch": "Passwords do not match.",
+      "errAcceptTerms": "Please accept the Terms and Conditions.",
+      "codeSent": "We sent a code to your email. Please enter it below to complete registration.",
+      "newCodeSent": "New code sent! Check your email.",
+      "errResend": "Error resending code."
+    },
+    "login": {
+      "emailLabel": "Email",
+      "emailPlaceholder": "example@glamzo.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot your password?",
+      "loggingIn": "Logging in...",
+      "loginBtn": "Log in",
+      "orLoginWith": "Or",
+      "googleLogin": "Log in with Google",
+      "errFillAll": "Please fill in all fields.",
+      "pwdRecoverySent": "Recovery instructions sent to your email."
+    }
   }
 }

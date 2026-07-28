@@ -750,5 +750,52 @@
     "eliteInsight": "Insight de Élite",
     "starService": "Tu servicio estrella es",
     "congratsKeepItUp": "– ¡felicidades! Sigue con el excelente trabajo para seguir facturando."
+  },
+  "auth": {
+    "signup": {
+      "fullNameLabel": "Nombre Completo",
+      "fullNamePlaceholder": "Tu nombre y apellido",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "ejemplo@glamzo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Crea una contraseña segura",
+      "confirmPasswordLabel": "Confirmar Contraseña",
+      "confirmPasswordPlaceholder": "Introduce la contraseña de nuevo",
+      "terms1": "He leído y acepto los",
+      "terms2": "Términos y Condiciones",
+      "terms3": "y la",
+      "terms4": "Política de Privacidad",
+      "processing": "Procesando...",
+      "next": "Siguiente",
+      "goToLogin": "Ir a Iniciar Sesión",
+      "verifyTitle": "Verifica tu correo",
+      "verifyDesc1": "Hemos enviado un código a",
+      "verifyDesc2": "Revisa también tu carpeta de Spam.",
+      "codePlaceholder": "000000",
+      "verifyBtn": "Verificar y Entrar",
+      "resendCode": "Reenviar nuevo código",
+      "correctData": "Corregir datos",
+      "orRegisterWith": "O registrarse con",
+      "googleRegister": "Registrarse con Google",
+      "errFillAll": "Por favor, completa todos los campos obligatorios.",
+      "errPasswordMismatch": "Las contraseñas no coinciden.",
+      "errAcceptTerms": "Por favor, acepta los Términos y Condiciones.",
+      "codeSent": "Hemos enviado un código a tu correo. Por favor, introdúcelo a continuación para completar el registro.",
+      "newCodeSent": "¡Nuevo código enviado! Revisa tu correo.",
+      "errResend": "Error al reenviar el código."
+    },
+    "login": {
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "ejemplo@glamzo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "¿Has olvidado tu contraseña?",
+      "loggingIn": "Iniciando sesión...",
+      "loginBtn": "Iniciar Sesión",
+      "orLoginWith": "O",
+      "googleLogin": "Iniciar sesión con Google",
+      "errFillAll": "Por favor, completa todos los campos.",
+      "pwdRecoverySent": "Instrucciones de recuperación enviadas a tu correo."
+    }
   }
 }

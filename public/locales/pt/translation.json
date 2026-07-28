@@ -749,5 +749,52 @@
     "eliteInsight": "Insight de Elite",
     "starService": "O teu serviço estrela é",
     "congratsKeepItUp": "– parabéns! Mantém o excelente trabalho para continuares a faturar."
+  },
+  "auth": {
+    "signup": {
+      "fullNameLabel": "Nome Completo",
+      "fullNamePlaceholder": "O seu primeiro e último nome",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "exemplo@glamzo.com",
+      "passwordLabel": "Palavra-passe",
+      "passwordPlaceholder": "Crie uma senha forte",
+      "confirmPasswordLabel": "Confirmar Palavra-passe",
+      "confirmPasswordPlaceholder": "Introduza novamente a palavra-passe",
+      "terms1": "Li e aceito os",
+      "terms2": "Termos e Condições",
+      "terms3": "e a",
+      "terms4": "Política de Privacidade",
+      "processing": "A processar...",
+      "next": "Avançar",
+      "goToLogin": "Ir para Login",
+      "verifyTitle": "Verifique o seu e-mail",
+      "verifyDesc1": "Enviámos um código para",
+      "verifyDesc2": "Verifique também o Spam.",
+      "codePlaceholder": "000000",
+      "verifyBtn": "Verificar e Entrar",
+      "resendCode": "Reenviar novo código",
+      "correctData": "Corrigir dados",
+      "orRegisterWith": "Ou registar com",
+      "googleRegister": "Inscrever-se com Google",
+      "errFillAll": "Preencha todos os campos obrigatórios.",
+      "errPasswordMismatch": "As palavras-passe não coincidem.",
+      "errAcceptTerms": "Por favor, aceite os Termos e Condições.",
+      "codeSent": "Enviámos um código para o seu e-mail. Por favor, introduza-o abaixo para concluir o registo.",
+      "newCodeSent": "Novo código enviado! Verifique o seu e-mail.",
+      "errResend": "Erro ao reenviar código."
+    },
+    "login": {
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "exemplo@glamzo.com",
+      "passwordLabel": "Palavra-passe",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Esqueceu a palavra-passe?",
+      "loggingIn": "A iniciar sessão...",
+      "loginBtn": "Entrar na Conta",
+      "orLoginWith": "Ou",
+      "googleLogin": "Entrar com o Google",
+      "errFillAll": "Preencha todos os campos.",
+      "pwdRecoverySent": "Instruções de recuperação enviadas para o seu e-mail."
+    }
   }
 }
