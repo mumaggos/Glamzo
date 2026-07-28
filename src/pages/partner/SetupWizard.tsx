@@ -11,10 +11,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
-const API_KEY =
-  
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  "";
+const API_KEY = typeof import.meta.env !== "undefined" ? (import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "") : "";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
   const map = useMap();
@@ -247,6 +244,10 @@ export default function SetupWizard() {
 
   // Step 2: Services
   const [services, setServices] = useState<any[]>([]);
+  // Step 4: Billing & KYC
+  const [legalName, setLegalName] = useState('');
+  const [nif, setNif] = useState('');
+  const [iban, setIban] = useState('');
 
 
   // Step 3: Plan
@@ -256,6 +257,7 @@ export default function SetupWizard() {
   const [shippingAddress, setShippingAddress] = useState('');
   const [shippingPostalCode, setShippingPostalCode] = useState('');
   const [shippingCity, setShippingCity] = useState('');
+  const [tabletOrderId, setTabletOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBusiness();
@@ -465,6 +467,7 @@ export default function SetupWizard() {
         
         const { data: order } = await supabase.from('tablet_orders').select('*').eq('business_id', currentBiz.id).maybeSingle();
         if (order) {
+          setTabletOrderId(order.id);
           setWantsTerminal(true);
           setShippingName(order.shipping_name || '');
           setShippingPhone(order.shipping_phone || '');
@@ -636,6 +639,8 @@ export default function SetupWizard() {
         console.warn('Autosave step 3 failed:', err);
       }
     } else if (step === 4) {
+      // Step 4 is handled directly by triggerStripeOnboarding and updateSetupStep(5)
+    } else if (step === 5) {
       if (wantsTerminal) {
         if (!shippingName.trim() || !shippingPhone.trim() || !shippingAddress.trim() || !shippingCity.trim() || !shippingPostalCode.trim()) {
           setErrorMsg(t('setupWizard.errShippingData'));
@@ -649,97 +654,59 @@ export default function SetupWizard() {
           selected_plan: wantsTerminal ? 'app_tablet' : 'pro',
           tablet_requested: wantsTerminal
         }).eq('id', business.id);
-
         if (updateError) {
           throw new Error('Falha ao atualizar o plano: ' + updateError.message);
         }
         
         if (wantsTerminal) {
-           const { error: tabletError } = await supabase.from('tablet_orders').upsert({
-             business_id: business.id,
-             shipping_name: shippingName.trim(),
-             shipping_phone: shippingPhone.trim(),
-             shipping_address: shippingAddress.trim(),
-             shipping_city: shippingCity.trim(),
-             shipping_postal_code: shippingPostalCode.trim(),
-             status: 'pending'
-           }, { onConflict: 'business_id' });
-
+           let tabletError = null;
+           if (tabletOrderId) {
+             const res = await supabase.from('tablet_orders').update({
+               shipping_name: shippingName.trim(),
+               shipping_phone: shippingPhone.trim(),
+               shipping_address: shippingAddress.trim(),
+               shipping_city: shippingCity.trim(),
+               shipping_postal_code: shippingPostalCode.trim(),
+               status: 'pending'
+             }).eq('id', tabletOrderId);
+             tabletError = res.error;
+           } else {
+             const res = await supabase.from('tablet_orders').insert({
+               business_id: business.id,
+               shipping_name: shippingName.trim(),
+               shipping_phone: shippingPhone.trim(),
+               shipping_address: shippingAddress.trim(),
+               shipping_city: shippingCity.trim(),
+               shipping_postal_code: shippingPostalCode.trim(),
+               deposit_amount: 0,
+               status: 'pending'
+             }).select('id').single();
+             tabletError = res.error;
+             if (res.data) setTabletOrderId(res.data.id);
+           }
            if (tabletError) {
              throw new Error('Falha ao processar encomenda do terminal: ' + tabletError.message);
            }
         }
 
         const { error: upsertError } = await supabase.from('businesses').update({
-          onboarding_step: 4
+          onboarding_step: 6,
+          setup_step: 6
         }).eq('id', business.id);
 
         if (upsertError) {
           throw new Error('Falha ao atualizar estado de onboarding: ' + upsertError.message);
         }
 
-        // Check trial_used from database to ensure no trial repetition
-        let trialUsed = false;
-        try {
-          const { data: bRec } = await supabase
-            .from('businesses')
-            .select('trial_used')
-            .eq('id', business.id)
-            .maybeSingle();
-          if (bRec) {
-            trialUsed = bRec.trial_used === true;
-          }
-        } catch (e) {
-          console.warn('Could not read trial_used, fallback to state:', e);
-          trialUsed = business?.trial_used === true;
-        }
-
-        const res = await fetch('/api/stripe/create-subscription', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessId: business.id,
-            planName: wantsTerminal ? 'TERMINAL' : 'PRO',
-            successUrl: window.location.origin + '/partner/setup?checkout_success=true&session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: window.location.origin + '/partner/setup?checkout_canceled=true',
-            force_no_trial: trialUsed
-          })
-        });
-
-        if (!res.ok) {
-          let errorData: any = {};
-          try {
-            errorData = await res.json();
-          } catch (_) {}
-          throw new Error(errorData.error || 'Falha ao criar sessão de pagamento no Stripe.');
-        }
-
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error(data.error || 'Não foi possível gerar o link de pagamento Stripe.');
-        }
-      } catch (e: any) {
-        console.error('Checkout setup failed:', e);
-        setErrorMsg(t('setupWizard.errStripePayment') + (e.message || t('setupWizard.errSubscriptionFailed')));
+        // Move to final step
+        setBusiness({ ...business, onboarding_step: 6, setup_step: 6 });
+        setStep(6);
+      } catch (err: any) {
+        console.warn('Step 5 failed:', err);
+        setErrorMsg(err.message);
       } finally {
         setLoading(false);
       }
-    } else if (step === 5) {
-      try {
-        await supabase.from('businesses').upsert({
-          id: business.id,
-          owner_id: user.id,
-          name, phone, email, address, door_number: doorNumber || null, city, district: district || city, postal_code: postalCode,
-          category, logo_url: logoUrl, cover_url: coverUrl,
-          latitude: coordinates?.lat || null, longitude: coordinates?.lng || null,
-          onboarding_step: 6, setup_step: 6
-        });
-      } catch (err) {
-        console.warn('Autosave step 4 failed:', err);
-      }
-      await updateSetupStep(5);
     }
   };
 
@@ -782,6 +749,23 @@ export default function SetupWizard() {
     if (!business) return;
     setLoading(true);
     try {
+      const createResponse = await fetch('/api/stripe/create-custom-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: business.id,
+          ownerId: user?.id,
+          companyName: legalName,
+          taxId: nif,
+          iban: iban
+        })
+      });
+
+      if (!createResponse.ok) {
+         const createData = await createResponse.json();
+         throw new Error(createData.error || 'Falha ao criar conta Stripe');
+      }
+
       const response = await fetch('/api/stripe/connect/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -789,7 +773,7 @@ export default function SetupWizard() {
           businessId: business.id,
           businessEmail: business.email,
           businessName: business.name,
-          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=5',
+          returnUrl: window.location.origin + '/partner/setup?status=connect_success&step=4',
           refreshUrl: window.location.origin + '/partner/setup?status=connect_refresh&step=4'
         })
       });
@@ -1091,7 +1075,7 @@ export default function SetupWizard() {
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
-                        mapId={import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"}
+                        mapId={import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || ""}
                         onClick={(e) => {
                           if (e.detail.latLng) {
                             setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
@@ -1340,74 +1324,129 @@ export default function SetupWizard() {
         )}
 
         {step === 4 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
+            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Landmark className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Dados de Faturação e KYC</h2>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
+              Para receber pagamentos online e poder encomendar o seu terminal, precisamos de validar a sua entidade comercial através da Stripe.
+            </p>
+
+            {(business?.charges_enabled && business?.details_submitted) ? (
+               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
+                 <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+                 <h3 className="font-bold text-emerald-900">Identidade Verificada</h3>
+                 <p className="text-xs text-emerald-700 mt-2 mb-6">A sua conta Stripe está pronta a receber pagamentos.</p>
+                 <button
+                    onClick={() => updateSetupStep(5)}
+                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
+                  >
+                    <span>Continuar</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+               </div>
+            ) : (
+              <div className="max-w-md mx-auto text-left space-y-4 mb-8">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nome Legal da Empresa / Titular</label>
+                  <input type="text" value={legalName} onChange={e => setLegalName(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: Glamzo Unipessoal Lda" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">NIF</label>
+                  <input type="text" value={nif} onChange={e => setNif(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 500000000" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">IBAN</label>
+                  <input type="text" value={iban} onChange={e => setIban(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="PT50..." />
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={triggerStripeOnboarding}
+                    disabled={loading || !legalName.trim() || !nif.trim() || !iban.trim()}
+                    className="w-full px-8 py-3.5 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Verificar Identidade na Stripe</span><ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
+              <button
+                type="button"
+                onClick={() => updateSetupStep(3)}
+                disabled={loading}
+                className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Plano Pro e Equipamento</h2>
             
             <div className="grid grid-cols-1 gap-6 mb-8">
               <div className="relative p-6 rounded-2xl border-2 border-purple-600 bg-purple-50/50 shadow-md">
-                <div className="absolute top-4 right-4 text-purple-600"><CheckCircle className="w-6 h-6" /></div>
-                <h3 className="text-lg font-bold text-slate-900">Aderir ao Plano Pro</h3>
-                <div className="my-3"><span className="text-3xl font-black">19,90€</span><span className="text-slate-500 text-sm">{t('setupWizard.perMonth')}</span></div>
-                <div className="mb-4">
-                  <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">{t('setupWizard.free14Days')}</span>
+                <div className="absolute top-0 right-0 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl uppercase tracking-wider">
+                  Recomendado
                 </div>
-                <ul className="space-y-2 mt-4 text-sm text-slate-600">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Agenda Inteligente e SEO</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Pagamentos por MB Way e Cartões (Tap to Pay)</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> <strong>Comissões Zero</strong></li>
-                </ul>
+                <div className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <input type="radio" checked={!wantsTerminal} onChange={() => setWantsTerminal(false)} className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      Apenas Software (14 dias grátis)
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-1">29€ / mês ou 299€ / ano após período grátis. Acesso total a todas as funcionalidades do Glamzo Business.</p>
+                  </div>
+                </div>
               </div>
 
-              <div 
-                className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer ${wantsTerminal ? 'border-purple-600 bg-purple-50/50 shadow-md' : 'border-slate-200 hover:border-purple-300'}`}
-                onClick={() => setWantsTerminal(!wantsTerminal)}
-              >
-                <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
-                  {t('setupWizard.recommendedBadge')}
-                </div>
-                <div className={`absolute top-4 right-4 ${wantsTerminal ? 'text-purple-600' : 'text-slate-300'}`}>
-                   {wantsTerminal ? <CheckCircle className="w-6 h-6" /> : <div className="w-6 h-6 rounded-full border-2 border-slate-300"></div>}
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Terminal de Pagamentos Dedicado</h3>
-                <div className="my-3"><span className="text-3xl font-black">99,00€</span><span className="text-slate-500 text-sm"> {t('setupWizard.uniquePayment')}</span></div>
-                <div className="mb-4 flex flex-col gap-1">
-                  <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded w-max">{t('setupWizard.featureShippingIncluded')}</span>
-                </div>
-                <ul className="space-y-2 text-sm text-slate-600 mb-4">
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Pagamentos diretos para o terminal físico</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> Contactless, Chip e Banda Magnética</li>
-                  <li className="flex gap-2 items-center"><Check className="w-4 h-4 text-emerald-500" /> {t('setupWizard.featureDirectIntegration')}</li>
-                </ul>
-                <div className="mt-4 pt-4 border-t border-slate-200/50 text-xs font-semibold text-slate-500">
-                  {t('setupWizard.terminalForever')}
+              <div className="relative p-6 rounded-2xl border-2 border-slate-200 hover:border-slate-300 bg-white transition-colors cursor-pointer" onClick={() => setWantsTerminal(true)}>
+                <div className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <input type="radio" checked={wantsTerminal} onChange={() => setWantsTerminal(true)} className="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-slate-700" />
+                      Software + Terminal Físico
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-1 mb-3">59€ / mês. Inclui o terminal de pagamento Android de última geração com impressora integrada.</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {wantsTerminal && (
               <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
-                <h4 className="font-bold text-slate-900 mb-4">{t('setupWizard.shippingDataTitle')}</h4>
+                <h4 className="font-bold text-slate-900 mb-4">Dados de Envio</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder={t('setupWizard.shippingNamePlaceholder')} value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('setupWizard.shippingPhonePlaceholder')} value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('setupWizard.shippingAddressPlaceholder')} value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
-                  <input type="text" placeholder={t('setupWizard.shippingPostalCodePlaceholder')} value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input type="text" placeholder={t('setupWizard.shippingCityPlaceholder')} value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Nome de Envio" value={shippingName} onChange={e => setShippingName(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Telemóvel" value={shippingPhone} onChange={e => setShippingPhone(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Morada" value={shippingAddress} onChange={e => setShippingAddress(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm md:col-span-2" />
+                  <input type="text" placeholder="Código Postal" value={shippingPostalCode} onChange={e => setShippingPostalCode(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input type="text" placeholder="Cidade" value={shippingCity} onChange={e => setShippingCity(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm" />
                 </div>
               </div>
             )}
             
-            <p className="text-xs text-slate-500 text-center">{t('setupWizard.stripeRedirectPay')}</p>
-            
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
               <button
                 type="button"
-                onClick={() => updateSetupStep(step - 1)}
+                onClick={() => updateSetupStep(4)}
                 disabled={loading}
                 className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>{t('setupWizard.backBtn')}</span>
+                <span>Voltar</span>
               </button>
               <button
                 type="button"
@@ -1415,49 +1454,9 @@ export default function SetupWizard() {
                 onClick={handleNext}
                 className="w-full px-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-all shadow-md flex items-center justify-center gap-2 flex-1"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{wantsTerminal ? t('setupWizard.proceedToPayment') : t('setupWizard.start14DaysFree')}</span><ArrowRight className="w-4 h-4" /></>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>{wantsTerminal ? 'Confirmar Pedido' : 'Começar 14 Dias Grátis'}</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm animate-fade-in text-center">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Landmark className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('setupWizard.receiveOnlineTitle')}</h2>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto text-sm">
-              {t('setupWizard.receiveOnlineDesc')}
-                                      </p>
-            
-            {(business?.charges_enabled || business?.stripe_account_id) ? (
-               <div className="p-6 border border-emerald-200 bg-emerald-50 rounded-xl max-w-md mx-auto mb-8 flex flex-col items-center">
-                 <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                 <h3 className="font-bold text-emerald-900">{t('setupWizard.setupDoneTitle')}</h3>
-                 <p className="text-xs text-emerald-700 mt-2 mb-6">{t('setupWizard.bankConnected')}</p>
-                 <button
-                    onClick={() => updateSetupStep(6)}
-                    className="px-8 py-3 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-md inline-flex items-center gap-3"
-                  >
-                    <span>{t('setupWizard.proceedBtn')}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-               </div>
-            ) : (
-                <div className="flex flex-col items-center gap-4 mb-8">
-                  <button
-                    onClick={triggerStripeOnboarding}
-                    className="px-8 py-4 bg-[#635BFF] hover:bg-[#5249ea] text-white rounded-xl font-bold uppercase tracking-wider transition-all shadow-lg inline-flex items-center gap-3 w-full max-w-md justify-center"
-                  >
-                    <span>{t('setupWizard.connectStripeBtn')}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => updateSetupStep(6)} className="text-sm text-slate-500 hover:text-slate-800 underline">
-                    {t('setupWizard.setupLaterBtn')}
-                                                        </button>
-                </div>
-            )}
           </div>
         )}
 

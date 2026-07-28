@@ -630,7 +630,7 @@ app.post("/api/stripe/connect/onboard", async (req, res) => {
 app.post("/api/stripe/create-custom-account", express.json(), async (req, res) => {
   
   try {
-    const { businessId, ownerId } = req.body;
+    const { businessId, ownerId, companyName, taxId, iban } = req.body;
     if (!businessId || !ownerId) {
       return res.status(400).json({ error: "businessId and ownerId are required" });
     }
@@ -650,7 +650,8 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
     const stripe = getStripe();
 
     if (!stripeAccountId) {
-      const account = await stripe.accounts.create({
+      
+      const accountParams: any = {
         type: 'custom',
         country: business.country_code || 'PT',
         email: business.email || undefined,
@@ -665,7 +666,25 @@ app.post("/api/stripe/create-custom-account", express.json(), async (req, res) =
             },
           },
         },
-      });
+      };
+
+      if (companyName) {
+        accountParams.business_profile = { name: companyName };
+        accountParams.business_type = 'company';
+        accountParams.company = { name: companyName };
+        if (taxId) accountParams.company.tax_id = taxId;
+      }
+
+      if (iban) {
+        accountParams.external_account = {
+          object: 'bank_account',
+          country: business.country_code || 'PT',
+          currency: 'eur',
+          account_number: iban
+        };
+      }
+
+      const account = await stripe.accounts.create(accountParams);
 
       stripeAccountId = account.id;
 
