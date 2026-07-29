@@ -321,7 +321,7 @@ export default function SettingsTab() {
   };
 
   return (
-    <APIProvider apiKey={API_KEY || ''} language={localStorage.getItem('i18nextLng') || 'pt'}>
+    <APIProvider apiKey={API_KEY || ''} libraries={['places', 'marker']}>
     <div className="animate-fade-in w-full max-w-5xl mx-auto space-y-8 text-slate-700 py-6 pb-20">
       
       {globalMessage && (

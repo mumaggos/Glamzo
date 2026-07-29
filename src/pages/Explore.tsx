@@ -606,7 +606,7 @@ export default function Explore() {
         {/* Lado Direito - Mapa (Escondido em Mobile se list, Desktop sempre) */}
         <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}`}>
            {mapApiKey ? (
-             <APIProvider apiKey={mapApiKey} language={currentLangCode}>
+             <APIProvider apiKey={mapApiKey} libraries={['places', 'marker']}>
                <Map 
      center={mapCenter || (userCoords ? { lat: userCoords.latitude, lng: userCoords.longitude } : { lat: 39.3999, lng: -8.2245 })} 
      zoom={mapZoom} 
