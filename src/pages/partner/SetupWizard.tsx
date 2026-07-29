@@ -3,7 +3,7 @@ import {  useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 import { AddressAutocomplete } from "../../components/AddressAutocomplete";
 import { generateUniqueSlug } from '../../utils/slugify';
 import { MAIN_CATEGORIES, SUBCATEGORIES_BY_MAIN } from '../../utils/categoriesData';
@@ -980,7 +980,6 @@ export default function SetupWizard() {
                       <Map
                         defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                         defaultZoom={coordinates ? 15 : 7}
-                        mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"}
                         onClick={(e) => {
                           if (e.detail.latLng) {
                             setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
@@ -990,24 +989,15 @@ export default function SetupWizard() {
                         style={{ width: '100%', height: '100%' }}
                       >
                         <MapUpdater coordinates={coordinates} />
-                        <AdvancedMarker 
+                        <Marker 
                           position={coordinates || { lat: 39.3999, lng: -8.2245 }}
-                          draggable
+                          draggable={true}
                           onDragEnd={(e) => {
                             if (e.latLng) {
                               setCoordinates({ lat: typeof e.latLng.lat === "function" ? e.latLng.lat() : e.latLng.lat, lng: typeof e.latLng.lng === "function" ? e.latLng.lng() : e.latLng.lng });
                             }
                           }}
-                        >
-                          <div className="relative flex flex-col items-center">
-                            <div className="bg-purple-600 text-white p-2 rounded-full shadow-xl border-2 border-white">
-                              <MapPin className="w-5 h-5 fill-current" />
-                            </div>
-                            <div className="absolute top-10 bg-slate-900 text-white text-[9px] font-bold px-2 py-1 rounded shadow-md whitespace-nowrap opacity-90">
-                              {t('setupWizard.dragToStore')}
-                                                                                      </div>
-                          </div>
-                        </AdvancedMarker>
+                        />
                       </Map>
                     </>
                   ) : (

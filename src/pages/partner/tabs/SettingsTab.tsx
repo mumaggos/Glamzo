@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import { AddressAutocomplete } from "../../../components/AddressAutocomplete";
 import { Settings, Image as ImageIcon, Building2, Clock, Check, Upload, Save, ShieldAlert, Shield, KeyRound, MapPin } from "lucide-react";
 import { Business } from "../../../types";
@@ -392,7 +392,6 @@ export default function SettingsTab() {
                           <Map
                             defaultCenter={coordinates || { lat: 39.3999, lng: -8.2245 }}
                             defaultZoom={coordinates ? 16 : 7}
-                            mapId={(import.meta as any).env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"}
                             onClick={(e) => {
                               if (e.detail.latLng) {
                                 setCoordinates({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
@@ -402,21 +401,15 @@ export default function SettingsTab() {
                             style={{ width: '100%', height: '100%' }}
                           >
                             <MapUpdater coordinates={coordinates} />
-                            <AdvancedMarker 
+                            <Marker 
                               position={coordinates || { lat: 39.3999, lng: -8.2245 }}
-                              draggable
+                              draggable={true}
                               onDragEnd={(e) => {
                                 if (e.latLng) {
-                                  setCoordinates({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                                  setCoordinates({ lat: typeof e.latLng.lat === "function" ? e.latLng.lat() : e.latLng.lat, lng: typeof e.latLng.lng === "function" ? e.latLng.lng() : e.latLng.lng });
                                 }
                               }}
-                            >
-                              <div className="relative flex flex-col items-center">
-                                <div className="bg-purple-600 text-white p-2 rounded-full shadow-xl border-2 border-white">
-                                  <MapPin className="w-5 h-5 fill-current" />
-                                </div>
-                              </div>
-                            </AdvancedMarker>
+                            />
                           </Map>
                         </>
                       ) : (
