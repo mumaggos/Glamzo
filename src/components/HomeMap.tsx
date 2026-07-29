@@ -4,7 +4,7 @@ import { Map as MapIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-const API_KEY = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
 const mapStyles = [
   { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },

@@ -419,7 +419,7 @@ export default function Explore() {
   });
 
   const paginatedBusinesses = sortedBusinesses;
-  const mapApiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+  const mapApiKey = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
   
   const renderBusinessCard = (b: any, viewMode: 'list' | 'grid' = 'list') => {

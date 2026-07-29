@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
 
-const API_KEY = typeof (import.meta as any).env !== "undefined" ? ((import.meta as any).env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "") : "";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
   const map = useMap();
