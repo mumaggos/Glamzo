@@ -419,7 +419,7 @@ export default function Explore() {
   });
 
   const paginatedBusinesses = sortedBusinesses;
-  const mapApiKey = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+  const mapApiKey = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "AIzaSyAFrWnn99CMO62Tn4QBanzYMItXnuZbhGg";
 
   
   const renderBusinessCard = (b: any, viewMode: 'list' | 'grid' = 'list') => {
@@ -613,6 +613,7 @@ export default function Explore() {
      disableDefaultUI 
      styles={mapStyles} 
      options={{ styles: mapStyles }}
+     style={{ width: '100%', height: '100%' }}
      onCameraChanged={(e) => {
         setMapCenter(e.detail.center);
         setMapZoom(e.detail.zoom);

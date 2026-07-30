@@ -12,7 +12,7 @@ interface PartnerContextType {
   loadLayoutData: () => void;
 }
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "AIzaSyAFrWnn99CMO62Tn4QBanzYMItXnuZbhGg";
 
 const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number } | null }) => {
   const map = useMap();
