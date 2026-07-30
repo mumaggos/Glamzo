@@ -4,7 +4,7 @@ import { Map as MapIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "";
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY || "AIzaSyAFrWnn99CMO62Tn4QBanzYMItXnuZbhGg";
 
 const mapStyles = [
   { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
@@ -66,7 +66,7 @@ export default function HomeMap({ userCoords, mapBusinesses, currentLangCode }: 
 
   return (
     <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100">
-      {API_KEY ? (
+      
       <APIProvider apiKey={API_KEY} language={currentLangCode} libraries={['places', 'marker']}>
         <MapUpdater coordinates={userCoords} />
         <Map
