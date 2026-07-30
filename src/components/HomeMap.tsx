@@ -66,7 +66,7 @@ export default function HomeMap({ userCoords, mapBusinesses, currentLangCode }: 
 
   return (
     <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100">
-      <APIProvider apiKey={API_KEY} libraries={['places', 'marker']}>
+      <APIProvider apiKey={API_KEY} language={currentLangCode} libraries={['places', 'marker']}>
         <MapUpdater coordinates={userCoords} />
         <Map
           defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }}

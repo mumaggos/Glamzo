@@ -18,14 +18,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Conditionally get the maps library. We'll wrap with try-catch in case we are not inside APIProvider
   let places: google.maps.PlacesLibrary | null = null;
   try {
     places = useMapsLibrary('places');
   } catch (e) {
     console.warn("APIProvider not found or Maps library failed to load.", e);
   }
-
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
@@ -56,7 +54,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         window.google.maps.event.clearInstanceListeners(instance);
       }
     };
-  }, [places, onPlaceSelect]);
+  }, [places, onPlaceSelect, onChange]);
 
   return (
     <input

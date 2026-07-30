@@ -34,7 +34,7 @@ export default function StripeKycOnboarding({ businessId, ownerId, onComplete }:
         const fetchClientSecretFunc = () => Promise.resolve(client_secret);
         
         const instance = loadConnectAndInitialize({
-          publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
+          publishableKey: (import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || '',
           fetchClientSecret: fetchClientSecretFunc,
           appearance: {
             variables: {

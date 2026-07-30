@@ -778,7 +778,7 @@ export default function SetupWizard() {
   }
 
   return (
-    <APIProvider apiKey={API_KEY || ''} libraries={['places', 'marker']}>
+    <APIProvider apiKey={API_KEY || ''} language={currentLangCode} libraries={['places', 'marker']}>
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
