@@ -629,7 +629,7 @@ export default function Explore() {
                    <Marker 
      key={b.id} 
      position={{ lat: b.lat, lng: b.lng }} 
-     icon={{ url: getCustomMarkerIcon(b.rating, hoveredShopId === b.id || clickedPinId === b.id), anchor: { x: 20, y: 50 } }} 
+     icon={{ url: getCustomMarkerIcon(b.rating, hoveredShopId === b.id || clickedPinId === b.id)}} 
      onClick={() => {
        setClickedPinId(b.id);
        // We can still navigate, but we'll let them click the pin to focus list instead if they prefer. Let's just scroll to list.

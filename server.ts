@@ -3293,6 +3293,7 @@ async function startServer() {
     });
   }
 
+  app.post("/api/client-error", express.json(), (req, res) => { console.error("CLIENT ERROR:", req.body); res.send("ok"); });
   app.listen(PORT, "0.0.0.0", () => {
     console.log(
       `Glamzo Full-Stack Server running on http://localhost:${PORT} in ${process.env.NODE_ENV || "development"} mode`,

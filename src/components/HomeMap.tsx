@@ -83,7 +83,7 @@ export default function HomeMap({ userCoords, mapBusinesses, currentLangCode }: 
               key={b.id} 
               position={{ lat: b.lat, lng: b.lng }}
               title={b.name}
-              icon={{ url: getCustomMarkerIcon(b.rating || 0), anchor: { x: 20, y: 50 } }}
+              icon={{ url: getCustomMarkerIcon(b.rating || 0)}}
               onClick={() => navigate("/" + b.slug)}
             />
           ))}
