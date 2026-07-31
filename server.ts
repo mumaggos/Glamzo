@@ -39,7 +39,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Content-Security-Policy', "default-src 'self' https: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss: ws:;");
+  res.setHeader('Content-Security-Policy', "default-src 'self' https: 'unsafe-inline' 'unsafe-eval'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss: ws:;");
   next();
 });
 
@@ -3293,7 +3293,7 @@ async function startServer() {
     });
   }
 
-  app.post("/api/client-error", express.json(), (req, res) => { console.error("CLIENT ERROR:", req.body); res.send("ok"); });
+  app.post("/api/client-error", express.json(), (req, res) => { console.error("CLIENT ERROR:", req.body); require("fs").appendFileSync("client-errors.log", JSON.stringify(req.body) + "\n"); res.send("ok"); });
   app.listen(PORT, "0.0.0.0", () => {
     console.log(
       `Glamzo Full-Stack Server running on http://localhost:${PORT} in ${process.env.NODE_ENV || "development"} mode`,

@@ -917,13 +917,13 @@ export default function SetupWizard() {
               <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.address')}</label>
-                  {API_KEY ? (<APIProvider apiKey={API_KEY} libraries={['places']}><AddressAutocomplete 
+                  {API_KEY ? (<AddressAutocomplete 
                     value={address} 
                     onChange={setAddress} 
                     onPlaceSelect={handlePlaceSelect} 
                     className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
                     placeholder={t('setupWizard.addressPlaceholder')} 
-                  /></APIProvider>) : (<input type='text' value={address} onChange={e => setAddress(e.target.value)} className='block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500' placeholder={t('setupWizard.addressPlaceholder')} />)}
+                  />) : (<input type='text' value={address} onChange={e => setAddress(e.target.value)} className='block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500' placeholder={t('setupWizard.addressPlaceholder')} />)}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.door')}</label>

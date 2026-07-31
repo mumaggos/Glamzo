@@ -30,7 +30,7 @@ const getCustomMarkerIcon = (rating: number, isHovered: boolean = false) => {
   const scale = isHovered ? 1.15 : 1;
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${40 * scale}" height="${50 * scale}" viewBox="0 0 40 50">
-      <g filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.4))">
+      <g>
         <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${bgColor}" stroke="#ffffff" stroke-width="2"/>
         <text x="20" y="21" fill="${textColor}" font-size="12px" font-family="Outfit, system-ui, sans-serif" font-weight="900" text-anchor="middle">
           ${ratingText}

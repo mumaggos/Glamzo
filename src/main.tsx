@@ -5,6 +5,8 @@ import App from './App.tsx';
 import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Highly optimized Safari / iOS WebKit identification for hardware-safe styling overrides
 try {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
@@ -22,9 +24,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {/* @ts-ignore */}  
     <HelmetProvider>
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>}>
-        <App />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>}>
+          <App />
+        </Suspense>
+      </ErrorBoundary>
     </HelmetProvider>
   </StrictMode>,
 );

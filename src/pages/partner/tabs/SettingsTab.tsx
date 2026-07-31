@@ -371,12 +371,12 @@ export default function SettingsTab() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.storeName')}</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2 md:col-span-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.fullAddress')}</label>
-{API_KEY ? (<APIProvider apiKey={API_KEY} libraries={['places']}><AddressAutocomplete 
+{API_KEY ? (<AddressAutocomplete 
   value={formData.address} 
   onChange={v => setFormData({...formData, address: v})} 
   onPlaceSelect={handlePlaceSelect} 
   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" 
-/></APIProvider>) : (<input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" placeholder="Introduza a morada" />)}</div>
+/>) : (<input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" placeholder="Introduza a morada" />)}</div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.doorNumber')}</label><input type="text" value={formData.door_number} onChange={e => setFormData({...formData, door_number: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">País</label><input type="text" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>
                   <div className="space-y-2"><label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.postalCode')}</label><input type="text" value={formData.postal_code} onChange={e => setFormData({...formData, postal_code: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-purple-500 focus:outline-none" /></div>

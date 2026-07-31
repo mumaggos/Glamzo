@@ -17,39 +17,31 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   className
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  let places: google.maps.PlacesLibrary | null = null;
-  try {
-    places = useMapsLibrary('places');
-  } catch (e) {
-    console.warn("APIProvider not found or Maps library failed to load.", e);
-  }
+  const places = useMapsLibrary('places');
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     if (!places || !inputRef.current) return;
-
+    
     const options = {
       fields: ['geometry', 'name', 'formatted_address', 'address_components']
     };
+    
+    const instance = new places.Autocomplete(inputRef.current, options);
+    setAutocomplete(instance);
+    
+    const listener = instance.addListener('place_changed', () => {
+      const place = instance.getPlace();
+      if (place && place.formatted_address) {
+        onPlaceSelect(place);
+        onChange(place.formatted_address);
+      }
+    });
 
-    let instance;
-    try {
-      instance = new places.Autocomplete(inputRef.current, options);
-      setAutocomplete(instance);
-      instance.addListener('place_changed', () => {
-        const place = instance.getPlace();
-        if (place && place.formatted_address) {
-          onPlaceSelect(place);
-          onChange(place.formatted_address);
-        }
-      });
-    } catch (err) {
-      console.warn("Failed to initialize Autocomplete", err);
-    }
-
-    // Cleanup
     return () => {
+      if (listener) {
+        window.google.maps.event.removeListener(listener);
+      }
       if (instance && window.google) {
         window.google.maps.event.clearInstanceListeners(instance);
       }

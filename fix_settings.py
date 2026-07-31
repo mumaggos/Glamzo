@@ -1,47 +1,41 @@
 import re
 
-with open("src/pages/partner/tabs/SettingsTab.tsx", "r") as f:
-    text = f.read()
+with open('src/pages/partner/tabs/SettingsTab.tsx', 'r') as f:
+    lines = f.read()
 
-# Add providers state
-state_target = r"const \[savingSeguranca, setSavingSeguranca\] = useState\(false\);"
-new_state = """const [savingSeguranca, setSavingSeguranca] = useState(false);
-  const [providers, setProviders] = useState<string[]>([]);
+# Replace the Map element
+map_code = """                          <MapContainer 
+                            center={coordinates ? [coordinates.lat, coordinates.lng] : [39.3999, -8.2245]}
+                            zoom={coordinates ? 16 : 7}
+                            style={{ width: '100%', height: '100%', zIndex: 1 }}
+                            zoomControl={false}
+                          >
+                            <TileLayer
+                              attribution='&copy; OpenStreetMap contributors'
+                              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                            />
+                            <MapUpdater coordinates={coordinates} />
+                            <MapClick setCoordinates={setCoordinates} />
+                            <Marker 
+                              position={coordinates ? [coordinates.lat, coordinates.lng] : [39.3999, -8.2245]}
+                              draggable={true}
+                              eventHandlers={{
+                                dragend: (e) => {
+                                  const marker = e.target;
+                                  const position = marker.getLatLng();
+                                  setCoordinates({ lat: position.lat, lng: position.lng });
+                                }
+                              }}
+                              icon={setupMarkerIcon}
+                            />
+                          </MapContainer>"""
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.app_metadata?.providers) {
-        setProviders(data.user.app_metadata.providers);
-      }
-    });
-  }, []);"""
-text = text.replace(state_target, new_state)
+pattern = re.compile(r'<Map\s+defaultCenter.*?</Map>', re.DOTALL)
+lines = pattern.sub(map_code, lines)
 
-# Update security tab UI
-ui_target = r"""              <form onSubmit=\{handleSaveSeguranca\} className="space-y-6">"""
-new_ui = """              {providers.includes('google') ? (
-                <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
-                  <Shield className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-bold text-purple-800">A sua conta é gerida de forma segura pelo Google.</span>
-                </div>
-              ) : (
-              <form onSubmit={handleSaveSeguranca} className="space-y-6">"""
+# Remove the old MapUpdater from the file completely
+pattern2 = re.compile(r'const MapUpdater = \(\{ coordinates.*?\};', re.DOTALL)
+lines = pattern2.sub('', lines)
 
-text = re.sub(ui_target, new_ui, text)
-
-# Close the newly added conditional rendering
-ui_end_target = r"""                  <button type="submit" disabled=\{savingSeguranca\} className="bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
-                    \{savingSeguranca \? <Check className="w-4 h-4 animate-pulse" /> : <Save className="w-4 h-4" />\} \{savingSeguranca \? "A Guardar\.\.\." : "Atualizar Password"\}
-                  </button>
-                </div>
-              </form>"""
-new_ui_end = """                  <button type="submit" disabled={savingSeguranca} className="bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
-                    {savingSeguranca ? <Check className="w-4 h-4 animate-pulse" /> : <Save className="w-4 h-4" />} {savingSeguranca ? "A Guardar..." : "Atualizar Password"}
-                  </button>
-                </div>
-              </form>
-              )}"""
-text = re.sub(ui_end_target, new_ui_end, text)
-
-with open("src/pages/partner/tabs/SettingsTab.tsx", "w") as f:
-    f.write(text)
+with open('src/pages/partner/tabs/SettingsTab.tsx', 'w') as f:
+    f.write(lines)
