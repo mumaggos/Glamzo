@@ -30,6 +30,23 @@ export default defineConfig(() => {
             }
           ]
         },
+        workbox: {
+          navigateFallbackDenylist: [/^\/api/],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/.*\.google\.com\/.*/i,
+              handler: 'NetworkOnly',
+            },
+            {
+              urlPattern: /^https:\/\/.*\.googleapis\.com\/.*/i,
+              handler: 'NetworkOnly',
+            },
+            {
+              urlPattern: /^https:\/\/.*\.gstatic\.com\/.*/i,
+              handler: 'NetworkOnly',
+            }
+          ]
+        },
         devOptions: {
           enabled: true
         }
