@@ -557,7 +557,7 @@ export default function Explore() {
 
       <div className="flex-1 flex w-full relative">
         {/* Lado Esquerdo - Lista (Mostrado em Mobile se list, Desktop sempre) */}
-        <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100dvh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
+        <div className={`w-full lg:w-[55%] xl:w-[50%] flex-col h-[calc(100vh-65px)] overflow-y-auto custom-scrollbar bg-slate-50 p-4 lg:p-6 ${viewModeMobile === 'map' ? 'hidden lg:flex' : 'flex'}`}>
            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h2 className="text-xl font-black text-slate-900 font-['Outfit']">{t('explore.exploreTitle')} ({sortedBusinesses.length})</h2>
               
@@ -604,7 +604,7 @@ export default function Explore() {
         </div>
 
         {/* Lado Direito - Mapa (Escondido em Mobile se list, Desktop sempre) */}
-        <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100dvh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100dvh-65px)]'}`}>
+        <div className={`w-full lg:w-[45%] xl:w-[50%] lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] bg-slate-200 ${viewModeMobile === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-65px)]'}`}>
            {mapApiKey ? (
              <APIProvider apiKey={mapApiKey} language={currentLangCode} libraries={['places', 'marker']}>
                <Map 

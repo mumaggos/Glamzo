@@ -551,7 +551,7 @@ export default function Account() {
   });
 
   return (
-    <div id="account-view" className="min-h-[100dvh] bg-[#F8F9FC] font-sans pb-40 lg:pb-12">
+    <div id="account-view" className="min-h-[100vh] bg-[#F8F9FC] font-sans pb-40 lg:pb-12">
       
       {/* Banner de Topo e Navegação */}
       <div className="bg-slate-900 pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
