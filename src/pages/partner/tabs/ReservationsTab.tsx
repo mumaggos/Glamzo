@@ -4,7 +4,7 @@ import { Calendar, Clock, Scissors, User } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency';
 
 
-const ReservationRow = React.memo(({ booking }: { booking: any }) => {
+const ReservationRow = React.memo(({ booking, currency }: { booking: any, currency?: string }) => {
   return (
     <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
@@ -53,7 +53,7 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
-                      {formatCurrency(Number((booking.original_service_price ?? booking.total_price)), business?.currency)}
+                      {formatCurrency(Number((booking.original_service_price ?? booking.total_price)), currency)}
                     </span>
                   </td>
                 </tr>
@@ -61,7 +61,7 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
 });
 
 const ReservationsTab = React.memo(function ReservationsTab() {
-  const { bookings } = useOutletContext<any>();
+  const { bookings, business } = useOutletContext<any>();
   const [filter, setFilter] = useState("hoje");
   const [customStartDate, setCustomStartDate] = useState(() => {
     const d = new Date();
@@ -153,7 +153,7 @@ const ReservationsTab = React.memo(function ReservationsTab() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredBookings.map((booking: any) => (
-                <ReservationRow key={booking.id} booking={booking} />
+                <ReservationRow key={booking.id} booking={booking} currency={business?.currency} />
               ))}
             </tbody>
           </table></div>

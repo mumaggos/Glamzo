@@ -11,7 +11,7 @@ interface PartnerContextType {
 }
 
 
-const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSelectedInvoice: any }> = ({ staffMember, staffLedgers, setSelectedInvoice }) => {
+const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSelectedInvoice: any, currency?: string }> = ({ staffMember, staffLedgers, setSelectedInvoice, currency }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const staffRevenue = staffLedgers.reduce((sum, item) => sum + Number(item.amount_total || item.amount || 0), 0);
   
@@ -26,7 +26,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
            </div>
            <div className="text-center">
               <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
-              <p className="text-xl font-black text-purple-700">{formatCurrency(staffRevenue, business?.currency)}</p>
+              <p className="text-xl font-black text-purple-700">{formatCurrency(staffRevenue, currency)}</p>
            </div>
         </div>
       </div>
@@ -61,7 +61,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
                       {item.payment_method === "stripe" ? "Online" : "Loja"}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-right font-black text-slate-700">{formatCurrency(Number(item.amount_total || item.amount || 0), business?.currency)}</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-700">{formatCurrency(Number(item.amount_total || item.amount || 0), currency)}</td>
                   <td className="py-2 px-3 text-center">
                     <button onClick={() => setSelectedInvoice({ ...item, booking: item.booking })} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold text-[10px] transition">Recibo</button>
                   </td>
@@ -602,7 +602,7 @@ export default function FinanceTab() {
                     <div className="flex-1">
                       <div className="flex justify-between mb-1">
                         <span className="text-xs font-bold text-slate-800">{s.full_name}</span>
-                        <span className="text-xs font-black text-purple-600">{formatCurrency(staffRevenue, business?.currency)}</span>
+                        <span className="text-xs font-black text-purple-600">{formatCurrency(staffRevenue, currency)}</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-1.5">
                         <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
@@ -689,7 +689,7 @@ export default function FinanceTab() {
             
             return (
               
-<StaffFinanceCard key={s.id} staffMember={s} staffLedgers={staffLedgers} setSelectedInvoice={setSelectedInvoice} />
+<StaffFinanceCard key={s.id} staffMember={s} staffLedgers={staffLedgers} setSelectedInvoice={setSelectedInvoice} currency={business?.currency} />
           );
         })
 }

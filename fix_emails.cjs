@@ -1,0 +1,10 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/emails/GlamzoTemplates.tsx', 'utf8');
+code = code.replace(/export const BookingConfirmationEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const BookingConfirmationEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const BookingCancelledEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const BookingCancelledEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const NewBookingEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const NewBookingEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const SubscriptionActivatedEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const SubscriptionActivatedEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const InvoiceEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const InvoiceEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const PaymentFailedEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const PaymentFailedEmail = ({$1, lang = 'pt'}: any) => {");
+code = code.replace(/export const StaffCredentialsEmail = \(\{([^}]+)\}: any\) => \{ \n  const lang = \(arguments\[0\] && arguments\[0\]\.lang\) \? arguments\[0\]\.lang : 'pt';/g, "export const StaffCredentialsEmail = ({$1, lang = 'pt'}: any) => {");
+fs.writeFileSync('src/emails/GlamzoTemplates.tsx', code);

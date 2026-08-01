@@ -308,8 +308,7 @@ export const PasswordResetEmail = ({ userName, resetLink }: any) => {
   );
 };
 
-export const BookingConfirmationEmail = ({ shopName, serviceName, professionalName, date, time, price, reference }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const BookingConfirmationEmail = ({ shopName, serviceName, professionalName, date, time, price, reference , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -343,8 +342,7 @@ export const BookingConfirmationEmail = ({ shopName, serviceName, professionalNa
   );
 };
 
-export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reason }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reason , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -375,8 +373,7 @@ export const BookingCancelledEmail = ({ shopName, serviceName, date, time, reaso
   );
 };
 
-export const NewBookingEmail = ({ customerName, serviceName, date, time, price }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const NewBookingEmail = ({ customerName, serviceName, date, time, price , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -408,8 +405,7 @@ export const NewBookingEmail = ({ customerName, serviceName, date, time, price }
   );
 };
 
-export const SubscriptionActivatedEmail = ({ shopName, planName, nextBillingDate }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const SubscriptionActivatedEmail = ({ shopName, planName, nextBillingDate , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -441,8 +437,7 @@ export const SubscriptionActivatedEmail = ({ shopName, planName, nextBillingDate
   );
 };
 
-export const InvoiceEmail = ({ invoiceNumber, amount, invoiceUrl }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const InvoiceEmail = ({ invoiceNumber, amount, invoiceUrl , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -467,8 +462,7 @@ export const InvoiceEmail = ({ invoiceNumber, amount, invoiceUrl }: any) => {
   );
 };
 
-export const PaymentFailedEmail = ({ planName, suspensionDate, updateUrl }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const PaymentFailedEmail = ({ planName, suspensionDate, updateUrl , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />
@@ -495,8 +489,7 @@ export const PaymentFailedEmail = ({ planName, suspensionDate, updateUrl }: any)
   );
 };
 
-export const StaffCredentialsEmail = ({ shopName, email, password }: any) => { 
-  const lang = (arguments[0] && arguments[0].lang) ? arguments[0].lang : 'pt';
+export const StaffCredentialsEmail = ({ shopName, email, password , lang = 'pt'}: any) => {
   return (
   <Html>
     <Head />

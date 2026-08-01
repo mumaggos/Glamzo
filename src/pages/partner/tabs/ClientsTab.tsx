@@ -43,7 +43,7 @@ const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenPr
 });
 
 const ClientsTab = React.memo(function ClientsTab() {
-  const { bookings } = useOutletContext<PartnerContextType>();
+  const { bookings, business } = useOutletContext<PartnerContextType>();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
 
