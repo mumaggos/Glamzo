@@ -3208,7 +3208,7 @@ async function startServer() {
       express.static(distPath, {
         maxAge: "1h",
         setHeaders: (res, filePath) => {
-          if (filePath.endsWith(".html")) {
+          if (filePath.endsWith(".html") || filePath.endsWith("sw.js") || filePath.endsWith("manifest.webmanifest") || filePath.endsWith("registerSW.js")) {
             // Force HTML files to check with server so updates roll out instantly
             res.setHeader(
               "Cache-Control",
