@@ -602,7 +602,7 @@ export default function FinanceTab() {
                     <div className="flex-1">
                       <div className="flex justify-between mb-1">
                         <span className="text-xs font-bold text-slate-800">{s.full_name}</span>
-                        <span className="text-xs font-black text-purple-600">{formatCurrency(staffRevenue, currency)}</span>
+                        <span className="text-xs font-black text-purple-600">{formatCurrency(staffRevenue, business?.currency)}</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-1.5">
                         <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>

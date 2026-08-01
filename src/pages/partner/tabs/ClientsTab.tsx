@@ -10,7 +10,7 @@ interface PartnerContextType {
   loadLayoutData: () => Promise<void>;
 }
 
-const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenProfile: (c: any) => void }) => {
+const ClientRow = React.memo(({ client, onOpenProfile, currency }: { client: any, onOpenProfile: (c: any) => void, currency?: string }) => {
   return (
     <tr className="hover:bg-slate-50/50 transition-colors">
       <td className="py-4 px-6 flex items-center gap-3">
@@ -27,7 +27,7 @@ const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenPr
         </div>
       </td>
       <td className="py-4 px-6 font-bold text-slate-700 text-center">{client.visits}</td>
-      <td className="py-4 px-6 font-bold text-slate-700 text-right">{formatCurrency(client.spent, business?.currency)}</td>
+      <td className="py-4 px-6 font-bold text-slate-700 text-right">{formatCurrency(client.spent, currency)}</td>
       <td className="py-4 px-6 text-right">
         <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono text-[10px] font-bold">
           {client.lastVisit}
@@ -201,7 +201,7 @@ const ClientsTab = React.memo(function ClientsTab() {
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs bg-white">
                 {clientsList.map((client) => (
-                  <ClientRow key={client.id} client={client} onOpenProfile={setSelectedClient} />
+                  <ClientRow key={client.id} client={client} onOpenProfile={setSelectedClient} currency={business?.currency} />
                 ))}
                 {clientsList.length === 0 && (
                   <tr>
