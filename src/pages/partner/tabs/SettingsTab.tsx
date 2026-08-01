@@ -197,7 +197,7 @@ export default function SettingsTab() {
       
       // Remover campos que não existem na tabela
       const payloadToSave = { ...formData, latitude: coordinates?.lat || business.latitude, longitude: coordinates?.lng || business.longitude };
-      if ('currency' in payloadToSave) delete payloadToSave.currency;
+      
       
       const { error } = await supabase.from('businesses').update(payloadToSave).eq('id', business.id);
       if (error) throw error;

@@ -4,7 +4,8 @@ import { createUTCBookingTimestamp } from '../utils/timezone';
 import {  } from 'react-router-dom';
 import SecurityBadge from './SecurityBadge';
 import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
-import { 
+import { formatCurrency } from '../utils/currency';
+import {
   X, Calendar, Clock, User, CreditCard, Check, 
   ChevronRight, ArrowLeft, Loader2, Sparkles, Smile, ShieldCheck, AlertCircle 
 } from 'lucide-react';
@@ -487,7 +488,7 @@ const handleConfirmReservation = async () => {
                           <p className="text-xs text-slate-500 mt-1 line-clamp-1">{srv.description}</p>
                         </div>
                         <div className="text-right">
-                          <span className="font-black text-slate-900">{Number(srv.price).toFixed(2)}€</span>
+                          <span className="font-black text-slate-900">{formatCurrency(Number(srv.price), business?.currency)}</span>
                           <span className="block text-[10px] font-bold text-slate-400 uppercase mt-1">{srv.duration_minutes} min</span>
                         </div>
                       </div>
@@ -576,11 +577,11 @@ const handleConfirmReservation = async () => {
                       <span className="block text-xs font-bold text-slate-400 uppercase">Total a Pagar</span>
                       {appliedPromo ? (
                         <>
-                          <span className="text-sm font-bold text-slate-400 line-through mr-2">{totalServicesPrice.toFixed(2)}€</span>
-                          <span className="text-2xl font-black text-emerald-600">{finalPrice.toFixed(2)}€</span>
+                          <span className="text-sm font-bold text-slate-400 line-through mr-2">{formatCurrency(totalServicesPrice, business?.currency)}</span>
+                          <span className="text-2xl font-black text-emerald-600">{formatCurrency(finalPrice, business?.currency)}</span>
                         </>
                       ) : (
-                        <span className="text-2xl font-black text-purple-600">{totalServicesPrice.toFixed(2)}€</span>
+                        <span className="text-2xl font-black text-purple-600">{formatCurrency(totalServicesPrice, business?.currency)}</span>
                       )}
                     </div>
                   </div>
@@ -595,7 +596,7 @@ const handleConfirmReservation = async () => {
                        )}
                      </div>
                      {appliedPromo && (
-                       <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Desconto de {appliedPromo.discount_percent ? `${appliedPromo.discount_percent}%` : `${appliedPromo.discount_value}€`} aplicado com sucesso!</p>
+                       <p className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Desconto de {appliedPromo.discount_percent ? `${appliedPromo.discount_percent}%` : `${formatCurrency(appliedPromo.discount_value, business?.currency)}`} aplicado com sucesso!</p>
                      )}
                   </div>
                   <div className="space-y-2 pt-2">

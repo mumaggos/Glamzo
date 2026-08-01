@@ -7,6 +7,7 @@ interface PartnerContextType {
   staff: any[];
 }
 import { CreditCard, Smartphone, Check, Loader2 } from 'lucide-react';
+import { formatCurrency } from '../../../utils/currency';
 
 export default function HardwareManagerTab() {
   const { business } = useOutletContext<PartnerContextType>();
@@ -77,7 +78,7 @@ export default function HardwareManagerTab() {
           <ul className="space-y-3 mb-8">
             <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Aceita cartões com chip e PIN</li>
             <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Bateria de longa duração</li>
-            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Starter Kit: 99,00€ / $99 (Hardware + Envio Express)</li>
+            <li className="flex gap-3 text-sm text-slate-600"><Check className="w-5 h-5 text-green-500 shrink-0" /> Starter Kit: {formatCurrency(99, business?.currency)} (Hardware + Envio Express)</li>
           </ul>
           <button 
             onClick={handleOrder}

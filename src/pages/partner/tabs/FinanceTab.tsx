@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Sparkles, Check, CheckCircle, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
 import { Business } from "../../../types";
+import { formatCurrency } from '../../../utils/currency';
 
 interface PartnerContextType {
   business: Business | null;
@@ -25,7 +26,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
            </div>
            <div className="text-center">
               <p className="text-[10px] font-black uppercase text-purple-600">Faturação</p>
-              <p className="text-xl font-black text-purple-700">{staffRevenue.toFixed(2)}€</p>
+              <p className="text-xl font-black text-purple-700">{formatCurrency(staffRevenue, business?.currency)}</p>
            </div>
         </div>
       </div>
@@ -60,7 +61,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
                       {item.payment_method === "stripe" ? "Online" : "Loja"}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-right font-black text-slate-700">{Number(item.amount_total || item.amount || 0).toFixed(2)}€</td>
+                  <td className="py-2 px-3 text-right font-black text-slate-700">{formatCurrency(Number(item.amount_total || item.amount || 0), business?.currency)}</td>
                   <td className="py-2 px-3 text-center">
                     <button onClick={() => setSelectedInvoice({ ...item, booking: item.booking })} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-bold text-[10px] transition">Recibo</button>
                   </td>
@@ -511,7 +512,7 @@ export default function FinanceTab() {
         status: "pending"
       });
       if (error) throw error;
-      setPayoutSuccess(`Pedido de levantamento de ${payoutAmount.toFixed(2)}€ submetido com sucesso.`);
+      setPayoutSuccess(`Pedido de levantamento de ${formatCurrency(payoutAmount, business?.currency)} submetido com sucesso.`);
       setPayoutAmount(0);
       await loadFinanceData();
     } catch (err: any) {
@@ -571,19 +572,19 @@ export default function FinanceTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Volume Bruto</span>
-             <span className="text-lg font-black text-slate-900 mt-1 block font-mono">{totalVolumeBruto.toFixed(2)}€</span>
+             <span className="text-lg font-black text-slate-900 mt-1 block font-mono">{formatCurrency(totalVolumeBruto, business?.currency)}</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Lucro Líquido</span>
-             <span className="text-lg font-black text-emerald-600 mt-1 block font-mono">{totalReceivedVolume.toFixed(2)}€</span>
+             <span className="text-lg font-black text-emerald-600 mt-1 block font-mono">{formatCurrency(totalReceivedVolume, business?.currency)}</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Comissões</span>
-             <span className="text-lg font-black text-rose-500 mt-1 block font-mono">{totalComissoesRetidas.toFixed(2)}€</span>
+             <span className="text-lg font-black text-rose-500 mt-1 block font-mono">{formatCurrency(totalComissoesRetidas, business?.currency)}</span>
            </div>
            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Online</span>
-             <span className="text-lg font-black text-purple-600 mt-1 block font-mono">{totalReceivedVolumeOnline.toFixed(2)}€</span>
+             <span className="text-lg font-black text-purple-600 mt-1 block font-mono">{formatCurrency(totalReceivedVolumeOnline, business?.currency)}</span>
            </div>
         </div>
 
@@ -601,7 +602,7 @@ export default function FinanceTab() {
                     <div className="flex-1">
                       <div className="flex justify-between mb-1">
                         <span className="text-xs font-bold text-slate-800">{s.full_name}</span>
-                        <span className="text-xs font-black text-purple-600">{staffRevenue.toFixed(2)}€</span>
+                        <span className="text-xs font-black text-purple-600">{formatCurrency(staffRevenue, business?.currency)}</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-1.5">
                         <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
@@ -656,7 +657,7 @@ export default function FinanceTab() {
                        </span>
                     </td>
                     <td className="py-3 px-4 text-right font-black text-slate-900 font-mono">
-                      {Number(item.amount || item.amount_total || 0).toFixed(2)}€
+                      {formatCurrency(Number(item.amount || item.amount_total || 0), business?.currency)}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button 
@@ -741,16 +742,16 @@ export default function FinanceTab() {
               </div>
               <div className="flex justify-between border-b border-slate-100 pb-2">
                 <span className="text-slate-500 font-bold">Valor Bruto</span>
-                <span className="font-mono font-black text-slate-900">{Number(selectedInvoice.amount || selectedInvoice.amount_total || 0).toFixed(2)}€</span>
+                <span className="font-mono font-black text-slate-900">{formatCurrency(Number(selectedInvoice.amount || selectedInvoice.amount_total || 0), business?.currency)}</span>
               </div>
               <div className="flex justify-between border-b border-slate-100 pb-2">
                 <span className="text-rose-500 font-bold">Comissão Plataforma</span>
-                <span className="font-mono font-black text-rose-500">-{Number(selectedInvoice.glamzo_fee || 0).toFixed(2)}€</span>
+                <span className="font-mono font-black text-rose-500">-{formatCurrency(Number(selectedInvoice.glamzo_fee || 0), business?.currency)}</span>
               </div>
               <div className="flex justify-between pt-2">
                 <span className="text-slate-900 font-black">Valor Líquido Recebido</span>
                 <span className="font-mono font-black text-emerald-600 text-lg">
-                  {Number(selectedInvoice.business_amount || selectedInvoice.amount || 0).toFixed(2)}€
+                  {formatCurrency(Number(selectedInvoice.business_amount || selectedInvoice.amount || 0), business?.currency)}
                 </span>
               </div>
             </div>

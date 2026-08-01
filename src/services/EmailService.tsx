@@ -137,7 +137,7 @@ export const EmailService = {
     });
   },
 
-  async sendBookingCancelledEmail(to: string, data: { shopName: string, serviceName: string, date: string, time: string, reason?: string }) {
+  async sendBookingCancelledEmail(to: string, data: { shopName: string, serviceName: string, date: string, time: string, reason?: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
@@ -150,7 +150,7 @@ export const EmailService = {
     });
   },
 
-  async sendNewBookingEmail(to: string, data: { customerName: string, serviceName: string, date: string, time: string, price: string }) {
+  async sendNewBookingEmail(to: string, data: { customerName: string, serviceName: string, date: string, time: string, price: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
@@ -163,7 +163,7 @@ export const EmailService = {
     });
   },
 
-  async sendSubscriptionActivatedEmail(to: string, data: { planName: string, activationDate: string, nextBillingDate: string, dashboardUrl: string }) {
+  async sendSubscriptionActivatedEmail(to: string, data: { planName: string, activationDate: string, nextBillingDate: string, dashboardUrl: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
@@ -176,7 +176,7 @@ export const EmailService = {
     });
   },
 
-  async sendInvoiceEmail(to: string, data: { amount: string, date: string, invoiceNumber: string, downloadUrl: string }) {
+  async sendInvoiceEmail(to: string, data: { amount: string, date: string, invoiceNumber: string, downloadUrl: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
@@ -190,7 +190,7 @@ export const EmailService = {
   },
 
   async sendPaymentFailedEmail
- (to: string, data: { explanation: string, updatePaymentUrl: string, suspensionDate: string }) {
+ (to: string, data: { explanation: string, updatePaymentUrl: string, suspensionDate: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
 
@@ -234,7 +234,7 @@ export const EmailService = {
     return await this.sendEmail(to, `O seu Cupão de ${data.value}€ da Glamzo`, html);
   },
 
-  async sendStaffCredentialsEmail(to: string, data: { shopName: string, email: string, password: string, loginUrl: string }) {
+  async sendStaffCredentialsEmail(to: string, data: { shopName: string, email: string, password: string, loginUrl: string, lang?: string }) {
     const resend = getResendClient();
     if (!getResendClient()) return console.warn('[EmailService] Ignoring send - no RESEND_API_KEY');
     

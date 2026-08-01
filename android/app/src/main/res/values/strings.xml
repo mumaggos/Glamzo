@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Glamzo</string>
+    <string name="title_activity_main">Glamzo</string>
+    <string name="package_name">com.glamzo.app</string>
+    <string name="custom_url_scheme">com.glamzo.app</string>
+</resources>

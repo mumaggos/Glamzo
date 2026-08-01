@@ -1253,9 +1253,21 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
       }
     }
 
+    // Fetch business to determine country for currency handling
+    const { data: bData } = await getSupabaseAdmin().from("businesses").select("country").eq("id", businessId).maybeSingle();
+    let isUS = bData?.country === 'US' || (bData?.country || '').toLowerCase() === 'united states' || (bData?.country || '').toLowerCase() === 'estados unidos';
+
     // Resolve price ID dynamically from product IDs in environment
     let isTerminal = planName === "TERMINAL";
-    let targetProductId = isTerminal ? process.env.STRIPE_TERMINAL_PRODUCT_ID : process.env.STRIPE_PRO_PRICE_ID;
+    
+    // Choose the target product or price ID based on location
+    let defaultProPrice = process.env.STRIPE_PRO_PRICE_ID;
+    let usdProPrice = process.env.STRIPE_PRO_PRICE_ID_USD || defaultProPrice;
+    
+    let targetProductId = isTerminal 
+      ? process.env.STRIPE_TERMINAL_PRODUCT_ID 
+      : (isUS ? usdProPrice : defaultProPrice);
+      
     let priceId = targetProductId; // By default assume it might be a price ID if it doesn't start with prod_
 
     if (targetProductId && targetProductId.startsWith("prod_")) {
@@ -1269,12 +1281,13 @@ const handleCreateSubscriptionCheckout = async (req: any, res: any) => {
     }
 
     if (!priceId) {
-      priceId = "price_1TyF4kPCXoqZhOLwq6FdV8U1"; // ultimate hardcoded fallback
+      // If we still don't have a price, use hardcoded fallback (useful for dev)
+      priceId = isUS ? "price_usd_fallback" : "price_1TyF4kPCXoqZhOLwq6FdV8U1"; 
     }
 
     console.log(
       "Using Resolved price for Stripe Checkout. IsTerminal:",
-      isTerminal, "Price ID:", priceId
+      isTerminal, "Price ID:", priceId, "Is US:", isUS
     );
 
     

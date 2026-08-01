@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {  useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
-import { Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
+import { AlertCircle, Building2, Scissors, CreditCard, Landmark, CheckCircle, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, MapPin, Camera, Upload, Clock, Gift, Trash2, X } from 'lucide-react';
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 import { AddressAutocomplete } from "../../components/AddressAutocomplete";
 import { generateUniqueSlug } from '../../utils/slugify';
@@ -126,9 +126,37 @@ export default function SetupWizard() {
   const [doorNumber, setDoorNumber] = useState('');
   const [city, setCity] = useState('');
   const [currency, setCurrency] = useState('EUR');
+  const getCurrencyWarning = () => {
+    const c = country.toLowerCase().trim();
+    if (['portugal', 'espanha', 'frança', 'france', 'spain', 'italia', 'italy', 'alemanha', 'germany'].includes(c) && currency !== 'EUR') {
+      return 'Aviso: O Stripe normalmente exige liquidações em EUR para países da Zona Euro.';
+    }
+    if (['reino unido', 'uk', 'united kingdom'].includes(c) && currency !== 'GBP') {
+      return 'Aviso: O Stripe normalmente exige liquidações em GBP para o Reino Unido.';
+    }
+    if (['brasil', 'brazil'].includes(c) && currency !== 'BRL') {
+      return 'Aviso: Contas Stripe no Brasil exigem liquidações em BRL.';
+    }
+    if (['estados unidos', 'usa', 'united states', 'us'].includes(c) && currency !== 'USD') {
+      return 'Aviso: Contas Stripe nos EUA exigem liquidações em USD.';
+    }
+    return null;
+  };
+  const currencyWarning = getCurrencyWarning();
   const [district, setDistrict] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Lisbon');
+  const groupedTimezones = useMemo(() => {
+    const tzs = (Intl as any).supportedValuesOf('timeZone');
+    const groups: Record<string, string[]> = {};
+    tzs.forEach((tz: string) => {
+      const parts = tz.split('/');
+      const group = parts.length > 1 ? parts[0] : 'Outros';
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(tz);
+    });
+    return groups;
+  }, []);
   const [category, setCategory] = useState(MAIN_CATEGORIES[0].name);
   const [logoUrl, setLogoUrl] = useState('');
   const [setupByGlamzo, setSetupByGlamzo] = useState(false);
@@ -883,8 +911,13 @@ export default function SetupWizard() {
                   onChange={e => setTimezone(e.target.value)} 
                   className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-slate-800"
                 >
-                  {(Intl as any).supportedValuesOf('timeZone').map(tz => (
-                    <option key={tz} value={tz}>{tz}</option>
+                  {Object.entries(groupedTimezones).map(([group, tzs]) => (
+                    <optgroup key={group} label={group}>
+                      {(tzs as string[]).map(tz => {
+                        const label = tz.split('/').slice(1).join('/') || tz;
+                        return <option key={tz} value={tz}>{label.replace(/_/g, ' ')}</option>;
+                      })}
+                    </optgroup>
                   ))}
                 </select>
                 <p className="text-[10px] text-slate-500 mt-1">Este será o fuso horário usado no calendário do salão.</p>
@@ -953,6 +986,12 @@ export default function SetupWizard() {
                   <option value="USD">USD - Dólar ($)</option>
                   <option value="BRL">BRL - Real (R$)</option>
                 </select>
+                {currencyWarning && (
+                  <div className="mt-2 text-xs font-medium text-amber-600 bg-amber-50 p-2 rounded flex items-start gap-1">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{currencyWarning}</span>
+                  </div>
+                )}
 
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('setupWizard.district')}</label>
                   <input type="text" value={district} onChange={e => setDistrict(e.target.value)} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder={t('setupWizard.districtPlaceholder')} />

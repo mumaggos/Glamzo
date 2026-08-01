@@ -16,7 +16,8 @@ import SeoHead from '../components/SeoHead';
 import SecurityBadge from '../components/SecurityBadge';
 import { toggleFavorite, isFavorite, reportReview, createDispute } from '../utils/marketingHelper';
 import { useLocalizedNavigate } from '../hooks/useLocalizedNavigate';
-import { 
+import { formatCurrency } from '../utils/currency';
+import {
   MapPin, Phone, Mail, Globe, Calendar, CheckCircle2, 
   ArrowLeft, Loader2, Share2, Compass, MessageSquare,
   Clock, X, Check, Sparkles, AlertCircle,
@@ -482,7 +483,7 @@ const { slug } = useParams<{ slug: string }>();
                           <span className="inline-block mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-2 py-1 rounded-lg">⏱ {srv.duration_minutes} min</span>
                         </div>
                         <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:border-l sm:border-slate-100 sm:pl-6">
-                          <span className="text-lg font-black text-slate-900">{Number(srv.price).toFixed(2)}€</span>
+                          <span className="text-lg font-black text-slate-900">{formatCurrency(Number(srv.price), business?.currency)}</span>
                           <button onClick={() => handleOpenBooking(srv)} className="px-5 py-2.5 bg-slate-900 hover:bg-purple-600 text-white text-xs font-bold rounded-xl transition-colors">
                             Reservar
                           </button>

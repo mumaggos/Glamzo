@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Users, Search, Star, Clock, X, Phone, Mail, User, CalendarDays, Banknote } from "lucide-react";
 import { Business, Booking } from "../../../types";
+import { formatCurrency } from '../../../utils/currency';
 
 interface PartnerContextType {
   business: Business | null;
@@ -26,7 +27,7 @@ const ClientRow = React.memo(({ client, onOpenProfile }: { client: any, onOpenPr
         </div>
       </td>
       <td className="py-4 px-6 font-bold text-slate-700 text-center">{client.visits}</td>
-      <td className="py-4 px-6 font-bold text-slate-700 text-right">{client.spent.toFixed(2)}€</td>
+      <td className="py-4 px-6 font-bold text-slate-700 text-right">{formatCurrency(client.spent, business?.currency)}</td>
       <td className="py-4 px-6 text-right">
         <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono text-[10px] font-bold">
           {client.lastVisit}
@@ -149,7 +150,7 @@ const ClientsTab = React.memo(function ClientsTab() {
             </span>
             <span className="text-2xl font-black text-slate-900 mt-1.5 block">
               {averageTicket}
-              <span className="text-sm font-bold text-slate-400 ml-1">€</span>
+              <span className="text-sm font-bold text-slate-400 ml-1">{business?.currency || "EUR"}</span>
             </span>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-white text-slate-500 flex items-center justify-center border border-slate-200">
@@ -265,7 +266,7 @@ const ClientsTab = React.memo(function ClientsTab() {
                       <Banknote className="w-4 h-4" />
                       <span className="text-[10px] font-black uppercase tracking-widest">Gasto Total</span>
                     </div>
-                    <span className="block text-2xl font-black text-emerald-900">{selectedClient.spent.toFixed(2)}€</span>
+                    <span className="block text-2xl font-black text-emerald-900">{formatCurrency(selectedClient.spent, business?.currency)}</span>
                   </div>
                 </div>
               </div>

@@ -14,6 +14,7 @@ import { lazy, Suspense } from "react";
 import { Image } from "../components/Image"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 import { useTranslation } from "react-i18next";
+import { formatCurrency } from '../utils/currency';
 
 const HomeBelowFold = lazy(() => import('../components/HomeBelowFold'));
 
@@ -330,7 +331,7 @@ export default function Home() {
       </div> 
        
       <div className="mt-1 flex items-baseline gap-1"> 
-        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${b.startPrice}€` : t('home.free')}</span> 
+        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${formatCurrency(b.startPrice, b.currency)}` : t('home.free')}</span> 
         <span className="text-sm text-slate-500">{t('home.basePrice')}</span> 
       </div> 
     </LocalizedLink> 

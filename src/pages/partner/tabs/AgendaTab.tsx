@@ -9,6 +9,7 @@ import { DashboardCalendar } from "../../../components/DashboardCalendar";
 import { useTranslation } from "react-i18next";
 import { createUTCBookingTimestamp } from '../../../utils/timezone';
 import { formatInTimeZone } from 'date-fns-tz';
+import { formatCurrency } from '../../../utils/currency';
 
 export default function AgendaTab() {
     const { t } = useTranslation();
@@ -337,7 +338,7 @@ export default function AgendaTab() {
                      </div>
                      <div className="text-right">
                         <p className="text-[10px] uppercase font-bold text-slate-400">{t('agenda.value')}</p>
-                        <p className="text-lg font-black text-slate-900">{Number(price || 0).toFixed(2)}€</p>
+                        <p className="text-lg font-black text-slate-900">{formatCurrency(Number(price || 0), business?.currency)}</p>
                      </div>
                    </div>
                  );

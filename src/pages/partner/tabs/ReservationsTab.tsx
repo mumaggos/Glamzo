@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Calendar, Clock, Scissors, User } from 'lucide-react';
+import { formatCurrency } from '../../../utils/currency';
 
 
 const ReservationRow = React.memo(({ booking }: { booking: any }) => {
@@ -52,7 +53,7 @@ const ReservationRow = React.memo(({ booking }: { booking: any }) => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded-lg text-xs border border-emerald-100">
-                      {Number((booking.original_service_price ?? booking.total_price)).toFixed(2)}€
+                      {formatCurrency(Number((booking.original_service_price ?? booking.total_price)), business?.currency)}
                     </span>
                   </td>
                 </tr>
