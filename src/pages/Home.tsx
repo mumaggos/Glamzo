@@ -11,6 +11,7 @@ import {
   ShieldCheck, Loader2, ArrowRight, Heart, CalendarCheck, Zap, Star 
 , Tag } from "lucide-react"; 
 import { lazy, Suspense } from "react";
+import { LazyLoad } from "../components/LazyLoad";
 import { Image } from "../components/Image"; 
 import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData"; 
 import { useTranslation } from "react-i18next";
@@ -335,11 +336,37 @@ export default function Home() {
         <span className="text-sm text-slate-500">{t('home.basePrice')}</span> 
       </div> 
     </LocalizedLink> 
-  ); 
+  );
 
-  return ( 
-    <div className="min-h-[100vh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950">
-      <SeoHead title="Glamzo | Plataforma & Agendamentos de Beleza Premium" description="Glamzo é a plataforma líder em beleza em Portugal. Agende cabeleireiro, barbeiro, manicures, estética e massagens online com rapidez e segurança." /> 
+const homeSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "url": "https://glamzo.pt/",
+      "name": "Glamzo",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://glamzo.pt/explore?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Organization",
+      "name": "Glamzo",
+      "url": "https://glamzo.pt",
+      "logo": "https://glamzo.pt/favicon-v2.svg",
+      "sameAs": [
+        "https://www.instagram.com/glamzo.pt",
+        "https://www.facebook.com/glamzo.pt"
+      ]
+    }
+  ]
+};
+
+   return (
+     <div className="min-h-[100vh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950">
+      <SeoHead title="Glamzo | Plataforma & Agendamentos de Beleza Premium" description="Glamzo é a plataforma líder em beleza em Portugal. Agende cabeleireiro, barbeiro, manicures, estética e massagens online com rapidez e segurança." schema={homeSchema} /> 
        
       {/* 1. HERO SECTION & PESQUISA (IDENTIDADE GLAMZO REFINADA) */} 
       <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-[#fafbfc]"> 
@@ -451,7 +478,8 @@ export default function Home() {
       </section> 
 
 
-      <Suspense fallback={<div className="h-96 w-full flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+      <LazyLoad rootMargin="300px" fallback={<div className="h-96 w-full flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+       <Suspense fallback={<div className="h-96 w-full flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
         <HomeBelowFold 
           HOME_CATEGORIES={HOME_CATEGORIES}
           loading={loading}
@@ -466,6 +494,7 @@ export default function Home() {
           currentLangCode={currentLangCode}
         />
       </Suspense>
+      </LazyLoad>
     </div>
   );
 }

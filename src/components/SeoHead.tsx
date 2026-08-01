@@ -30,8 +30,10 @@ export default function SeoHead({ title, description, image, url, schema }: SeoH
   const ogUrl = url || `${domain}${currentPath}`;
   const ogImage = image || `${domain}/favicon-v2.svg`;
 
+  const currentLang = (pathParts[1] && supportedLangs.includes(pathParts[1])) ? pathParts[1] : 'pt';
   return (
     <Helmet>
+      <html lang={currentLang} />
       <title>{title}</title>
       <meta name="description" content={globalDesc} />
       

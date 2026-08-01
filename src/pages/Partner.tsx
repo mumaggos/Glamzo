@@ -1,3 +1,4 @@
+import SeoHead from '../components/SeoHead';
 import { LocalizedLink } from '../components/LocalizedLink';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -65,8 +66,24 @@ export default function Partner() {
     }
   ];
 
+
+const partnerSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Glamzo Parceiros",
+  "operatingSystem": "Web",
+  "applicationCategory": "BusinessApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  }
+};
+
   return (
     <div id="partner-landing-view" className="min-h-screen bg-[#F8F9FC] flex flex-col justify-between font-sans selection:bg-purple-100 selection:text-purple-900 pb-0 animate-fade-in">
+      <SeoHead title="Glamzo para Parceiros | Software de Gestão para Salões" description="Gira o seu salão, barbearia ou clínica de estética com o Glamzo. Sem mensalidades, sem custos escondidos. Comece a receber marcações online hoje." schema={partnerSchema} />
+
       
       {/* 1. Hero Section - Alto Impacto */}
       <section className="relative pt-24 pb-20 overflow-hidden bg-white">

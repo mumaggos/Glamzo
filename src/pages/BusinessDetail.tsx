@@ -306,14 +306,27 @@ const { slug } = useParams<{ slug: string }>();
 
   const getSeoData = () => {
     if (!business) return null;
+    
     const title = `${business.name} - Reserva Online | Glamzo`;
-    const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários, serviços e preços no Glamzo.`;
+    const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique os horários, serviços, preços e faça a sua marcação online no Glamzo.`;
     const image = business.cover_url || business.logo_url || 'https://glamzo.pt/favicon-v2.svg';
+    
+    let aggregateRating = undefined;
+    if (business.rating > 0 && finalReviewsCount > 0) {
+      aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": business.rating.toFixed(1),
+        "reviewCount": finalReviewsCount
+      };
+    }
+
     const schema = {
       "@context": "https://schema.org",
       "@type": ["BeautySalon", "LocalBusiness"],
       "name": business.name,
       "image": image,
+      "url": `https://glamzo.pt/${business.slug}`,
+      "description": business.description || desc,
       "address": {
         "@type": "PostalAddress",
         "streetAddress": `${business.address} ${business.door_number || ''}`.trim(),
@@ -327,8 +340,10 @@ const { slug } = useParams<{ slug: string }>();
         "longitude": business.longitude
       },
       "telephone": business.phone,
-      "priceRange": "€€"
+      "priceRange": "€€",
+      "aggregateRating": aggregateRating
     };
+    
     return { title, desc, image, schema };
   };
   const seoData = getSeoData();

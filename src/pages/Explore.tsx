@@ -506,9 +506,36 @@ export default function Explore() {
   };
 
 
+
+  const exploreSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://glamzo.pt/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Explorar Salões e Serviços",
+      "item": "https://glamzo.pt/explore"
+    }
+  ]
+};
+
+
+
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <SeoHead title={t('explore.exploreTitle') + " - Glamzo"} description="Encontre os melhores salões e serviços." /> {/* Barra de Filtros Topo */}
+    <div className="min-h-[100vh] font-sans flex flex-col bg-slate-50">
+      <SeoHead 
+        title={t('explore.exploreTitle') + " - Glamzo | Agendamentos de Beleza"} 
+        description="Descubra os melhores salões de cabeleireiro, barbeiros e clínicas de estética perto de si. Compare avaliações, preços e faça a sua reserva online de forma simples." 
+        schema={exploreSchema}
+      /> {/* Barra de Filtros Topo */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 overflow-x-auto custom-scrollbar pb-1">

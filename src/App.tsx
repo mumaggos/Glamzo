@@ -8,7 +8,7 @@ import { Toaster } from 'react-hot-toast';
 const LanguageUpdater = lazy(() => import('./components/LanguageUpdater'));
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { isSupabaseConfigured } from './lib/supabase';
+
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
@@ -318,11 +318,12 @@ export default function App() {
   const [loadMessenger, setLoadMessenger] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isSupabaseConfigured) return;
+    if (!(!!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY))) return;
     const timer = setTimeout(() => setLoadMessenger(true), 1500);
     return () => clearTimeout(timer);
   }, []);
 
+  const isSupabaseConfigured = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
   if (!isSupabaseConfigured) return <SupabaseSetupHelper />;
 
   return (
