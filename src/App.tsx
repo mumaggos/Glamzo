@@ -18,7 +18,7 @@ import { useLocalizedNavigate } from './hooks/useLocalizedNavigate';
 const FinanceSettingsTab = lazyWithRetry(() => import('./pages/partner/tabs/FinanceSettingsTab'));
 const PayoutsHistoryTab = lazyWithRetry(() => import('./pages/partner/tabs/PayoutsHistoryTab'));
 const HardwareManagerTab = lazyWithRetry(() => import('./pages/partner/tabs/HardwareManagerTab'));
-const Home = lazyWithRetry(() => import('./pages/Home'));
+import Home from './pages/Home';
 const Explore = lazyWithRetry(() => import('./pages/Explore'));
 const BusinessDetail = lazyWithRetry(() => import('./pages/BusinessDetail'));
 const Favorites = lazyWithRetry(() => import('./pages/Favorites'));

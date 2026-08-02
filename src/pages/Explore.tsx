@@ -451,7 +451,8 @@ export default function Explore() {
           <Image fill 
             src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"} 
             alt={b.name}  
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" 
           />
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
             {b.is_promoted && (

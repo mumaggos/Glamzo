@@ -17,7 +17,7 @@ import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from '../utils/currency';
 
-const HomeBelowFold = lazyWithRetry(() => import('../components/HomeBelowFold'));
+import { HomeBelowFold } from '../components/HomeBelowFold';
 
 
 
@@ -35,344 +35,6 @@ const SUGGESTED_CITIES = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Funcha
 
 
 
-
-// Cartão Minimalista de Elite (Estilo Airbnb)
-const BusinessCard: React.FC<{ b: any }> = React.memo(({ b }) => {
-  const { t } = useTranslation();
-  return (
-    <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']">
-      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-       <Image fill 
-           src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp"} 
-           alt={b.name} 
-           sizes="(max-width: 640px) 280px, 280px"
-           className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-700 ease-out" 
-         />
-         
-         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {b.is_promoted && (
-            <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
-              {t('home.featured')}
-           </span>
-          )}
-        </div>
-         
-        <button 
-           onClick={(e) => { e.preventDefault(); }} 
-           aria-label={t('home.addToFavorites')} 
-           className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
-        >
-          <Heart className="w-6 h-6 fill-black/20 stroke-white stroke-[1.5]" />
-        </button>
-      </div>
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3>
-          <p className="text-sm text-slate-500 mt-0.5 truncate">{t(`categories.${b.category}`, { defaultValue: b.category })} · {b.city}</p>
-        </div>
-        
-        {b.rating > 0 && (
-          <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg">
-            <Star className="w-3.5 h-3.5 fill-current text-yellow-400" />
-            <span className="text-sm font-bold text-[#0f172a] font-['Outfit']">{b.rating.toFixed(1)}</span>
-          </div>
-        )}
-      </div>
-      <div className="mt-2 flex items-center justify-between">
-         <div className="flex flex-col">
-            {b.realStartPrice > 0 ? (
-               <div className="flex items-end gap-1.5">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('home.from')}</span>
-                  <span className="text-[#0f172a] font-black text-lg font-['Outfit']">{formatCurrency(b.realStartPrice)}</span>
-               </div>
-            ) : (
-               <span className="text-[#0f172a] font-black text-lg font-['Outfit']">{t('home.free')}</span>
-            )}
-            {b.hasRealPromotion && (
-               <div className="flex items-center gap-1 mt-0.5">
-                  <Tag className="w-3 h-3 text-rose-500" />
-                  <span className="text-xs font-bold text-rose-500">{t('home.promoAvailable')}</span>
-               </div>
-            )}
-         </div>
-         {b.distance != null && b.distance < 50 && (
-            <span className="text-xs font-medium text-slate-400">
-               {b.distance.toFixed(1)} km
-            </span>
-         )}
-      </div>
-    </LocalizedLink>
-  );
-});
-
-export default function Home() {
-  const navigate = useLocalizedNavigate();
-  const [searchParams] = useSearchParams();
-  const { t, i18n } = useTranslation();
-  const currentLangCode = (i18n.language || 'pt').split('-')[0].toLowerCase();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [searchLocation, setSearchLocation] = useState(searchParams.get("city") || "");
-  const [businesses, setBusinesses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
-  const [showLocSuggestions, setShowLocSuggestions] = useState(false);
-  const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
-  const [querySuggestions, setQuerySuggestions] = useState<any[]>([]);
-  const [servicesData, setServicesData] = useState<any[]>([]);
-
-  
-
-
-  useEffect(() => {
-    supabase.from("services").select("id, name, business_id").eq("is_active", true).then(res => {
-      if (res.data) setServicesData(res.data);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim().length < 2) {
-      setQuerySuggestions([]);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      try {
-        const q = searchQuery.toLowerCase().trim();
-        const matches: any[] = [];
-        
-        const safeBiz = Array.isArray(businesses) ? businesses : [];
-        const safeServ = Array.isArray(servicesData) ? servicesData : [];
-        
-        // Check businesses
-        safeBiz.forEach(b => {
-          if (!b) return;
-          const bName = b.name || "";
-          const bCat = b.category || "";
-          if (bName.toLowerCase().includes(q) || bCat.toLowerCase().includes(q)) {
-            matches.push({ type: 'business', id: b.id, name: b.name, slug: b.slug, text: b.name });
-          }
-        });
-        
-        // Check services
-        safeServ.forEach(s => {
-          if (!s) return;
-          const sName = s.name || "";
-          if (sName.toLowerCase().includes(q)) {
-            const b = safeBiz.find(bz => bz && bz.id === s.business_id);
-            if (b) {
-              matches.push({ type: 'service', id: b.id, name: b.name, slug: b.slug, text: `${s.name} em ${b.name}` });
-            }
-          }
-        });
-        
-        const uniqueMatches = Array.from(new Map(matches.map(m => [m.id + m.text, m])).values());
-        setQuerySuggestions(uniqueMatches.slice(0, 5));
-      } catch (err) {
-        console.error("Search suggestion error:", err);
-        setQuerySuggestions([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, businesses, servicesData]);
-
-
-
-  const scrollCategories = (direction: 'left' | 'right') => {
-    requestAnimationFrame(() => {
-      if (scrollContainerRef.current) {
-        const containerWidth = scrollContainerRef.current.clientWidth || 300;
-        const scrollAmount = Math.max(300, containerWidth * 0.8);
-        const targetScroll = direction === 'right' ? scrollAmount : -scrollAmount;
-        scrollContainerRef.current.scrollBy({ left: targetScroll, behavior: 'smooth' });
-      }
-    });
-  };
-
-  useEffect(() => {
-    const fetchPromos = async () => {};
-    fetchPromos();
-  }, []); 
-
- 
-
-  useEffect(() => { 
-    const fetchData = async () => { 
-      setLoading(true); 
-      try { 
-        const [bizRes, revData, srvRes] = await Promise.all([ 
-          supabase.from("businesses").select("*").eq("status", "active"), 
-          fetchAllReviews(), 
-          supabase.from("services").select("*").eq("is_active", true) 
-        ]); 
-         
-        let srvData = srvRes.data || []; 
-        const nowFilter = new Date();
-        let loadedBiz = (bizRes.data || []).filter((b: any) => {
-          const isActive = b.subscription_status === 'active';
-          const isValidTrial = b.subscription_status === 'trialing' && b.trial_ends_at && new Date(b.trial_ends_at) > nowFilter;
-          return (isActive || isValidTrial) && b.public_page_enabled !== false;
-        }); 
-        let revDataFinal = revData || []; 
-
-        if (bizRes.error) { 
-          console.error("Home fetch error:", bizRes.error);
-        }
-         
-        const now = new Date(); 
-         
-        const processed = loadedBiz.map(b => { 
-          const bReviews = revDataFinal.filter((r: any) => r.business_id === b.id); 
-          const rating = bReviews.length > 0 ? bReviews.reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0) / bReviews.length : 0; 
-           
-          const bServices = srvData.filter((s: any) => s.business_id === b.id); 
-          let realStartPrice = 0; 
-          let hasRealPromotion = b.is_promoted || false; 
-
-          if (bServices.length > 0) { 
-            const prices = bServices.map((s: any) => { 
-              const hasDiscount = (s.discount_price != null && s.discount_price > 0 && s.discount_price < s.price) || (s.price_promotion != null && s.price_promotion > 0); 
-              if (hasDiscount) hasRealPromotion = true; 
-              return s.discount_price || s.price_promotion || s.price; 
-            }).filter((p: number) => p != null && !isNaN(p)); 
-
-            if (prices.length > 0) realStartPrice = Math.min(...prices); 
-          } 
-
-          const lat = b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude; 
-          const lng = b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude; 
-          let distance = null; 
-          if (userCoords) { 
-            distance = calculateDistanceInKm(userCoords.lat, userCoords.lng, lat, lng); 
-          } 
-
-          return {  
-            ...b, rating, reviewsCount: bReviews.length, startPrice: realStartPrice,  
-            lat, lng, distance, isNew: (now.getTime() - new Date(b.created_at).getTime()) < 15 * 24 * 60 * 60 * 1000,  
-            services: bServices, is_promoted: hasRealPromotion  
-          };  
-        }); 
-         
-        setBusinesses(processed); 
-      } catch (e) { 
-        console.error("Erro ao carregar dados", e); 
-      } finally { 
-        setLoading(false); 
-      } 
-    }; 
-    
-    const fetchTimer = setTimeout(() => {
-      fetchData(); 
-    }, 150);
-
-    return () => clearTimeout(fetchTimer);
-  }, [userCoords]); 
-
-  
-  const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation(t('home.nearMe'));
-          setShowLocSuggestions(false);
-        },
-        () => {
-          alert("Não foi possível aceder à localização. Por favor, pesquise manualmente.");
-          setShowLocSuggestions(false);
-        }
-      );
-    }
-  };
-
-  const handleSearchSubmit = () => { 
-    const params = new URLSearchParams(); 
-    
-    // Validate empty input to just show all results
-    if (searchQuery.trim() === "" && searchLocation.trim() === "") {
-      navigate('/explore');
-      return;
-    }
-    
-    if (searchQuery.trim()) params.set("q", searchQuery.trim()); 
-    if (searchLocation.trim()) { 
-      if (searchLocation === t('home.nearMe')) params.set("nearMe", "true"); 
-      else params.set("city", searchLocation.trim()); 
-    } 
-    navigate(`/explore?${params.toString()}`); 
-  }; 
-
-  const locaisProximos = useMemo(() => { 
-    if (!businesses || businesses.length === 0) return [];
-    if (!userCoords) return []; 
-    return [...businesses].filter(b => b.distance !== null && b.distance < 20).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 10); 
-  }, [businesses, userCoords]); 
-
-  const topPartners = useMemo(() => {
-    if (!businesses || businesses.length === 0) return [];
-    return businesses.filter(b => b.is_premium || b.is_verified);
-  }, [businesses]); 
-
-  const recomendados = useMemo(() => {
-    if (!businesses || businesses.length === 0) return [];
-    return [...businesses].sort((a, b) => b.rating - a.rating || (a.distance || 0) - (b.distance || 0)).slice(0, 10);
-  }, [businesses]); 
-
-  const novasLojas = useMemo(() => {
-    if (!businesses || businesses.length === 0) return [];
-    return [...businesses].filter(b => b.isNew).slice(0, 10);
-  }, [businesses]);  
-
-  const mapBusinesses = useMemo(() => { 
-    return businesses; 
-  }, [businesses]); 
-
-  // Cartão Minimalista de Elite (Estilo Airbnb) 
-  const BusinessCard: React.FC<{ b: any }> = ({ b }) => ( 
-    <LocalizedLink to={`/${b.slug}`} className="group flex flex-col min-w-[260px] max-w-[280px] shrink-0 cursor-pointer font-['Inter']"> 
-      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden mb-3 bg-slate-100">
-        <Image fill  
-          src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp"}  
-          alt={b.name}  
-          className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-700 ease-out"  
-        /> 
-         
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start"> 
-          {b.is_promoted && ( 
-            <span className="bg-white text-[#0f172a] text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg"> 
-              {t('home.featured')}
-            </span> 
-          )} 
-        </div> 
-         
-        <button
-            onClick={(e) => { e.preventDefault(); }}
-            aria-label={t('home.addToFavorites')}
-            className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:scale-110 transition-transform drop-shadow-md z-10"
-         > 
-          <Heart className="w-6 h-6 fill-black/20 stroke-white stroke-[1.5]" /> 
-        </button> 
-      </div> 
-
-      <div className="flex justify-between items-start gap-2"> 
-        <div> 
-          <h3 className="font-bold text-[#0f172a] text-base line-clamp-1 font-['Outfit']">{b.name}</h3> 
-          <p className="text-sm text-slate-500 mt-0.5 truncate">{t(`categories.${b.category}`, { defaultValue: b.category })} · {b.city}</p> 
-        </div> 
-         
-        <div className="flex items-center gap-1 text-sm font-semibold text-[#0f172a] shrink-0"> 
-          <Star className="w-3.5 h-3.5 fill-slate-900" /> 
-          {b.rating > 0 ? b.rating.toFixed(1) : t('home.new')} 
-        </div> 
-      </div> 
-       
-      <div className="mt-1 flex items-baseline gap-1"> 
-        <span className="font-semibold text-[#0f172a]">{b.startPrice > 0 ? `${formatCurrency(b.startPrice, b.currency)}` : t('home.free')}</span> 
-        <span className="text-sm text-slate-500">{t('home.basePrice')}</span> 
-      </div> 
-    </LocalizedLink> 
-  );
 
 const homeSchema = {
   "@context": "https://schema.org",
@@ -400,11 +62,98 @@ const homeSchema = {
   ]
 };
 
-   return (
+   export default function Home() {
+  const { t, i18n } = useTranslation();
+  const currentLangCode = i18n.language || 'pt';
+  const navigate = useLocalizedNavigate();
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+  const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
+  const [showLocSuggestions, setShowLocSuggestions] = useState(false);
+  const [querySuggestions, setQuerySuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [locaisProximos, setLocaisProximos] = useState<any[]>([]);
+  const [recomendados, setRecomendados] = useState<any[]>([]);
+  const [novasLojas, setNovasLojas] = useState<any[]>([]);
+  const [userCoords, setUserCoords] = useState<{latitude: number, longitude: number} | null>(null);
+  const [mapBusinesses, setMapBusinesses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { data: businesses, error } = await supabase.from('businesses').select(`
+          *,
+          business_services (
+            id, name, price, duration, category, discount_price, price_promotion, is_active
+          )
+        `).eq('is_active', true);
+        
+        if (businesses) {
+           const processed = businesses.map(b => {
+             let hasRealPromotion = b.is_promoted || false;
+             let minPrice = Infinity;
+             if (b.business_services) {
+               b.business_services.forEach((s: any) => {
+                 if (!s.is_active) return;
+                 const price = s.discount_price || s.price_promotion || s.price;
+                 if (price < minPrice) minPrice = price;
+                 if ((s.discount_price && s.discount_price < s.price) || (s.price_promotion && s.price_promotion > 0)) {
+                   hasRealPromotion = true;
+                 }
+               });
+             }
+             return { ...b, hasRealPromotion, startPrice: minPrice === Infinity ? 0 : minPrice };
+           });
+           
+           setMapBusinesses(processed);
+           setRecomendados(processed.filter(b => b.hasRealPromotion).slice(0, 8));
+           setNovasLojas(processed.sort((a,b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 8));
+           setLocaisProximos(processed.slice(0, 8));
+        }
+      } catch(e) {}
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.length > 1) {
+       setQuerySuggestions([{text: searchQuery, slug: "explore?q=" + encodeURIComponent(searchQuery)}]);
+    } else {
+       setQuerySuggestions([]);
+    }
+  }, [searchQuery]);
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim() || searchLocation.trim()) {
+      navigate(`/explore?q=${encodeURIComponent(searchQuery)}&loc=${encodeURIComponent(searchLocation)}`);
+    } else {
+      navigate(`/explore`);
+    }
+  };
+
+  const handleGetLocation = () => {
+     if (navigator.geolocation) {
+       navigator.geolocation.getCurrentPosition((pos) => {
+         setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+         setSearchLocation(t('home.currentLocation'));
+         setShowLocSuggestions(false);
+       });
+     }
+  };
+
+return (
      <div className="min-h-[100vh] bg-[#FDFDFD] font-sans flex flex-col selection:bg-purple-100 selection:text-purple-950">
       <SeoHead title="Glamzo | Plataforma & Agendamentos de Beleza Premium" description="Glamzo é a plataforma líder em beleza em Portugal. Agende cabeleireiro, barbeiro, manicures, estética e massagens online com rapidez e segurança." schema={homeSchema} /> 
        
       {/* 1. HERO SECTION & PESQUISA (IDENTIDADE GLAMZO REFINADA) */} 
+      
+
+
+
       <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex flex-col justify-center bg-[#fafbfc]"> 
         <div className="absolute inset-0 bg-gradient-to-br from-purple-50/60 via-white to-rose-50/30 -z-10" /> 
          
@@ -514,7 +263,7 @@ const homeSchema = {
       </section> 
 
 
-       <Suspense fallback={<div className="h-96 w-full flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+       
         <HomeBelowFold 
           HOME_CATEGORIES={HOME_CATEGORIES}
           loading={loading}
@@ -526,7 +275,7 @@ const homeSchema = {
           mapBusinesses={mapBusinesses}
           currentLangCode={currentLangCode}
         />
-      </Suspense>
+      
     </div>
   );
 }

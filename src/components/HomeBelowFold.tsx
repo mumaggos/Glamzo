@@ -23,6 +23,25 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
 
   const navigate = useNavigate();
 
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [loadMap, setLoadMap] = useState(false);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(mapRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+
   const scrollCategories = (direction: 'left' | 'right') => {
     const container = document.getElementById('categories-container');
     if (container) {
@@ -46,7 +65,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
                 onClick={() => navigate(cat.url)} 
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all"
               >
-                <Image src={cat.image} priority={index < 2} alt="" fill sizes="(max-width: 640px) 160px, 160px" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <Image src={cat.image} priority={index < 4} alt="" fill sizes="(max-width: 640px) 160px, 160px" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
                   {t(`categories.${cat.name}`, { defaultValue: cat.name })}
@@ -144,7 +163,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
       </section>
 
       {/* 5. MAPA INTELIGENTE GEOGRÁFICO */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']">
+      <section ref={mapRef} className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']">
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.exploreOnMap')}</h2>
@@ -156,7 +175,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
         </div>
 
         <Suspense fallback={<div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
-          <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} />
+          {loadMap ? <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} /> : <div className="h-[450px] sm:h-[500px] rounded-3xl bg-slate-100 animate-pulse" />}
         </Suspense>
       </section>
     </>
