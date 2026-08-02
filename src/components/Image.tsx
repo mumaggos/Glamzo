@@ -6,7 +6,7 @@ export type ImageProps = ComponentProps<'img'> & {
   objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 }
 
-const WIDTHS = [320, 640, 768, 1024, 1280, 1600, 1920];
+const WIDTHS = [160, 320, 480, 640, 768, 1024, 1280, 1600, 1920];
 
 export function Image({ src, alt, fill, priority, className, sizes = "100vw", objectFit = 'cover', width, height, ...props }: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);

@@ -5,7 +5,8 @@ import { ChevronRight, ChevronLeft, CalendarCheck, Star, ShieldCheck, Loader2 } 
 import { Image } from "./Image";
 import { LocalizedLink } from "./LocalizedLink";
 
-const HomeMap = lazy(() => import("./HomeMap"));
+import { lazyWithRetry } from "../utils/lazyImport";
+const HomeMap = lazyWithRetry(() => import("./HomeMap"));
 
 export const HomeBelowFold = React.memo(function HomeBelowFold({
   HOME_CATEGORIES,
@@ -45,7 +46,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
                 onClick={() => navigate(cat.url)} 
                 className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden group shrink-0 snap-start shadow-sm hover:shadow-xl transition-all"
               >
-                <Image src={cat.image} priority={index < 2} alt="" fill className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <Image src={cat.image} priority={index < 2} alt="" fill sizes="(max-width: 640px) 160px, 160px" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 <span className="absolute bottom-3 left-3 right-3 text-left text-sm font-bold text-white leading-tight drop-shadow-md font-['Outfit']">
                   {t(`categories.${cat.name}`, { defaultValue: cat.name })}

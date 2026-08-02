@@ -25,6 +25,15 @@ import { EmailService } from "./src/services/EmailService";
 import { setupCronJobs } from "./cronJobs";
 
 // Configuration helper
+
+let globalCachedIndexHtml: string | null = null;
+async function getIndexHtml(distPath: string): Promise<string> {
+  if (!globalCachedIndexHtml) {
+    globalCachedIndexHtml = await require('fs').promises.readFile(require('path').join(distPath, "index.html"), 'utf8');
+  }
+  return globalCachedIndexHtml;
+}
+
 const PORT = 3000;
 const app = express();
 
@@ -3012,93 +3021,29 @@ app.post('/api/admin/leads/distribute', express.json(), async (req, res) => {
 
 async function startServer() {
 
-  app.get("/sitemap.xml", async (req, res) => {
-    try {
-      const { data: businesses } = await getSupabaseAdmin()
-        .from("businesses")
-        .select("slug, updated_at")
-        .eq("setup_completed", true); // Adjust if there's no status column, maybe is_active?
-      
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://glamzo.pt/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://glamzo.pt/explore</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`;
-
-      if (businesses) {
-        for (const biz of businesses) {
-          if (!biz.slug) continue;
-          xml += `
-  <url>
-    <loc>https://glamzo.pt/${biz.slug}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-        }
-      }
-      xml += `\n</urlset>`;
-      res.header("Content-Type", "application/xml");
-      res.send(xml);
-    } catch (err) {
-      res.status(500).end();
+app.get("/api/v1/business/:slug/first-available", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { data: business } = await getSupabaseAdmin()
+      .from("businesses")
+      .select("id")
+      .eq("slug", slug)
+      .single();
+    if (!business) return res.status(404).json({ error: "Not found" });
+    const businessId = business.id;
+    
+    const [{ data: hoursData }, { data: staffData }, { data: bookingsData }] = await Promise.all([
+      getSupabaseAdmin().from("business_hours").select("*").eq("business_id", businessId),
+      getSupabaseAdmin().from("staff").select("*").eq("business_id", businessId).eq("is_active", true),
+      getSupabaseAdmin().from("bookings").select("*").eq("business_id", businessId).in("status", ["confirmed", "pending"])
+    ]);
+    
+    if (!hoursData || !staffData) {
+       return res.json({ available: false, label: "Sem vagas nos próx. 14 dias" });
     }
-  });
-
-  app.get("/api/availability/:businessId", async (req, res) => {
-    try {
-      const businessId = req.params.businessId;
-      
-      const { data: hoursData } = await getSupabaseAdmin()
-        .from("business_hours")
-        .select("*")
-        .eq("business_id", businessId);
-      if (!hoursData || hoursData.length === 0) {
-        return res.json({ available: false, label: "Sem vagas disponíveis" });
-      }
-
-      const today = new Date();
-      const options = { timeZone: "Europe/Lisbon" };
-      const todayStr = new Intl.DateTimeFormat("en-CA", {
-        ...options,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(today);
-      const maxDay = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-      const maxDayStr = new Intl.DateTimeFormat("en-CA", {
-        ...options,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(maxDay);
-
-      const { data: bookingsData } = await getSupabaseAdmin()
-        .from("bookings")
-        .select("staff_id, booking_date, start_time, end_time")
-        .eq("business_id", businessId)
-        .neq("booking_status", "cancelled")
-        .gte("booking_date", todayStr)
-        .lte("booking_date", maxDayStr);
-
-      const { data: staffData } = await getSupabaseAdmin()
-        .from("staff")
-        .select("id, full_name, is_active")
-        .eq("business_id", businessId)
-        .eq("is_active", true);
-      if (!staffData || staffData.length === 0) {
-        return res.json({
-          available: false,
-          label: "Sem profissionais ativos",
-        });
-      }
-
+    
+    const today = new Date();
+    const options = { timeZone: "Europe/Lisbon" };
       const slotDurationMins = 30; // Min default
       const parseTime = (timeStr: string) => {
         const [h, m] = timeStr.split(":").map(Number);
@@ -3182,6 +3127,60 @@ async function startServer() {
     }
   });
 
+    // Dynamic Sitemap Generator
+    app.get("/sitemap.xml", async (req, res) => {
+      res.setHeader("Content-Type", "application/xml");
+      try {
+        const { data: businesses } = await getSupabaseAdmin()
+          .from("businesses")
+          .select("slug, updated_at")
+          .eq("status", "active")
+          .eq("public_page_enabled", true);
+          
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
+
+        const baseUrl = 'https://glamzo.pt';
+        const langs = ['pt', 'en', 'es', 'fr'];
+        
+        const addUrl = (path: string, priority: string, changefreq: string, lastmod?: string) => {
+          xml += `\n  <url>\n    <loc>${baseUrl}${path}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>`;
+          if (lastmod) xml += `\n    <lastmod>${lastmod.split('T')[0]}</lastmod>`;
+          
+          // Add hreflang for each language
+          langs.forEach(l => {
+             const lPath = l === 'pt' ? path : `/${l}${path === '/' ? '' : path}`;
+             xml += `\n    <xhtml:link rel="alternate" hreflang="${l}" href="${baseUrl}${lPath}" />`;
+          });
+          xml += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${path}" />`;
+          
+          xml += `\n  </url>`;
+        };
+
+        // Static routes
+        addUrl('/', '1.0', 'daily');
+        addUrl('/explore', '0.9', 'hourly');
+        addUrl('/sobre', '0.5', 'monthly');
+        addUrl('/contactos', '0.5', 'monthly');
+        addUrl('/parceiros', '0.8', 'weekly');
+        
+        // Dynamic business routes
+        if (businesses) {
+          businesses.forEach(b => {
+             if (b.slug) {
+                addUrl(`/${b.slug}`, '0.8', 'daily', b.updated_at);
+             }
+          });
+        }
+        
+        xml += `\n</urlset>`;
+        res.send(xml);
+      } catch (err) {
+        console.error("Sitemap error:", err);
+        res.status(500).end();
+      }
+    });
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
@@ -3190,6 +3189,9 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
+
+
+
     // Production serving static files with high-performance Cache-Control headers
     const distPath = path.join(process.cwd(), "dist");
 
@@ -3224,6 +3226,11 @@ async function startServer() {
       }),
     );
 
+
+  }
+
+
+    const distPath = path.join(process.cwd(), "dist");
     // Fallback response for single-page routing
         app.get("*", async (req, res) => {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -3252,7 +3259,7 @@ async function startServer() {
 
           if (business) {
             const indexPath = path.join(distPath, "index.html");
-            const htmlData = await fs.promises.readFile(indexPath, 'utf8');
+            const htmlData = await getIndexHtml(distPath);
             
             const title = `${business.name} - Reserva Online | Glamzo`;
             const desc = `Reserve o seu agendamento na ${business.name} em ${business.city}. Verifique horários, serviços e preços no Glamzo.`;
@@ -3302,9 +3309,36 @@ async function startServer() {
         }
       } catch (e) {}
 
-      res.sendFile(path.join(distPath, "index.html"));
+      // For all other routes, let's also inject basic hreflang
+
+      // Cache index.html in memory
+      let cachedHtmlData = null;
+      try {
+         const indexPath = path.join(distPath, "index.html");
+         if (!cachedHtmlData) {
+            cachedHtmlData = await getIndexHtml(distPath);
+         }
+         let htmlData = cachedHtmlData;
+
+         const langs = ['pt', 'en', 'es', 'fr'];
+         const parts = req.path.split('/').filter(Boolean);
+         const currentLang = langs.includes(parts[0]) ? parts[0] : 'pt';
+         let basePath = req.path;
+         if (langs.includes(parts[0])) basePath = '/' + parts.slice(1).join('/');
+         if (basePath === '//') basePath = '/';
+         
+         const hreflangTags = langs.map(l => {
+            const lPath = l === 'pt' ? basePath : `/${l}${basePath === '/' ? '' : basePath}`;
+            return `<link rel="alternate" hreflang="${l}" href="https://glamzo.pt${lPath}" />`;
+         }).join('\n    ');
+         const xDefault = `<link rel="alternate" hreflang="x-default" href="https://glamzo.pt${basePath}" />`;
+         
+         htmlData = htmlData.replace('<head>', `<head>\n    ${hreflangTags}\n    ${xDefault}`);
+         return res.send(htmlData);
+      } catch (err) {
+         return res.sendFile(path.join(distPath, "index.html"));
+      }
     });
-  }
 
   app.post("/api/client-error", express.json(), (req, res) => { console.error("CLIENT ERROR:", req.body); require("fs").appendFileSync("client-errors.log", JSON.stringify(req.body) + "\n"); res.send("ok"); });
   app.listen(PORT, "0.0.0.0", () => {

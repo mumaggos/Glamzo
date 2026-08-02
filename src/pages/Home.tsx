@@ -1,3 +1,4 @@
+import { lazyWithRetry } from '../utils/lazyImport';
 import SeoHead from '../components/SeoHead';
 import React, { useState, useEffect, useMemo, useRef } from "react"; 
 import { Link, useSearchParams } from "react-router-dom";
@@ -16,7 +17,7 @@ import { getCoordinatesForCity, calculateDistanceInKm } from "../utils/geoData";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from '../utils/currency';
 
-const HomeBelowFold = lazy(() => import('../components/HomeBelowFold'));
+const HomeBelowFold = lazyWithRetry(() => import('../components/HomeBelowFold'));
 
 
 
@@ -44,6 +45,7 @@ const BusinessCard: React.FC<{ b: any }> = React.memo(({ b }) => {
        <Image fill 
            src={b.cover_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=60&fm=webp"} 
            alt={b.name} 
+           sizes="(max-width: 640px) 280px, 280px"
            className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-700 ease-out" 
          />
          
@@ -120,19 +122,7 @@ export default function Home() {
   const [servicesData, setServicesData] = useState<any[]>([]);
 
   
-  useEffect(() => {
-    // Attempt to get user location on mount for the map
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        },
-        () => {
-          // Silent fallback, just default location
-        }
-      );
-    }
-  }, []);
+
 
   useEffect(() => {
     supabase.from("services").select("id, name, business_id").eq("is_active", true).then(res => {
@@ -187,18 +177,7 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [searchQuery, businesses, servicesData]);
 
-  useEffect(() => {
-    // Auto-locate user on mount
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setSearchLocation(t('home.nearMe'));
-        },
-        () => {} // fail silently on auto-locate
-      );
-    }
-  }, []);
+
 
   const scrollCategories = (direction: 'left' | 'right') => {
     requestAnimationFrame(() => {
