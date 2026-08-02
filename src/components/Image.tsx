@@ -101,9 +101,7 @@ export function Image({ src, alt, fill, priority, className, sizes = "100vw", ob
         onError={() => { setIsLoaded(true); setHasError(true); }}
         className={`
           w-full h-full 
-          ${fill ? `object-${objectFit}` : ''} 
-          ${!isLoaded && !priority ? 'blur-xl scale-110 grayscale' : 'blur-0 scale-100 grayscale-0'} 
-          transition-all duration-700 ease-out
+          ${fill ? `object-${objectFit}` : ''} ${!isLoaded && !priority ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 ease-in-out
         `}
         style={!isLoaded ? { color: 'transparent' } : {}}
         {...props}

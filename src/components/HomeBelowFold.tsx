@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, ChevronLeft, CalendarCheck, Star, ShieldCheck, Loader2 } from "lucide-react";
@@ -7,20 +7,19 @@ import { LocalizedLink } from "./LocalizedLink";
 
 const HomeMap = lazy(() => import("./HomeMap"));
 
-export function HomeBelowFold({
+export const HomeBelowFold = React.memo(function HomeBelowFold({
   HOME_CATEGORIES,
   loading,
   locaisProximos,
   recomendados,
   novasLojas,
   BusinessCard,
-  mapRef,
-  mapVisible,
   userCoords,
   mapBusinesses,
   currentLangCode
 }: any) {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
 
   const scrollCategories = (direction: 'left' | 'right') => {
@@ -144,7 +143,7 @@ export function HomeBelowFold({
       </section>
 
       {/* 5. MAPA INTELIGENTE GEOGRÁFICO */}
-      <section ref={mapRef} className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']">
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full font-['Inter']">
         <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-display font-extrabold text-[#0f172a] font-['Outfit']">{t('home.exploreOnMap')}</h2>
@@ -155,18 +154,12 @@ export function HomeBelowFold({
           </button>
         </div>
 
-        {mapVisible ? (
-          <Suspense fallback={<div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 animate-pulse" />}>
-            <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} />
-          </Suspense>
-        ) : (
-          <div className="h-[500px] bg-slate-100 rounded-3xl flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
-          </div>
-        )}
+        <Suspense fallback={<div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 flex items-center justify-center"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+          <HomeMap userCoords={userCoords} mapBusinesses={mapBusinesses} currentLangCode={currentLangCode} />
+        </Suspense>
       </section>
     </>
   );
-}
+});
 
 export default HomeBelowFold;
