@@ -169,16 +169,19 @@ export default function Explore() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-          setLocalSearchLocation(t('home.nearMe'));
-          setUseNearMe(true);
           setGeoLocating(false);
+          // Only auto-enable nearMe if there's no location query
+          if (!searchParams.get("loc") && !searchParams.get("nearMe")) {
+             setLocalSearchLocation(t('home.nearMe'));
+             setUseNearMe(true);
+          }
         },
         () => {
           setGeoLocating(false);
         }
       );
     }
-  }, []);
+  }, [searchParams, t]);
 
   const fetchExploreData = async () => {
     setLoading(true);
@@ -265,7 +268,17 @@ export default function Explore() {
   }, [searchQuery, searchLocation, selectedCategory, selectedSubcategory, useNearMe]);
 
   useEffect(() => {
-    if (searchRadius === null && businesses.length > 0) {
+    if (userCoords && (useNearMe || searchRadius !== null)) {
+      setMapCenter({ lat: userCoords.latitude, lng: userCoords.longitude });
+      if (searchRadius) {
+        if (searchRadius <= 5) setMapZoom(12);
+        else if (searchRadius <= 10) setMapZoom(11);
+        else if (searchRadius <= 25) setMapZoom(10);
+        else setMapZoom(9);
+      } else {
+        setMapZoom(12);
+      }
+    } else if (businesses.length > 0) {
       const lats = businesses.map(b => b.latitude ?? getCoordinatesForCity(b.district, b.city).latitude).filter(l => l !== undefined && l !== null);
       const lngs = businesses.map(b => b.longitude ?? getCoordinatesForCity(b.district, b.city).longitude).filter(l => l !== undefined && l !== null);
       if (lats.length > 0 && lngs.length > 0) {
@@ -292,14 +305,8 @@ export default function Explore() {
         setMapCenter({ lat: userCoords.latitude, lng: userCoords.longitude });
         setMapZoom(6);
       }
-    } else if (searchRadius !== null && userCoords) {
-      setMapCenter({ lat: userCoords.latitude, lng: userCoords.longitude });
-      if (searchRadius <= 5) setMapZoom(12);
-      else if (searchRadius <= 10) setMapZoom(11);
-      else if (searchRadius <= 25) setMapZoom(10);
-      else if (searchRadius <= 50) setMapZoom(9);
     }
-  }, [searchRadius, userCoords, businesses]);
+  }, [searchRadius, userCoords, businesses, useNearMe]);
 
   const handleNearMeToggle = () => {
     if (useNearMe) {

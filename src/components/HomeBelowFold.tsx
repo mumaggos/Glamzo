@@ -1,3 +1,4 @@
+import { BusinessCard } from './BusinessCard';
 import React, { Suspense, lazy, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,8 +15,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
   locaisProximos,
   recomendados,
   novasLojas,
-  BusinessCard,
-  userCoords,
+    userCoords,
   mapBusinesses,
   currentLangCode
 }: any) {
@@ -94,7 +94,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.nearYouSubtitle')}</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
-                  {locaisProximos.map((b: any) => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  {locaisProximos.map((b: any) => <div key={b.id} className="snap-start min-w-[280px] sm:min-w-[320px] w-[280px] sm:w-[320px] shrink-0"><BusinessCard b={b} t={t} currentLangCode={currentLangCode} /></div>)}
                 </div>
               </section>
             )}
@@ -106,7 +106,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.recommendedForYouSubtitle')}</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
-                  {recomendados.map((b: any) => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  {recomendados.map((b: any) => <div key={b.id} className="snap-start min-w-[280px] sm:min-w-[320px] w-[280px] sm:w-[320px] shrink-0"><BusinessCard b={b} t={t} currentLangCode={currentLangCode} /></div>)}
                 </div>
               </section>
             )}
@@ -118,7 +118,7 @@ export const HomeBelowFold = React.memo(function HomeBelowFold({
                   <p className="text-sm text-slate-500 mt-1 font-['Inter']">{t('home.justArrivedSubtitle')}</p>
                 </div>
                 <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
-                  {novasLojas.map((b: any) => <div key={b.id} className="snap-start"><BusinessCard b={b} /></div>)}
+                  {novasLojas.map((b: any) => <div key={b.id} className="snap-start min-w-[280px] sm:min-w-[320px] w-[280px] sm:w-[320px] shrink-0"><BusinessCard b={b} t={t} currentLangCode={currentLangCode} /></div>)}
                 </div>
               </section>
             )}

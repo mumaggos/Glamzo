@@ -46,7 +46,7 @@ const MapUpdater = ({ coordinates }: { coordinates: { lat: number; lng: number }
 };
 
 interface HomeMapProps {
-  userCoords: { lat: number; lng: number } | null;
+  userCoords: { lat?: number; lng?: number; latitude?: number; longitude?: number } | null;
   mapBusinesses: any[];
   currentLangCode: string;
 }
@@ -54,6 +54,13 @@ interface HomeMapProps {
 export default function HomeMap({ userCoords, mapBusinesses, currentLangCode }: HomeMapProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const coords = userCoords
+    ? {
+        lat: userCoords.lat ?? userCoords.latitude ?? 38.7223,
+        lng: userCoords.lng ?? userCoords.longitude ?? -9.1393,
+      }
+    : null;
 
   if (!API_KEY) {
     return (
@@ -68,17 +75,17 @@ export default function HomeMap({ userCoords, mapBusinesses, currentLangCode }: 
     <div className="h-[450px] sm:h-[500px] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm relative bg-slate-100">
       
       <APIProvider apiKey={API_KEY} language={currentLangCode} libraries={['places', 'marker']}>
-        <MapUpdater coordinates={userCoords} />
+        <MapUpdater coordinates={coords} />
         <Map
-          defaultCenter={userCoords ? { lat: userCoords.lat, lng: userCoords.lng } : { lat: 38.7223, lng: -9.1393 }}
-          defaultZoom={userCoords ? 13 : 8}
+          defaultCenter={coords || { lat: 38.7223, lng: -9.1393 }}
+          defaultZoom={coords ? 13 : 8}
           disableDefaultUI
           clickableIcons={false}
           styles={mapStyles}
           options={{ clickableIcons: false, styles: mapStyles }}
           style={{ width: '100%', height: '100%' }}
         >
-          {userCoords && <Marker position={{ lat: userCoords.lat, lng: userCoords.lng }} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
+          {coords && <Marker position={coords} icon="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" />}
           {mapBusinesses.map((b: any) => (
             <Marker 
               key={b.id} 
