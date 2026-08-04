@@ -188,7 +188,7 @@ export default function Explore() {
     setErrorMsg(null);
     try {
       const [bizRes, analyticsRes, servRes, realRev, hoursRes, bookingsRes] = await Promise.all([
-        supabase.from("businesses").select("*").eq("status", "active").limit(queryLimit),
+        supabase.from("businesses").select("*").eq("status", "active").in("subscription_status", ["active", "trialing"]).limit(queryLimit),
         supabase.rpc("get_explore_shops_with_analytics"),
         supabase.from("services").select("*").eq("is_active", true),
         fetchAllReviews(),

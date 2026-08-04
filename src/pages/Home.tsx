@@ -105,7 +105,7 @@ export default function Home() {
           services (
             id, name, price, duration_minutes, is_active
           )
-        `).eq('status', 'active');
+        `).eq('status', 'active').in('subscription_status', ['active', 'trialing']);
         
         if (businesses) {
            const processed = businesses.map(b => {

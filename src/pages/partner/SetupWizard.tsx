@@ -1,3 +1,4 @@
+import { TimezoneSelect } from "../../components/TimezoneSelect";
 import React, { useState, useEffect, useMemo } from 'react';
 import {  useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -584,7 +585,7 @@ export default function SetupWizard() {
         };
         
         const payloadToSave = { ...updateData };
-        if ('currency' in payloadToSave) delete payloadToSave.currency;
+        // Currency is saved correctly
         const { error } = await supabase.from('businesses').update(payloadToSave).eq('id', business.id);
         
         if (error) {
@@ -864,7 +865,7 @@ export default function SetupWizard() {
                       className="hidden" 
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) uploadImage(file, 'banners', setCoverUrl);
+                        if (file) uploadImage(file, 'business-images', setCoverUrl);
                       }} 
                     />
                   </label>
@@ -888,7 +889,7 @@ export default function SetupWizard() {
                           className="hidden" 
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) uploadImage(file, 'logos', setLogoUrl);
+                            if (file) uploadImage(file, 'business-images', setLogoUrl);
                           }} 
                         />
                       </label>
@@ -906,20 +907,7 @@ export default function SetupWizard() {
               
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Fuso Horário / Timezone</label>
-                <select 
-                  value={timezone} 
-                  onChange={e => setTimezone(e.target.value)} 
-                  className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-slate-800"
-                >
-                  {Object.entries(groupedTimezones).map(([group, tzs]) => (
-                    <optgroup key={group} label={group}>
-                      {(tzs as string[]).map(tz => {
-                        const label = tz.split('/').slice(1).join('/') || tz;
-                        return <option key={tz} value={tz}>{label.replace(/_/g, ' ')}</option>;
-                      })}
-                    </optgroup>
-                  ))}
-                </select>
+                <TimezoneSelect value={timezone} onChange={setTimezone} className="block w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-slate-800" />
                 <p className="text-[10px] text-slate-500 mt-1">Este será o fuso horário usado no calendário do salão.</p>
               </div>
 

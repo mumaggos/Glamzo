@@ -53,7 +53,7 @@ export const BusinessCard = ({ b, t, currentLangCode }: { b: any, t: any, curren
 
         <div className="mt-auto pt-2">
           <p className="text-[14px] text-gray-900 font-medium">
-             {t('business.from', { defaultValue: 'A partir de ' })} {formatCurrency(b.startPrice || b.lowestPrice || 15, b.currency || 'EUR')}
+             {t('business.from', { defaultValue: 'A partir de ' })} {formatCurrency(b.startPrice ?? b.lowestPrice ?? 0, b.currency || 'EUR')}
           </p>
         </div>
       </div>
