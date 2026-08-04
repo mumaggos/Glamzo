@@ -7,7 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
-import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag, Landmark, ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
+import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag,  ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 import { StripeActivationBanner } from "./StripeActivationBanner";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';
@@ -289,9 +289,6 @@ export default function PartnerLayout() {
     { id: "avaliacoes", label: t('partner.tabReviews'), icon: Star, path: "/partner/dashboard/avaliacoes" },
     { id: "campanhas", label: t('partner.tabPromotions'), icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: t('partner.tabFinance'), icon: Landmark, path: "/partner/dashboard/financeiro" },
-    
-    
-    
     { id: "subscricao", label: 'O Meu Plano', icon: CreditCard, path: "/partner/dashboard/subscricao" },
     { id: "website", label: t('partner.tabWebsite'), icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: t('partner.tabMessages'), icon: MessageSquare, path: "/partner/dashboard/mensagens" },

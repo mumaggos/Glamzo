@@ -45,9 +45,12 @@ export default function FinanceSettingsTab() {
             <ShieldCheck className="w-10 h-10 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-black text-emerald-900 mb-4">Conta Verificada e Pagamentos Ativos</h3>
-          <p className="text-emerald-700 max-w-lg text-lg">
+          <p className="text-emerald-700 max-w-lg text-lg mb-6">
             A sua conta Stripe Connect está validada. Já se encontra totalmente habilitado(a) para receber pagamentos online e transferências bancárias automáticas de forma segura.
           </p>
+          <a href="/partner/dashboard/subscricao/hardware" className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition">
+            Encomendar Terminal Físico
+          </a>
         </div>
       ) : (
         <div className="mt-6">

@@ -79,7 +79,7 @@ export default function StripeKycOnboarding({ businessId, ownerId, onComplete }:
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto rounded-xl overflow-hidden border border-slate-200 bg-white">
+    <div className="w-full mx-auto bg-white min-h-[900px] pb-12">
       {stripeConnectInstance && (
         <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
           <ConnectAccountOnboarding 

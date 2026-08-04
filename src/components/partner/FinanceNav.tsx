@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Landmark, Settings, ArrowLeftRight, Smartphone } from 'lucide-react';
+import { Settings, ArrowLeftRight, Smartphone, CreditCard } from 'lucide-react';
 
 export default function FinanceNav() {
   const navigate = useNavigate();
@@ -8,10 +8,10 @@ export default function FinanceNav() {
   const path = location.pathname;
 
   const tabs = [
-    { id: 'overview', label: 'Visão Geral & Razões', icon: Landmark, path: '/partner/dashboard/financeiro' },
-    { id: 'config', label: 'Configurações Glamzo Pay', icon: Settings, path: '/partner/dashboard/financeiro/configuracoes' },
-    { id: 'payouts', label: 'Histórico de Repasses', icon: ArrowLeftRight, path: '/partner/dashboard/financeiro/repasses' },
-    { id: 'hardware', label: 'Terminal Físico (Hardware)', icon: Smartphone, path: '/partner/dashboard/financeiro/hardware' }
+    { id: 'plan', label: 'O Meu Plano', icon: CreditCard, path: '/partner/dashboard/subscricao' },
+    { id: 'config', label: 'Configurações Glamzo Pay', icon: Settings, path: '/partner/dashboard/subscricao/configuracoes' },
+    { id: 'payouts', label: 'Histórico de Repasses', icon: ArrowLeftRight, path: '/partner/dashboard/subscricao/repasses' },
+    { id: 'hardware', label: 'Terminal Físico (Hardware)', icon: Smartphone, path: '/partner/dashboard/subscricao/hardware' }
   ];
 
   return (

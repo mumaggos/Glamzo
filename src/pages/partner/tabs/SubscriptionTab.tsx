@@ -1,3 +1,4 @@
+import FinanceNav from '../../../components/partner/FinanceNav';
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
@@ -391,6 +392,7 @@ export default function SubscriptionTab() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
+      <FinanceNav />
       <div className="border-b border-slate-100 pb-5 text-left">
         <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
           Subscrição e Faturação
