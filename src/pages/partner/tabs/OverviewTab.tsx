@@ -78,8 +78,8 @@ export default function OverviewTab() {
          services={services || []}
          staff={staff || []}
          reviews={reviews}
-         resolvedSubscriptionStatus="active"
-         trialDaysRemaining={14}
+         resolvedSubscriptionStatus={business?.subscription_status === 'trialing' ? 'trialing' : business?.subscription_status === 'active' ? 'active' : 'expired'}
+         trialDaysRemaining={business?.trial_ends_at ? Math.max(0, Math.ceil((new Date(business.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) : 0}
          setActiveTab={handleSetActiveTab}
        />
 

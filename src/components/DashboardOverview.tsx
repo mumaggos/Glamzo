@@ -198,7 +198,7 @@ const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today'
                   <p className="font-black text-slate-900">{(business?.selected_plan === 'app_tablet' || business?.selected_plan === 'pro_terminal' || business?.tablet_requested) ? 'PRO + TERMINAL' : 'PRO'}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${resolvedSubscriptionStatus === 'trialing' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}`}>
-                  {resolvedSubscriptionStatus === 'trialing' ? `Trial (${trialDaysRemaining} dias)` : 'Ativo'}
+                  {resolvedSubscriptionStatus === 'trialing' ? `Período Trial: Faltam ${trialDaysRemaining} dias para o 1º pagamento` : 'Ativo'}
                 </div>
               </div>
 

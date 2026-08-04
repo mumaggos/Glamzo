@@ -477,7 +477,7 @@ export default function SetupWizard() {
              targetStep = draft.step;
           }
           
-          if (targetStep === 3 && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
+          if ((targetStep === 3 || targetStep === 4) && (currentBiz.subscription_active || currentBiz.stripe_subscription_id)) {
             targetStep = 5;
           }
           setStep(targetStep);
@@ -666,7 +666,13 @@ export default function SetupWizard() {
         const res = await fetch("/api/stripe/create-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ businessId: business.id, planName: 'pro', skipTrial: false })
+          body: JSON.stringify({ 
+            businessId: business.id, 
+            planName: 'pro', 
+            skipTrial: false,
+            successUrl: `${window.location.origin}/partner/setup?step=5`,
+            cancelUrl: `${window.location.origin}/partner/setup?step=4`
+          })
         });
         
         if (!res.ok) {
