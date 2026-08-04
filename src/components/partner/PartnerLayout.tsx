@@ -144,6 +144,7 @@ export default function PartnerLayout() {
         return;
       }
       if (!bData) { navigate("/partner/setup", { replace: true }); return; }
+      if (bData.status === 'setup') { navigate("/partner/setup", { replace: true }); return; }
       setBusiness(bData);
 
       const { data: tData, error: tError } = await supabase.from("hardware_orders").select("*").eq("business_id", bData.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
@@ -311,7 +312,7 @@ export default function PartnerLayout() {
   if (authLoading || !business) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FC]"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" /></div>;
 
   return (
-    <div id="partner-terminal-layout" className="min-h-[100vh] h-[100vh] bg-[#F8F9FC] text-slate-800 flex font-sans select-none overflow-hidden relative overflow-x-hidden">
+    <div id="partner-terminal-layout" className="h-[100dvh] bg-[#F8F9FC] text-slate-800 flex flex-col lg:flex-row font-sans select-none overflow-hidden relative">
       
       <style>{`
         header, nav.sticky, footer { display: none !important; }

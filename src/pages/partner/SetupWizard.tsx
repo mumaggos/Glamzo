@@ -369,7 +369,9 @@ export default function SetupWizard() {
           setup_step: 1,
           setup_completed: false,
           slug: slug,
-          category: 'Cabelo & Barbearia'
+          category: 'Cabelo & Barbearia',
+          subscription_status: 'trialing',
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         };
         
         if (salesAgentId) {

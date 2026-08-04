@@ -249,7 +249,7 @@ export default function SubscriptionTab() {
     if (!business) return;
     const confirmCancel = window.confirm(
       `Tem a certeza absoluta de que deseja cancelar o seu plano ${
-        business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested ? "PRO Terminal" : "Glamzo PRO"
+        false ? "PRO Terminal" : "Glamzo PRO"
       }?\r\n\r\nAo desativar o plano, o seu estabelecimento será imediatamente removido (ocultado) no Marketplace público e o seu painel de controlo será bloqueado até que associe um novo cartão.`
     );
     if (!confirmCancel) return;
@@ -426,17 +426,17 @@ export default function SubscriptionTab() {
       )}
 
       {/* 1. Subscrição Atual */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="max-w-md mx-auto mb-6">
         
         {/* PLANO GLAMZO PRO */}
         <div className={`p-8 rounded-3xl border transition-all flex flex-col ${
-            (business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested)
+            (!isSuspended)
               ? "bg-white border-purple-500 shadow-md ring-2 ring-purple-500/20" 
               : "bg-white border-slate-200 hover:border-purple-300"
           }`}>
           <div className="flex justify-between items-start mb-2">
             <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
-            {business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
+            {!isSuspended && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
           </div>
           <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
           <div className="mt-4 mb-6 flex flex-wrap items-center gap-3">
@@ -465,7 +465,7 @@ export default function SubscriptionTab() {
             >
               {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
             </button>
-          ) : (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) ? (
+          ) : (false) ? (
             <button 
               onClick={() => handleSubscribePro("PRO")}
               disabled={isVerifyingSub}
@@ -480,65 +480,7 @@ export default function SubscriptionTab() {
           )}
         </div>
         
-        {/* PLANO GLAMZO PRO TERMINAL */}
-        <div className={`p-8 rounded-3xl border transition-all flex flex-col relative overflow-hidden group ${
-            (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested)
-              ? "bg-gradient-to-br from-slate-900 to-purple-900 border-purple-500 shadow-2xl ring-2 ring-purple-500/30 text-white" 
-              : "bg-slate-900 text-white border-purple-500 shadow-2xl"
-          }`}>
-          <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-2xl shadow-lg">Recomendado</div>
-          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full group-hover:bg-purple-500/30 transition-all"></div>
-          
-          <div className="flex justify-between items-start mb-2 relative z-10">
-            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Star className="w-3 h-3"/> Hardware + Digital</span>
-            { (business?.selected_plan === "app_tablet" || business?.selected_plan === "pro_terminal" || business?.tablet_requested) && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
-          </div>
-          <h4 className="text-xl font-black relative z-10 mt-2">Terminal Físico Glamzo</h4>
-          <div className="mt-4 mb-6 relative z-10">
-            <div className="flex flex-wrap items-center gap-3">
-              <div>
-                <span className="text-4xl font-black text-white">99.00€</span>
-                <span className="text-sm font-bold text-slate-400"> Único</span>
-              </div>
-              {!hasUsedTrial ? (
-                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-lg">14 Dias Grátis</span>
-              ) : (
-                <span className="bg-slate-700 text-slate-300 text-[10px] font-black px-2 py-1 rounded-md uppercase shadow-inner">Cobrança Imediata</span>
-              )}
-            </div>
-            <div className="mt-2 inline-block bg-white/10 px-3 py-1 rounded-lg border border-white/10">
-              <span className="text-xs font-bold text-purple-300">Sem Mensalidades ou Fidelização</span>
-            </div>
-          </div>
-          <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> A máquina é sua (Portes e Impostos Incluídos)</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> <strong>Terminal Físico (Stripe Reader)</strong> contact-less e chip</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Sincronização direta com a Agenda</li>
-            <li className="flex items-start gap-3 text-sm text-slate-300 font-medium"><CheckCircle className="w-5 h-5 text-purple-400 shrink-0"/> Relatórios Avançados CSV</li>
-          </ul>
-
-                    {isSuspended ? (
-            <button 
-              onClick={() => handleSubscribePro("TERMINAL")}
-              disabled={isVerifyingSub}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-            >
-              {isVerifyingSub ? "A carregar..." : "Adicionar Terminal"}
-            </button>
-          ) : (business?.selected_plan !== "app_tablet" && business?.selected_plan !== "pro_terminal" && !business?.tablet_requested) ? (
-            <button 
-              onClick={() => handleSubscribePro("TERMINAL")}
-              disabled={isVerifyingSub}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black rounded-xl transition-all shadow-lg shadow-purple-900/50 relative z-10 text-xs"
-            >
-              {isVerifyingSub ? "A carregar..." : "Solicitar Upgrade & Terminal"}
-            </button>
-          ) : (
-            <button disabled className="w-full py-3.5 bg-white/10 text-purple-200 font-bold rounded-xl cursor-not-allowed text-xs border border-white/20 relative z-10">
-              O Seu Plano Atual
-            </button>
-          )}
-        </div>
+        
 
       </div>
 

@@ -193,7 +193,8 @@ export default function Onboarding() {
         status: 'active',
         setup_completed: true,
         is_verified: false,
-        subscription_status: 'trialing'
+        subscription_status: 'trialing',
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
       };
 
       // 1. Insert Business

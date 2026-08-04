@@ -24,7 +24,7 @@ export const TimezoneSelect = ({ value, onChange, className }: { value: string, 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const displayValue = value.replace(/_/g, ' ');
+  const displayValue = value ? value.replace(/_/g, ' ') : '';
 
   return (
     <div ref={wrapperRef} className="relative w-full">
