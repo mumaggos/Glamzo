@@ -7,7 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
 import { supabase } from "../../lib/supabase";
 import { Business } from "../../types";
-import { LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag,  ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
+import { Landmark, LayoutDashboard, Calendar, CheckSquare, UsersRound, Users, Scissors, Clock, Tag,  ShieldCheck, Globe, MessageSquare, Smartphone, Settings, LogOut, X, Menu, Bell, CreditCard, Star } from "lucide-react";
 import GlamzoLogo from "../../components/GlamzoLogo";
 import { StripeActivationBanner } from "./StripeActivationBanner";
 import { useLocalizedNavigate } from '../../hooks/useLocalizedNavigate';

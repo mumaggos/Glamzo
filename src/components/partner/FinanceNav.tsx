@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, ArrowLeftRight, Smartphone, CreditCard } from 'lucide-react';
+import { Landmark, Settings, ArrowLeftRight, Smartphone, CreditCard } from 'lucide-react';
 
 export default function FinanceNav() {
   const navigate = useNavigate();
