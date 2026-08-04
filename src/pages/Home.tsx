@@ -105,7 +105,7 @@ export default function Home() {
           services (
             id, name, price, duration_minutes, is_active
           )
-        `);
+        `).eq('status', 'active');
         
         if (businesses) {
            const processed = businesses.map(b => {
