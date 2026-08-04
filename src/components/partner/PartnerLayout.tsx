@@ -288,10 +288,10 @@ export default function PartnerLayout() {
     { id: "avaliacoes", label: t('partner.tabReviews'), icon: Star, path: "/partner/dashboard/avaliacoes" },
     { id: "campanhas", label: t('partner.tabPromotions'), icon: Tag, path: "/partner/dashboard/campanhas" },
     { id: "financeiro", label: t('partner.tabFinance'), icon: Landmark, path: "/partner/dashboard/financeiro" },
-    { id: "financeiro_config", label: t('partner.tabFinanceConfig'), icon: ShieldCheck, path: "/partner/dashboard/financeiro/configuracoes" },
-    { id: "financeiro_repasses", label: t('partner.tabFinanceHistory'), icon: CreditCard, path: "/partner/dashboard/financeiro/repasses" },
-    { id: "financeiro_hardware", label: t('partner.tabFinanceHardware'), icon: Smartphone, path: "/partner/dashboard/financeiro/hardware" },
-    { id: "subscricao", label: t('partner.tabSubscription'), icon: CreditCard, path: "/partner/dashboard/subscricao" },
+    
+    
+    
+    { id: "subscricao", label: 'O Meu Plano', icon: CreditCard, path: "/partner/dashboard/subscricao" },
     { id: "website", label: t('partner.tabWebsite'), icon: Globe, path: "/partner/dashboard/website" },
     { id: "mensagens", label: t('partner.tabMessages'), icon: MessageSquare, path: "/partner/dashboard/mensagens" },
     ...(tabletOrder ? [{ id: "tablet", label: t('partner.tabTerminal'), icon: Smartphone, path: "/partner/dashboard/tablet" }] : []),

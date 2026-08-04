@@ -3,6 +3,10 @@ import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { Sparkles, Check, CheckCircle, AlertCircle, XCircle, FileText, Download, Building2, Banknote, Star } from "lucide-react";
 import { Business } from "../../../types";
+import FinanceSettingsTab from "./FinanceSettingsTab";
+import PayoutsHistoryTab from "./PayoutsHistoryTab";
+import HardwareManagerTab from "./HardwareManagerTab";
+import { Landmark } from "lucide-react";
 import { formatCurrency } from '../../../utils/currency';
 
 interface PartnerContextType {
@@ -76,6 +80,7 @@ const StaffFinanceCard: React.FC<{ staffMember: any, staffLedgers: any[], setSel
 }
 
 export default function FinanceTab() {
+  const [activeFinanceTab, setActiveFinanceTab] = useState<"overview" | "connect" | "payouts" | "terminal">("overview");
   const { business, staff } = useOutletContext<PartnerContextType>();
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
