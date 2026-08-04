@@ -20,6 +20,11 @@ export default function PayoutsHistoryTab() {
   useEffect(() => {
     async function loadPayouts() {
       if (!business?.id) return;
+      if (!business?.stripe_account_id) {
+        setPayouts([]);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const res = await fetch(`/api/stripe/payouts/${business.id}`);
@@ -55,7 +60,8 @@ export default function PayoutsHistoryTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto py-6">
+      <FinanceNav />
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-slate-900">Histórico de Repasses</h2>
       </div>

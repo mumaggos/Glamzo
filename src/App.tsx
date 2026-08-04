@@ -228,8 +228,7 @@ function NotFoundScreen() {
                     <Route path="avaliacoes" element={<PartnerReviewsTab />} />
                     <Route path="campanhas" element={<MarketingTab />} />
                     <Route path="financeiro" element={<FinanceTab />} />
-                    <Route path="subscricao/configuracoes" element={<FinanceSettingsTab />} />
-                    <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
+                                        <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
                     <Route path="subscricao/hardware" element={<HardwareManagerTab />} />
                     <Route path="website" element={<StoreAssetsTab />} />
                     <Route path="mensagens" element={<MessagesTab />} />
@@ -384,8 +383,7 @@ export default function App() {
                       <Route path="avaliacoes" element={<PartnerReviewsTab />} />
                       <Route path="campanhas" element={<MarketingTab />} />
                       <Route path="financeiro" element={<FinanceTab />} />
-                      <Route path="subscricao/configuracoes" element={<FinanceSettingsTab />} />
-                      <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
+                                            <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
                       <Route path="subscricao/hardware" element={<HardwareManagerTab />} />
                       <Route path="website" element={<StoreAssetsTab />} />
                       <Route path="mensagens" element={<MessagesTab />} />
@@ -443,8 +441,7 @@ export default function App() {
                       <Route path="avaliacoes" element={<PartnerReviewsTab />} />
                       <Route path="campanhas" element={<MarketingTab />} />
                       <Route path="financeiro" element={<FinanceTab />} />
-                      <Route path="subscricao/configuracoes" element={<FinanceSettingsTab />} />
-                      <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
+                                            <Route path="subscricao/repasses" element={<PayoutsHistoryTab />} />
                       <Route path="subscricao/hardware" element={<HardwareManagerTab />} />
                       <Route path="website" element={<StoreAssetsTab />} />
                       <Route path="mensagens" element={<MessagesTab />} />
