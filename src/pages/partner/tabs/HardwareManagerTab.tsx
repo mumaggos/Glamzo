@@ -1,3 +1,4 @@
+import FinanceNav from '../../../components/partner/FinanceNav';
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Business } from '../../../types';
@@ -38,7 +39,8 @@ export default function HardwareManagerTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto p-4 md:p-8">
+      <FinanceNav />
       <div>
         <h2 className="text-xl font-bold text-slate-900">Gestão de Hardware</h2>
         <p className="text-slate-600 mt-1">

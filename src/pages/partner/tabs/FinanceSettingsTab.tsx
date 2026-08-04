@@ -1,3 +1,4 @@
+import FinanceNav from '../../../components/partner/FinanceNav';
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { ShieldCheck, Loader2 } from "lucide-react";
@@ -30,6 +31,7 @@ export default function FinanceSettingsTab() {
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
+      <FinanceNav />
       <div className="mb-8">
         <h2 className="text-3xl font-black text-slate-900 mb-2">Configuração de Pagamentos</h2>
         <p className="text-slate-600">

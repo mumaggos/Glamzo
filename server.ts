@@ -2245,7 +2245,7 @@ const handleStripeWebhook = async (req: any, res: any) => {
         syncedStatus = "canceled";
       }
       const syncedExpiry = new Date(
-        (liveSubscription as any).current_period_end * 1000,
+        ((liveSubscription as any).trial_end || (liveSubscription as any).current_period_end) * 1000,
       ).toISOString();
       const syncedActive =
         syncedStatus === "active" || syncedStatus === "trialing";

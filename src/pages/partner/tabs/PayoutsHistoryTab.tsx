@@ -1,3 +1,4 @@
+import FinanceNav from '../../../components/partner/FinanceNav';
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Business } from '../../../types';

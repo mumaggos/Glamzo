@@ -1,3 +1,4 @@
+import FinanceNav from '../../../components/partner/FinanceNav';
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
@@ -542,6 +543,9 @@ export default function FinanceTab() {
           {globalError}
         </div>
       )}
+
+      
+      <FinanceNav />
 
       {/* 3. Histórico de Transações */}
       <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6">
