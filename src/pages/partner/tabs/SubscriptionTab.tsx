@@ -1,4 +1,5 @@
 import FinanceNav from '../../../components/partner/FinanceNav';
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
@@ -11,6 +12,7 @@ interface PartnerContextType {
 }
 
 export default function SubscriptionTab() {
+  const { t } = useTranslation();
   const { business, staff } = useOutletContext<PartnerContextType>();
   const hasValidSubscription = business?.subscription_status === 'active' || (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at) > new Date());
   const isSuspended = business ? !hasValidSubscription : false;
@@ -394,12 +396,8 @@ export default function SubscriptionTab() {
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in text-slate-700 py-6">
       <FinanceNav />
       <div className="border-b border-slate-100 pb-5 text-left">
-        <h3 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Subscrição e Faturação
-        </h3>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Acompanhe a sua subscrição Glamzo Pro, consulte faturas reais e verifique o estado do seu Glamzo Pay Connect.
-        </p>
+        <h3 className="text-xl font-extrabold tracking-tight text-slate-900">{t('partner.subTitle')}</h3>
+        <p className="text-xs text-slate-500 mt-0.5">{t('partner.subDesc')}</p>
       </div>
 
             {isSuspended && (
@@ -407,15 +405,15 @@ export default function SubscriptionTab() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"/>
             <div>
-              <h4 className="text-sm font-bold text-rose-900">Loja Suspensa</h4>
-              <p className="text-xs text-rose-700 mt-1">O seu período de utilização expirou ou a subscrição foi cancelada. A sua página pública não está visível.</p>
+              <h4 className="text-sm font-bold text-rose-900">{t('partner.storeSuspended')}</h4>
+              <p className="text-xs text-rose-700 mt-1">{t('partner.storeSuspendedDesc')}</p>
             </div>
           </div>
           <button 
             onClick={async () => { await supabase.auth.signOut(); window.location.href = '/partner/login'; }} 
             className="px-4 py-2 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap"
           >
-            Terminar Sessão
+            {t('partner.logout')}
           </button>
         </div>
       )}
@@ -437,26 +435,26 @@ export default function SubscriptionTab() {
               : "bg-white border-slate-200 hover:border-purple-300"
           }`}>
           <div className="flex justify-between items-start mb-2">
-            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Digital</span>
-            {!isSuspended && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">Plano Atual</span>}
+            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{t('partner.digital')}</span>
+            {!isSuspended && <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full">{t('partner.currentPlan')}</span>}
           </div>
           <h4 className="text-xl font-black text-slate-900 mt-2">Glamzo PRO</h4>
           <div className="mt-4 mb-6 flex flex-wrap items-center gap-3">
             <div>
               <span className="text-4xl font-black text-slate-900">19.90€</span>
-              <span className="text-sm font-bold text-slate-500"> / mês</span>
+              <span className="text-sm font-bold text-slate-500"> {t('partner.month')}</span>
             </div>
             {!hasUsedTrial ? (
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">14 Dias Grátis</span>
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">{t('partner.free14Days')}</span>
             ) : (
-              <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">Cobrança Imediata</span>
+              <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">{t('partner.immediateCharge')}</span>
             )}
           </div>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Agenda e Reservas Ilimitadas</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Página Pública Premium no Explorar</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Equipa e Serviços Ilimitados</li>
-            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> Pagamentos Online Seguros (Stripe)</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> {t('partner.feat1')}</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> {t('partner.feat2')}</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> {t('partner.feat3')}</li>
+            <li className="flex items-start gap-3 text-sm text-slate-600 font-medium"><CheckCircle className="w-5 h-5 text-emerald-500 shrink-0"/> {t('partner.feat4')}</li>
           </ul>
           
                     {isSuspended ? (
@@ -465,7 +463,7 @@ export default function SubscriptionTab() {
               disabled={isVerifyingSub}
               className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-purple-700 transition shadow-lg"
             >
-              {isVerifyingSub ? "A carregar..." : "Reativar Plano PRO"}
+              {isVerifyingSub ? t('partner.loading') : t('partner.reactivatePro')}
             </button>
           ) : (false) ? (
             <button 
@@ -473,11 +471,11 @@ export default function SubscriptionTab() {
               disabled={isVerifyingSub}
               className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl text-xs hover:bg-slate-800 transition shadow-lg"
             >
-              Fazer Downgrade para Base
+              {t('partner.downgradeBase')}
             </button>
           ) : (
             <button disabled className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl cursor-not-allowed text-xs">
-              O Seu Plano Atual
+              {t('partner.yourCurrentPlan')}
             </button>
           )}
         </div>
@@ -492,7 +490,7 @@ export default function SubscriptionTab() {
             onClick={handleOpenBillingPortal}
             className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2"
           >
-            <FileText className="w-4 h-4" /> Gerir Faturação e Cartão
+            <FileText className="w-4 h-4" /> {t('partner.manageBilling')}
           </button>
           {!isSuspended && (
             <button
@@ -500,7 +498,7 @@ export default function SubscriptionTab() {
               disabled={cancelingSubscription}
               className="bg-white border border-rose-200 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm disabled:opacity-50"
             >
-              {cancelingSubscription ? "A cancelar..." : "Cancelar Subscrição"}
+              {cancelingSubscription ? t('partner.canceling') : t('partner.cancelSub')}
             </button>
           )}
         </div>

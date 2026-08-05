@@ -2,16 +2,19 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Landmark, ArrowLeftRight, Smartphone, CreditCard, Settings } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 export default function FinanceNav() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
   const tabs = [
-    { id: 'plan', label: 'O Meu Plano', icon: CreditCard, path: '/partner/dashboard/subscricao' },
-    { id: 'config', label: 'Configurações Glamzo Pay', icon: Settings, path: '/partner/dashboard/subscricao/configuracoes' },
-    { id: 'payouts', label: 'Histórico de Repasses', icon: ArrowLeftRight, path: '/partner/dashboard/subscricao/repasses' },
-    { id: 'hardware', label: 'Terminal Físico (Hardware)', icon: Smartphone, path: '/partner/dashboard/subscricao/hardware' }
+    { id: 'plan', label: t('partner.tabPlan'), icon: CreditCard, path: '/partner/dashboard/subscricao' },
+    { id: 'config', label: t('partner.tabGlamzoPay'), icon: Settings, path: '/partner/dashboard/subscricao/configuracoes' },
+    { id: 'payouts', label: t('partner.tabPayouts'), icon: ArrowLeftRight, path: '/partner/dashboard/subscricao/repasses' },
+    { id: 'hardware', label: t('partner.tabHardware'), icon: Smartphone, path: '/partner/dashboard/subscricao/hardware' }
   ];
 
   return (

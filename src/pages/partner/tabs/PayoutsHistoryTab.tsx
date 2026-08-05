@@ -1,4 +1,5 @@
 import FinanceNav from '../../../components/partner/FinanceNav';
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Business } from '../../../types';
@@ -12,6 +13,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 export default function PayoutsHistoryTab() {
+  const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [payouts, setPayouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export default function PayoutsHistoryTab() {
     <div className="space-y-6 max-w-5xl mx-auto py-6">
       <FinanceNav />
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-900">Histórico de Repasses</h2>
+        <h2 className="text-xl font-bold text-slate-900">{t('partner.payoutsTitle')}</h2>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

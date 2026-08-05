@@ -1,4 +1,5 @@
 import FinanceNav from '../../../components/partner/FinanceNav';
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Business } from '../../../types';
@@ -11,6 +12,7 @@ import { CreditCard, Smartphone, Check, Loader2 } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency';
 
 export default function HardwareManagerTab() {
+  const { t } = useTranslation();
   const { business } = useOutletContext<PartnerContextType>();
   const [ordering, setOrdering] = useState(false);
 

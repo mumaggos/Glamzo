@@ -189,87 +189,116 @@ const partnerSchema = {
               <h3 className="text-xl font-black mb-2 relative z-10">{t('partnerPage.feat4Title')}</h3>
               <p className="text-sm text-slate-400 leading-relaxed relative z-10 max-w-md">{t('partnerPage.feat4Desc')}</p>
             </div>
+            {/* Feat 5 */}
+            <div className="p-8 rounded-[2rem] bg-[#F8F9FC] border border-slate-200 hover:border-purple-200 transition-colors relative overflow-hidden group">
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm text-purple-600 flex items-center justify-center mb-6 relative z-10"><Globe className="w-6 h-6" /></div>
+              <h3 className="text-xl font-black mb-2 text-slate-900 relative z-10">{t('partnerPage.feat5Title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-sm">{t('partnerPage.feat5Desc')}</p>
+            </div>
+
+            {/* Feat 6 */}
+            <div className="p-8 rounded-[2rem] bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-bl-[100px] transition-all group-hover:bg-purple-600/20" />
+              <div className="w-14 h-14 rounded-2xl bg-white/10 text-purple-400 flex items-center justify-center mb-6 relative z-10"><MessageSquare className="w-6 h-6" /></div>
+              <h3 className="text-xl font-black mb-2 text-white relative z-10">{t('partnerPage.feat6Title')}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed relative z-10 max-w-sm">{t('partnerPage.feat6Desc')}</p>
+            </div>
+
+            {/* Feat 7 */}
+            <div className="p-8 rounded-[2rem] bg-[#F8F9FC] border border-slate-200 hover:border-purple-200 transition-colors relative overflow-hidden group">
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm text-purple-600 flex items-center justify-center mb-6 relative z-10"><Smartphone className="w-6 h-6" /></div>
+              <h3 className="text-xl font-black mb-2 text-slate-900 relative z-10">{t('partnerPage.feat7Title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-sm">{t('partnerPage.feat7Desc')}</p>
+            </div>
+
+            {/* Feat 8 */}
+            <div className="p-8 rounded-[2rem] bg-[#F8F9FC] border border-slate-200 hover:border-purple-200 transition-colors relative overflow-hidden group">
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm text-purple-600 flex items-center justify-center mb-6 relative z-10"><Users className="w-6 h-6" /></div>
+              <h3 className="text-xl font-black mb-2 text-slate-900 relative z-10">{t('partnerPage.feat8Title')}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed relative z-10 max-w-sm">{t('partnerPage.feat8Desc')}</p>
+            </div>
+
 
           </div>
         </div>
       </section>
 
-      {/* 4. Estrutura de Preços (Foco no Terminal) */}
-      <section className="py-24 bg-white border-y border-slate-100 relative">
+            {/* 4. Planos & Preços (Focado no PRO) */}
+      <section className="py-24 bg-white border-y border-slate-100 relative" id="pricing">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">{t('partnerPage.pricingTitle')}</h2>
-            <p className="text-slate-500 text-sm">{t('partnerPage.pricingSubtitle')}</p>
+            <p className="text-slate-500 text-sm max-w-2xl mx-auto">{t('partnerPage.pricingSubtitle')}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
-            
-            {/* Plano PRO (Base) */}
-            <div className="bg-[#F8F9FC] border border-slate-200 p-8 sm:p-10 rounded-[2rem] relative transition-all">
-              <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block font-mono">{t('partnerPage.planProDigital')}</span>
-              <h3 className="text-2xl font-black text-slate-900 mt-2">Glamzo PRO</h3>
+          <div className="max-w-3xl mx-auto">
+            {/* Plano PRO (O Plano Principal) */}
+            <div className="bg-slate-900 border border-purple-500 p-8 sm:p-12 rounded-[2.5rem] relative shadow-2xl shadow-purple-900/20 transform hover:scale-[1.01] transition-transform z-10 overflow-hidden group">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-bl-2xl shadow-lg">{t('partnerPage.mostPopular')}</div>
+              <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-purple-600/20 blur-[100px] rounded-full group-hover:bg-purple-600/30 transition-all duration-500" />
               
-              <div className="mt-6 mb-8 flex items-end gap-2">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">19.90€</span>
-                <span className="text-sm text-slate-500 font-bold mb-1">{t('partnerPage.perMonth')}</span>
-              </div>
-              
-              <p className="text-sm text-slate-600 font-medium mb-8 h-10">{t('partnerPage.planProDesc')}</p>
-
-              <ul className="space-y-4 text-sm text-slate-700 font-semibold mb-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat1')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat2')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> {t('partnerPage.planProFeat3')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500 shrink-0" /> <strong>{t('partnerPage.planProFeat4')}</strong></li>
-                
-              </ul>
-
-              <LocalizedLink to="/partner/signup" className="block w-full text-center bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-slate-800 font-black py-4 rounded-2xl transition-all text-sm shadow-sm">
-                {t('partnerPage.planProBtn')}
-              </LocalizedLink>
-              <p className="mt-4 text-[10px] text-slate-500 text-center leading-tight">{t('partnerPage.planProDisclaimer')}</p>
-            </div>
-
-            {/* Plano TERMINAL (Destaque) */}
-            <div className="bg-slate-900 border border-purple-500 p-8 sm:p-10 rounded-[2.5rem] relative shadow-2xl shadow-purple-900/20 transform md:scale-105 z-10 overflow-hidden group">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-bl-2xl shadow-lg">{t('partnerPage.mostPopular')}</div>
-              <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full group-hover:bg-purple-600/30 transition-all duration-500" />
-              
-              <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase block font-mono flex items-center gap-2"><Star className="w-3.5 h-3.5" /> {t('partnerPage.planTermBadge')}</span>
-              <h3 className="text-2xl font-black text-white mt-2">{t('partnerPage.planTermTitle')}</h3>
+              <span className="text-[12px] font-black tracking-widest text-purple-400 uppercase block font-mono mb-2">{t('partnerPage.planProDigital')}</span>
+              <h3 className="text-3xl font-black text-white">Glamzo PRO</h3>
               
               <div className="mt-6 mb-8 flex flex-col">
                 <div className="flex items-end gap-2">
-                  <span className="text-5xl font-black text-white tracking-tighter">99€</span>
-                  <span className="text-sm text-slate-400 font-bold mb-1">{t('partnerPage.oneTime')}</span>
-                </div>
-                <div className="mt-3 flex flex-col gap-2">
-                  
-                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg w-max">
-                    {t('partnerPage.planTermShipping')}
-                  </span>
+                  <span className="text-6xl font-black text-white tracking-tighter">19.90€</span>
+                  <span className="text-base text-slate-400 font-bold mb-2">{t('partnerPage.perMonth')}</span>
                 </div>
               </div>
               
-              <p className="text-sm text-slate-300 font-medium mb-8 h-10">{t('partnerPage.planTermDesc')}</p>
-
-              <ul className="space-y-4 text-sm text-white font-semibold mb-10 relative z-10">
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat1')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat2')}</li>
-                <li className="flex items-center gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0" /> {t('partnerPage.planTermFeat3', 'Sincronização direta com a Gestão de Agenda')}</li>
-              </ul>
-
+              <p className="text-base text-slate-300 font-medium mb-10">{t('partnerPage.planProDesc')}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 relative z-10">
+                <div className="space-y-4">
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat1')}</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat2')}</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat3')}</span></li>
+                </div>
+                <div className="space-y-4">
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat4')}</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat5', 'Notificações SMS & Email incluídas')}</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" /> <span className="text-sm text-white font-medium">{t('partnerPage.planProFeat6', 'Suporte Prioritário')}</span></li>
+                </div>
+              </div>
+              
               <LocalizedLink to="/partner/signup" className="relative z-10 block w-full text-center bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white font-black py-4 rounded-2xl transition-all text-sm shadow-lg shadow-purple-900/50">
-                {t('partnerPage.planTermBtn')}
+                {t('partnerPage.planProBtn')}
               </LocalizedLink>
+              <p className="mt-4 text-[11px] text-slate-400 text-center leading-tight">{t('partnerPage.planProDisclaimer')}</p>
+            </div>
+
+            {/* Terminal (Opcional - Add-on) */}
+            <div className="mt-8 bg-[#F8F9FC] border border-slate-200 p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 transition-all hover:border-purple-200">
+              <div className="flex-1 text-center md:text-left">
+                <span className="inline-block text-[10px] font-black tracking-widest text-emerald-600 bg-emerald-100 uppercase px-3 py-1 rounded-full mb-3">
+                  <Star className="w-3 h-3 inline-block mr-1 -mt-0.5" />
+                  {t('partnerPage.planTermBadge')}
+                </span>
+                <h4 className="text-xl font-black text-slate-900 mb-2">{t('partnerPage.planTermTitle')}</h4>
+                <p className="text-sm text-slate-600 font-medium mb-3">{t('partnerPage.planTermDesc')}</p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-xs text-slate-700 font-bold">
+                  <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-emerald-500" /> {t('partnerPage.planTermFeat1')}</span>
+                  <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-emerald-500" /> {t('partnerPage.planTermFeat2')}</span>
+                  <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-emerald-500" /> {t('partnerPage.planTermFeat3', 'Sincronização com Agenda')}</span>
+                </div>
+              </div>
+              
+              <div className="text-center md:text-right shrink-0">
+                <div className="flex items-end justify-center md:justify-end gap-1 mb-1">
+                  <span className="text-3xl font-black text-slate-900">99€</span>
+                  <span className="text-xs text-slate-500 font-bold mb-1">{t('partnerPage.oneTime')}</span>
+                </div>
+                <span className="block text-[10px] text-slate-500 font-medium mb-3">{t('partnerPage.planTermShipping')}</span>
+                <p className="text-xs text-purple-600 font-bold bg-purple-50 px-4 py-2 rounded-xl">{t('partnerPage.canAcquireLater')}</p>
+              </div>
             </div>
 
           </div>
         </div>
       </section>
-
-      {/* 5. FAQ Section */}
+{/* 5. FAQ Section */}
       <section className="py-24 bg-[#F8F9FC]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
