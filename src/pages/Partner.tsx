@@ -10,7 +10,7 @@ import {
   Briefcase, Calendar, BarChart3, Megaphone, Smartphone, 
   BrainCircuit, ShieldCheck, HeartHandshake, Check, Sparkles, 
   ArrowRight, Star, Zap, ChevronDown, CheckCircle2
-} from 'lucide-react';
+, Globe, MessageSquare, Users } from 'lucide-react';
 
 export default function Partner() {
   const { t } = useTranslation();
